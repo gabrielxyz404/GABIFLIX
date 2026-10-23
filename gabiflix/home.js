@@ -13,6 +13,7 @@
     ];
 
     var current = null; // serviço aberto, ou null para a grade
+    var LOGO_VERSION = 1; // aumente para forçar o celular a recarregar os logos
 
     function el(tag, cls, text) {
         var e = document.createElement(tag);
@@ -29,6 +30,14 @@
             var b = el('button', 'gf-card');
             b.type = 'button';
             b.setAttribute('data-service', s.id);
+            // Logo opcional: coloque gabiflix/logos/<id>.png no repositório.
+            var logo = el('img', 'gf-card-logo');
+            logo.alt = '';
+            logo.decoding = 'async';
+            logo.onload = function () { b.classList.add('has-logo'); };
+            logo.onerror = function () { logo.remove(); };
+            logo.src = 'gabiflix/logos/' + s.id + '.png?v=' + LOGO_VERSION;
+            b.appendChild(logo);
             b.appendChild(el('span', 'gf-card-name', s.name));
             b.appendChild(el('span', 'gf-card-hint', 'Ver catálogo'));
             b.addEventListener('click', function () { open(s.id, true); });
