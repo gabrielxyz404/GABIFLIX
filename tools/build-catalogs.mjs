@@ -127,11 +127,14 @@ async function popular({ country, language }, objectType, packages, total, sortB
 
 // Junta as listas de cada país intercalando por posição, sem repetir títulos
 function interleave(lists) {
+    // a primeira lista (Brasil) define o nome e a capa quando o título aparece em mais de uma
+    const best = new Map();
+    for (const l of lists) for (const m of l) if (!best.has(m.id)) best.set(m.id, m);
     const seen = new Set(), out = [];
     const max = Math.max(0, ...lists.map(l => l.length));
     for (let i = 0; i < max; i++) for (const l of lists) {
         const m = l[i];
-        if (m && !seen.has(m.id)) { seen.add(m.id); out.push(m); }
+        if (m && !seen.has(m.id)) { seen.add(m.id); out.push(best.get(m.id)); }
     }
     return out;
 }
@@ -156,8 +159,8 @@ const BRAND_LABELS = {
     natgeo: ['National Geographic', 'National Geographic Channel', 'National Geographic Partners', 'National Geographic Society',
              'National Geographic Wild', 'Nat Geo Wild', 'National Geographic Documentary Films', 'National Geographic Films'],
     disney: ['Walt Disney Pictures', 'Walt Disney Animation Studios', 'Walt Disney Productions', 'Walt Disney Feature Animation',
-             'Disney Television Animation', 'Disney Channel', 'Disney Junior', 'Disney XD', 'Disneynature', 'Walt Disney Television',
-             'Disney+', 'Walt Disney Studios Motion Pictures', 'Disney Branded Television', "Disney Channel Original Movie"]
+             'Disney Television Animation', 'Disney Channel', 'Disney Junior', 'Disney XD', 'Disneynature',
+             'Disney+', 'Disney Branded Television', 'Disney Channel Original Movie']
 };
 
 async function wikidataBrands() {
