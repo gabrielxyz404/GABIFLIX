@@ -146,6 +146,70 @@ async function save(name, metas) {
     return metas.length;
 }
 
+// ---------- Disney+: separar por marca (Disney, Pixar, Marvel, Star Wars, National Geographic) ----------
+// A marca de cada título vem do Wikidata (estúdio, canal ou franquia), cruzada pelo código do IMDb.
+const BRAND_ORDER = ['pixar', 'marvel', 'starwars', 'natgeo', 'disney']; // prioridade quando um título tem várias
+const BRAND_LABELS = {
+    pixar: ['Pixar', 'Pixar Animation Studios'],
+    marvel: ['Marvel Studios', 'Marvel Television', 'Marvel Animation', 'Marvel Entertainment', 'Marvel Cinematic Universe', 'Marvel Comics'],
+    starwars: ['Star Wars', 'Lucasfilm Animation'],
+    natgeo: ['National Geographic', 'National Geographic Channel', 'National Geographic Partners', 'National Geographic Society',
+             'National Geographic Wild', 'Nat Geo Wild', 'National Geographic Documentary Films', 'National Geographic Films'],
+    disney: ['Walt Disney Pictures', 'Walt Disney Animation Studios', 'Walt Disney Productions', 'Walt Disney Feature Animation',
+             'Disney Television Animation', 'Disney Channel', 'Disney Junior', 'Disney XD', 'Disneynature', 'Walt Disney Television',
+             'Disney+', 'Walt Disney Studios Motion Pictures', 'Disney Branded Television', "Disney Channel Original Movie"]
+};
+
+async function wikidataBrands() {
+    const values = [];
+    for (const [brand, labels] of Object.entries(BRAND_LABELS)) for (const l of labels) values.push(`("${brand}" "${l.replace(/"/g, '\\"')}"@en)`);
+    const q = `SELECT DISTINCT ?imdb ?brand WHERE {
+  VALUES (?brand ?lbl) { ${values.join(' ')} }
+  ?org rdfs:label ?lbl .
+  ?item (wdt:P272|wdt:P449|wdt:P750|wdt:P8345|wdt:P179|wdt:P1434|wdt:P144) ?org .
+  ?item wdt:P345 ?imdb .
+}`;
+    const r = await fetch('https://query.wikidata.org/sparql?format=json&query=' + encodeURIComponent(q), {
+        headers: { 'accept': 'application/sparql-results+json', 'user-agent': 'GabiFlixCatalogBuilder/1.0 (https://github.com/gabrielxyz404/GABIFLIX)' }
+    });
+    if (!r.ok) throw new Error('Wikidata HTTP ' + r.status);
+    const j = await r.json();
+    const map = new Map(); // imdb -> Set(brands)
+    for (const b of j.results.bindings) {
+        const id = b.imdb.value, brand = b.brand.value;
+        if (!map.has(id)) map.set(id, new Set());
+        map.get(id).add(brand);
+    }
+    return map;
+}
+
+async function disneyBrands(pk, info, ERRORS) {
+    // Catálogo maior do Disney+ (Brasil + Portugal), filmes e séries
+    const lists = { movie: [], series: [] };
+    for (const [objectType, type] of [['MOVIE', 'movie'], ['SHOW', 'series']]) {
+        const per = [];
+        for (const c of COUNTRIES) {
+            const codes = pk[c.country].disney;
+            if (!codes || !codes.length) continue;
+            try { per.push(await popular(c, objectType, codes, 1000, 'POPULAR')); }
+            catch (e) { ERRORS.push(`Erro no Disney+ completo ${type}/${c.country}: ${e.message}`); }
+        }
+        lists[type] = interleave(per);
+    }
+    let brands;
+    try { brands = await wikidataBrands(); }
+    catch (e) { ERRORS.push('Erro no Wikidata: ' + e.message); return; }
+    const out = {}; BRAND_ORDER.forEach(b => out[b] = []);
+    // intercala filmes e séries para cada aba ter os dois
+    for (const m of interleave([lists.movie, lists.series])) {
+        const set = brands.get(m.id);
+        if (!set) continue;
+        const brand = BRAND_ORDER.find(b => set.has(b));
+        if (brand) out[brand].push(m);
+    }
+    for (const b of BRAND_ORDER) info.counts[`disney-${b}`] = await save(`disney-${b}`, out[b].slice(0, 400));
+}
+
 async function main() {
     await mkdir('data', { recursive: true });
     const ERRORS = [];
@@ -218,6 +282,9 @@ async function main() {
     info.counts['cine-classicos'] = await save('cine-classicos', classicos.slice(0, 300));
     info.counts['cine-movie'] = await save('cine-movie', outros.slice(0, 300));
     info.counts['cine-series'] = await save('cine-series', pool.series.slice(0, 300));
+
+    // 4) Disney+ separado por marca
+    await disneyBrands(pk, info, ERRORS);
 
     await writeFile('data/info.json', JSON.stringify(info, null, 2));
     console.log('Pronto:', JSON.stringify(info.counts));
