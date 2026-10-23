@@ -21,6 +21,9 @@ const CINE_POOL = 1000;    // títulos populares analisados para a Cinemateca
 const STREAMING_TYPES = new Set(['FLATRATE', 'FREE', 'ADS', 'FLATRATE_AND_BUY']);
 
 // Como achar cada serviço na lista de pacotes do JustWatch de cada país
+// Serviços que só existem no Brasil: não buscar em Portugal
+const ONLY_BR = new Set(['globoplay', 'clarovideo']);
+
 const SERVICES = {
     netflix:    [/^netflix$/i],
     disney:     [/^disney\s*(\+|plus)$/i],
@@ -167,6 +170,7 @@ async function main() {
         for (const [objectType, type] of [['MOVIE', 'movie'], ['SHOW', 'series']]) {
             const lists = [];
             for (const c of COUNTRIES) {
+                if (ONLY_BR.has(svc) && c.country !== 'BR') continue;
                 const codes = pk[c.country][svc];
                 if (!codes.length) continue;
                 try { lists.push(await popular(c, objectType, codes, PER_SERVICE)); }
