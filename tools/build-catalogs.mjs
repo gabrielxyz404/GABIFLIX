@@ -13,7 +13,7 @@ import { writeFile, mkdir } from 'node:fs/promises';
 
 const API = 'https://apis.justwatch.com/graphql';
 const COUNTRIES = [
-    { country: 'BR', language: 'pt' }, // o país BR já devolve os nomes usados no Brasil
+    { country: 'BR', language: 'pt-BR' }, // nomes usados no Brasil
     { country: 'PT', language: 'pt' }
 ];
 const PER_SERVICE = 200;   // títulos por serviço, tipo e país (antes de juntar)
@@ -160,7 +160,7 @@ const BRAND_LABELS = {
              'National Geographic Wild', 'Nat Geo Wild', 'National Geographic Documentary Films', 'National Geographic Films'],
     disney: ['Walt Disney Pictures', 'Walt Disney Animation Studios', 'Walt Disney Productions', 'Walt Disney Feature Animation',
              'Disney Television Animation', 'Disney Channel', 'Disney Junior', 'Disney XD', 'Disneynature',
-             'Disney+', 'Disney Branded Television', 'Disney Channel Original Movie']
+             'Disney Branded Television', 'Disney Channel Original Movie']
 };
 
 async function sparql(q, tries = 4) {
@@ -233,6 +233,12 @@ const MCU_TIMELINE = [
     ['The Fantastic Four: First Steps', 2025]
 ];
 
+// IMDb dos títulos que o Wikidata nomeia de outro jeito
+const MCU_IMDB = {
+    'Iron Man': 'tt0371746', 'Avengers: Infinity War': 'tt4154756',
+    'Avengers: Endgame': 'tt4154796', 'Moon Knight': 'tt10234724'
+};
+
 const norm = t => String(t || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]/g, '');
 
 async function marvelTimeline(info, lists) {
@@ -253,7 +259,8 @@ async function marvelTimeline(info, lists) {
     const out = [], missing = [];
     MCU_TIMELINE.forEach(([title, year], i) => {
         const cands = rows.filter(b => b.en && norm(b.en.value) === norm(title));
-        const pick = cands.find(b => b.year && Math.abs(Number(b.year.value) - year) <= 1) || cands[0];
+        let pick = cands.find(b => b.year && Math.abs(Number(b.year.value) - year) <= 1) || cands[0];
+        if (!pick && MCU_IMDB[title]) pick = rows.find(b => b.imdb.value === MCU_IMDB[title]) || { imdb: { value: MCU_IMDB[title] }, en: { value: title } };
         if (!pick) { missing.push(title); return; }
         const id = pick.imdb.value;
         const base = onDisney.get(id);
