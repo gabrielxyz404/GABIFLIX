@@ -2,15 +2,16 @@
 // Substitui os catálogos padrão da tela inicial.
 (function () {
     // color: cor do nome no botão, inspirada na cor de cada serviço
+    // bg: degradê do fundo dentro do catálogo [início, fim]; null mantém o tema padrão
     var SERVICES = [
-        { id: 'netflix', cat: 'nfx', name: 'Netflix', color: '#e50914' },
-        { id: 'disney', cat: 'dnp', name: 'Disney+', color: '#3aa3ff' },
-        { id: 'prime', cat: 'amp', name: 'Prime Video', color: '#1ba8e0' },
-        { id: 'hbo', cat: 'hbm', name: 'HBO Max', color: '#a36bff' },
-        { id: 'appletv', cat: 'atp', name: 'Apple TV+', color: '#f5f5f7' },
-        { id: 'paramount', cat: 'pmp', name: 'Paramount+', color: '#2f7dff' },
-        { id: 'globoplay', cat: 'gop', name: 'Globoplay', color: '#ff4a6e' },
-        { id: 'clarovideo', cat: 'clv', name: 'Claro Video', color: '#ff2a2a' }
+        { id: 'netflix', bg: null, cat: 'nfx', name: 'Netflix', color: '#e50914' },
+        { id: 'disney', bg: ['#000000', '#0a1d52'], cat: 'dnp', name: 'Disney+', color: '#3aa3ff' },
+        { id: 'prime', bg: ['#000000', '#0b3b55'], cat: 'amp', name: 'Prime Video', color: '#1ba8e0' },
+        { id: 'hbo', bg: ['#000000', '#2c0b4f'], cat: 'hbm', name: 'HBO Max', color: '#a36bff' },
+        { id: 'appletv', bg: ['#000000', '#2d2d31'], cat: 'atp', name: 'Apple TV+', color: '#f5f5f7' },
+        { id: 'paramount', bg: ['#000000', '#0a1d52'], cat: 'pmp', name: 'Paramount+', color: '#2f7dff' },
+        { id: 'globoplay', bg: ['#0b2a12', '#4d3d05'], cat: 'gop', name: 'Globoplay', color: '#ff4a6e' },
+        { id: 'clarovideo', bg: ['#000000', '#4f2205'], cat: 'clv', name: 'Claro Video', color: '#ff2a2a' }
     ];
 
     var current = null; // serviço aberto, ou null para a grade
@@ -169,7 +170,8 @@
         loadCatalog(sec.type, sec.id).then(function (metas) {
             track.innerHTML = '';
             if (!metas.length) {
-                row.replaceChild(Object.assign(el('div', 'gf-row-msg', 'Nenhum título encontrado.')), track);
+                row.replaceChild(el('div', 'gf-row-msg', 'Nenhum título encontrado.'), track);
+                onFirst && onFirst(false);
                 return;
             }
             metas.slice(0, sec.grid ? 100 : 30).forEach(function (m) { track.appendChild(posterEl(m)); });
@@ -191,6 +193,7 @@
         root.innerHTML = '';
         var page = el('div', 'gf-svc');
         page.style.setProperty('--gf-brand', s.color);
+        page.style.setProperty('--gf-on-brand', s.id === 'appletv' ? '#000' : '#fff');
 
         var head = el('div', 'gf-svc-head');
         head.appendChild(backButton());
@@ -247,10 +250,26 @@
         return null;
     }
 
+    // Troca o fundo do app enquanto um catálogo está aberto
+    var themed = false;
+    function applyTheme(s) {
+        var st = document.documentElement.style;
+        if (s && s.bg) {
+            st.setProperty('--primary-background-color', s.bg[0]);
+            st.setProperty('--secondary-background-color', s.bg[1]);
+            themed = true;
+        } else if (themed) {
+            st.removeProperty('--primary-background-color');
+            st.removeProperty('--secondary-background-color');
+            themed = false;
+        }
+    }
+
     function render() {
         var root = document.getElementById('gf-home');
         if (!root) return;
         var s = current && find(current);
+        applyTheme(s);
         if (s) renderCatalog(root, s); else renderGrid(root);
         root.parentNode && (root.parentNode.scrollTop = 0);
     }
@@ -269,6 +288,7 @@
 
     function mount() {
         var content = document.querySelector('div[class^="board-content-"]:not([class*="container"])');
+        if (!document.getElementById('gf-home')) applyTheme(null);
         if (!content || document.getElementById('gf-home')) return;
         var root = el('div');
         root.id = 'gf-home';
