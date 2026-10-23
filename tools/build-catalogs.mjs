@@ -138,13 +138,14 @@ async function save(name, metas) {
 
 async function main() {
     await mkdir('data', { recursive: true });
-    const info = { updatedAt: new Date().toISOString(), countries: COUNTRIES.map(c => c.country), counts: {}, packages: {} };
+    const ERRORS = [];
+    const info = { errors: ERRORS, updatedAt: new Date().toISOString(), countries: COUNTRIES.map(c => c.country), counts: {}, packages: {} };
 
     // 1) Descobre os códigos de cada serviço em cada país
     const pk = {};
     for (const c of COUNTRIES) {
         const d = await gql(PACKAGES_Q, { country: c.country });
-        console.log(c.country, 'pacotes Claro:', JSON.stringify(d.packages.filter(p => /claro/i.test(p.clearName))));
+        info['claro' + c.country] = d.packages.filter(p => /claro|net\s*now/i.test(p.clearName)).map(p => p.shortName + ':' + p.clearName);
         pk[c.country] = {};
         for (const [svc, patterns] of Object.entries(SERVICES)) {
             const codes = d.packages.filter(p => patterns.some(re => re.test(p.clearName.trim()))).map(p => p.shortName);
@@ -162,7 +163,7 @@ async function main() {
                 const codes = pk[c.country][svc];
                 if (!codes.length) continue;
                 try { lists.push(await popular(c, objectType, codes, PER_SERVICE)); }
-                catch (e) { console.error(`Erro em ${svc}/${type}/${c.country}:`, e.message); }
+                catch (e) { console.error(`Erro em ${svc}/${type}/${c.country}:`, e.message); ERRORS.push(`Erro em ${svc}/${type}/${c.country}:` + ' ' + e.message); }
             }
             info.counts[`${svc}-${type}`] = await save(`${svc}-${type}`, interleave(lists).slice(0, 300));
         }
@@ -174,7 +175,7 @@ async function main() {
         const lists = [];
         for (const c of COUNTRIES) {
             try { lists.push(await popular(c, objectType, null, CINE_POOL, 'POPULAR')); }
-            catch (e) { console.error(`Erro no conjunto da Cinemateca ${type}/${c.country}:`, e.message); }
+            catch (e) { console.error(`Erro no conjunto da Cinemateca ${type}/${c.country}:`, e.message); ERRORS.push(`Erro no conjunto da Cinemateca ${type}/${c.country}:` + ' ' + e.message); }
         }
         pool[type] = interleave(lists).filter(m => !m._streaming);
     }
@@ -182,14 +183,14 @@ async function main() {
     const classLists = [];
     for (const c of COUNTRIES) {
         try { classLists.push(await popular(c, 'MOVIE', null, CINE_POOL, 'POPULAR', { releaseYear: { max: 1989 } })); }
-        catch (e) { console.error(`Erro nos clássicos ${c.country}:`, e.message); }
+        catch (e) { console.error(`Erro nos clássicos ${c.country}:`, e.message); ERRORS.push(`Erro nos clássicos ${c.country}:` + ' ' + e.message); }
     }
     // Séries: amplia a busca, já que quase todas as séries populares estão em algum streaming
     if (pool.series.length < 60) {
         const more = [];
         for (const c of COUNTRIES) {
             try { more.push(await popular(c, 'SHOW', null, 3000, 'POPULAR')); }
-            catch (e) { console.error(`Erro nas séries ${c.country}:`, e.message); }
+            catch (e) { console.error(`Erro nas séries ${c.country}:`, e.message); ERRORS.push(`Erro nas séries ${c.country}:` + ' ' + e.message); }
         }
         pool.series = interleave([pool.series, interleave(more).filter(m => !m._streaming)]);
     }
