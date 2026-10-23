@@ -32,8 +32,15 @@ const SERVICES = {
     clarovideo: [/^claro\s*video$/i, /^claro\s*tv\s*\+?$/i, /^claro\s*tv\s*plus$/i, /^claro\b/i]
 };
 
-async function gql(query, variables, tries = 4) {
+const sleep = ms => new Promise(res => setTimeout(res, ms));
+let lastCall = 0;
+
+async function gql(query, variables, tries = 6) {
     for (let i = 1; ; i++) {
+        // espaça as buscas para não ser bloqueado
+        const wait = lastCall + 900 - Date.now();
+        if (wait > 0) await sleep(wait);
+        lastCall = Date.now();
         try {
             const r = await fetch(API, {
                 method: 'POST',
@@ -45,7 +52,7 @@ async function gql(query, variables, tries = 4) {
             return j.data;
         } catch (e) {
             if (i >= tries) throw e;
-            await new Promise(res => setTimeout(res, 1500 * i));
+            await sleep(8000 * i);
         }
     }
 }
@@ -189,7 +196,7 @@ async function main() {
     if (pool.series.length < 60) {
         const more = [];
         for (const c of COUNTRIES) {
-            try { more.push(await popular(c, 'SHOW', null, 3000, 'POPULAR')); }
+            try { more.push(await popular(c, 'SHOW', null, 1500, 'POPULAR')); }
             catch (e) { console.error(`Erro nas séries ${c.country}:`, e.message); ERRORS.push(`Erro nas séries ${c.country}:` + ' ' + e.message); }
         }
         pool.series = interleave([pool.series, interleave(more).filter(m => !m._streaming)]);
