@@ -3,14 +3,14 @@
 (function () {
     // color: cor do nome no botão, inspirada na cor de cada serviço
     var SERVICES = [
-        { id: 'netflix', name: 'Netflix', color: '#e50914' },
-        { id: 'disney', name: 'Disney+', color: '#3aa3ff' },
-        { id: 'prime', name: 'Prime Video', color: '#1ba8e0' },
-        { id: 'hbo', name: 'HBO Max', color: '#a36bff' },
-        { id: 'appletv', name: 'Apple TV+', color: '#f5f5f7' },
-        { id: 'paramount', name: 'Paramount+', color: '#2f7dff' },
-        { id: 'globoplay', name: 'Globoplay', color: '#ff4a6e' },
-        { id: 'clarovideo', name: 'Claro Video', color: '#ff2a2a' }
+        { id: 'netflix', cat: 'nfx', name: 'Netflix', color: '#e50914' },
+        { id: 'disney', cat: 'dnp', name: 'Disney+', color: '#3aa3ff' },
+        { id: 'prime', cat: 'amp', name: 'Prime Video', color: '#1ba8e0' },
+        { id: 'hbo', cat: 'hbm', name: 'HBO Max', color: '#a36bff' },
+        { id: 'appletv', cat: 'atp', name: 'Apple TV+', color: '#f5f5f7' },
+        { id: 'paramount', cat: 'pmp', name: 'Paramount+', color: '#2f7dff' },
+        { id: 'globoplay', cat: 'gop', name: 'Globoplay', color: '#ff4a6e' },
+        { id: 'clarovideo', cat: 'clv', name: 'Claro Video', color: '#ff2a2a' }
     ];
 
     var current = null; // serviço aberto, ou null para a grade
@@ -60,22 +60,6 @@
         clarovideo: ['Início', 'Ao vivo', 'Filmes', 'Séries', 'Infantil', 'Minha lista']
     };
 
-    // Fileiras que aparecem em cada aba
-    function rowsFor(tab) {
-        switch (tab) {
-            case 'Início': return ['Em alta', 'Lançamentos', 'Continue assistindo', 'Recomendados para você'];
-            case 'Séries': return ['Séries em alta', 'Novas temporadas', 'Séries premiadas'];
-            case 'Filmes': return ['Filmes em alta', 'Lançamentos', 'Ação e aventura', 'Comédia'];
-            case 'Bombando': return ['Top 10 de hoje', 'Mais assistidos da semana'];
-            case 'Originais': return ['Originais em destaque', 'Novos originais'];
-            case 'Esportes': return ['Ao vivo agora', 'Próximos jogos', 'Melhores momentos'];
-            case 'Infantil': return ['Para os pequenos', 'Animações', 'Família'];
-            case 'Novelas': return ['Novelas no ar', 'Clássicas', 'Para maratonar'];
-            case 'Ao vivo': return ['Canais ao vivo', 'Programação de hoje'];
-            default: return [];
-        }
-    }
-
     var currentTab = 'Início';
 
     function backButton() {
@@ -85,6 +69,122 @@
         back.innerHTML = '<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
         back.addEventListener('click', function () { history.back(); });
         return back;
+    }
+
+    // ---------- Dados dos catálogos ----------
+    // Fonte: addon aberto "Streaming Catalogs" (github.com/rleroi/Stremio-Streaming-Catalogs-Addon)
+    var CATALOG_URL = 'https://7a82163c306e-stremio-netflix-catalog-addon.baby-beamup.club';
+    var cache = {};
+
+    function loadCatalog(type, id) {
+        var key = type + '/' + id;
+        if (!cache[key]) {
+            cache[key] = fetch(CATALOG_URL + '/catalog/' + type + '/' + encodeURIComponent(id) + '.json')
+                .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+                .then(function (d) { return (d && d.metas) || []; })
+                .catch(function (e) { delete cache[key]; throw e; });
+        }
+        return cache[key];
+    }
+
+    // O que cada aba mostra: lista de fileiras { title, type, id } ou { title, soon: true }
+    function sectionsFor(s, tab) {
+        var c = s.cat;
+        switch (tab) {
+            case 'Início': return [
+                { title: 'Filmes em alta', type: 'movie', id: c },
+                { title: 'Séries em alta', type: 'series', id: c }
+            ];
+            case 'Filmes': return [{ title: 'Todos os filmes', type: 'movie', id: c, grid: true }];
+            case 'Séries': return [{ title: 'Todas as séries', type: 'series', id: c, grid: true }];
+            case 'Bombando': return [
+                { title: 'Top 10 filmes no Brasil', type: 'movie', id: 'netflix-top10-BR' },
+                { title: 'Top 10 séries no Brasil', type: 'series', id: 'netflix-top10-BR' }
+            ];
+            default: return [{ title: tab, soon: true }];
+        }
+    }
+
+    function openTitle(meta) {
+        if (!meta || !meta.id || !meta.type) return;
+        location.hash = '#/detail/' + encodeURIComponent(meta.type) + '/' + encodeURIComponent(meta.id);
+    }
+
+    function posterEl(meta, wide) {
+        var b = el('button', 'gf-poster is-filled');
+        b.type = 'button';
+        b.setAttribute('aria-label', meta.name || 'Título');
+        var img = el('img');
+        img.alt = '';
+        img.loading = 'lazy';
+        img.decoding = 'async';
+        img.onerror = function () { img.remove(); b.classList.add('no-img'); };
+        if (meta.poster) img.src = meta.poster; else b.classList.add('no-img');
+        b.appendChild(img);
+        b.appendChild(el('span', 'gf-poster-name', meta.name || ''));
+        b.addEventListener('click', function () { openTitle(meta); });
+        return b;
+    }
+
+    function fillHero(hero, meta, s) {
+        hero.innerHTML = '';
+        if (meta) {
+            var bg = el('img', 'gf-hero-bg');
+            bg.alt = '';
+            bg.onerror = function () { bg.remove(); };
+            bg.src = meta.background || ('https://images.metahub.space/background/medium/' + encodeURIComponent(meta.id) + '/img');
+            hero.appendChild(bg);
+        }
+        var inner = el('div', 'gf-hero-inner');
+        inner.appendChild(el('span', 'gf-hero-tag', 'Em destaque'));
+        inner.appendChild(el('div', 'gf-hero-title', meta ? meta.name : (meta === false ? 'Destaque indisponível' : 'Carregando…')));
+        if (meta && meta.releaseInfo) inner.appendChild(el('div', 'gf-hero-text', meta.releaseInfo));
+        var actions = el('div', 'gf-hero-actions');
+        var play = el('button', 'gf-hero-btn is-primary', '▶ Assistir');
+        var info = el('button', 'gf-hero-btn', 'Mais informações');
+        play.type = info.type = 'button';
+        if (meta) {
+            play.addEventListener('click', function () { openTitle(meta); });
+            info.addEventListener('click', function () { openTitle(meta); });
+        } else { play.disabled = info.disabled = true; }
+        actions.appendChild(play);
+        actions.appendChild(info);
+        inner.appendChild(actions);
+        hero.appendChild(inner);
+    }
+
+    function renderSection(sec, s, onFirst) {
+        var row = el('section', 'gf-row');
+        row.appendChild(el('h2', 'gf-row-title', sec.title));
+        var track = el('div', sec.grid ? 'gf-poster-grid' : 'gf-row-track');
+        row.appendChild(track);
+        if (sec.soon) {
+            var soon = el('div', 'gf-empty');
+            soon.appendChild(el('div', 'gf-empty-title', 'Em breve'));
+            soon.appendChild(el('div', 'gf-empty-text', 'A seção ' + sec.title + ' de ' + s.name + ' ainda não tem títulos.'));
+            row.replaceChild(soon, track);
+            return row;
+        }
+        for (var i = 0; i < (sec.grid ? 12 : 8); i++) track.appendChild(el('div', 'gf-poster'));
+        loadCatalog(sec.type, sec.id).then(function (metas) {
+            track.innerHTML = '';
+            if (!metas.length) {
+                row.replaceChild(Object.assign(el('div', 'gf-row-msg', 'Nenhum título encontrado.')), track);
+                return;
+            }
+            metas.slice(0, sec.grid ? 100 : 30).forEach(function (m) { track.appendChild(posterEl(m)); });
+            onFirst && onFirst(metas[0]);
+        }).catch(function () {
+            var msg = el('div', 'gf-row-msg');
+            msg.appendChild(document.createTextNode('Não foi possível carregar. '));
+            var retry = el('button', 'gf-link', 'Tentar de novo');
+            retry.type = 'button';
+            retry.addEventListener('click', function () { row.replaceWith(renderSection(sec, s, onFirst)); });
+            msg.appendChild(retry);
+            row.replaceChild(msg, track);
+            onFirst && onFirst(false);
+        });
+        return row;
     }
 
     function renderCatalog(root, s) {
@@ -109,6 +209,7 @@
             b.addEventListener('click', function () {
                 if (t === currentTab) return;
                 currentTab = t;
+                try { history.replaceState(Object.assign({}, history.state, { gfService: s.id, gfTab: t }), '', location.href); } catch (e) {}
                 renderCatalog(root, s);
             });
             bar.appendChild(b);
@@ -122,26 +223,19 @@
             empty.appendChild(el('div', 'gf-empty-text', 'Os títulos que você salvar em ' + s.name + ' vão aparecer aqui.'));
             body.appendChild(empty);
         } else {
-            var hero = el('div', 'gf-hero');
-            hero.appendChild(el('span', 'gf-hero-tag', currentTab === 'Início' ? 'Em destaque' : currentTab));
-            hero.appendChild(el('div', 'gf-hero-title', 'Nenhum título ainda'));
-            hero.appendChild(el('div', 'gf-hero-text', 'O destaque de ' + s.name + ' vai aparecer aqui.'));
-            var actions = el('div', 'gf-hero-actions');
-            var play = el('span', 'gf-hero-btn is-primary', '▶ Assistir');
-            var info = el('span', 'gf-hero-btn', 'Mais informações');
-            actions.appendChild(play);
-            actions.appendChild(info);
-            hero.appendChild(actions);
-            body.appendChild(hero);
-
-            var wide = currentTab === 'Ao vivo';
-            rowsFor(currentTab).forEach(function (title) {
-                var row = el('section', 'gf-row');
-                row.appendChild(el('h2', 'gf-row-title', title));
-                var track = el('div', 'gf-row-track' + (wide ? ' is-wide' : ''));
-                for (var i = 0; i < 8; i++) track.appendChild(el('div', 'gf-poster'));
-                row.appendChild(track);
-                body.appendChild(row);
+            var hero = null;
+            if (currentTab === 'Início') {
+                hero = el('div', 'gf-hero');
+                fillHero(hero, null, s);
+                body.appendChild(hero);
+            }
+            var heroDone = false;
+            sectionsFor(s, currentTab).forEach(function (sec) {
+                body.appendChild(renderSection(sec, s, hero && function (m) {
+                    if (heroDone) return;
+                    if (m) heroDone = true;
+                    fillHero(hero, m, s);
+                }));
             });
         }
         page.appendChild(body);
@@ -170,7 +264,7 @@
 
     window.addEventListener('popstate', function (e) {
         var id = e.state && e.state.gfService;
-        if (id !== current) { current = id || null; render(); }
+        if (id !== current) { current = id || null; currentTab = (e.state && e.state.gfTab) || 'Início'; render(); }
     });
 
     function mount() {
@@ -180,6 +274,7 @@
         root.id = 'gf-home';
         content.insertBefore(root, content.firstChild);
         current = (history.state && history.state.gfService) || null;
+        currentTab = (history.state && history.state.gfTab) || 'Início';
         render();
     }
 
