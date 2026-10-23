@@ -55,7 +55,7 @@
     // Abas de cada serviço (categorias típicas de cada app)
     var TABS = {
         netflix:    ['Início', 'Séries', 'Filmes', 'Bombando', 'Minha lista'],
-        disney:     ['Início', 'Filmes', 'Séries', 'Originais', 'Minha lista'],
+        disney:     ['Início', 'Filmes', 'Séries', 'Disney', 'Pixar', 'Marvel', 'Star Wars', 'National Geographic'],
         prime:      ['Início', 'Filmes', 'Séries', 'Esportes', 'Minha lista'],
         hbo:        ['Início', 'Séries', 'Filmes', 'Infantil', 'Minha lista'],
         appletv:    ['Início', 'Originais', 'Filmes', 'Séries', 'Minha lista'],
@@ -123,6 +123,20 @@
                 case 'Séries': return [{ title: 'Séries fora dos streamings', file: 'cine-series', grid: true }];
                 default: return [{ title: tab, soon: true }];
             }
+        }
+        // Disney+: abas por marca (data/disney-<marca>.json)
+        var DISNEY_BRANDS = [
+            ['Disney', 'disney'], ['Pixar', 'pixar'], ['Marvel', 'marvel'],
+            ['Star Wars', 'starwars'], ['National Geographic', 'natgeo']
+        ];
+        if (s.id === 'disney') {
+            for (var i = 0; i < DISNEY_BRANDS.length; i++) {
+                if (tab === DISNEY_BRANDS[i][0]) return [{ title: 'Tudo de ' + tab, file: 'disney-' + DISNEY_BRANDS[i][1], grid: true }];
+            }
+            if (tab === 'Início') return [
+                { title: 'Filmes em alta', file: 'disney-movie', type: 'movie', id: s.cat },
+                { title: 'Séries em alta', file: 'disney-series', type: 'series', id: s.cat }
+            ].concat(DISNEY_BRANDS.map(function (b) { return { title: b[0], file: 'disney-' + b[1] }; }));
         }
         var c = s.cat;
         switch (tab) {
