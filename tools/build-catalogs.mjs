@@ -29,7 +29,7 @@ const SERVICES = {
     appletv:    [/^apple tv\s*(\+|plus)$/i, /^apple tv$/i],
     paramount:  [/^paramount\s*(\+|plus)$/i],
     globoplay:  [/^globoplay$/i],
-    clarovideo: [/^claro\s*video$/i]
+    clarovideo: [/^claro\s*video$/i, /^claro\s*tv\s*\+?$/i, /^claro\s*tv\s*plus$/i, /^claro\b/i]
 };
 
 async function gql(query, variables, tries = 4) {
@@ -99,13 +99,13 @@ function toMeta(node) {
     };
 }
 
-async function popular({ country, language }, objectType, packages, total, sortBy = 'TRENDING') {
+async function popular({ country, language }, objectType, packages, total, sortBy = 'TRENDING', extra = {}) {
     const out = [];
     let after = null;
     while (out.length < total) {
         const d = await gql(POPULAR_Q, {
             country, language, first: Math.min(100, total - out.length), after, sortBy,
-            filter: { objectTypes: [objectType], packages: packages || [], excludeIrrelevantTitles: false }
+            filter: Object.assign({ objectTypes: [objectType], packages: packages || [], excludeIrrelevantTitles: false }, extra)
         });
         const p = d.popularTitles;
         for (const e of p.edges) { const m = toMeta(e.node); if (m) out.push(m); }
@@ -144,6 +144,7 @@ async function main() {
     const pk = {};
     for (const c of COUNTRIES) {
         const d = await gql(PACKAGES_Q, { country: c.country });
+        console.log(c.country, 'pacotes Claro:', JSON.stringify(d.packages.filter(p => /claro/i.test(p.clearName))));
         pk[c.country] = {};
         for (const [svc, patterns] of Object.entries(SERVICES)) {
             const codes = d.packages.filter(p => patterns.some(re => re.test(p.clearName.trim()))).map(p => p.shortName);
@@ -177,11 +178,26 @@ async function main() {
         }
         pool[type] = interleave(lists).filter(m => !m._streaming);
     }
+    // Clássicos: busca dedicada a filmes até 1989
+    const classLists = [];
+    for (const c of COUNTRIES) {
+        try { classLists.push(await popular(c, 'MOVIE', null, CINE_POOL, 'POPULAR', { releaseYear: { max: 1989 } })); }
+        catch (e) { console.error(`Erro nos clássicos ${c.country}:`, e.message); }
+    }
+    // Séries: amplia a busca, já que quase todas as séries populares estão em algum streaming
+    if (pool.series.length < 60) {
+        const more = [];
+        for (const c of COUNTRIES) {
+            try { more.push(await popular(c, 'SHOW', null, 3000, 'POPULAR')); }
+            catch (e) { console.error(`Erro nas séries ${c.country}:`, e.message); }
+        }
+        pool.series = interleave([pool.series, interleave(more).filter(m => !m._streaming)]);
+    }
     const year = new Date().getFullYear();
     const recentLimit = Date.now() - 1000 * 60 * 60 * 24 * 240; // ~8 meses
     const isRecent = m => m._cinema || (m._date ? Date.parse(m._date) >= recentLimit : (m._year || 0) >= year);
     const cinemas = pool.movie.filter(isRecent);
-    const classicos = pool.movie.filter(m => m._year && m._year < 1990);
+    const classicos = interleave([pool.movie.filter(m => m._year && m._year < 1990), interleave(classLists).filter(m => !m._streaming)]);
     const usados = new Set([...cinemas, ...classicos].map(m => m.id));
     const outros = pool.movie.filter(m => !usados.has(m.id));
     info.counts['cine-cinemas'] = await save('cine-cinemas', cinemas.slice(0, 200));
