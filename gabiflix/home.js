@@ -11,7 +11,9 @@
         { id: 'appletv', bg: ['#000000', '#2d2d31'], cat: 'atp', name: 'Apple TV+', color: '#f5f5f7' },
         { id: 'paramount', bg: ['#000000', '#0a1d52'], cat: 'pmp', name: 'Paramount+', color: '#2f7dff' },
         { id: 'globoplay', bg: ['#0b2a12', '#4d3d05'], cat: 'gop', name: 'Globoplay', color: '#c8d23a', grad: ['#f5c518', '#3ecf6b'] },
-        { id: 'clarovideo', bg: ['#000000', '#4f2205'], cat: 'clv', name: 'Claro Video', color: '#ff2a2a' }
+        { id: 'clarovideo', bg: ['#000000', '#4f2205'], cat: 'clv', name: 'Claro Video', color: '#ff2a2a' },
+        // Filmes e séries fora dos streamings: cinema, lançamentos e clássicos
+        { id: 'cinemateca', bg: ['#0b0906', '#3b3020'], name: 'Cinemateca', color: '#e9c46a', wide: true, hint: 'Cinema, clássicos e o que não está nos streamings' }
     ];
 
     var current = null; // serviço aberto, ou null para a grade
@@ -29,7 +31,7 @@
         root.appendChild(el('h1', 'gf-title', 'Escolha um serviço'));
         var grid = el('div', 'gf-grid');
         SERVICES.forEach(function (s) {
-            var b = el('button', 'gf-card');
+            var b = el('button', 'gf-card' + (s.wide ? ' is-wide' : ''));
             b.type = 'button';
             b.setAttribute('data-service', s.id);
             b.style.setProperty('--gf-brand', s.color);
@@ -43,7 +45,7 @@
             logo.src = 'gabiflix/logos/' + s.id + '.png?v=' + LOGO_VERSION;
             b.appendChild(logo);
             b.appendChild(el('span', 'gf-card-name' + (s.grad ? ' gf-grad-text' : ''), s.name));
-            b.appendChild(el('span', 'gf-card-hint', 'Ver catálogo'));
+            b.appendChild(el('span', 'gf-card-hint', s.hint || 'Ver catálogo'));
             b.addEventListener('click', function () { open(s.id, true); });
             grid.appendChild(b);
         });
@@ -59,7 +61,8 @@
         appletv:    ['Início', 'Originais', 'Filmes', 'Séries', 'Minha lista'],
         paramount:  ['Início', 'Ao vivo', 'Filmes', 'Séries', 'Minha lista'],
         globoplay:  ['Início', 'Novelas', 'Séries', 'Filmes', 'Ao vivo', 'Minha lista'],
-        clarovideo: ['Início', 'Ao vivo', 'Filmes', 'Séries', 'Infantil', 'Minha lista']
+        clarovideo: ['Início', 'Ao vivo', 'Filmes', 'Séries', 'Infantil', 'Minha lista'],
+        cinemateca: ['Início', 'Nos cinemas', 'Clássicos', 'Filmes', 'Séries', 'Minha lista']
     };
 
     var currentTab = 'Início';
@@ -74,31 +77,61 @@
     }
 
     // ---------- Dados dos catálogos ----------
-    // Fonte: addon aberto "Streaming Catalogs" (github.com/rleroi/Stremio-Streaming-Catalogs-Addon)
+    // Principal: data/*.json, gerado todo dia pelo GitHub (tools/build-catalogs.mjs, Brasil + Portugal).
+    // Reserva: addon aberto "Streaming Catalogs" (github.com/rleroi/Stremio-Streaming-Catalogs-Addon).
     var CATALOG_URL = 'https://7a82163c306e-stremio-netflix-catalog-addon.baby-beamup.club';
+    var DATA_VERSION = Math.floor(Date.now() / 3600000); // renova a cada hora
     var cache = {};
 
-    function loadCatalog(type, id) {
-        var key = type + '/' + id;
+    function getJSON(url) {
+        return fetch(url).then(function (r) {
+            if (!r.ok) throw new Error('HTTP ' + r.status);
+            return r.json();
+        }).then(function (d) { return (d && d.metas) || []; });
+    }
+
+    // sec: { file } para dados próprios e/ou { type, id } para o addon
+    function loadCatalog(sec) {
+        var key = (sec.file || '') + '|' + (sec.type || '') + '/' + (sec.id || '');
         if (!cache[key]) {
-            cache[key] = fetch(CATALOG_URL + '/catalog/' + type + '/' + encodeURIComponent(id) + '.json')
-                .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
-                .then(function (d) { return (d && d.metas) || []; })
-                .catch(function (e) { delete cache[key]; throw e; });
+            var addon = function () {
+                if (!sec.id) return [];
+                return getJSON(CATALOG_URL + '/catalog/' + sec.type + '/' + encodeURIComponent(sec.id) + '.json');
+            };
+            var p = sec.file
+                ? getJSON('data/' + sec.file + '.json?v=' + DATA_VERSION)
+                    .then(function (m) { return m.length ? m : addon(); }, addon)
+                : addon();
+            cache[key] = p.catch(function (e) { delete cache[key]; throw e; });
         }
         return cache[key];
     }
 
-    // O que cada aba mostra: lista de fileiras { title, type, id } ou { title, soon: true }
+    // O que cada aba mostra: lista de fileiras
     function sectionsFor(s, tab) {
+        if (s.id === 'cinemateca') {
+            switch (tab) {
+                case 'Início': return [
+                    { title: 'Nos cinemas e lançamentos', file: 'cine-cinemas' },
+                    { title: 'Clássicos', file: 'cine-classicos' },
+                    { title: 'Filmes fora dos streamings', file: 'cine-movie' },
+                    { title: 'Séries fora dos streamings', file: 'cine-series' }
+                ];
+                case 'Nos cinemas': return [{ title: 'Nos cinemas e lançamentos', file: 'cine-cinemas', grid: true }];
+                case 'Clássicos': return [{ title: 'Clássicos', file: 'cine-classicos', grid: true }];
+                case 'Filmes': return [{ title: 'Filmes fora dos streamings', file: 'cine-movie', grid: true }];
+                case 'Séries': return [{ title: 'Séries fora dos streamings', file: 'cine-series', grid: true }];
+                default: return [{ title: tab, soon: true }];
+            }
+        }
         var c = s.cat;
         switch (tab) {
             case 'Início': return [
-                { title: 'Filmes em alta', type: 'movie', id: c },
-                { title: 'Séries em alta', type: 'series', id: c }
+                { title: 'Filmes em alta', file: s.id + '-movie', type: 'movie', id: c },
+                { title: 'Séries em alta', file: s.id + '-series', type: 'series', id: c }
             ];
-            case 'Filmes': return [{ title: 'Todos os filmes', type: 'movie', id: c, grid: true }];
-            case 'Séries': return [{ title: 'Todas as séries', type: 'series', id: c, grid: true }];
+            case 'Filmes': return [{ title: 'Todos os filmes', file: s.id + '-movie', type: 'movie', id: c, grid: true }];
+            case 'Séries': return [{ title: 'Todas as séries', file: s.id + '-series', type: 'series', id: c, grid: true }];
             case 'Bombando': return [
                 { title: 'Top 10 filmes no Brasil', type: 'movie', id: 'netflix-top10-BR' },
                 { title: 'Top 10 séries no Brasil', type: 'series', id: 'netflix-top10-BR' }
@@ -168,14 +201,14 @@
             return row;
         }
         for (var i = 0; i < (sec.grid ? 12 : 8); i++) track.appendChild(el('div', 'gf-poster'));
-        loadCatalog(sec.type, sec.id).then(function (metas) {
+        loadCatalog(sec).then(function (metas) {
             track.innerHTML = '';
             if (!metas.length) {
                 row.replaceChild(el('div', 'gf-row-msg', 'Nenhum título encontrado.'), track);
                 onFirst && onFirst(false);
                 return;
             }
-            metas.slice(0, sec.grid ? 100 : 30).forEach(function (m) { track.appendChild(posterEl(m)); });
+            metas.slice(0, sec.grid ? 300 : 30).forEach(function (m) { track.appendChild(posterEl(m)); });
             onFirst && onFirst(metas[0]);
         }).catch(function () {
             var msg = el('div', 'gf-row-msg');
@@ -194,7 +227,7 @@
         root.innerHTML = '';
         var page = el('div', 'gf-svc');
         page.style.setProperty('--gf-brand', s.color);
-        page.style.setProperty('--gf-on-brand', (s.id === 'appletv' || s.id === 'globoplay') ? '#000' : '#fff');
+        page.style.setProperty('--gf-on-brand', (s.id === 'appletv' || s.id === 'globoplay' || s.id === 'cinemateca') ? '#000' : '#fff');
         if (s.grad) page.style.setProperty('--gf-grad', 'linear-gradient(90deg, ' + s.grad.join(', ') + ')');
 
         var head = el('div', 'gf-svc-head');

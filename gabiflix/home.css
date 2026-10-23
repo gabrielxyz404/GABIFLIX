@@ -351,3 +351,6 @@ div[class^="board-content-"]:not([class*="container"]) > :not(#gf-home) { displa
     filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.6));
 }
 #gf-home .gf-tab.is-active::after, #gf-home .gf-hero-tag { background: var(--gf-grad, var(--gf-brand)); }
+
+/* Botão largo (Cinemateca) ocupa a linha inteira */
+#gf-home .gf-card.is-wide { grid-column: 1 / -1; aspect-ratio: auto; min-height: 7.5rem; }
