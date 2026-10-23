@@ -1,15 +1,16 @@
 // GabiFlix: tela inicial com botões de serviços de streaming.
 // Substitui os catálogos padrão da tela inicial.
 (function () {
+    // color: cor do nome no botão, inspirada na cor de cada serviço
     var SERVICES = [
-        { id: 'netflix', name: 'Netflix' },
-        { id: 'disney', name: 'Disney+' },
-        { id: 'prime', name: 'Prime Video' },
-        { id: 'hbo', name: 'HBO Max' },
-        { id: 'appletv', name: 'Apple TV+' },
-        { id: 'paramount', name: 'Paramount+' },
-        { id: 'globoplay', name: 'Globoplay' },
-        { id: 'clarovideo', name: 'Claro Video' }
+        { id: 'netflix', name: 'Netflix', color: '#e50914' },
+        { id: 'disney', name: 'Disney+', color: '#3aa3ff' },
+        { id: 'prime', name: 'Prime Video', color: '#1ba8e0' },
+        { id: 'hbo', name: 'HBO Max', color: '#a36bff' },
+        { id: 'appletv', name: 'Apple TV+', color: '#f5f5f7' },
+        { id: 'paramount', name: 'Paramount+', color: '#2f7dff' },
+        { id: 'globoplay', name: 'Globoplay', color: '#ff4a6e' },
+        { id: 'clarovideo', name: 'Claro Video', color: '#ff2a2a' }
     ];
 
     var current = null; // serviço aberto, ou null para a grade
@@ -30,6 +31,7 @@
             var b = el('button', 'gf-card');
             b.type = 'button';
             b.setAttribute('data-service', s.id);
+            b.style.setProperty('--gf-brand', s.color);
             // Logo opcional: coloque gabiflix/logos/<id>.png no repositório.
             var logo = el('img', 'gf-card-logo');
             logo.alt = '';
