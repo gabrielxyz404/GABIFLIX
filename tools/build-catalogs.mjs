@@ -13,7 +13,7 @@ import { writeFile, mkdir } from 'node:fs/promises';
 
 const API = 'https://apis.justwatch.com/graphql';
 const COUNTRIES = [
-    { country: 'BR', language: 'br' }, // 'br' = português do Brasil no JustWatch
+    { country: 'BR', language: 'pt' }, // o país BR já devolve os nomes usados no Brasil
     { country: 'PT', language: 'pt' }
 ];
 const PER_SERVICE = 200;   // títulos por serviço, tipo e país (antes de juntar)
@@ -178,7 +178,7 @@ async function wikidataBrands() {
         headers: { 'accept': 'application/sparql-results+json', 'user-agent': 'GabiFlixCatalogBuilder/1.0 (https://github.com/gabrielxyz404/GABIFLIX)' }
     });
     if (!r.ok) throw new Error('Wikidata HTTP ' + r.status);
-    const j = await r.json();
+    const j = JSON.parse((await r.text()).replace(/[\u0000-\u001f]+/g, ' '));
     const map = new Map(); // imdb -> Set(brands)
     for (const b of j.results.bindings) {
         const id = b.imdb.value, brand = b.brand.value;
@@ -186,6 +186,73 @@ async function wikidataBrands() {
         map.get(id).add(brand);
     }
     return map;
+}
+
+// ---------- Marvel: ordem cronológica (acontecimentos da história do MCU) ----------
+// [título em inglês no Wikidata, ano de lançamento]
+const MCU_TIMELINE = [
+    ['Captain America: The First Avenger', 2011], ['Agent Carter', 2015], ['Captain Marvel', 2019],
+    ['Iron Man', 2008], ['Iron Man 2', 2010], ['The Incredible Hulk', 2008], ['Thor', 2011],
+    ['The Avengers', 2012], ['Thor: The Dark World', 2013], ['Iron Man 3', 2013],
+    ['Captain America: The Winter Soldier', 2014], ['Guardians of the Galaxy', 2014],
+    ['Guardians of the Galaxy Vol. 2', 2017], ['Avengers: Age of Ultron', 2015], ['Ant-Man', 2015],
+    ['Captain America: Civil War', 2016], ['Black Widow', 2021], ['Black Panther', 2018],
+    ['Spider-Man: Homecoming', 2017], ['Doctor Strange', 2016], ['Thor: Ragnarok', 2017],
+    ['Ant-Man and the Wasp', 2018], ['Avengers: Infinity War', 2018], ['Avengers: Endgame', 2019],
+    ['Loki', 2021], ['WandaVision', 2021], ['The Falcon and the Winter Soldier', 2021],
+    ['Shang-Chi and the Legend of the Ten Rings', 2021], ['Eternals', 2021],
+    ['Spider-Man: Far From Home', 2019], ['Spider-Man: No Way Home', 2021],
+    ['Doctor Strange in the Multiverse of Madness', 2022], ['Hawkeye', 2021], ['Moon Knight', 2022],
+    ['Black Panther: Wakanda Forever', 2022], ['Echo', 2024], ['She-Hulk: Attorney at Law', 2022],
+    ['Ms. Marvel', 2022], ['Thor: Love and Thunder', 2022], ['Werewolf by Night', 2022],
+    ['The Guardians of the Galaxy Holiday Special', 2022], ['Ant-Man and the Wasp: Quantumania', 2023],
+    ['Guardians of the Galaxy Vol. 3', 2023], ['Secret Invasion', 2023], ['The Marvels', 2023],
+    ['Deadpool & Wolverine', 2024], ['Agatha All Along', 2024], ['Daredevil: Born Again', 2025],
+    ['Captain America: Brave New World', 2025], ['Thunderbolts*', 2025], ['Ironheart', 2025],
+    ['The Fantastic Four: First Steps', 2025]
+];
+
+const norm = t => String(t || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]/g, '');
+
+async function marvelTimeline(info, lists) {
+    const q = `SELECT DISTINCT ?item ?imdb ?en ?pt ?ptbr ?year ?isShow WHERE {
+  VALUES ?mcu { wd:Q642878 }
+  { ?item wdt:P1434 ?mcu } UNION { ?item wdt:P8345 ?mcu } UNION { ?item wdt:P179 ?mcu }
+  ?item wdt:P345 ?imdb .
+  OPTIONAL { ?item rdfs:label ?en FILTER(LANG(?en) = "en") }
+  OPTIONAL { ?item rdfs:label ?pt FILTER(LANG(?pt) = "pt") }
+  OPTIONAL { ?item rdfs:label ?ptbr FILTER(LANG(?ptbr) = "pt-br") }
+  OPTIONAL { ?item wdt:P577 ?date . BIND(YEAR(?date) AS ?year) }
+  BIND(EXISTS { ?item wdt:P31/wdt:P279* wd:Q5398426 } AS ?isShow)
+}`;
+    const r = await fetch('https://query.wikidata.org/sparql?format=json&query=' + encodeURIComponent(q), {
+        headers: { 'accept': 'application/sparql-results+json', 'user-agent': 'GabiFlixCatalogBuilder/1.0 (https://github.com/gabrielxyz404/GABIFLIX)' }
+    });
+    if (!r.ok) throw new Error('Wikidata HTTP ' + r.status);
+    const rows = JSON.parse((await r.text()).replace(/[\u0000-\u001f]+/g, ' ')).results.bindings;
+    // títulos do Disney+ (nome e capa já em português)
+    const onDisney = new Map();
+    for (const m of [...lists.movie, ...lists.series]) onDisney.set(m.id, m);
+    const out = [], missing = [];
+    MCU_TIMELINE.forEach(([title, year], i) => {
+        const cands = rows.filter(b => b.en && norm(b.en.value) === norm(title));
+        const pick = cands.find(b => b.year && Math.abs(Number(b.year.value) - year) <= 1) || cands[0];
+        if (!pick) { missing.push(title); return; }
+        const id = pick.imdb.value;
+        const base = onDisney.get(id);
+        const type = base ? base.type : (pick.isShow && pick.isShow.value === 'true' ? 'series' : 'movie');
+        out.push(Object.assign({}, base || {
+            id, type,
+            name: (pick.ptbr || pick.pt || pick.en).value,
+            poster: `https://images.metahub.space/poster/medium/${id}/img`,
+            background: `https://images.metahub.space/background/medium/${id}/img`,
+            releaseInfo: String(year)
+        }, { order: i + 1 }));
+    });
+    info.marvelMissing = missing;
+    await writeFile('data/disney-marvel-cronologia.json', JSON.stringify({ metas: out }));
+    console.log(`  data/disney-marvel-cronologia.json: ${out.length} títulos (faltaram: ${missing.join(', ') || 'nenhum'})`);
+    return out.length;
 }
 
 async function disneyBrands(pk, info, ERRORS) {
@@ -212,7 +279,14 @@ async function disneyBrands(pk, info, ERRORS) {
         const brand = BRAND_ORDER.find(b => set.has(b));
         if (brand) out[brand].push(m);
     }
-    for (const b of BRAND_ORDER) info.counts[`disney-${b}`] = await save(`disney-${b}`, out[b].slice(0, 400));
+    for (const b of BRAND_ORDER) {
+        info.counts[`disney-${b}`] = await save(`disney-${b}`, out[b].slice(0, 400));
+        for (const t of ['movie', 'series']) info.counts[`disney-${b}-${t}`] = await save(`disney-${b}-${t}`, out[b].filter(m => m.type === t).slice(0, 300));
+    }
+
+    // Marvel: ordem cronológica dos acontecimentos do MCU
+    try { info.counts['disney-marvel-cronologia'] = await marvelTimeline(info, lists); }
+    catch (e) { ERRORS.push('Erro na cronologia Marvel: ' + e.message); }
 }
 
 async function main() {

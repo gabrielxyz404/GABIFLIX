@@ -354,3 +354,24 @@ div[class^="board-content-"]:not([class*="container"]) > :not(#gf-home) { displa
 
 /* Botão largo (Cinemateca) ocupa a linha inteira */
 #gf-home .gf-card.is-wide { grid-column: 1 / -1; aspect-ratio: auto; min-height: 7.5rem; }
+
+/* Número da ordem cronológica no canto do pôster */
+#gf-home .gf-order {
+    position: absolute;
+    top: 0.4rem;
+    left: 0.4rem;
+    min-width: 1.6rem;
+    height: 1.6rem;
+    padding: 0 0.35rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0.8rem;
+    background: var(--gf-brand);
+    color: var(--gf-on-brand, #fff);
+    font-family: 'Outfit', 'PlusJakartaSans', system-ui, sans-serif;
+    font-size: 0.85rem;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
+}

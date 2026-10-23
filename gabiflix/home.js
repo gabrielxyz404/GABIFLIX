@@ -131,7 +131,15 @@
         ];
         if (s.id === 'disney') {
             for (var i = 0; i < DISNEY_BRANDS.length; i++) {
-                if (tab === DISNEY_BRANDS[i][0]) return [{ title: 'Tudo de ' + tab, file: 'disney-' + DISNEY_BRANDS[i][1], grid: true }];
+                if (tab === DISNEY_BRANDS[i][0]) {
+                    var f = 'disney-' + DISNEY_BRANDS[i][1];
+                    var secs = [
+                        { title: 'Filmes', file: f + '-movie', grid: true },
+                        { title: 'Séries', file: f + '-series', grid: true }
+                    ];
+                    if (tab === 'Marvel') secs.unshift({ title: 'Ordem cronológica', file: 'disney-marvel-cronologia', numbered: true });
+                    return secs;
+                }
             }
             if (tab === 'Início') return [
                 { title: 'Filmes em alta', file: 'disney-movie', type: 'movie', id: s.cat },
@@ -159,7 +167,7 @@
         location.hash = '#/detail/' + encodeURIComponent(meta.type) + '/' + encodeURIComponent(meta.id);
     }
 
-    function posterEl(meta, wide) {
+    function posterEl(meta, wide, numbered) {
         var b = el('button', 'gf-poster is-filled');
         b.type = 'button';
         b.setAttribute('aria-label', meta.name || 'Título');
@@ -171,6 +179,7 @@
         if (meta.poster) img.src = meta.poster; else b.classList.add('no-img');
         b.appendChild(img);
         b.appendChild(el('span', 'gf-poster-name', meta.name || ''));
+        if (numbered && meta.order) b.appendChild(el('span', 'gf-order', String(meta.order)));
         b.addEventListener('click', function () { openTitle(meta); });
         return b;
     }
@@ -222,7 +231,7 @@
                 onFirst && onFirst(false);
                 return;
             }
-            metas.slice(0, sec.grid ? 300 : 30).forEach(function (m) { track.appendChild(posterEl(m)); });
+            metas.slice(0, sec.grid ? 300 : (sec.numbered ? 100 : 30)).forEach(function (m) { track.appendChild(posterEl(m, false, sec.numbered)); });
             onFirst && onFirst(metas[0]);
         }).catch(function () {
             var msg = el('div', 'gf-row-msg');
