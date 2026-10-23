@@ -159,6 +159,8 @@ async function main() {
         pk[c.country] = {};
         for (const [svc, patterns] of Object.entries(SERVICES)) {
             const codes = d.packages.filter(p => patterns.some(re => re.test(p.clearName.trim()))).map(p => p.shortName);
+            // Claro Video pode não aparecer na lista do JustWatch; tenta o código conhecido 'clv'
+            if (!codes.length && svc === 'clarovideo' && c.country === 'BR') codes.push('clv');
             pk[c.country][svc] = codes;
         }
     }
