@@ -10,7 +10,7 @@
         { id: 'hbo', bg: ['#000000', '#2c0b4f'], cat: 'hbm', name: 'HBO Max', color: '#a36bff' },
         { id: 'appletv', bg: ['#000000', '#2d2d31'], cat: 'atp', name: 'Apple TV+', color: '#f5f5f7' },
         { id: 'paramount', bg: ['#000000', '#0a1d52'], cat: 'pmp', name: 'Paramount+', color: '#2f7dff' },
-        { id: 'globoplay', bg: ['#0b2a12', '#4d3d05'], cat: 'gop', name: 'Globoplay', color: '#ff4a6e' },
+        { id: 'globoplay', bg: ['#0b2a12', '#4d3d05'], cat: 'gop', name: 'Globoplay', color: '#c8d23a', grad: ['#f5c518', '#3ecf6b'] },
         { id: 'clarovideo', bg: ['#000000', '#4f2205'], cat: 'clv', name: 'Claro Video', color: '#ff2a2a' }
     ];
 
@@ -33,6 +33,7 @@
             b.type = 'button';
             b.setAttribute('data-service', s.id);
             b.style.setProperty('--gf-brand', s.color);
+            if (s.grad) b.style.setProperty('--gf-grad', 'linear-gradient(90deg, ' + s.grad.join(', ') + ')');
             // Logo opcional: coloque gabiflix/logos/<id>.png no repositório.
             var logo = el('img', 'gf-card-logo');
             logo.alt = '';
@@ -41,7 +42,7 @@
             logo.onerror = function () { logo.remove(); };
             logo.src = 'gabiflix/logos/' + s.id + '.png?v=' + LOGO_VERSION;
             b.appendChild(logo);
-            b.appendChild(el('span', 'gf-card-name', s.name));
+            b.appendChild(el('span', 'gf-card-name' + (s.grad ? ' gf-grad-text' : ''), s.name));
             b.appendChild(el('span', 'gf-card-hint', 'Ver catálogo'));
             b.addEventListener('click', function () { open(s.id, true); });
             grid.appendChild(b);
@@ -193,11 +194,12 @@
         root.innerHTML = '';
         var page = el('div', 'gf-svc');
         page.style.setProperty('--gf-brand', s.color);
-        page.style.setProperty('--gf-on-brand', s.id === 'appletv' ? '#000' : '#fff');
+        page.style.setProperty('--gf-on-brand', (s.id === 'appletv' || s.id === 'globoplay') ? '#000' : '#fff');
+        if (s.grad) page.style.setProperty('--gf-grad', 'linear-gradient(90deg, ' + s.grad.join(', ') + ')');
 
         var head = el('div', 'gf-svc-head');
         head.appendChild(backButton());
-        head.appendChild(el('h1', 'gf-svc-name', s.name));
+        head.appendChild(el('h1', 'gf-svc-name' + (s.grad ? ' gf-grad-text' : ''), s.name));
         page.appendChild(head);
 
         var tabs = TABS[s.id] || ['Início'];
