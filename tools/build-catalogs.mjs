@@ -163,27 +163,48 @@ const BRAND_LABELS = {
              'Disney+', 'Disney Branded Television', 'Disney Channel Original Movie']
 };
 
+async function sparql(q, tries = 4) {
+    for (let i = 1; ; i++) {
+        try {
+            const r = await fetch('https://query.wikidata.org/sparql', {
+                method: 'POST',
+                headers: {
+                    'content-type': 'application/x-www-form-urlencoded',
+                    'accept': 'application/sparql-results+json',
+                    'user-agent': 'GabiFlixCatalogBuilder/1.0 (https://github.com/gabrielxyz404/GABIFLIX)'
+                },
+                body: 'format=json&query=' + encodeURIComponent(q)
+            });
+            if (!r.ok) throw new Error('Wikidata HTTP ' + r.status);
+            return JSON.parse((await r.text()).replace(/[\u0000-\u001f]+/g, ' ')).results.bindings;
+        } catch (e) {
+            if (i >= tries) throw e;
+            await sleep(5000 * i);
+        }
+    }
+}
+
 async function wikidataBrands() {
-    const values = [];
-    for (const [brand, labels] of Object.entries(BRAND_LABELS)) for (const l of labels) values.push(`("${brand}" "${l.replace(/"/g, '\\"')}"@en)`);
-    const q = `SELECT DISTINCT ?imdb ?brand WHERE {
-  VALUES (?brand ?lbl) { ${values.join(' ')} }
-  ?org rdfs:label ?lbl .
-  { ?item (wdt:P272|wdt:P449|wdt:P8345|wdt:P179|wdt:P1434|wdt:P144) ?org . }
-  UNION
-  { ?item wdt:P750 ?org . FILTER(?brand != "disney") }
+    const map = new Map(); // imdb -> Set(marcas)
+    for (const [brand, labels] of Object.entries(BRAND_LABELS)) {
+        // uma consulta por nome, para não estourar o tempo do Wikidata
+        for (const l of labels) {
+            const props = brand === 'disney'
+                ? 'wdt:P272|wdt:P449|wdt:P8345|wdt:P179|wdt:P1434'
+                : 'wdt:P272|wdt:P449|wdt:P750|wdt:P8345|wdt:P179|wdt:P1434';
+            const q = `SELECT DISTINCT ?imdb WHERE {
+  ?org rdfs:label "${l.replace(/"/g, '\\"')}"@en .
+  ?item (${props}) ?org .
   ?item wdt:P345 ?imdb .
 }`;
-    const r = await fetch('https://query.wikidata.org/sparql?format=json&query=' + encodeURIComponent(q), {
-        headers: { 'accept': 'application/sparql-results+json', 'user-agent': 'GabiFlixCatalogBuilder/1.0 (https://github.com/gabrielxyz404/GABIFLIX)' }
-    });
-    if (!r.ok) throw new Error('Wikidata HTTP ' + r.status);
-    const j = JSON.parse((await r.text()).replace(/[\u0000-\u001f]+/g, ' '));
-    const map = new Map(); // imdb -> Set(brands)
-    for (const b of j.results.bindings) {
-        const id = b.imdb.value, brand = b.brand.value;
-        if (!map.has(id)) map.set(id, new Set());
-        map.get(id).add(brand);
+            const rows = await sparql(q);
+            for (const b of rows) {
+                const id = b.imdb.value;
+                if (!map.has(id)) map.set(id, new Set());
+                map.get(id).add(brand);
+            }
+            await sleep(400);
+        }
     }
     return map;
 }
@@ -225,11 +246,7 @@ async function marvelTimeline(info, lists) {
   OPTIONAL { ?item wdt:P577 ?date . BIND(YEAR(?date) AS ?year) }
   BIND(EXISTS { ?item wdt:P31/wdt:P279* wd:Q5398426 } AS ?isShow)
 }`;
-    const r = await fetch('https://query.wikidata.org/sparql?format=json&query=' + encodeURIComponent(q), {
-        headers: { 'accept': 'application/sparql-results+json', 'user-agent': 'GabiFlixCatalogBuilder/1.0 (https://github.com/gabrielxyz404/GABIFLIX)' }
-    });
-    if (!r.ok) throw new Error('Wikidata HTTP ' + r.status);
-    const rows = JSON.parse((await r.text()).replace(/[\u0000-\u001f]+/g, ' ')).results.bindings;
+    const rows = await sparql(q);
     // títulos do Disney+ (nome e capa já em português)
     const onDisney = new Map();
     for (const m of [...lists.movie, ...lists.series]) onDisney.set(m.id, m);
