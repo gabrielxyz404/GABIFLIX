@@ -13,7 +13,7 @@ import { writeFile, mkdir } from 'node:fs/promises';
 
 const API = 'https://apis.justwatch.com/graphql';
 const COUNTRIES = [
-    { country: 'BR', language: 'pt' },
+    { country: 'BR', language: 'br' }, // 'br' = português do Brasil no JustWatch
     { country: 'PT', language: 'pt' }
 ];
 const PER_SERVICE = 200;   // títulos por serviço, tipo e país (antes de juntar)
@@ -169,7 +169,9 @@ async function wikidataBrands() {
     const q = `SELECT DISTINCT ?imdb ?brand WHERE {
   VALUES (?brand ?lbl) { ${values.join(' ')} }
   ?org rdfs:label ?lbl .
-  ?item (wdt:P272|wdt:P449|wdt:P750|wdt:P8345|wdt:P179|wdt:P1434|wdt:P144) ?org .
+  { ?item (wdt:P272|wdt:P449|wdt:P8345|wdt:P179|wdt:P1434|wdt:P144) ?org . }
+  UNION
+  { ?item wdt:P750 ?org . FILTER(?brand != "disney") }
   ?item wdt:P345 ?imdb .
 }`;
     const r = await fetch('https://query.wikidata.org/sparql?format=json&query=' + encodeURIComponent(q), {
