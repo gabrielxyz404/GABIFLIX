@@ -48,21 +48,104 @@
         root.appendChild(grid);
     }
 
-    function renderCatalog(root, s) {
-        root.innerHTML = '';
-        var head = el('div', 'gf-head');
+    // Abas de cada serviço (categorias típicas de cada app)
+    var TABS = {
+        netflix:    ['Início', 'Séries', 'Filmes', 'Bombando', 'Minha lista'],
+        disney:     ['Início', 'Filmes', 'Séries', 'Originais', 'Minha lista'],
+        prime:      ['Início', 'Filmes', 'Séries', 'Esportes', 'Minha lista'],
+        hbo:        ['Início', 'Séries', 'Filmes', 'Infantil', 'Minha lista'],
+        appletv:    ['Início', 'Originais', 'Filmes', 'Séries', 'Minha lista'],
+        paramount:  ['Início', 'Ao vivo', 'Filmes', 'Séries', 'Minha lista'],
+        globoplay:  ['Início', 'Novelas', 'Séries', 'Filmes', 'Ao vivo', 'Minha lista'],
+        clarovideo: ['Início', 'Ao vivo', 'Filmes', 'Séries', 'Infantil', 'Minha lista']
+    };
+
+    // Fileiras que aparecem em cada aba
+    function rowsFor(tab) {
+        switch (tab) {
+            case 'Início': return ['Em alta', 'Lançamentos', 'Continue assistindo', 'Recomendados para você'];
+            case 'Séries': return ['Séries em alta', 'Novas temporadas', 'Séries premiadas'];
+            case 'Filmes': return ['Filmes em alta', 'Lançamentos', 'Ação e aventura', 'Comédia'];
+            case 'Bombando': return ['Top 10 de hoje', 'Mais assistidos da semana'];
+            case 'Originais': return ['Originais em destaque', 'Novos originais'];
+            case 'Esportes': return ['Ao vivo agora', 'Próximos jogos', 'Melhores momentos'];
+            case 'Infantil': return ['Para os pequenos', 'Animações', 'Família'];
+            case 'Novelas': return ['Novelas no ar', 'Clássicas', 'Para maratonar'];
+            case 'Ao vivo': return ['Canais ao vivo', 'Programação de hoje'];
+            default: return [];
+        }
+    }
+
+    var currentTab = 'Início';
+
+    function backButton() {
         var back = el('button', 'gf-back');
         back.type = 'button';
         back.setAttribute('aria-label', 'Voltar');
         back.innerHTML = '<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
         back.addEventListener('click', function () { history.back(); });
-        head.appendChild(back);
-        head.appendChild(el('h1', 'gf-title', s.name));
-        root.appendChild(head);
-        var empty = el('div', 'gf-empty');
-        empty.appendChild(el('div', 'gf-empty-title', 'Catálogo vazio por enquanto'));
-        empty.appendChild(el('div', 'gf-empty-text', 'Os títulos de ' + s.name + ' vão aparecer aqui.'));
-        root.appendChild(empty);
+        return back;
+    }
+
+    function renderCatalog(root, s) {
+        root.innerHTML = '';
+        var page = el('div', 'gf-svc');
+        page.style.setProperty('--gf-brand', s.color);
+
+        var head = el('div', 'gf-svc-head');
+        head.appendChild(backButton());
+        head.appendChild(el('h1', 'gf-svc-name', s.name));
+        page.appendChild(head);
+
+        var tabs = TABS[s.id] || ['Início'];
+        if (tabs.indexOf(currentTab) < 0) currentTab = tabs[0];
+        var bar = el('div', 'gf-tabs');
+        bar.setAttribute('role', 'tablist');
+        tabs.forEach(function (t) {
+            var b = el('button', 'gf-tab' + (t === currentTab ? ' is-active' : ''), t);
+            b.type = 'button';
+            b.setAttribute('role', 'tab');
+            b.setAttribute('aria-selected', t === currentTab ? 'true' : 'false');
+            b.addEventListener('click', function () {
+                if (t === currentTab) return;
+                currentTab = t;
+                renderCatalog(root, s);
+            });
+            bar.appendChild(b);
+        });
+        page.appendChild(bar);
+
+        var body = el('div', 'gf-tab-body');
+        if (currentTab === 'Minha lista') {
+            var empty = el('div', 'gf-empty');
+            empty.appendChild(el('div', 'gf-empty-title', 'Sua lista está vazia'));
+            empty.appendChild(el('div', 'gf-empty-text', 'Os títulos que você salvar em ' + s.name + ' vão aparecer aqui.'));
+            body.appendChild(empty);
+        } else {
+            var hero = el('div', 'gf-hero');
+            hero.appendChild(el('span', 'gf-hero-tag', currentTab === 'Início' ? 'Em destaque' : currentTab));
+            hero.appendChild(el('div', 'gf-hero-title', 'Nenhum título ainda'));
+            hero.appendChild(el('div', 'gf-hero-text', 'O destaque de ' + s.name + ' vai aparecer aqui.'));
+            var actions = el('div', 'gf-hero-actions');
+            var play = el('span', 'gf-hero-btn is-primary', '▶ Assistir');
+            var info = el('span', 'gf-hero-btn', 'Mais informações');
+            actions.appendChild(play);
+            actions.appendChild(info);
+            hero.appendChild(actions);
+            body.appendChild(hero);
+
+            var wide = currentTab === 'Ao vivo';
+            rowsFor(currentTab).forEach(function (title) {
+                var row = el('section', 'gf-row');
+                row.appendChild(el('h2', 'gf-row-title', title));
+                var track = el('div', 'gf-row-track' + (wide ? ' is-wide' : ''));
+                for (var i = 0; i < 8; i++) track.appendChild(el('div', 'gf-poster'));
+                row.appendChild(track);
+                body.appendChild(row);
+            });
+        }
+        page.appendChild(body);
+        root.appendChild(page);
     }
 
     function find(id) {
@@ -80,6 +163,7 @@
 
     function open(id, push) {
         current = id;
+        currentTab = 'Início';
         if (push) history.pushState({ gfService: id }, '', location.href);
         render();
     }
