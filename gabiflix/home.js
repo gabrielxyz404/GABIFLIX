@@ -13,7 +13,7 @@
         { id: 'globoplay', bg: ['#0b2a12', '#4d3d05'], cat: 'gop', name: 'Globoplay', color: '#c8d23a', grad: ['#f5c518', '#3ecf6b'] },
         { id: 'clarovideo', bg: ['#000000', '#4f2205'], cat: 'clv', name: 'Claro Video', color: '#ff2a2a' },
         // Filmes e séries fora dos streamings: cinema, lançamentos e clássicos
-        { id: 'cinemateca', bg: ['#0b0906', '#3b3020'], name: 'Cinemateca', color: '#e9c46a', wide: true, hint: 'Cinema, clássicos e o que não está nos streamings' }
+        { id: 'cinemateca', bg: ['#0b0906', '#3b3020'], name: 'CineTime', color: '#e9c46a', wide: true, hint: 'Cinema, clássicos e o que não está nos streamings' }
     ];
 
     var current = null; // serviço aberto, ou null para a grade
@@ -298,7 +298,7 @@
 
     // ---------- Continuar assistindo (por serviço) ----------
     // O progresso vem do próprio app (window.core). Cada título aparece no
-    // catálogo do serviço onde ele está; o que não está em nenhum vai para a Cinemateca.
+    // catálogo do serviço onde ele está; o que não está em nenhum vai para o CineTime.
     var ALL_FILES = ['netflix', 'disney', 'prime', 'hbo', 'appletv', 'paramount', 'globoplay', 'clarovideo']
         .reduce(function (acc, id) { return acc.concat([id + '-movie', id + '-series']); }, [])
         .concat(['disney-disney', 'disney-pixar', 'disney-marvel', 'disney-starwars', 'disney-natgeo',
@@ -369,7 +369,7 @@
                 var list = items.filter(function (it) {
                     if (!it || !it._id) return false;
                     if (mine[it._id]) return true;
-                    // Cinemateca também recebe o que não está em nenhum serviço
+                    // CineTime também recebe o que não está em nenhum serviço
                     return s.id === 'cinemateca' && onServices && !onServices[it._id];
                 });
                 if (!list.length) return;
@@ -473,8 +473,12 @@
         }, 250);
     }
     markRoute();
+    function markView() {
+        document.documentElement.setAttribute('data-gf-view', current ? 'catalog' : 'grid');
+    }
     function syncTheme() {
         markRoute();
+        markView();
         var home = onHome();
         applyTheme(home && current ? find(current) : null);
         if (home && !wasHome && current && lastScroll) scrollBackTo(lastScroll);
@@ -510,6 +514,7 @@
         if (!root) return;
         var s = current && find(current);
         applyTheme(s);
+        markView();
         if (s) renderCatalog(root, s); else renderGrid(root);
         if (!pendingScroll && root.parentNode) root.parentNode.scrollTop = 0;
     }
