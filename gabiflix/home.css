@@ -488,3 +488,22 @@ div[class^="board-content-"]:not([class*="container"]) > :not(#gf-home) { displa
 @media only screen and (max-width: 640px) {
     #gf-home { padding-bottom: calc(var(--vertical-nav-bar-size, 6rem) ) !important; }
 }
+
+/* no celular, a tela inicial (botões dos serviços) fica fixa e centralizada entre a barra de cima e a de baixo */
+@media only screen and (max-width: 640px) {
+    html[data-gf-route="home"][data-gf-view="grid"] div[class^="board-content-"]:not([class*="container"]) {
+        overflow: hidden !important;
+        overscroll-behavior: none;
+        touch-action: none;
+    }
+    html[data-gf-route="home"][data-gf-view="grid"] #gf-home {
+        box-sizing: border-box;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        padding-top: 0.5rem !important;
+        padding-bottom: calc(var(--vertical-nav-bar-size, 6rem) + 0.5rem) !important;
+    }
+    html[data-gf-route="home"][data-gf-view="grid"] #gf-home .gf-grid { margin-top: 0; }
+}
