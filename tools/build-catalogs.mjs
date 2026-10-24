@@ -79,6 +79,7 @@ const POPULAR_Q = `query Pop($country: Country!, $language: Language!, $first: I
       objectType
       content(country: $country, language: $language) {
         title
+        shortDescription
         originalReleaseYear
         originalReleaseDate
         externalIds { imdbId }
@@ -113,7 +114,8 @@ function toMeta(node) {
         _date: c.originalReleaseDate || null,
         _year: c.originalReleaseYear || null,
         _streaming: [...(node.offersBR || []), ...(node.offersPT || [])].some(o => STREAMING_TYPES.has(o.monetizationType)),
-        _cinema: [...(node.offersBR || []), ...(node.offersPT || [])].some(o => o.monetizationType === 'CINEMA')
+        _cinema: [...(node.offersBR || []), ...(node.offersPT || [])].some(o => o.monetizationType === 'CINEMA'),
+        _desc: c.shortDescription || null
     };
 }
 
@@ -147,8 +149,28 @@ function interleave(lists) {
     return out;
 }
 
+const DESC = new Map();
 function clean(metas) {
-    return metas.map(({ _date, _year, _streaming, _cinema, ...m }) => m);
+    return metas.map(({ _date, _year, _streaming, _cinema, _desc, ...m }) => {
+        if (_desc && !DESC.has(m.id)) DESC.set(m.id, _desc.trim());
+        return m;
+    });
+}
+
+// sinopses em português divididas em 100 arquivos pequenos (pelos 2 últimos dígitos do código IMDb)
+async function saveDescriptions(info) {
+    await mkdir('data/desc', { recursive: true });
+    const shards = {};
+    for (const [id, text] of DESC) {
+        const k = id.slice(-2);
+        (shards[k] = shards[k] || {})[id] = text;
+    }
+    for (let i = 0; i < 100; i++) {
+        const k = String(i).padStart(2, '0');
+        await writeFile(`data/desc/${k}.json`, JSON.stringify(shards[k] || {}));
+    }
+    info.counts.descriptions = DESC.size;
+    console.log(`  sinopses em português: ${DESC.size}`);
 }
 
 async function save(name, metas, opts = {}) {
@@ -481,6 +503,7 @@ async function main() {
     // 4) Disney+ separado por marca
     await disneyBrands(pk, info, ERRORS);
 
+    await saveDescriptions(info);
     await writeFile('data/info.json', JSON.stringify(info, null, 2));
     console.log('Pronto:', JSON.stringify(info.counts));
 }

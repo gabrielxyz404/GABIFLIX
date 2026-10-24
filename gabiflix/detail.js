@@ -76,9 +76,10 @@
         var streamPath = sel.streamPath;
         var isSeries = meta.type === 'series' || (meta.videos && meta.videos.length > 1);
         var lib = state.libraryItem;
-        var video = null;
-        if (streamPath && meta.videos) video = meta.videos.filter(function (v) { return v.id === streamPath.id; })[0] || null;
+        var video = null, urlVid = urlVideoId();
+        if (urlVid && urlVid !== meta.id && meta.videos) video = meta.videos.filter(function (v) { return v.id === urlVid; })[0] || null;
         var episodeView = isSeries && !!video;
+        loadPt(meta.id);
         whereIs(meta.id);
 
         var box = el('div', 'gf-detail');
@@ -139,9 +140,11 @@
         if (!isSeries || episodeView) {
             var resumable = st && st.timeOffset > 0 && st.duration > 0 && (!isSeries || st.video_id === (video && video.id)) && st.timeOffset < st.duration * 0.95;
             if (resumable) label = '▶  Continuar';
-            if (!streams.length) label = streamsLoading(state) ? 'Procurando fontes…' : 'Nenhuma fonte encontrada';
-            play.disabled = !streams.length;
-            play.addEventListener('click', playFirst);
+            if (!episodeView && !streams.length) label = streamsLoading(state) ? 'Procurando fontes…' : 'Nenhuma fonte encontrada';
+            play.disabled = !episodeView && !streams.length;
+            play.addEventListener('click', function () {
+                if (episodeView) openSheet(video.id, true); else if (streams[0]) playStream(streams[0]);
+            });
             if (resumable) {
                 var bar = el('div', 'gf-d-progress');
                 var fill = el('span');
@@ -163,7 +166,7 @@
             label = target ? (last ? '▶  Continuar ' : '▶  Assistir ') + epLabel(target) : '▶  Assistir';
             play.textContent = label;
             play.disabled = !target;
-            play.addEventListener('click', function () { openEpisode(target); });
+            play.addEventListener('click', function () { if (target) openSheet(target.id, true); });
             body.appendChild(play);
         }
 
@@ -173,26 +176,22 @@
         if (isSeries && !episodeView) {
             choose.textContent = target ? 'Escolher fonte · ' + epLabel(target) : 'Escolher fonte';
             choose.disabled = !target;
-            choose.addEventListener('click', function () { openEpisode(target); });
+            choose.addEventListener('click', function () { if (target) openSheet(target.id, false); });
         } else {
             choose.textContent = 'Escolher fonte';
-            choose.disabled = !streams.length;
-            choose.addEventListener('click', function () {
-                var list = document.querySelector('[class*="metadetails-content"] [class*="streams-list"]');
-                if (list) list.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            });
+            choose.addEventListener('click', function () { openSheet(episodeView ? video.id : meta.id, false); });
         }
         body.appendChild(choose);
 
         // resumo (3 linhas, toque para ver tudo)
-        var desc = (episodeView && video.overview) || meta.description;
+        var desc = (episodeView && video.overview) || ptDesc[meta.id] || meta.description;
         if (desc) {
             var d = el('p', 'gf-d-desc' + (expanded ? ' is-open' : ''), desc);
             d.addEventListener('click', function () { expanded = !expanded; d.classList.toggle('is-open', expanded); });
             body.appendChild(d);
         }
         var cast = links(meta, 'Cast'), dir = links(meta, 'Directors'), genres = links(meta, 'Genres');
-        if (genres.length) body.appendChild(line('Gêneros', genres.slice(0, 4).join(', ')));
+        if (genres.length) body.appendChild(line('Gêneros', genres.slice(0, 4).map(ptGenre).join(', ')));
         if (cast.length) body.appendChild(line('Elenco', cast.slice(0, 4).join(', ')));
         if (dir.length) body.appendChild(line('Direção', dir.slice(0, 2).join(', ')));
 
@@ -217,20 +216,149 @@
         body.appendChild(acts);
 
         // título da seção de baixo
-        var sec = el('div', 'gf-d-section');
-        sec.appendChild(el('span', 'gf-d-section-tab', (isSeries && !episodeView) ? 'Episódios' : 'Fontes'));
-        if (!isSeries || episodeView) sec.appendChild(el('span', 'gf-d-section-hint', streams.length ? streams.length + (streams.length > 1 ? ' opções' : ' opção') : ''));
-        body.appendChild(sec);
-        if (isSeries && !episodeView) body.appendChild(episodesList(meta, target, lib));
+        if (isSeries && !episodeView) {
+            var sec = el('div', 'gf-d-section');
+            sec.appendChild(el('span', 'gf-d-section-tab', 'Episódios'));
+            body.appendChild(sec);
+            body.appendChild(episodesList(meta, target, lib));
+        }
         box.appendChild(body);
         return box;
     }
 
-    function openEpisode(v) {
-        var dl = v && v.deepLinks && (v.deepLinks.metaDetailsStreams || v.deepLinks.player);
-        if (dl) window.gfGo(dl);
-        else if (v) window.gfGo('#/detail/series/' + encodeURIComponent(v.id.split(':')[0]) + '/' + encodeURIComponent(v.id));
+    function urlVideoId() {
+        var m = location.hash.match(/^#\/(?:detail|metadetails)\/[^/]+\/[^/?]+\/([^/?]+)/);
+        return m ? decodeURIComponent(m[1]) : null;
     }
+
+    // sinopse em português (gerada todo dia a partir do JustWatch, Brasil e Portugal)
+    var ptDesc = {}, ptShard = {};
+    function loadPt(id) {
+        var k = (id.match(/(\d\d)$/) || [])[1];
+        if (!k || ptShard[k]) return;
+        ptShard[k] = 1;
+        fetch('data/desc/' + k + '.json?v=' + DATA_VERSION).then(function (r) { return r.ok ? r.json() : {}; })
+            .then(function (d) { Object.assign(ptDesc, d); lastSig = ''; tick(); }).catch(function () {});
+    }
+    var GENRES = { Action: 'Ação', Adventure: 'Aventura', Animation: 'Animação', Biography: 'Biografia', Comedy: 'Comédia', Crime: 'Crime',
+        Documentary: 'Documentário', Drama: 'Drama', Family: 'Família', Fantasy: 'Fantasia', History: 'História', Horror: 'Terror',
+        Music: 'Música', Musical: 'Musical', Mystery: 'Mistério', Romance: 'Romance', 'Sci-Fi': 'Ficção científica', Sport: 'Esporte',
+        Thriller: 'Suspense', War: 'Guerra', Western: 'Faroeste', 'Reality-TV': 'Reality show', 'Talk-Show': 'Talk show', News: 'Notícias',
+        'Game-Show': 'Game show', Short: 'Curta' };
+    function ptGenre(g) { return GENRES[g] || g; }
+
+    // ---------- janela de fontes ----------
+    var sheet = null; // { id, autoplay, label, since }
+    function platformName() {
+        var ua = navigator.userAgent;
+        return /Android/i.test(ua) ? 'android' : /iPhone|iPad|iPod/i.test(ua) ? 'ios' : /Mac/i.test(ua) ? 'macos' : /Win/i.test(ua) ? 'windows' : 'linux';
+    }
+    // abre a fonte do mesmo jeito que a lista do app abriria (player do app, VLC, etc.)
+    function playStream(stream) {
+        var dl = stream && stream.deepLinks;
+        if (!dl) return;
+        var ext = dl.externalPlayer, href = null;
+        if (ext) href = ext.web || (ext.openPlayer && (ext.openPlayer[platformName()] || ext.playlist)) || dl.player;
+        else href = dl.player;
+        if (!href) return;
+        closeSheet();
+        if (href.charAt(0) === '#') window.gfGo(href);
+        else if (ext && href === ext.web) window.open(href, '_blank');
+        else if (/^data:/.test(href)) { var a = el('a'); a.href = href; a.download = ext.fileName || 'video.m3u'; document.body.appendChild(a); a.click(); a.remove(); }
+        else location.href = href;
+    }
+    function openSheet(videoId, autoplay, v) {
+        var c = core();
+        if (!c) return;
+        Promise.resolve(c.getState('meta_details')).then(function (state) {
+            var sel = state && state.selected;
+            if (!sel || !sel.metaPath) return;
+            var meta = state.metaItem && state.metaItem.content && state.metaItem.content.content;
+            var vid = v || (meta && meta.videos || []).filter(function (x) { return x.id === videoId; })[0];
+            sheet = { id: videoId, autoplay: !!autoplay, since: Date.now(), label: vid && vid.season != null ? epLabel(vid) + (realName(vid) ? ' · ' + realName(vid) : '') : '' };
+            // carrega as fontes desse episódio sem trocar de página
+            if (!sel.streamPath || sel.streamPath.id !== videoId) {
+                c.dispatch({ action: 'Load', args: { model: 'MetaDetails', args: {
+                    metaPath: sel.metaPath,
+                    streamPath: { resource: 'stream', type: sel.metaPath.type, id: videoId, extra: [] },
+                    guessStream: false
+                } } }, 'meta_details');
+            }
+            renderSheet(null);
+            setTimeout(tick, 60);
+        });
+    }
+    function closeSheet() {
+        sheet = null;
+        var s0 = document.getElementById('gf-sheet');
+        if (s0) { s0.classList.add('is-closing'); setTimeout(function () { s0.remove(); }, 180); }
+    }
+    var sheetSig = '';
+    function renderSheet(state) {
+        if (!sheet) return;
+        var ready = state && state.selected && state.selected.streamPath && state.selected.streamPath.id === sheet.id;
+        var streams = ready ? readyStreams(state) : [];
+        var loading = !ready || streamsLoading(state);
+        // "Assistir": toca a primeira fonte assim que todas responderem (ou depois de 6 s, se já houver alguma)
+        if (sheet.autoplay && ready && streams.length && (!loading || Date.now() - sheet.since > 6000)) { playStream(streams[0]); return; }
+        var sig = [sheet.id, sheet.autoplay, streams.length, loading].join('|');
+        var root = document.getElementById('gf-sheet');
+        if (root && sig === sheetSig) return;
+        sheetSig = sig;
+        var fresh = !root;
+        if (!root) {
+            root = el('div', 'gf-sheet');
+            root.id = 'gf-sheet';
+            root.addEventListener('click', function (e) { if (e.target === root) closeSheet(); });
+            document.body.appendChild(root);
+        }
+        root.innerHTML = '';
+        var card = el('div', 'gf-sheet-card' + (fresh ? '' : ' no-anim'));
+        card.setAttribute('role', 'dialog');
+        card.setAttribute('aria-label', 'Fontes');
+        var head = el('div', 'gf-sheet-head');
+        var tt = el('div', 'gf-sheet-titles');
+        tt.appendChild(el('div', 'gf-sheet-title', sheet.autoplay ? 'Preparando…' : 'Escolher fonte'));
+        if (sheet.label) tt.appendChild(el('div', 'gf-sheet-sub', sheet.label));
+        head.appendChild(tt);
+        var x = el('button', 'gf-sheet-close', '✕');
+        x.type = 'button';
+        x.setAttribute('aria-label', 'Fechar');
+        x.addEventListener('click', closeSheet);
+        head.appendChild(x);
+        card.appendChild(head);
+        var list = el('div', 'gf-sheet-list');
+        if (streams.length && !sheet.autoplay) {
+            streams.forEach(function (st) {
+                var b = el('button', 'gf-sheet-item');
+                b.type = 'button';
+                var name = String(st.name || (st.addon && st.addon.manifest && st.addon.manifest.name) || 'Fonte').trim();
+                b.appendChild(el('span', 'gf-sheet-q', name.replace(/\s*\n\s*/g, ' · ')));
+                var d = String(st.description || st.title || '').trim();
+                if (d) b.appendChild(el('span', 'gf-sheet-d', d));
+                b.addEventListener('click', function () { playStream(st); });
+                list.appendChild(b);
+            });
+        }
+        if (loading) {
+            var ld = el('div', 'gf-sheet-loading');
+            ld.appendChild(el('span', 'gf-sheet-spin'));
+            ld.appendChild(document.createTextNode(streams.length ? 'Procurando mais fontes…' : 'Procurando fontes…'));
+            list.appendChild(ld);
+        } else if (!streams.length) {
+            var em = el('div', 'gf-sheet-empty');
+            em.appendChild(el('div', null, 'Nenhuma fonte encontrada.'));
+            em.appendChild(el('div', 'gf-sheet-empty-sub', 'As fontes vêm dos seus addons.'));
+            var go = el('button', 'gf-sheet-addons', 'Abrir Addons');
+            go.type = 'button';
+            go.addEventListener('click', function () { closeSheet(); window.gfGo('#/addons'); });
+            em.appendChild(go);
+            list.appendChild(em);
+        }
+        card.appendChild(list);
+        root.appendChild(card);
+    }
+
 
     // nomes genéricos ("Episode 3", "Chapter 6", "Capítulo 2"...) não ajudam: nesses casos fica só "Episódio N"
     function realName(v) {
@@ -307,7 +435,7 @@
             if (dt) tx.appendChild(el('span', 'gf-d-ep-date', dt));
             if (v.watched) tx.appendChild(el('span', 'gf-d-ep-seen', '✓ Visto'));
             row.appendChild(tx);
-            row.addEventListener('click', function () { openEpisode(v); });
+            row.addEventListener('click', function () { openSheet(v.id, false, v); });
             wrap.appendChild(row);
         });
         return wrap;
@@ -347,16 +475,6 @@
         return b;
     }
 
-    // toca a primeira fonte da lista (a mesma que aparece no topo de "Fontes")
-    function playFirst() {
-        var first = document.querySelector('[class*="metadetails-content"] [class*="streams-container"] a[class*="stream-container"]');
-        if (first) first.click();
-        else {
-            var list = document.querySelector('[class*="metadetails-content"] [class*="streams-list"]');
-            if (list) list.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
-    }
-
     // ---------- ciclo ----------
     function tick() {
         var html = document.documentElement;
@@ -365,6 +483,7 @@
             html.removeAttribute('data-gf-detail-view');
             var old = document.getElementById('gf-detail'); if (old) old.remove();
             lastSig = ''; expanded = false;
+            if (sheet || document.getElementById('gf-sheet')) { sheet = null; var s1 = document.getElementById('gf-sheet'); if (s1) s1.remove(); }
             return;
         }
         var c = core();
@@ -372,6 +491,7 @@
         if (!c || !content) return;
         Promise.resolve(c.getState('meta_details')).then(function (state) {
             if (!state || !onDetail()) return;
+            renderSheet(state);
             var meta = state.metaItem && state.metaItem.content && state.metaItem.content.type === 'Ready' ? state.metaItem.content.content : null;
             if (!meta) {
                 var r0 = document.getElementById('gf-detail');
@@ -385,7 +505,7 @@
             }
             var lib = state.libraryItem && state.libraryItem.state;
             var sig = [location.hash, meta.id, meta.inLibrary, meta.watched, readyStreams(state).length, streamsLoading(state),
-                lib && lib.video_id, lib && Math.round(lib.timeOffset / 10000), (servicesFor[meta.id] || []).length, (meta.videos || []).length, seasonPick[meta.id]].join('|');
+                lib && lib.video_id, lib && Math.round(lib.timeOffset / 10000), (servicesFor[meta.id] || []).length, (meta.videos || []).length, seasonPick[meta.id], !!ptDesc[meta.id]].join('|');
             var root = document.getElementById('gf-detail');
             if (sig === lastSig && root && root.parentNode === content) return;
             var box = build(state);
@@ -398,7 +518,8 @@
             if (root && root.parentNode) root.replaceWith(box); else content.insertBefore(box, content.firstChild);
             var sp = state.selected && state.selected.streamPath;
             html.setAttribute('data-gf-detail', meta.type === 'series' ? 'series' : 'movie');
-            html.setAttribute('data-gf-detail-view', (meta.type === 'series' && !(sp && sp.id !== meta.id)) ? 'episodes' : 'sources');
+            var uv = urlVideoId();
+            html.setAttribute('data-gf-detail-view', (meta.type === 'series' && !(uv && uv !== meta.id)) ? 'episodes' : 'sources');
         }).catch(function () {});
     }
 
@@ -424,7 +545,7 @@
         var orig = history[fn];
         history[fn] = function () { var r = orig.apply(this, arguments); setTimeout(update, 0); return r; };
     });
-    window.addEventListener('hashchange', function () { expanded = false; update(); });
+    window.addEventListener('hashchange', function () { expanded = false; if (sheet) { sheet = null; var s2 = document.getElementById('gf-sheet'); if (s2) s2.remove(); } update(); });
     window.addEventListener('popstate', update);
     setInterval(update, 1000);
     update();
