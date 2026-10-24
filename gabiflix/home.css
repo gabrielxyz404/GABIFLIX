@@ -429,3 +429,6 @@ div[class^="board-content-"]:not([class*="container"]) > :not(#gf-home) { displa
     #gf-home .gf-grid, #gf-home .gf-svc { animation: none; }
     #gf-home .gf-poster.is-filled img, #gf-home .gf-hero-bg { transition: none; }
 }
+
+/* mais espaço entre o topo e os botões dos serviços */
+#gf-home .gf-grid { margin-top: 0.9rem; }
