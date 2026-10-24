@@ -26,7 +26,7 @@
 
 // ---------- VLC do app como player principal ----------
 // Com o app novo (window.GabiFlixNative.playSession), todo vídeo com link direto toca no VLC do app:
-// com legendas em português dos addons, começando de onde parou, e ao voltar o progresso
+// com legendas em português (o player busca no OpenSubtitles), começando de onde parou, e ao voltar o progresso
 // é salvo no Stremio (Continuar assistindo). Trailers do YouTube continuam no player do site.
 (function () {
     var N = window.GabiFlixNative;
@@ -60,32 +60,6 @@
             videoId: p[5] || p[4] || null, position: pos ? Math.round(parseFloat(pos[1]) * 1000) : 0 };
     }
 
-    var PT_LANGS = { pob: 1, por: 1, pt: 1, ptb: 1, 'pt-br': 1, 'pt-pt': 1, pt_br: 1, portuguese: 1, 'portuguese (brazil)': 1 };
-    function ptSubtitles(type, id) {
-        var c = core();
-        if (!c || !type || !id) return Promise.resolve([]);
-        return Promise.resolve(c.getState('ctx')).then(function (ctx) {
-            var addons = (ctx && ctx.profile && ctx.profile.addons) || [];
-            return Promise.all(addons.filter(function (a) {
-                return (a.manifest && a.manifest.resources || []).some(function (r) { return r === 'subtitles' || (r && r.name === 'subtitles'); });
-            }).map(function (a) {
-                var base = String(a.transportUrl || '').replace(/\/manifest\.json.*$/, '');
-                if (!/^https?:/.test(base)) return [];
-                var ctl = typeof AbortController !== 'undefined' ? new AbortController() : null;
-                var t = setTimeout(function () { if (ctl) ctl.abort(); }, 4000);
-                return fetch(base + '/subtitles/' + encodeURIComponent(type) + '/' + encodeURIComponent(id) + '.json', ctl ? { signal: ctl.signal } : {})
-                    .then(function (r) { return r.ok ? r.json() : {}; })
-                    .then(function (j) { clearTimeout(t); return (j && j.subtitles) || []; })
-                    .catch(function () { clearTimeout(t); return []; });
-            }));
-        }).then(function (lists) {
-            var all = [].concat.apply([], lists || []).filter(function (x) { return x && x.url && PT_LANGS[String(x.lang || '').toLowerCase()]; });
-            all.sort(function (a, b) { return (/pob|br/i.test(a.lang) ? 0 : 1) - (/pob|br/i.test(b.lang) ? 0 : 1); });
-            var seen = {};
-            return all.filter(function (x) { if (seen[x.url]) return false; seen[x.url] = 1; return true; }).slice(0, 6).map(function (x) { return x.url; });
-        }).catch(function () { return []; });
-    }
-
     // onde parou, segundo o Stremio (só se for o mesmo episódio)
     function startFor(id, videoId) {
         var c = core();
@@ -108,14 +82,19 @@
         }).catch(function () { return 0; });
     }
 
+    var lastLaunch = 0;
     function launch(stream, info) {
         if (!stream || !/^https?:\/\//i.test(stream.url || '')) return false;
+        // toques repetidos não abrem o player duas vezes
+        if (Date.now() - lastLaunch < 4000) return true;
+        lastLaunch = Date.now();
         try {
             localStorage.setItem(SESSION, JSON.stringify({ stream: stream, streamBase: info.streamBase, metaBase: info.metaBase,
                 type: info.type, id: info.id, videoId: info.videoId, at: Date.now() }));
         } catch (e) {}
-        Promise.all([ptSubtitles(info.type, info.videoId), info.position > 0 ? info.position : startFor(info.id, info.videoId)]).then(function (r) {
-            try { N.playSession(stream.url, JSON.stringify(r[0]), String(info.type || ''), String(info.videoId || ''), String(Math.round(r[1] || 0))); } catch (e) {}
+        // abre na hora: as legendas PT o próprio player busca enquanto o vídeo carrega
+        Promise.resolve(info.position > 0 ? info.position : startFor(info.id, info.videoId)).catch(function () { return 0; }).then(function (start) {
+            try { N.playSession(stream.url, '[]', String(info.type || ''), String(info.videoId || ''), String(Math.round(start || 0))); } catch (e) {}
         });
         return true;
     }
