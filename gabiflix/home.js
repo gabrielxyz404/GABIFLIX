@@ -36,6 +36,9 @@
             b.setAttribute('data-service', s.id);
             b.style.setProperty('--gf-brand', s.color);
             if (s.grad) b.style.setProperty('--gf-grad', 'linear-gradient(90deg, ' + s.grad.join(', ') + ')');
+            // tons do fundo suave do botão (Globoplay usa as duas cores do degradê)
+            b.style.setProperty('--gf-tint1', s.grad ? s.grad[0] : s.color);
+            b.style.setProperty('--gf-tint2', s.grad ? s.grad[1] : s.color);
             // Logo opcional: coloque gabiflix/logos/<id>.png no repositório.
             var logo = el('img', 'gf-card-logo');
             logo.alt = '';
