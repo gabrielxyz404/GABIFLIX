@@ -397,10 +397,10 @@ div[class^="board-content-"]:not([class*="container"]) > :not(#gf-home) { displa
 /* Botões da tela inicial: fundo suave na cor do serviço */
 #gf-home .gf-grid .gf-card {
     background:
-        radial-gradient(120% 120% at 0% 0%, color-mix(in srgb, var(--gf-tint1, #fff) 26%, transparent) 0%, transparent 70%),
-        radial-gradient(120% 120% at 100% 100%, color-mix(in srgb, var(--gf-tint2, #fff) 16%, transparent) 0%, transparent 70%),
+        radial-gradient(120% 120% at 0% 0%, color-mix(in srgb, var(--gf-tint1, #fff) 15%, transparent) 0%, transparent 70%),
+        radial-gradient(120% 120% at 100% 100%, color-mix(in srgb, var(--gf-tint2, #fff) 9%, transparent) 0%, transparent 70%),
         rgba(0, 0, 0, 0.55);
-    border-color: color-mix(in srgb, var(--gf-tint1, #fff) 28%, transparent);
+    border-color: color-mix(in srgb, var(--gf-tint1, #fff) 18%, transparent);
 }
 #gf-home .gf-grid .gf-card:hover { border-color: color-mix(in srgb, var(--gf-tint1, #fff) 60%, transparent); }
 #gf-home .gf-card.is-wide .gf-card-name { font-size: clamp(1.7rem, 7vw, 2.4rem); }

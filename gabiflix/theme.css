@@ -91,3 +91,65 @@
         .vertical-nav-bar-container-UPAkA { background: rgba(28, 28, 30, 0.92); }
     }
 }
+
+/* ---------- Cabeçalho: logo GabiFlix grande à esquerda e menu de 3 barras ---------- */
+.horizontal-nav-bar-container-Y_zvK .logo-container-jteMT {
+    width: auto;
+    padding-left: max(1.1rem, var(--safe-area-inset-left));
+    justify-content: flex-start;
+}
+.horizontal-nav-bar-container-Y_zvK .logo-container-jteMT .logo-oPx1q {
+    content: url("../images/logo.png");
+    width: 9.5rem;
+    height: 2.9rem;
+    object-fit: contain;
+    object-position: left center;
+    opacity: 1;
+}
+/* na tela de busca o logo fica menor, para sobrar espaço para o campo */
+:root[data-gf-route="search"] .horizontal-nav-bar-container-Y_zvK .logo-container-jteMT .logo-oPx1q { width: 6.5rem; }
+/* a barra de pesquisa só aparece na tela de busca */
+:root:not([data-gf-route="search"]) .search-bar-container-asfq1 { display: none !important; }
+:root:not([data-gf-route="search"]) [class*="horizontal-nav-bar-container"] { justify-content: space-between; }
+/* ícone do perfil vira 3 barras */
+.nav-menu-popup-label-XmUBo > svg { display: none; }
+.nav-menu-popup-label-XmUBo::before {
+    content: "";
+    display: block;
+    width: 1.6rem;
+    height: 1.15rem;
+    background:
+        linear-gradient(currentColor, currentColor) top / 100% 0.16rem no-repeat,
+        linear-gradient(currentColor, currentColor) center / 100% 0.16rem no-repeat,
+        linear-gradient(currentColor, currentColor) bottom / 100% 0.16rem no-repeat;
+    color: var(--primary-foreground-color);
+    border-radius: 0.1rem;
+}
+
+/* ---------- Barra de baixo: Home no meio e busca num círculo de vidro ao lado ---------- */
+@media only screen and (max-width: 640px) {
+    .vertical-nav-bar-container-UPAkA {
+        overflow: visible;
+        width: min(18.5rem, calc(100% - 8.5rem));
+        transform: translateX(-2.7rem);
+    }
+    .vertical-nav-bar-container-UPAkA a[href="#/search"] {
+        position: absolute;
+        top: 50%;
+        right: -5.4rem;
+        transform: translateY(-50%);
+        flex: none;
+        width: 4.4rem;
+        height: 4.4rem;
+        border-radius: 50%;
+        background:
+            linear-gradient(180deg, rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0.04) 55%, rgba(255, 255, 255, 0.08) 100%),
+            rgba(24, 24, 26, 0.38);
+        -webkit-backdrop-filter: blur(16px) saturate(170%);
+        backdrop-filter: blur(16px) saturate(170%);
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35), 0 10px 30px rgba(0, 0, 0, 0.55);
+    }
+    .vertical-nav-bar-container-UPAkA a[href="#/search"] .label-BCz2f { display: none; }
+    .vertical-nav-bar-container-UPAkA a[href="#/search"] .icon-TzPrK { margin: 0; width: 1.9rem; height: 1.9rem; }
+}

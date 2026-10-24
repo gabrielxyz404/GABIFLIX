@@ -461,7 +461,20 @@
     // a cor do serviço só vale enquanto a Home (com o catálogo aberto) está na tela
     function onHome() { return /^#?\/?$/.test(location.hash); }
     var wasHome = true;
+    function markRoute() {
+        var search = /^#\/search/.test(location.hash);
+        var prev = document.documentElement.getAttribute('data-gf-route');
+        var now = search ? 'search' : (onHome() ? 'home' : 'other');
+        document.documentElement.setAttribute('data-gf-route', now);
+        // ao abrir a busca pelo botão de baixo, já deixa o teclado pronto
+        if (search && prev !== 'search') setTimeout(function () {
+            var input = document.querySelector('[class*="search-bar-container"] input');
+            if (input) input.focus();
+        }, 250);
+    }
+    markRoute();
     function syncTheme() {
+        markRoute();
         var home = onHome();
         applyTheme(home && current ? find(current) : null);
         if (home && !wasHome && current && lastScroll) scrollBackTo(lastScroll);
