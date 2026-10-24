@@ -464,6 +464,8 @@
             if (pressed) { pressed = false; e.preventDefault(); e.stopImmediatePropagation(); return; }
             if (!link) return;
             e.stopImmediatePropagation();
+            // app com VLC: abre direto no player, sem passar pela tela do player do site
+            if (window.gfPlayNative && /^#?\/player\//.test(link) && window.gfPlayNative(link)) return;
             saveScroll();
             window.gfGo(link);
         }, true);

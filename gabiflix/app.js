@@ -158,7 +158,10 @@
                         c.dispatch({ action: 'Unload' }, 'player');
                         try { localStorage.removeItem(SESSION); } catch (e) {}
                         saving = false;
-                        if (typeof window.gfRefreshContinue === 'function') window.gfRefreshContinue();
+                        // o Stremio leva alguns segundos para atualizar a lista: confere de novo
+                        [500, 4000, 9000].forEach(function (ms) {
+                            setTimeout(function () { if (typeof window.gfRefreshContinue === 'function') window.gfRefreshContinue(); }, ms);
+                        });
                     }, 600);
                 }, 400);
             }).catch(function () { saving = false; });
