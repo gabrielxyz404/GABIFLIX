@@ -450,6 +450,19 @@
         applyTheme(onHome() && current ? find(current) : null);
     });
 
+    // tocar em "Home" na barra, com um catálogo aberto, volta para a tela dos serviços
+    document.addEventListener('click', function (e) {
+        var a = e.target && e.target.closest && e.target.closest('a[href="#/"]');
+        if (!a || !current || !onHome()) return;
+        if (!a.closest('[class*="vertical-nav-bar"]')) return;
+        e.preventDefault();
+        current = null;
+        currentTab = 'Início';
+        pendingScroll = 0;
+        try { history.replaceState({}, '', location.href); } catch (err) {}
+        render();
+    }, true);
+
     function render() {
         var root = document.getElementById('gf-home');
         if (!root) return;
