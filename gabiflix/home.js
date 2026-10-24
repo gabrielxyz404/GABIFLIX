@@ -28,7 +28,6 @@
 
     function renderGrid(root) {
         root.innerHTML = '';
-        root.appendChild(el('h1', 'gf-title', 'Home'));
         var grid = el('div', 'gf-grid');
         SERVICES.forEach(function (s) {
             var b = el('button', 'gf-card' + (s.wide ? ' is-wide' : ''));
@@ -464,7 +463,8 @@
     function markRoute() {
         var search = /^#\/search/.test(location.hash);
         var prev = document.documentElement.getAttribute('data-gf-route');
-        var now = search ? 'search' : (onHome() ? 'home' : 'other');
+        var m = location.hash.match(/^#\/([a-z]+)/);
+        var now = search ? 'search' : (onHome() ? 'home' : (m ? m[1] : 'other'));
         document.documentElement.setAttribute('data-gf-route', now);
         // ao abrir a busca pelo botão de baixo, já deixa o teclado pronto
         if (search && prev !== 'search') setTimeout(function () {
