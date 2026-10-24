@@ -28,7 +28,7 @@
 
     function renderGrid(root) {
         root.innerHTML = '';
-        root.appendChild(el('h1', 'gf-title', 'Escolha um serviço'));
+        root.appendChild(el('h1', 'gf-title', 'Home'));
         var grid = el('div', 'gf-grid');
         SERVICES.forEach(function (s) {
             var b = el('button', 'gf-card' + (s.wide ? ' is-wide' : ''));
