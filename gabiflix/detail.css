@@ -1,0 +1,176 @@
+/* GabiFlix: página de filme/série no estilo dos apps de streaming */
+:root[data-gf-detail] [class*="metadetails-container"] { background: #000; }
+:root[data-gf-detail] [class*="metadetails-container"] > [class*="background-image-layer"],
+:root[data-gf-detail] [class*="metadetails-content"] > [class*="meta-preview"],
+:root[data-gf-detail] [class*="metadetails-content"] > [class*="spacing"] { display: none !important; }
+:root[data-gf-detail] [class*="metadetails-content"] { flex-direction: column !important; overflow-y: auto; padding-bottom: 2.5rem; }
+
+.gf-detail { flex: none; align-self: stretch; color: #fff; animation: gf-d-in 0.25s ease-out both; }
+.gf-detail.no-anim { animation: none; }
+@keyframes gf-d-in { from { opacity: 0; } to { opacity: 1; } }
+
+/* imagem de cima, de ponta a ponta, passando por baixo do topo */
+.gf-d-hero {
+    position: relative;
+    margin-top: calc(var(--top-overlay-size, 5.25rem) * -1);
+    aspect-ratio: 16 / 10;
+    max-height: 62vh;
+    width: 100%;
+    overflow: hidden;
+    background: #0d0d0f;
+}
+.gf-d-hero-img { width: 100%; height: 100%; object-fit: cover; display: block; opacity: 0; transition: opacity 0.35s ease; }
+.gf-d-hero-img.is-ready { opacity: 1; }
+.gf-d-hero::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(0,0,0,0.35) 0%, rgba(0,0,0,0) 30%, rgba(0,0,0,0) 55%, #000 100%);
+}
+
+.gf-d-body { padding: 0 1.1rem; margin-top: -1.6rem; position: relative; z-index: 1; }
+.gf-d-service {
+    display: flex;
+    gap: 0.4rem;
+    align-items: center;
+    font-family: 'Outfit', 'PlusJakartaSans', system-ui, sans-serif;
+    font-size: 0.95rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 0.25rem;
+}
+.gf-d-dot { color: rgba(255,255,255,0.4); }
+.gf-d-title {
+    margin: 0;
+    font-family: 'Outfit', 'PlusJakartaSans', system-ui, sans-serif;
+    font-size: clamp(1.7rem, 7.5vw, 2.6rem);
+    font-weight: 800;
+    line-height: 1.08;
+    letter-spacing: -0.01em;
+}
+.gf-d-info {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.35rem 0.9rem;
+    margin-top: 0.6rem;
+    color: rgba(255,255,255,0.75);
+    font-size: 0.95rem;
+    font-weight: 600;
+}
+.gf-d-imdb b { background: #f5c518; color: #000; font-weight: 900; font-size: 0.72rem; padding: 0.08rem 0.3rem; border-radius: 0.25rem; margin-right: 0.15rem; }
+.gf-d-episode { margin-top: 0.5rem; font-weight: 700; color: rgba(255,255,255,0.9); }
+
+.gf-d-play {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 3.1rem;
+    margin-top: 1rem;
+    border: 0;
+    border-radius: 0.6rem;
+    background: #fff;
+    color: #000;
+    font-family: 'Outfit', 'PlusJakartaSans', system-ui, sans-serif;
+    font-size: 1.15rem;
+    font-weight: 800;
+    cursor: pointer;
+    transition: transform 0.12s ease, opacity 0.2s ease;
+}
+.gf-d-play:active { transform: scale(0.98); }
+.gf-d-play:disabled { background: rgba(255,255,255,0.14); color: rgba(255,255,255,0.6); cursor: default; }
+.gf-d-play:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
+.gf-d-progress { height: 3px; margin-top: 0.5rem; border-radius: 2px; background: rgba(255,255,255,0.2); overflow: hidden; }
+.gf-d-progress span { display: block; height: 100%; background: #e50914; }
+
+.gf-d-desc {
+    margin: 1rem 0 0;
+    font-size: 0.98rem;
+    line-height: 1.45;
+    color: rgba(255,255,255,0.92);
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    cursor: pointer;
+}
+.gf-d-desc.is-open { -webkit-line-clamp: unset; display: block; }
+.gf-d-line { margin: 0.45rem 0 0; font-size: 0.86rem; line-height: 1.35; color: rgba(255,255,255,0.55); }
+.gf-d-line span { color: rgba(255,255,255,0.4); }
+
+.gf-d-actions { display: flex; gap: 2.2rem; margin-top: 1.4rem; padding-left: 0.3rem; }
+.gf-d-action {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.35rem;
+    min-width: 3.6rem;
+    border: 0;
+    background: none;
+    color: #fff;
+    font: inherit;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    transition: transform 0.12s ease;
+}
+.gf-d-action:active { transform: scale(0.92); }
+.gf-d-action span { color: rgba(255,255,255,0.85); }
+.gf-d-action:focus-visible { outline: 2px solid #fff; outline-offset: 4px; border-radius: 0.5rem; }
+
+/* título da seção de baixo, com a "aba" sublinhada */
+.gf-d-section { display: flex; align-items: baseline; justify-content: space-between; margin-top: 1.6rem; border-top: 1px solid rgba(255,255,255,0.12); }
+.gf-d-section-tab {
+    position: relative;
+    padding-top: 0.9rem;
+    font-family: 'Outfit', 'PlusJakartaSans', system-ui, sans-serif;
+    font-size: 1.15rem;
+    font-weight: 800;
+}
+.gf-d-section-tab::before { content: ""; position: absolute; left: 0; right: 0; top: -1px; height: 3px; border-radius: 0 0 2px 2px; background: #fff; }
+.gf-d-section-hint { font-size: 0.85rem; color: rgba(255,255,255,0.5); }
+
+/* ---------- lista de fontes e episódios do Stremio, mais limpa ---------- */
+:root[data-gf-detail] [class*="metadetails-content"] > [class*="streams-list"],
+:root[data-gf-detail] [class*="metadetails-content"] > [class*="videos-list"] {
+    background: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    border-radius: 0 !important;
+    padding: 0.4rem 0.6rem 0 !important;
+    max-height: none !important;
+    flex: none !important;
+    align-self: stretch;
+    overflow: visible !important;
+}
+:root[data-gf-detail] [class*="streams-list"] [class*="streams-container"],
+:root[data-gf-detail] [class*="videos-list"] [class*="videos-container"] { overflow: visible !important; max-height: none !important; }
+:root[data-gf-detail] [class*="streams-list"] [class*="stream-container"] {
+    margin: 0 0 0.55rem;
+    padding: 0.8rem 0.9rem;
+    gap: 0.9rem;
+    border-radius: 0.8rem;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.07);
+    transition: background-color 0.15s ease;
+}
+:root[data-gf-detail] [class*="streams-list"] [class*="stream-container"]:active { background: rgba(255,255,255,0.12); }
+:root[data-gf-detail] [class*="streams-list"] [class*="addon-name"] { font-weight: 800; font-size: 0.95rem; width: 5.5rem; }
+:root[data-gf-detail] [class*="streams-list"] [class*="select-choices-wrapper"] { padding: 0.2rem 0 0.6rem; }
+:root[data-gf-detail] [class*="streams-list"] [class*="select-input-container"] {
+    border-radius: 1.4rem;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.1);
+}
+@media (prefers-reduced-motion: reduce) { .gf-detail, .gf-d-hero-img { animation: none; transition: none; } }
+/* botão "Instalar Addons" do Stremio no mesmo estilo de vidro do app */
+:root[data-gf-detail] [class*="install-button-container"] {
+    background: rgba(255,255,255,0.08) !important;
+    border: 1px solid rgba(255,255,255,0.14);
+    border-radius: 1.6rem !important;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.18);
+}
+:root[data-gf-detail] [class*="install-button-container"] * { color: #fff !important; }
