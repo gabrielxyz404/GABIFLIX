@@ -37,8 +37,14 @@ public class PlayerActivity extends Activity {
     static final String EXTRA_URL = "url";
     /** legendas em português vindas dos addons do Stremio (links .srt/.vtt) */
     static final String EXTRA_SUBS = "subs";
+    /** tipo (movie/series) e código do título, para buscar legendas sozinho se o site não mandar nenhuma */
+    static final String EXTRA_TYPE = "type";
+    static final String EXTRA_ID = "id";
     private String[] subs = new String[0];
-    private boolean subsAdded = false;
+    private String metaType, metaId;
+    private boolean playing = false;
+    private final ArrayList<Uri> readySubs = new ArrayList<>();
+    private int addedSubs = 0;
     private static final java.util.regex.Pattern PT = java.util.regex.Pattern.compile("portug|brazil|brasil|\\bpt\\b|\\bpor\\b|\\bpob\\b|pt-br|pt_br", java.util.regex.Pattern.CASE_INSENSITIVE);
     private static final int HIDE_DELAY_MS = 3500;
 
@@ -72,6 +78,9 @@ public class PlayerActivity extends Activity {
         url = getIntent().getStringExtra(EXTRA_URL);
         String[] extraSubs = getIntent().getStringArrayExtra(EXTRA_SUBS);
         if (extraSubs != null) subs = extraSubs;
+        metaType = getIntent().getStringExtra(EXTRA_TYPE);
+        metaId = getIntent().getStringExtra(EXTRA_ID);
+        loadSubtitlesInBackground();
         if (url == null) { finish(); return; }
 
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
@@ -138,7 +147,7 @@ public class PlayerActivity extends Activity {
                 spinner.setVisibility(View.GONE);
                 playButton.setText("❚❚");
                 if (!resumeDone) resume();
-                if (!subsAdded) addPortugueseSubtitles();
+                if (!playing) { playing = true; attachReadySubs(); selectEmbeddedPortugueseLater(); }
                 scheduleHide();
                 break;
             case MediaPlayer.Event.Paused:
@@ -307,19 +316,94 @@ public class PlayerActivity extends Activity {
     }
 
     // legendas: só as em português (as do Stremio e as do próprio arquivo que forem PT/BR)
-    private void addPortugueseSubtitles() {
-        subsAdded = true;
-        for (int i = 0; i < subs.length; i++) {
-            try { player.addSlave(0 /* legenda */, Uri.parse(subs[i]), i == 0); } catch (Exception ignored) {}
+    // ---------- legendas em português ----------
+    // Baixa as legendas (dos addons, ou direto do OpenSubtitles do Stremio) para arquivos .srt
+    // no celular e liga no VLC. Arquivo local com extensão é o jeito mais confiável para o VLC.
+    private void loadSubtitlesInBackground() {
+        new Thread(() -> {
+            ArrayList<String> urls = new ArrayList<>(java.util.Arrays.asList(subs));
+            if (urls.isEmpty() && metaId != null && metaType != null) urls.addAll(searchOpenSubtitles(metaType, metaId));
+            java.io.File dir = new java.io.File(getCacheDir(), "legendas");
+            if (!dir.exists()) dir.mkdirs();
+            java.io.File[] old = dir.listFiles();
+            if (old != null) for (java.io.File f : old) f.delete();
+            int n = 0;
+            for (String u : urls) {
+                if (n >= 5) break;
+                try {
+                    byte[] data = httpGet(u);
+                    if (data == null || data.length < 20) continue;
+                    java.io.File f = new java.io.File(dir, (++n) + (looksLikeVtt(data) ? ".vtt" : ".srt"));
+                    java.io.FileOutputStream out = new java.io.FileOutputStream(f);
+                    out.write(data);
+                    out.close();
+                    Uri uri = Uri.fromFile(f);
+                    ui.post(() -> { readySubs.add(uri); attachReadySubs(); });
+                } catch (Exception ignored) {}
+            }
+        }).start();
+    }
+
+    private void attachReadySubs() {
+        if (player == null || !playing) return;
+        while (addedSubs < readySubs.size()) {
+            Uri u = readySubs.get(addedSubs);
+            try { player.addSlave(0 /* legenda */, u, addedSubs == 0); } catch (Exception ignored) {}
+            addedSubs++;
         }
-        if (subs.length == 0) {
-            // sem legenda do Stremio: liga a PT/BR do próprio arquivo, se houver
-            ui.postDelayed(() -> {
-                MediaPlayer.TrackDescription[] t = player == null ? null : player.getSpuTracks();
-                if (t == null) return;
-                for (MediaPlayer.TrackDescription d : t) if (d.id != -1 && isPortuguese(d.name)) { player.setSpuTrack(d.id); break; }
-            }, 1500);
-        }
+    }
+
+    private void selectEmbeddedPortugueseLater() {
+        // sem legenda baixada: liga a PT/BR que vier dentro do próprio arquivo, se houver
+        ui.postDelayed(() -> {
+            if (player == null || addedSubs > 0) return;
+            MediaPlayer.TrackDescription[] t = player.getSpuTracks();
+            if (t == null) return;
+            for (MediaPlayer.TrackDescription d : t) if (d.id != -1 && isPortuguese(d.name)) { player.setSpuTrack(d.id); break; }
+        }, 2500);
+    }
+
+    private static boolean looksLikeVtt(byte[] data) {
+        String head = new String(data, 0, Math.min(data.length, 16), java.nio.charset.StandardCharsets.UTF_8);
+        return head.replace("\uFEFF", "").startsWith("WEBVTT");
+    }
+
+    private static byte[] httpGet(String u) throws java.io.IOException {
+        java.net.HttpURLConnection c = (java.net.HttpURLConnection) new java.net.URL(u).openConnection();
+        c.setConnectTimeout(8000);
+        c.setReadTimeout(12000);
+        c.setInstanceFollowRedirects(true);
+        c.setRequestProperty("User-Agent", "GabiFlix");
+        try {
+            if (c.getResponseCode() >= 400) return null;
+            java.io.InputStream in = c.getInputStream();
+            java.io.ByteArrayOutputStream buf = new java.io.ByteArrayOutputStream();
+            byte[] b = new byte[16384];
+            int r;
+            while ((r = in.read(b)) > 0) { buf.write(b, 0, r); if (buf.size() > 5_000_000) break; }
+            in.close();
+            return buf.toByteArray();
+        } finally { c.disconnect(); }
+    }
+
+    /** legendas PT/BR do OpenSubtitles do Stremio (Brasil primeiro) */
+    private static ArrayList<String> searchOpenSubtitles(String type, String id) {
+        ArrayList<String> br = new ArrayList<>(), pt = new ArrayList<>();
+        try {
+            byte[] data = httpGet("https://opensubtitles-v3.strem.io/subtitles/" + Uri.encode(type) + "/" + Uri.encode(id) + ".json");
+            if (data == null) return br;
+            org.json.JSONArray arr = new org.json.JSONObject(new String(data, java.nio.charset.StandardCharsets.UTF_8)).optJSONArray("subtitles");
+            if (arr != null) for (int i = 0; i < arr.length(); i++) {
+                org.json.JSONObject o = arr.optJSONObject(i);
+                if (o == null) continue;
+                String lang = o.optString("lang", "").toLowerCase(Locale.ROOT), url = o.optString("url", "");
+                if (!url.startsWith("http")) continue;
+                if (lang.equals("pob") || lang.equals("pt-br") || lang.equals("ptb")) br.add(url);
+                else if (lang.equals("por") || lang.equals("pt") || lang.equals("pt-pt")) pt.add(url);
+            }
+        } catch (Exception ignored) {}
+        br.addAll(pt);
+        return br;
     }
 
     private static boolean isPortuguese(String name) { return name != null && PT.matcher(name).find(); }
@@ -331,7 +415,7 @@ public class PlayerActivity extends Activity {
         ArrayList<MediaPlayer.TrackDescription> keep = new ArrayList<>();
         int n = 0;
         if (all != null) for (MediaPlayer.TrackDescription d : all) {
-            if (d.id == -1 || isPortuguese(d.name) || (subs.length > 0 && isExternal(d.name))) keep.add(d);
+            if (d.id == -1 || isPortuguese(d.name) || (addedSubs > 0 && isExternal(d.name))) keep.add(d);
         }
         String[] names = new String[keep.size()];
         int[] ids = new int[keep.size()];

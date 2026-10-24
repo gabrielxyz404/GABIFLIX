@@ -339,15 +339,19 @@
     function openInVlc(url, btn) {
         var N = window.GabiFlixNative;
         if (!N) return;
-        if (typeof N.playWithSubs !== 'function') { closeSheet(); try { N.play(url); } catch (e) {} return; }
+        if (typeof N.playWithSubs !== 'function' && typeof N.playFull !== 'function') { closeSheet(); try { N.play(url); } catch (e) {} return; }
         if (btn) { btn.disabled = true; btn.textContent = '…'; }
-        var c = core();
+        var c = core(), type = 'movie', vid = sheet && sheet.id;
         Promise.resolve(c && c.getState('meta_details')).then(function (st) {
-            var type = st && st.selected && st.selected.metaPath && st.selected.metaPath.type;
-            return ptSubtitles(type || 'movie', (sheet && sheet.id) || (st && st.selected && st.selected.metaPath && st.selected.metaPath.id));
+            var mp = st && st.selected && st.selected.metaPath;
+            if (mp) { type = mp.type || type; vid = vid || mp.id; }
+            return ptSubtitles(type, vid);
         }).catch(function () { return []; }).then(function (subs) {
             closeSheet();
-            try { N.playWithSubs(url, JSON.stringify(subs)); } catch (e) { try { N.play(url); } catch (e2) {} }
+            try {
+                if (typeof N.playFull === 'function') N.playFull(url, JSON.stringify(subs), type, String(vid || ''));
+                else N.playWithSubs(url, JSON.stringify(subs));
+            } catch (e) { try { N.play(url); } catch (e2) {} }
         });
     }
     function openSheet(videoId, autoplay, v) {

@@ -225,7 +225,29 @@ public class MainActivity extends Activity {
             });
         }
 
+        /** toca com legendas; type/id deixam o player buscar legendas sozinho se a lista vier vazia */
         @JavascriptInterface
-        public int version() { return 2; }
+        public void playFull(String link, String subsJson, String type, String id) {
+            if (link == null || !(link.startsWith("http://") || link.startsWith("https://"))) return;
+            ArrayList<String> list = new ArrayList<>();
+            try {
+                org.json.JSONArray arr = new org.json.JSONArray(subsJson == null ? "[]" : subsJson);
+                for (int k = 0; k < arr.length() && k < 8; k++) {
+                    String u = arr.optString(k, "");
+                    if (u.startsWith("http://") || u.startsWith("https://")) list.add(u);
+                }
+            } catch (Exception ignored) {}
+            runOnUiThread(() -> {
+                Intent i = new Intent(MainActivity.this, PlayerActivity.class);
+                i.putExtra(PlayerActivity.EXTRA_URL, link);
+                i.putExtra(PlayerActivity.EXTRA_SUBS, list.toArray(new String[0]));
+                i.putExtra(PlayerActivity.EXTRA_TYPE, type);
+                i.putExtra(PlayerActivity.EXTRA_ID, id);
+                startActivity(i);
+            });
+        }
+
+        @JavascriptInterface
+        public int version() { return 3; }
     }
 }
