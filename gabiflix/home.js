@@ -124,7 +124,7 @@
                 case 'Clássicos': return [{ title: 'Clássicos', file: 'cine-classicos', grid: true }];
                 case 'Filmes': return [{ title: 'Filmes fora dos streamings', file: 'cine-movie', grid: true }];
                 case 'Séries': return [{ title: 'Séries fora dos streamings', file: 'cine-series', grid: true }];
-                default: return [{ title: tab, soon: true }];
+                default: return [];
             }
         }
         // Disney+: abas por marca (data/disney-<marca>.json)
@@ -163,7 +163,7 @@
                 { title: 'Top 10 filmes hoje em Portugal', file: 'netflix-top10-pt-movie', type: 'movie', id: 'netflix-top10-PT', numbered: true },
                 { title: 'Top 10 séries hoje em Portugal', file: 'netflix-top10-pt-series', type: 'series', id: 'netflix-top10-PT', numbered: true }
             ];
-            default: return [{ title: tab, soon: true }];
+            default: return [];
         }
     }
 
@@ -260,13 +260,6 @@
         row.appendChild(el('h2', 'gf-row-title', sec.title));
         var track = el('div', sec.grid ? 'gf-poster-grid' : 'gf-row-track');
         row.appendChild(track);
-        if (sec.soon) {
-            var soon = el('div', 'gf-empty');
-            soon.appendChild(el('div', 'gf-empty-title', 'Em breve'));
-            soon.appendChild(el('div', 'gf-empty-text', 'A seção ' + sec.title + ' de ' + s.name + ' ainda não tem títulos.'));
-            row.replaceChild(soon, track);
-            return row;
-        }
         for (var i = 0; i < (sec.grid ? 12 : 8); i++) track.appendChild(el('div', 'gf-poster'));
         loadCatalog(sec).then(function (metas) {
             track.innerHTML = '';
@@ -306,7 +299,7 @@
 
     function prefetch(s) {
         var secs = sectionsFor(s, 'Início');
-        secs.slice(0, 3).forEach(function (sec) { if (!sec.soon) loadCatalog(sec).catch(function () {}); });
+        secs.slice(0, 3).forEach(function (sec) { loadCatalog(sec).catch(function () {}); });
     }
 
     function filesFor(s) {

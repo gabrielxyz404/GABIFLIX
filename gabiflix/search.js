@@ -60,8 +60,8 @@
         if (full[url]) return;
         full[url] = 'loading';
         fetch(url).then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
-            .then(function (d) { full[url] = { items: (d && d.metas) || [] }; lastSig = ''; tick(); })
-            .catch(function () { full[url] = 'error'; });
+            .then(function (d) { full[url] = { items: (d && d.metas) || [] }; lastSig = ''; settled = null; tick(); })
+            .catch(function () { full[url] = 'error'; settled = null; });
     }
 
     // intercala os catálogos (1º filme, 1ª série, 2º filme...) para os mais relevantes ficarem no topo
@@ -181,24 +181,72 @@
         body.appendChild(g);
     }
 
+    // Tela de busca vazia: pesquisas recentes em botões de vidro (ou uma dica simples)
+    var idleSig = null;
+    function renderIdle(root, c) {
+        Promise.resolve(c.getState('ctx')).then(function (ctx) {
+            var items = ((ctx && ctx.searchHistory) || []).filter(function (h) { return h && h.query; }).slice(0, 10);
+            var sig = items.map(function (h) { return h.query; }).join('\u0001');
+            if (sig === idleSig && root.firstChild) return;
+            idleSig = sig;
+            root.innerHTML = '';
+            var box = el('div', 'gf-s-idle');
+            if (!items.length) {
+                box.appendChild(el('div', 'gf-s-hint', 'Pesquise filmes e séries'));
+                root.appendChild(box);
+                return;
+            }
+            var head = el('div', 'gf-s-idle-head');
+            head.appendChild(el('h2', 'gf-s-idle-title', 'Pesquisas recentes'));
+            var clear = el('button', 'gf-s-clear', 'Limpar');
+            clear.type = 'button';
+            clear.addEventListener('click', function () {
+                try { c.dispatch({ action: 'Ctx', args: { action: 'ClearSearchHistory' } }); } catch (e) {}
+                idleSig = null;
+                setTimeout(function () { renderIdle(root, c); }, 300);
+            });
+            head.appendChild(clear);
+            box.appendChild(head);
+            var list = el('div', 'gf-s-recent');
+            items.forEach(function (h) {
+                var a = el('a', 'gf-s-chip gf-s-recent-item', h.query);
+                a.href = (h.deepLinks && h.deepLinks.search) || ('#/search?search=' + encodeURIComponent(h.query));
+                list.appendChild(a);
+            });
+            box.appendChild(list);
+            root.appendChild(box);
+        }).catch(function () {});
+    }
+
+    // depois que os resultados chegam, para de perguntar ao app até a busca mudar
+    var settled = null;
+
     function tick() {
         var q = queryFromHash();
         var html = document.documentElement;
-        if (!q) {
+        if (q === null) {
             html.removeAttribute('data-gf-search');
             var old = document.getElementById('gf-search');
             if (old) old.remove();
-            lastSig = '';
+            lastSig = ''; idleSig = null; settled = null; lastQuery = null;
             return;
         }
-        html.setAttribute('data-gf-search', 'results');
         var c = core();
         var root = mountRoot();
         if (!c || !root) return;
+        if (q === '') {
+            html.setAttribute('data-gf-search', 'idle');
+            if (lastQuery !== '') { lastQuery = ''; lastSig = ''; idleSig = null; root.innerHTML = ''; }
+            if (settled !== '') { settled = ''; renderIdle(root, c); }
+            return;
+        }
+        html.setAttribute('data-gf-search', 'results');
         if (q !== lastQuery) {
-            lastQuery = q; lastSig = ''; rangeAsked = ''; full = {};
+            lastQuery = q; lastSig = ''; rangeAsked = ''; full = {}; settled = null; idleSig = null;
+            root.innerHTML = '';
             var sc = container(); if (sc) sc.scrollTop = 0;
         }
+        if (settled === q && root.firstChild) return;
         Promise.resolve(c.getState('search')).then(function (state) {
             if (!state || queryFromHash() !== q) return;
             // pede para carregar todos os catálogos de uma vez (o app normal só carrega os visíveis)
@@ -208,7 +256,10 @@
                 rangeAsked = key;
                 try { c.dispatch({ action: 'CatalogsWithExtra', args: { action: 'LoadRange', args: { start: 0, end: n - 1 } } }, 'search'); } catch (e) {}
             }
-            render(root, collect(state, q));
+            var data = collect(state, q);
+            render(root, data);
+            var pending = Object.keys(full).some(function (k) { return full[k] === 'loading'; });
+            if (n && !data.loading && !pending) settled = q;
         }).catch(function () {});
     }
 
