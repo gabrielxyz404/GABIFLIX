@@ -483,3 +483,8 @@ div[class^="board-content-"]:not([class*="container"]) > :not(#gf-home) { displa
     max-width: 100%;
 }
 #gf-home .gf-card.is-wide .gf-card-name { font-size: clamp(1.4rem, 7cqw, 2.4rem); }
+
+/* no celular, espaço no fim das listas para a barra de baixo não tapar os pôsteres */
+@media only screen and (max-width: 640px) {
+    #gf-home { padding-bottom: calc(var(--vertical-nav-bar-size, 6rem) + 5rem) !important; }
+}
