@@ -309,6 +309,47 @@
         else if (/^data:/.test(href)) { var a = el('a'); a.href = href; a.download = ext.fileName || 'video.m3u'; document.body.appendChild(a); a.click(); a.remove(); }
         else location.href = href;
     }
+    // legendas em português dos addons instalados (ex.: OpenSubtitles), para o VLC do app
+    var PT_LANGS = { pob: 1, por: 1, pt: 1, ptb: 1, 'pt-br': 1, 'pt-pt': 1, 'pt_br': 1, portuguese: 1, 'portuguese (brazil)': 1 };
+    function ptSubtitles(type, id) {
+        var c = core();
+        if (!c) return Promise.resolve([]);
+        return Promise.resolve(c.getState('ctx')).then(function (ctx) {
+            var addons = (ctx && ctx.profile && ctx.profile.addons) || [];
+            var reqs = addons.filter(function (a) {
+                return (a.manifest && a.manifest.resources || []).some(function (r) { return r === 'subtitles' || (r && r.name === 'subtitles'); });
+            }).map(function (a) {
+                var base = String(a.transportUrl || '').replace(/\/manifest\.json.*$/, '');
+                if (!/^https?:/.test(base)) return Promise.resolve([]);
+                var ctl = typeof AbortController !== 'undefined' ? new AbortController() : null;
+                var t = setTimeout(function () { if (ctl) ctl.abort(); }, 5000);
+                return fetch(base + '/subtitles/' + encodeURIComponent(type) + '/' + encodeURIComponent(id) + '.json', ctl ? { signal: ctl.signal } : {})
+                    .then(function (r) { return r.ok ? r.json() : {}; }).then(function (j) { clearTimeout(t); return (j && j.subtitles) || []; })
+                    .catch(function () { clearTimeout(t); return []; });
+            });
+            return Promise.all(reqs);
+        }).then(function (lists) {
+            var all = [].concat.apply([], lists || []).filter(function (x) { return x && x.url && PT_LANGS[String(x.lang || '').toLowerCase()]; });
+            // português do Brasil primeiro, depois de Portugal
+            all.sort(function (a, b) { return (/pob|br/i.test(a.lang) ? 0 : 1) - (/pob|br/i.test(b.lang) ? 0 : 1); });
+            var seen = {};
+            return all.filter(function (x) { if (seen[x.url]) return false; seen[x.url] = 1; return true; }).slice(0, 6).map(function (x) { return x.url; });
+        }).catch(function () { return []; });
+    }
+    function openInVlc(url, btn) {
+        var N = window.GabiFlixNative;
+        if (!N) return;
+        if (typeof N.playWithSubs !== 'function') { closeSheet(); try { N.play(url); } catch (e) {} return; }
+        if (btn) { btn.disabled = true; btn.textContent = '…'; }
+        var c = core();
+        Promise.resolve(c && c.getState('meta_details')).then(function (st) {
+            var type = st && st.selected && st.selected.metaPath && st.selected.metaPath.type;
+            return ptSubtitles(type || 'movie', (sheet && sheet.id) || (st && st.selected && st.selected.metaPath && st.selected.metaPath.id));
+        }).catch(function () { return []; }).then(function (subs) {
+            closeSheet();
+            try { N.playWithSubs(url, JSON.stringify(subs)); } catch (e) { try { N.play(url); } catch (e2) {} }
+        });
+    }
     function openSheet(videoId, autoplay, v) {
         var c = core();
         if (!c) return;
@@ -390,7 +431,7 @@
                     var v = el('button', 'gf-sheet-vlc', 'VLC');
                     v.type = 'button';
                     v.setAttribute('aria-label', 'Abrir no VLC');
-                    v.addEventListener('click', function () { closeSheet(); try { window.GabiFlixNative.play(st.url); } catch (e) {} });
+                    v.addEventListener('click', function () { openInVlc(st.url, v); });
                     row.appendChild(b); row.appendChild(v);
                     list.appendChild(row);
                 } else list.appendChild(b);

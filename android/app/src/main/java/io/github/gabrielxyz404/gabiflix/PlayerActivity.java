@@ -35,6 +35,11 @@ import java.util.Locale;
 public class PlayerActivity extends Activity {
 
     static final String EXTRA_URL = "url";
+    /** legendas em português vindas dos addons do Stremio (links .srt/.vtt) */
+    static final String EXTRA_SUBS = "subs";
+    private String[] subs = new String[0];
+    private boolean subsAdded = false;
+    private static final java.util.regex.Pattern PT = java.util.regex.Pattern.compile("portug|brazil|brasil|\\bpt\\b|\\bpor\\b|\\bpob\\b|pt-br|pt_br", java.util.regex.Pattern.CASE_INSENSITIVE);
     private static final int HIDE_DELAY_MS = 3500;
 
     private LibVLC libVLC;
@@ -65,6 +70,8 @@ public class PlayerActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         url = getIntent().getStringExtra(EXTRA_URL);
+        String[] extraSubs = getIntent().getStringArrayExtra(EXTRA_SUBS);
+        if (extraSubs != null) subs = extraSubs;
         if (url == null) { finish(); return; }
 
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
@@ -131,6 +138,7 @@ public class PlayerActivity extends Activity {
                 spinner.setVisibility(View.GONE);
                 playButton.setText("❚❚");
                 if (!resumeDone) resume();
+                if (!subsAdded) addPortugueseSubtitles();
                 scheduleHide();
                 break;
             case MediaPlayer.Event.Paused:
@@ -298,9 +306,57 @@ public class PlayerActivity extends Activity {
         pickTrack("Áudio", tracks, player.getAudioTrack(), id -> player.setAudioTrack(id));
     }
 
+    // legendas: só as em português (as do Stremio e as do próprio arquivo que forem PT/BR)
+    private void addPortugueseSubtitles() {
+        subsAdded = true;
+        for (int i = 0; i < subs.length; i++) {
+            try { player.addSlave(0 /* legenda */, Uri.parse(subs[i]), i == 0); } catch (Exception ignored) {}
+        }
+        if (subs.length == 0) {
+            // sem legenda do Stremio: liga a PT/BR do próprio arquivo, se houver
+            ui.postDelayed(() -> {
+                MediaPlayer.TrackDescription[] t = player == null ? null : player.getSpuTracks();
+                if (t == null) return;
+                for (MediaPlayer.TrackDescription d : t) if (d.id != -1 && isPortuguese(d.name)) { player.setSpuTrack(d.id); break; }
+            }, 1500);
+        }
+    }
+
+    private static boolean isPortuguese(String name) { return name != null && PT.matcher(name).find(); }
+    /** legendas do próprio arquivo vêm com o idioma entre colchetes ("... - [Russian]"); as que adicionamos, não */
+    private static boolean isExternal(String name) { return name == null || !name.contains("["); }
+
     private void chooseSubtitles() {
-        MediaPlayer.TrackDescription[] tracks = player.getSpuTracks();
-        pickTrack("Legendas", tracks, player.getSpuTrack(), id -> player.setSpuTrack(id));
+        MediaPlayer.TrackDescription[] all = player.getSpuTracks();
+        ArrayList<MediaPlayer.TrackDescription> keep = new ArrayList<>();
+        int n = 0;
+        if (all != null) for (MediaPlayer.TrackDescription d : all) {
+            if (d.id == -1 || isPortuguese(d.name) || (subs.length > 0 && isExternal(d.name))) keep.add(d);
+        }
+        String[] names = new String[keep.size()];
+        int[] ids = new int[keep.size()];
+        for (int i = 0; i < keep.size(); i++) {
+            MediaPlayer.TrackDescription d = keep.get(i);
+            ids[i] = d.id;
+            if (d.id == -1) names[i] = "Desativado";
+            else if (isExternal(d.name) && !isPortuguese(d.name)) names[i] = "Português " + (++n);
+            else names[i] = d.name;
+        }
+        if (keep.size() <= 1) {
+            ui.removeCallbacks(hideControls);
+            new AlertDialog.Builder(this, android.R.style.Theme_DeviceDefault_Dialog_Alert)
+                    .setTitle("Legendas").setMessage("Não há legendas em português para este vídeo.")
+                    .setPositiveButton("OK", null).show();
+            return;
+        }
+        int current = player.getSpuTrack(), checked = -1;
+        for (int i = 0; i < ids.length; i++) if (ids[i] == current) checked = i;
+        ui.removeCallbacks(hideControls);
+        new AlertDialog.Builder(this, android.R.style.Theme_DeviceDefault_Dialog_Alert)
+                .setTitle("Legendas")
+                .setSingleChoiceItems(names, checked, (d, which) -> { player.setSpuTrack(ids[which]); d.dismiss(); scheduleHide(); })
+                .setNegativeButton("Cancelar", null)
+                .show();
     }
 
     private interface TrackSetter { void set(int id); }

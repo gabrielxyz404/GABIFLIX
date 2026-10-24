@@ -19,6 +19,8 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.FrameLayout;
 
+import java.util.ArrayList;
+
 /**
  * Tela principal: abre o GabiFlix (site) dentro do app.
  * Quando o GabiFlix pede para abrir um vídeo no VLC, o vídeo abre no player embutido (PlayerActivity).
@@ -203,7 +205,27 @@ public class MainActivity extends Activity {
             });
         }
 
+        /** toca com legendas: subsJson = ["https://...srt", ...] (já só em português) */
         @JavascriptInterface
-        public int version() { return 1; }
+        public void playWithSubs(String link, String subsJson) {
+            if (link == null || !(link.startsWith("http://") || link.startsWith("https://"))) return;
+            ArrayList<String> list = new ArrayList<>();
+            try {
+                org.json.JSONArray arr = new org.json.JSONArray(subsJson == null ? "[]" : subsJson);
+                for (int k = 0; k < arr.length() && k < 8; k++) {
+                    String u = arr.optString(k, "");
+                    if (u.startsWith("http://") || u.startsWith("https://")) list.add(u);
+                }
+            } catch (Exception ignored) {}
+            runOnUiThread(() -> {
+                Intent i = new Intent(MainActivity.this, PlayerActivity.class);
+                i.putExtra(PlayerActivity.EXTRA_URL, link);
+                i.putExtra(PlayerActivity.EXTRA_SUBS, list.toArray(new String[0]));
+                startActivity(i);
+            });
+        }
+
+        @JavascriptInterface
+        public int version() { return 2; }
     }
 }
