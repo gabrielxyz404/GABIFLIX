@@ -454,16 +454,82 @@
             bar.appendChild(fill);
             b.appendChild(bar);
         }
+        // segurar o dedo no pôster abre a opção de remover (e zera a linha do tempo)
+        var pressed = false;
+        onLongPress(b, function () { pressed = true; continueMenu(item, b); });
         // tocar retoma de onde parou, quando o app tiver esse atalho
         var link = item.deepLinks && (item.deepLinks.player || item.deepLinks.metaDetailsStreams || item.deepLinks.metaDetailsVideos);
-        if (link) {
-            b.addEventListener('click', function (e) {
-                e.stopImmediatePropagation();
-                saveScroll();
-                window.gfGo(link);
-            }, true);
-        }
+        b.addEventListener('click', function (e) {
+            if (pressed) { pressed = false; e.preventDefault(); e.stopImmediatePropagation(); return; }
+            if (!link) return;
+            e.stopImmediatePropagation();
+            saveScroll();
+            window.gfGo(link);
+        }, true);
         return b;
+    }
+
+    function onLongPress(node, fn) {
+        var timer = null, x = 0, y = 0;
+        function cancel() { clearTimeout(timer); timer = null; }
+        node.addEventListener('pointerdown', function (e) {
+            if (e.button) return;
+            x = e.clientX; y = e.clientY;
+            cancel();
+            timer = setTimeout(function () { timer = null; if (navigator.vibrate) try { navigator.vibrate(15); } catch (er) {} fn(); }, 500);
+        });
+        node.addEventListener('pointermove', function (e) { if (timer && Math.abs(e.clientX - x) + Math.abs(e.clientY - y) > 12) cancel(); });
+        ['pointerup', 'pointercancel', 'pointerleave'].forEach(function (ev) { node.addEventListener(ev, cancel); });
+        // o menu do sistema (copiar imagem etc.) não aparece
+        node.addEventListener('contextmenu', function (e) { e.preventDefault(); });
+    }
+
+    function continueMenu(item, poster) {
+        var old = document.getElementById('gf-cw-menu');
+        if (old) old.remove();
+        var root = el('div', 'gf-sheet');
+        root.id = 'gf-cw-menu';
+        function close() { root.classList.add('is-closing'); setTimeout(function () { root.remove(); }, 180); }
+        root.addEventListener('click', function (e) { if (e.target === root) close(); });
+        var card = el('div', 'gf-sheet-card gf-cw-card');
+        card.setAttribute('role', 'dialog');
+        var head = el('div', 'gf-sheet-head');
+        var tt = el('div', 'gf-sheet-titles');
+        tt.appendChild(el('div', 'gf-sheet-title', item.name || 'Título'));
+        tt.appendChild(el('div', 'gf-sheet-sub', 'Continuar assistindo'));
+        head.appendChild(tt);
+        var x = el('button', 'gf-sheet-close', '✕');
+        x.type = 'button'; x.setAttribute('aria-label', 'Fechar');
+        x.addEventListener('click', close);
+        head.appendChild(x);
+        card.appendChild(head);
+        var list = el('div', 'gf-sheet-list');
+        var rm = el('button', 'gf-sheet-item gf-cw-remove');
+        rm.type = 'button';
+        rm.appendChild(el('span', 'gf-sheet-q', 'Remover de Continuar assistindo'));
+        rm.appendChild(el('span', 'gf-sheet-d', 'A linha do tempo volta para o início.'));
+        rm.addEventListener('click', function () {
+            var c = window.core && (window.core.transport || window.core);
+            if (c && c.dispatch) {
+                try {
+                    c.dispatch({ action: 'Ctx', args: { action: 'RewindLibraryItem', args: item._id } });
+                    c.dispatch({ action: 'Ctx', args: { action: 'DismissNotificationItem', args: item._id } });
+                } catch (e) {}
+            }
+            close();
+            var row = poster.closest('.gf-row');
+            poster.remove();
+            if (row && !row.querySelector('.gf-poster')) row.hidden = true;
+        });
+        list.appendChild(rm);
+        var cancel = el('button', 'gf-sheet-item gf-cw-cancel');
+        cancel.type = 'button';
+        cancel.appendChild(el('span', 'gf-sheet-q', 'Cancelar'));
+        cancel.addEventListener('click', close);
+        list.appendChild(cancel);
+        card.appendChild(list);
+        root.appendChild(card);
+        document.body.appendChild(root);
     }
 
     function renderContinue(s) {

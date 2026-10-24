@@ -482,3 +482,6 @@ div[class^="board-content-"]:not([class*="container"]) > :not(#gf-home) { displa
     }
     html[data-gf-route="home"][data-gf-view="grid"] #gf-home .gf-grid { margin-top: 0; }
 }
+
+/* segurar o dedo no pôster não seleciona nem abre o menu do sistema */
+#gf-home .gf-poster, #gf-home .gf-poster img { -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; -webkit-user-drag: none; }
