@@ -33,7 +33,7 @@ android {
     buildTypes {
         release {
             minifyEnabled false
-            signingConfig (ks.exists() && ksPass) ? signingConfigs.release : signingConfigs.debug
+            signingConfig((ks.exists() && ksPass) ? signingConfigs.release : signingConfigs.debug)
         }
     }
 
