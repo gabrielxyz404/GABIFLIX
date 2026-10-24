@@ -434,7 +434,7 @@ div[class^="board-content-"]:not([class*="container"]) > :not(#gf-home) { displa
 #gf-home .gf-grid { margin-top: 0.9rem; }
 
 /* ---------- Top 10: número grande ao lado da capa ---------- */
-#gf-home .gf-row-top10 .gf-row-track { grid-auto-columns: clamp(9.2rem, 40vw, 12rem); gap: 0.4rem; }
+#gf-home .gf-row-top10 .gf-row-track { grid-auto-columns: clamp(8.6rem, 37vw, 11.5rem); gap: 0.5rem; }
 #gf-home .gf-top10-item {
     position: relative;
     display: flex;
@@ -443,8 +443,8 @@ div[class^="board-content-"]:not([class*="container"]) > :not(#gf-home) { displa
 }
 #gf-home .gf-top10-num {
     flex: none;
-    width: 2.9rem;
-    margin-right: -0.9rem;
+    width: 3.3rem;
+    margin-right: -0.55rem;
     font-family: 'Outfit', 'PlusJakartaSans', system-ui, sans-serif;
     font-size: 5.4rem;
     font-weight: 900;
