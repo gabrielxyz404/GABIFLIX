@@ -83,8 +83,13 @@
         (state.streams || []).forEach(function (g) {
             if (g && g.content && g.content.type === 'Ready' && Array.isArray(g.content.content)) out = out.concat(g.content.content);
         });
-        return out;
+        // fontes com link direto (ex.: Real-Debrid) primeiro; torrents puros não tocam no celular
+        return out.map(function (st, i) { return { st: st, i: i }; }).sort(function (a, b) {
+            return (isTorrent(a.st) - isTorrent(b.st)) || (a.i - b.i);
+        }).map(function (x) { return x.st; });
     }
+    function isTorrent(st) { return st && !st.url && !st.ytId && !st.externalUrl && !!st.infoHash ? 1 : 0; }
+    var HEAVY_AUDIO = /\b(DTS|TrueHD|E-?AC-?3|AC-?3|DDP?\+?(\s?[257]\.[01])?|Dolby\s?Digital|Atmos)\b/i;
     function streamsLoading(state) {
         return (state.streams || []).some(function (g) { return g && g.content && g.content.type === 'Loading'; });
     }
@@ -373,6 +378,8 @@
                 b.appendChild(el('span', 'gf-sheet-q', name.replace(/\s*\n\s*/g, ' · ')));
                 var d = String(st.description || st.title || '').trim();
                 if (d) b.appendChild(el('span', 'gf-sheet-d', d));
+                var warn = isTorrent(st) ? 'Torrent: só toca com Real-Debrid no addon' : (HEAVY_AUDIO.test(name + ' ' + d) ? 'O áudio pode não tocar no celular' : '');
+                if (warn) { b.appendChild(el('span', 'gf-sheet-warn', warn)); if (isTorrent(st)) b.classList.add('is-torrent'); }
                 b.addEventListener('click', function () { playStream(st); });
                 list.appendChild(b);
             });
