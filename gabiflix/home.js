@@ -246,6 +246,83 @@
         return row;
     }
 
+    // ---------- Continuar assistindo (por serviço) ----------
+    // O progresso vem do próprio app (window.core). Cada título aparece no
+    // catálogo do serviço onde ele está; o que não está em nenhum vai para a Cinemateca.
+    var ALL_FILES = ['netflix', 'disney', 'prime', 'hbo', 'appletv', 'paramount', 'globoplay', 'clarovideo']
+        .reduce(function (acc, id) { return acc.concat([id + '-movie', id + '-series']); }, [])
+        .concat(['disney-disney', 'disney-pixar', 'disney-marvel', 'disney-starwars', 'disney-natgeo',
+                 'cine-cinemas', 'cine-classicos', 'cine-movie', 'cine-series']);
+
+    function filesFor(s) {
+        if (s.id === 'cinemateca') return ['cine-cinemas', 'cine-classicos', 'cine-movie', 'cine-series'];
+        var f = [s.id + '-movie', s.id + '-series'];
+        if (s.id === 'disney') f = f.concat(['disney-disney', 'disney-pixar', 'disney-marvel', 'disney-starwars', 'disney-natgeo']);
+        return f;
+    }
+
+    function idsOf(files) {
+        return Promise.all(files.map(function (f) {
+            return loadCatalog({ file: f }).catch(function () { return []; });
+        })).then(function (lists) {
+            var set = {};
+            lists.forEach(function (l) { l.forEach(function (m) { set[m.id] = true; }); });
+            return set;
+        });
+    }
+
+    function getContinueItems() {
+        var core = window.core && (window.core.transport || window.core);
+        if (!core || typeof core.getState !== 'function') return Promise.resolve([]);
+        return Promise.resolve(core.getState('continue_watching_preview'))
+            .then(function (st) { return (st && st.items) || []; })
+            .catch(function () { return []; });
+    }
+
+    function continuePoster(item) {
+        var meta = { id: item._id, type: item.type, name: item.name, poster: item.poster };
+        var b = posterEl(meta, false, false);
+        var st = item.state || {};
+        if (st.duration > 0 && st.timeOffset > 0) {
+            var bar = el('span', 'gf-progress');
+            var fill = el('span', 'gf-progress-fill');
+            fill.style.width = Math.min(100, Math.max(3, (st.timeOffset / st.duration) * 100)).toFixed(1) + '%';
+            bar.appendChild(fill);
+            b.appendChild(bar);
+        }
+        // tocar retoma de onde parou, quando o app tiver esse atalho
+        var link = item.deepLinks && (item.deepLinks.player || item.deepLinks.metaDetailsStreams || item.deepLinks.metaDetailsVideos);
+        if (link) {
+            b.addEventListener('click', function (e) {
+                e.stopImmediatePropagation();
+                location.hash = link.replace(/^#/, '');
+            }, true);
+        }
+        return b;
+    }
+
+    function renderContinue(s) {
+        var row = el('section', 'gf-row');
+        row.hidden = true;
+        row.appendChild(el('h2', 'gf-row-title', 'Continuar assistindo'));
+        var track = el('div', 'gf-row-track');
+        row.appendChild(track);
+        Promise.all([getContinueItems(), idsOf(filesFor(s)), s.id === 'cinemateca' ? idsOf(ALL_FILES.filter(function (f) { return f.indexOf('cine-') !== 0; })) : null])
+            .then(function (r) {
+                var items = r[0], mine = r[1], onServices = r[2];
+                var list = items.filter(function (it) {
+                    if (!it || !it._id) return false;
+                    if (mine[it._id]) return true;
+                    // Cinemateca também recebe o que não está em nenhum serviço
+                    return s.id === 'cinemateca' && onServices && !onServices[it._id];
+                });
+                if (!list.length) return;
+                list.forEach(function (it) { track.appendChild(continuePoster(it)); });
+                row.hidden = false;
+            });
+        return row;
+    }
+
     function renderCatalog(root, s) {
         root.innerHTML = '';
         var page = el('div', 'gf-svc');
@@ -289,6 +366,7 @@
                 hero = el('div', 'gf-hero');
                 fillHero(hero, null, s);
                 body.appendChild(hero);
+                body.appendChild(renderContinue(s));
             }
             var heroDone = false;
             sectionsFor(s, currentTab).forEach(function (sec) {

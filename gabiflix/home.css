@@ -2,6 +2,7 @@
 @font-face { font-family: 'Outfit'; src: url('../fonts/Outfit.ttf') format('truetype'); font-weight: 100 900; font-display: swap; }
 div[class^="board-content-"]:not([class*="container"]) > :not(#gf-home) { display: none !important; }
 [class*="board-warning-container"] { display: none !important; }
+[class*="continue-watching-row"] { display: none !important; }
 
 #gf-home {
     --gf-red: #f2f2f2;
@@ -374,4 +375,21 @@ div[class^="board-content-"]:not([class*="container"]) > :not(#gf-home) { displa
     font-weight: 800;
     font-variant-numeric: tabular-nums;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
+}
+
+/* Barra de progresso do "Continuar assistindo" */
+#gf-home .gf-progress {
+    position: absolute;
+    left: 0.4rem;
+    right: 0.4rem;
+    bottom: 0.4rem;
+    height: 4px;
+    border-radius: 2px;
+    background: rgba(255, 255, 255, 0.25);
+    overflow: hidden;
+}
+#gf-home .gf-progress-fill {
+    display: block;
+    height: 100%;
+    background: var(--gf-brand);
 }
