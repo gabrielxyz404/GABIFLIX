@@ -13,7 +13,7 @@
 /* imagem de cima, de ponta a ponta, passando por baixo do topo */
 .gf-d-hero {
     position: relative;
-    margin-top: calc(var(--top-overlay-size, 5.25rem) * -1);
+    margin-top: 0.6rem; /* começa abaixo do topo, sem ficar escondida atrás dele */
     aspect-ratio: 16 / 10;
     max-height: 62vh;
     width: 100%;
@@ -26,7 +26,7 @@
     content: "";
     position: absolute;
     inset: 0;
-    background: linear-gradient(180deg, rgba(0,0,0,0.35) 0%, rgba(0,0,0,0) 30%, rgba(0,0,0,0) 55%, #000 100%);
+    background: linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0) 55%, #000 100%);
 }
 
 .gf-d-body { padding: 0 1.1rem; margin-top: -1.6rem; position: relative; z-index: 1; }
