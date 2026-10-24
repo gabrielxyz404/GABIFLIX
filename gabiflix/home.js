@@ -169,7 +169,20 @@
     }
 
     // ---------- Posição da rolagem: ao voltar de um título, a lista continua onde estava ----------
-    var pendingScroll = 0;
+    var pendingScroll = 0, lastScroll = 0;
+
+    // devolve a lista para uma posição, confirmando algumas vezes (o app às vezes zera a rolagem)
+    function scrollBackTo(target) {
+        if (!target) return;
+        var ok = 0, tries = 0;
+        (function retry() {
+            var sc = scroller();
+            if (sc && sc.clientHeight > 0) {
+                if (Math.abs(sc.scrollTop - target) > 2) { sc.scrollTop = target; ok = 0; } else ok++;
+            }
+            if (ok < 3 && ++tries < 30) setTimeout(retry, 100);
+        })();
+    }
     function scroller() {
         var root = document.getElementById('gf-home');
         return root && root.parentNode;
@@ -177,6 +190,7 @@
     function saveScroll() {
         var sc = scroller();
         if (!sc || !current) return;
+        lastScroll = sc.scrollTop;
         try { history.replaceState(Object.assign({}, history.state, { gfScroll: sc.scrollTop }), '', location.href); } catch (e) {}
     }
     function restoreScroll() {
@@ -446,8 +460,23 @@
 
     // a cor do serviço só vale enquanto a Home (com o catálogo aberto) está na tela
     function onHome() { return /^#?\/?$/.test(location.hash); }
-    window.addEventListener('hashchange', function () {
-        applyTheme(onHome() && current ? find(current) : null);
+    var wasHome = true;
+    function syncTheme() {
+        var home = onHome();
+        applyTheme(home && current ? find(current) : null);
+        if (home && !wasHome && current && lastScroll) scrollBackTo(lastScroll);
+        wasHome = home;
+    }
+    window.addEventListener('hashchange', syncTheme);
+    window.addEventListener('popstate', syncTheme);
+    // a setinha de voltar do app troca de página sem avisar (pushState); por isso escutamos também
+    ['pushState', 'replaceState'].forEach(function (fn) {
+        var orig = history[fn];
+        history[fn] = function () {
+            var r = orig.apply(this, arguments);
+            try { syncTheme(); } catch (e) {}
+            return r;
+        };
     });
 
     // tocar em "Home" na barra, com um catálogo aberto, volta para a tela dos serviços
@@ -486,15 +515,7 @@
         if (id !== current) { current = id || null; currentTab = (e.state && e.state.gfTab) || 'Início'; render(); }
         else if (id && e.state && e.state.gfScroll) {
             // voltou de um título para o mesmo catálogo: devolve a lista para onde estava
-            var target = e.state.gfScroll, ok = 0, tries = 0;
-            (function retry() {
-                var sc = scroller();
-                if (sc && sc.clientHeight > 0) {
-                    if (Math.abs(sc.scrollTop - target) > 2) { sc.scrollTop = target; ok = 0; } else ok++;
-                }
-                // confirma algumas vezes porque o app às vezes zera a rolagem logo depois de voltar
-                if (ok < 3 && ++tries < 30) setTimeout(retry, 100);
-            })();
+            scrollBackTo(e.state.gfScroll);
         }
     });
 
