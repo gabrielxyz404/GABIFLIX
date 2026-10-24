@@ -23,7 +23,7 @@ import java.util.ArrayList;
 
 /**
  * Tela principal: abre o GabiFlix (site) dentro do app.
- * Quando o GabiFlix pede para abrir um vídeo no VLC, o vídeo abre no player embutido (PlayerActivity).
+ * Os vídeos abrem no player embutido (PlayerActivity, com VLC) pela ponte window.GabiFlixNative.playSession.
  */
 public class MainActivity extends Activity {
 
@@ -115,21 +115,12 @@ public class MainActivity extends Activity {
         Uri uri = Uri.parse(url);
         String scheme = uri.getScheme() == null ? "" : uri.getScheme().toLowerCase();
 
-        // 1) vídeo para o VLC -> player embutido
-        String media = VlcLinks.mediaUrl(url);
-        if (media != null) {
-            Intent i = new Intent(this, PlayerActivity.class);
-            i.putExtra(PlayerActivity.EXTRA_URL, media);
-            startActivity(i);
-            return true;
-        }
-
-        // 2) páginas do próprio GabiFlix continuam dentro do app
+        // 1) páginas do próprio GabiFlix continuam dentro do app
         if ((scheme.equals("http") || scheme.equals("https")) && APP_HOST.equalsIgnoreCase(uri.getHost())) {
             return false;
         }
 
-        // 3) qualquer outro link (YouTube, sites, outros apps) abre fora
+        // 2) qualquer outro link (YouTube, sites, outros apps) abre fora
         try {
             Intent i;
             if (scheme.equals("intent")) i = Intent.parseUri(url, Intent.URI_INTENT_SCHEME);
@@ -209,63 +200,17 @@ public class MainActivity extends Activity {
     }
 
     /** Ponte chamada pelo site: abre o vídeo no player embutido. */
+    /** Ponte chamada pelo site: abre o vídeo no player embutido (VLC). */
     private final class NativeBridge {
-        @JavascriptInterface
-        public void play(String link) {
-            if (link == null || !(link.startsWith("http://") || link.startsWith("https://"))) return;
-            runOnUiThread(() -> {
-                Intent i = new Intent(MainActivity.this, PlayerActivity.class);
-                i.putExtra(PlayerActivity.EXTRA_URL, link);
-                startActivity(i);
-            });
-        }
-
-        /** toca com legendas: subsJson = ["https://...srt", ...] (já só em português) */
-        @JavascriptInterface
-        public void playWithSubs(String link, String subsJson) {
-            if (link == null || !(link.startsWith("http://") || link.startsWith("https://"))) return;
-            ArrayList<String> list = new ArrayList<>();
-            try {
-                org.json.JSONArray arr = new org.json.JSONArray(subsJson == null ? "[]" : subsJson);
-                for (int k = 0; k < arr.length() && k < 8; k++) {
-                    String u = arr.optString(k, "");
-                    if (u.startsWith("http://") || u.startsWith("https://")) list.add(u);
-                }
-            } catch (Exception ignored) {}
-            runOnUiThread(() -> {
-                Intent i = new Intent(MainActivity.this, PlayerActivity.class);
-                i.putExtra(PlayerActivity.EXTRA_URL, link);
-                i.putExtra(PlayerActivity.EXTRA_SUBS, list.toArray(new String[0]));
-                startActivity(i);
-            });
-        }
-
-        /** toca com legendas; type/id deixam o player buscar legendas sozinho se a lista vier vazia */
-        @JavascriptInterface
-        public void playFull(String link, String subsJson, String type, String id) {
-            if (link == null || !(link.startsWith("http://") || link.startsWith("https://"))) return;
-            ArrayList<String> list = new ArrayList<>();
-            try {
-                org.json.JSONArray arr = new org.json.JSONArray(subsJson == null ? "[]" : subsJson);
-                for (int k = 0; k < arr.length() && k < 8; k++) {
-                    String u = arr.optString(k, "");
-                    if (u.startsWith("http://") || u.startsWith("https://")) list.add(u);
-                }
-            } catch (Exception ignored) {}
-            runOnUiThread(() -> {
-                Intent i = new Intent(MainActivity.this, PlayerActivity.class);
-                i.putExtra(PlayerActivity.EXTRA_URL, link);
-                i.putExtra(PlayerActivity.EXTRA_SUBS, list.toArray(new String[0]));
-                i.putExtra(PlayerActivity.EXTRA_TYPE, type);
-                i.putExtra(PlayerActivity.EXTRA_ID, id);
-                startActivity(i);
-            });
-        }
+        private long lastOpen = 0;
 
         /** player principal: link, legendas PT, tipo/código do título e onde começar (ms) */
         @JavascriptInterface
         public void playSession(String link, String subsJson, String type, String id, String startMs) {
             if (link == null || !(link.startsWith("http://") || link.startsWith("https://"))) return;
+            long now = System.currentTimeMillis();
+            if (now - lastOpen < 3000) return; // toques repetidos
+            lastOpen = now;
             ArrayList<String> list = new ArrayList<>();
             try {
                 org.json.JSONArray arr = new org.json.JSONArray(subsJson == null ? "[]" : subsJson);

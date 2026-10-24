@@ -130,7 +130,7 @@ public class PlayerActivity extends Activity {
 
         ArrayList<String> options = new ArrayList<>();
         options.add("--http-reconnect");
-        options.add("--network-caching=2000");
+        options.add("--network-caching=3000");
         options.add("--audio-time-stretch");
         options.add("--sub-text-scale=90");
         libVLC = new LibVLC(this, options);
@@ -140,7 +140,7 @@ public class PlayerActivity extends Activity {
 
         Media media = new Media(libVLC, Uri.parse(url));
         media.setHWDecoderEnabled(true, false);
-        media.addOption(":network-caching=2000");
+        media.addOption(":network-caching=3000");
         player.setMedia(media);
         media.release();
         player.play();
@@ -176,8 +176,8 @@ public class PlayerActivity extends Activity {
                 break;
             case MediaPlayer.Event.EndReached:
                 ended = true;
-                clearPosition();
-                reportSession(player.getLength(), player.getLength(), true);
+                if (metaId == null) clearPosition();
+                else reportSession(player.getLength(), player.getLength(), true);
                 finish();
                 break;
             case MediaPlayer.Event.EncounteredError:
@@ -197,7 +197,8 @@ public class PlayerActivity extends Activity {
 
     private void resume() {
         resumeDone = true;
-        long saved = startMs > 0 ? startMs : prefs().getLong(key(), 0);
+        // aberto pelo GabiFlix: o ponto certo é o do Stremio (se foi removido do Continuar assistindo, começa do zero)
+        long saved = metaId != null ? startMs : prefs().getLong(key(), 0);
         long len = player.getLength();
         if (saved > 30000 && (len <= 0 || saved < len - 60000)) player.setTime(saved);
     }
@@ -209,8 +210,9 @@ public class PlayerActivity extends Activity {
         lastSaved = now;
         if (player == null) return;
         long t = player.getTime();
-        if (t > 0) prefs().edit().putLong(key(), t).apply();
-        if (t > 0) reportSession(t, player.getLength(), false);
+        if (t <= 0) return;
+        if (metaId == null) prefs().edit().putLong(key(), t).apply();
+        else reportSession(t, player.getLength(), false);
     }
 
     private void clearPosition() { prefs().edit().remove(key()).apply(); }
@@ -563,10 +565,18 @@ public class PlayerActivity extends Activity {
     }
 
     // ---------- ciclo de vida ----------
+    private boolean resumeOnReturn = false;
+
     @Override
     protected void onPause() {
         super.onPause();
-        if (player != null) { savePosition(true); player.pause(); }
+        if (player != null) { resumeOnReturn = player.isPlaying(); savePosition(true); player.pause(); }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (player != null && resumeOnReturn) { resumeOnReturn = false; player.play(); }
     }
 
     @Override
