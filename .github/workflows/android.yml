@@ -21,7 +21,7 @@ jobs:
     timeout-minutes: 40
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: 17
@@ -32,7 +32,16 @@ jobs:
         env:
           GABIFLIX_VERSION_CODE: ${{ github.run_number }}
           GABIFLIX_VERSION_NAME: 1.0.${{ github.run_number }}
-        run: gradle -p android assembleRelease --no-daemon --stacktrace
+        run: |
+          set -o pipefail
+          gradle -p android assembleRelease --no-daemon 2>&1 | tee build.log
+      - name: Mostrar o erro (se houver)
+        if: failure()
+        run: |
+          # cada linha vira um aviso legível de fora do GitHub
+          grep -n -E "error:|What went wrong|Could not|FAILURE|e: |> .*" build.log | head -25 | while IFS= read -r line; do
+            echo "::error::$(echo "$line" | cut -c1-900)"
+          done
       - name: Preparar o arquivo
         run: |
           mkdir -p out
