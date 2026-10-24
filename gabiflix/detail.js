@@ -297,6 +297,11 @@
     }
     // abre a fonte do mesmo jeito que a lista do app abriria (player do app, VLC, etc.)
     function playStream(stream) {
+        // app Android (versão nova): link direto toca no player embutido, que aceita qualquer formato e áudio
+        if (window.GabiFlixNative && stream && /^https?:\/\//i.test(stream.url || '')) {
+            closeSheet();
+            try { window.GabiFlixNative.play(stream.url); return; } catch (e) {}
+        }
         var dl = stream && stream.deepLinks;
         if (!dl) return;
         var ext = dl.externalPlayer, href = null;

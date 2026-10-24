@@ -11,6 +11,7 @@ import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
 import android.webkit.CookieManager;
+import android.webkit.JavascriptInterface;
 import android.webkit.WebChromeClient;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebSettings;
@@ -74,6 +75,9 @@ public class MainActivity extends Activity {
                 return handleUrl(url);
             }
         });
+
+        // o site chama window.GabiFlixNative.play(link) para tocar no player embutido (VLC)
+        web.addJavascriptInterface(new NativeBridge(), "GabiFlixNative");
 
         web.setWebChromeClient(new WebChromeClient() {
             // vídeo em tela cheia no player do próprio site
@@ -185,5 +189,21 @@ public class MainActivity extends Activity {
             web.destroy();
         }
         super.onDestroy();
+    }
+
+    /** Ponte chamada pelo site: abre o vídeo no player embutido. */
+    private final class NativeBridge {
+        @JavascriptInterface
+        public void play(String link) {
+            if (link == null || !(link.startsWith("http://") || link.startsWith("https://"))) return;
+            runOnUiThread(() -> {
+                Intent i = new Intent(MainActivity.this, PlayerActivity.class);
+                i.putExtra(PlayerActivity.EXTRA_URL, link);
+                startActivity(i);
+            });
+        }
+
+        @JavascriptInterface
+        public int version() { return 1; }
     }
 }
