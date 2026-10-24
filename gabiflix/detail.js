@@ -206,7 +206,7 @@
         var tr = (meta.trailerStreams || [])[0];
         var trLink = tr && tr.deepLinks && (tr.deepLinks.player || (tr.deepLinks.externalPlayer && tr.deepLinks.externalPlayer.web));
         if (trLink) acts.appendChild(action('film', 'Trailer', function () {
-            if (/^https?:/.test(trLink)) window.open(trLink, '_blank'); else location.hash = trLink.replace(/^#/, '');
+            if (/^https?:/.test(trLink)) window.open(trLink, '_blank'); else window.gfGo(trLink);
         }));
         if (!isSeries || episodeView) {
             acts.appendChild(action(meta.watched ? 'eye-on' : 'eye', meta.watched ? 'Visto' : 'Marcar visto', function () {
@@ -228,8 +228,8 @@
 
     function openEpisode(v) {
         var dl = v && v.deepLinks && (v.deepLinks.metaDetailsStreams || v.deepLinks.player);
-        if (dl) location.hash = dl.replace(/^#/, '');
-        else if (v) location.hash = '#/detail/series/' + encodeURIComponent(v.id.split(':')[0]) + '/' + encodeURIComponent(v.id);
+        if (dl) window.gfGo(dl);
+        else if (v) window.gfGo('#/detail/series/' + encodeURIComponent(v.id.split(':')[0]) + '/' + encodeURIComponent(v.id));
     }
 
     // nomes genéricos ("Episode 3", "Chapter 6", "Capítulo 2"...) não ajudam: nesses casos fica só "Episódio N"
@@ -313,6 +313,17 @@
         return wrap;
     }
 
+    function skeleton() {
+        var box = el('div', 'gf-detail is-loading');
+        box.id = 'gf-detail';
+        box.setAttribute('data-id', location.hash);
+        box.appendChild(el('div', 'gf-d-hero'));
+        var body = el('div', 'gf-d-body');
+        ['t', 'i', 'p', 'c', 'd'].forEach(function (k) { body.appendChild(el('div', 'gf-d-sk gf-d-sk-' + k)); });
+        box.appendChild(body);
+        return box;
+    }
+
     function line(label, text) {
         var p = el('p', 'gf-d-line');
         p.appendChild(el('span', null, label + ': '));
@@ -362,7 +373,16 @@
         Promise.resolve(c.getState('meta_details')).then(function (state) {
             if (!state || !onDetail()) return;
             var meta = state.metaItem && state.metaItem.content && state.metaItem.content.type === 'Ready' ? state.metaItem.content.content : null;
-            if (!meta) { html.removeAttribute('data-gf-detail'); return; }
+            if (!meta) {
+                var r0 = document.getElementById('gf-detail');
+                if (!r0 || r0.parentNode !== content || r0.getAttribute('data-id') !== location.hash) {
+                    var sk = skeleton();
+                    if (r0) r0.remove();
+                    content.insertBefore(sk, content.firstChild);
+                    lastSig = '';
+                }
+                return;
+            }
             var lib = state.libraryItem && state.libraryItem.state;
             var sig = [location.hash, meta.id, meta.inLibrary, meta.watched, readyStreams(state).length, streamsLoading(state),
                 lib && lib.video_id, lib && Math.round(lib.timeOffset / 10000), (servicesFor[meta.id] || []).length, (meta.videos || []).length, seasonPick[meta.id]].join('|');
@@ -387,6 +407,23 @@
         if (on && !timer) { tick(); timer = setInterval(tick, 400); }
         if (!on && timer) { clearInterval(timer); timer = null; tick(); }
     }
+    var queued = false;
+    new MutationObserver(function () {
+        if (queued || !onDetail()) return;
+        queued = true;
+        requestAnimationFrame(function () {
+            queued = false;
+            var content = document.querySelector('[class*="metadetails-content"]');
+            var root = document.getElementById('gf-detail');
+            if (content && (!root || root.parentNode !== content || root.getAttribute('data-id') !== location.hash)) { lastSig = ''; tick(); }
+            update();
+        });
+    }).observe(document.documentElement, { childList: true, subtree: true });
+    // mudanças de página feitas pelo app sem aviso (pushState) também
+    ['pushState', 'replaceState'].forEach(function (fn) {
+        var orig = history[fn];
+        history[fn] = function () { var r = orig.apply(this, arguments); setTimeout(update, 0); return r; };
+    });
     window.addEventListener('hashchange', function () { expanded = false; update(); });
     window.addEventListener('popstate', update);
     setInterval(update, 1000);

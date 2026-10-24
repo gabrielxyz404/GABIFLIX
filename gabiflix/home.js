@@ -235,7 +235,7 @@
     function openTitle(meta) {
         if (!meta || !meta.id || !meta.type) return;
         saveScroll();
-        location.hash = '#/detail/' + encodeURIComponent(meta.type) + '/' + encodeURIComponent(meta.id);
+        window.gfGo('#/detail/' + encodeURIComponent(meta.type) + '/' + encodeURIComponent(meta.id));
     }
 
     function posterEl(meta, wide, numbered) {
@@ -442,7 +442,7 @@
             b.addEventListener('click', function (e) {
                 e.stopImmediatePropagation();
                 saveScroll();
-                location.hash = link.replace(/^#/, '');
+                window.gfGo(link);
             }, true);
         }
         return b;

@@ -1,9 +1,10 @@
 /* GabiFlix: página de filme/série no estilo dos apps de streaming */
-:root[data-gf-detail] [class*="metadetails-container"] { background: #000; }
-:root[data-gf-detail] [class*="metadetails-container"] > [class*="background-image-layer"],
-:root[data-gf-detail] [class*="metadetails-content"] > [class*="meta-preview"],
-:root[data-gf-detail] [class*="metadetails-content"] > [class*="spacing"] { display: none !important; }
-:root[data-gf-detail] [class*="metadetails-content"] { flex-direction: column !important; overflow-y: auto; padding-bottom: 2.5rem; }
+/* o cabeçalho antigo do Stremio nunca aparece (nem por um instante ao abrir ou voltar) */
+[class*="metadetails-container"] { background: #000; }
+[class*="metadetails-container"] > [class*="background-image-layer"],
+[class*="metadetails-content"] > [class*="meta-preview"],
+[class*="metadetails-content"] > [class*="spacing"] { display: none !important; }
+[class*="metadetails-content"] { flex-direction: column !important; overflow-y: auto; padding-bottom: 2.5rem; }
 
 .gf-detail { flex: none; align-self: stretch; color: #fff; animation: gf-d-in 0.25s ease-out both; }
 .gf-detail.no-anim { animation: none; }
@@ -251,3 +252,13 @@
 .gf-d-ep-date { font-size: 0.78rem; color: rgba(255,255,255,0.45); }
 .gf-d-ep-seen { font-size: 0.75rem; font-weight: 700; color: rgba(255,255,255,0.6); }
 .gf-d-ep.is-next .gf-d-ep-num::after { content: "  •  próximo"; font-weight: 600; font-size: 0.78rem; color: rgba(255,255,255,0.55); }
+
+/* esqueleto enquanto carrega */
+.gf-detail.is-loading .gf-d-body { margin-top: 0.8rem; }
+.gf-d-sk { border-radius: 0.5rem; margin-top: 0.7rem; background: linear-gradient(90deg, rgba(255,255,255,0.05), rgba(255,255,255,0.1) 50%, rgba(255,255,255,0.05)); background-size: 200% 100%; animation: gf-d-sh 1.6s ease-in-out infinite; }
+.gf-d-sk-t { height: 2.2rem; width: 60%; }
+.gf-d-sk-i { height: 1rem; width: 45%; }
+.gf-d-sk-p { height: 3.1rem; width: 100%; margin-top: 1rem; }
+.gf-d-sk-c { height: 3rem; width: 100%; }
+.gf-d-sk-d { height: 3.6rem; width: 100%; margin-top: 1rem; }
+@keyframes gf-d-sh { 0% { background-position: 100% 0; } 100% { background-position: -100% 0; } }

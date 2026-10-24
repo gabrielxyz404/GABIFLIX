@@ -118,6 +118,11 @@
         box.appendChild(el('span', 'gf-s-fallback', m.name || ''));
         a.appendChild(box);
         a.appendChild(el('span', 'gf-s-name', m.name || ''));
+        a.addEventListener('click', function (e) {
+            if (!window.gfGo || e.ctrlKey || e.metaKey) return;
+            e.preventDefault();
+            window.gfGo(a.getAttribute('href'));
+        });
         return a;
     }
 
@@ -211,6 +216,7 @@
             items.forEach(function (h) {
                 var a = el('a', 'gf-s-chip gf-s-recent-item', h.query);
                 a.href = (h.deepLinks && h.deepLinks.search) || ('#/search?search=' + encodeURIComponent(h.query));
+                a.addEventListener('click', function (e) { if (window.gfGo) { e.preventDefault(); window.gfGo(a.getAttribute('href')); } });
                 list.appendChild(a);
             });
             box.appendChild(list);

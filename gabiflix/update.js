@@ -68,3 +68,18 @@
     window.addEventListener('hashchange', addSkip);
     addSkip();
 })();
+
+// Navegação que o app entende: assim a setinha de voltar do app volta para a tela anterior
+// (abrir uma página com location.hash fazia a setinha cair na Home ou na página antiga).
+window.gfGo = function (hash) {
+    hash = '#' + String(hash || '/').replace(/^#/, '');
+    if (location.hash === hash) return;
+    var st = history.state || {};
+    var idx = typeof st.idx === 'number' ? st.idx : 0;
+    try {
+        history.pushState({ usr: null, key: Math.random().toString(36).slice(2, 10), idx: idx + 1 }, '', location.pathname + location.search + hash);
+        window.dispatchEvent(new PopStateEvent('popstate', { state: history.state }));
+    } catch (e) {
+        location.hash = hash;
+    }
+};
