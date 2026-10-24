@@ -166,3 +166,23 @@
 }
 .horizontal-nav-bar-container-Y_zvK .logo-container-jteMT { padding-left: 1.1rem; }
 .horizontal-nav-bar-container-Y_zvK [class*="buttons-container"] { padding-right: 0.6rem; }
+
+/* ---------- Busca: só o texto que está sendo digitado ---------- */
+:root[data-gf-route="search"] .search-bar-container-asfq1 {
+    background: none;
+    border-radius: 0;
+}
+:root[data-gf-route="search"] .search-bar-container-asfq1 .search-input-IQ0ZW {
+    padding: 0 0.5rem 0 0.7rem;
+    font-family: 'Outfit', 'PlusJakartaSans', system-ui, sans-serif;
+    font-size: 1.45rem;
+    font-weight: 600;
+    color: var(--primary-foreground-color);
+    caret-color: var(--primary-foreground-color);
+    background: none;
+    outline: none;
+}
+:root[data-gf-route="search"] .search-bar-container-asfq1 .search-input-IQ0ZW::placeholder { color: transparent; opacity: 0; }
+:root[data-gf-route="search"] .search-bar-container-asfq1 .search-input-IQ0ZW::-moz-placeholder { color: transparent; opacity: 0; }
+:root[data-gf-route="search"] .search-bar-container-asfq1 .placeholder-label-XyrN_,
+:root[data-gf-route="search"] .search-bar-container-asfq1 .submit-button-container-MImNa { display: none !important; }
