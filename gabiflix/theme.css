@@ -403,3 +403,20 @@ a[href="https://www.stremio.com/tos"] { display: none !important; }
         padding-bottom: calc(var(--vertical-nav-bar-size, 6rem) + 1rem) !important;
     }
 }
+
+/* ---------- Configurações: só o que serve para o GabiFlix ---------- */
+a[href^="https://github.com/stremio/"] { display: none !important; }
+/* servidor de streaming local (não é usado no celular nem no app) */
+.sections-container-ZaZpD > .section-hcYuV:has(.header-epxi0) { display: none !important; }
+/* código interno da versão */
+.info-nBG5H .option-vFOAS:nth-child(2) { display: none !important; }
+
+/* ---------- Addons: o último addon não fica escondido atrás do botão "Adicionar" e da barra ---------- */
+@media only screen and (max-width: 640px) {
+    .addons-container-ogGYu .addons-content-zhFBl .addons-list-container-Ovr2Z {
+        padding-bottom: calc(var(--vertical-nav-bar-size, 6rem) + 5.5rem) !important;
+    }
+}
+/* "Recomendações do Trakt" sem quebrar a palavra ao meio */
+.trakt-container-wWlM8 .heading-dYMDt, .trakt-container-wWlM8 .heading-dYMDt * { word-break: normal !important; overflow-wrap: normal !important; hyphens: none; }
+.trakt-container-wWlM8 .heading-dYMDt { flex: 1 1 auto; min-width: 0; }

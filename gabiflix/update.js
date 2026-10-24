@@ -56,12 +56,12 @@
         b.type = 'button';
         b.className = 'gf-skip-login';
         b.textContent = 'Agora não';
-        b.addEventListener('click', function () { location.hash = '#/'; });
+        b.addEventListener('click', function () { if (window.gfGo) window.gfGo('/'); else location.hash = '#/'; });
         box.appendChild(b);
     }
     var queued = false;
     new MutationObserver(function () {
-        if (queued) return;
+        if (queued || !/^#\/intro/.test(location.hash)) return;
         queued = true;
         requestAnimationFrame(function () { queued = false; addSkip(); });
     }).observe(document.documentElement, { childList: true, subtree: true });

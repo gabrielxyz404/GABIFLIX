@@ -1,6 +1,6 @@
 // GabiFlix: página de filme/série no estilo dos apps de streaming.
 // Monta um cabeçalho próprio (imagem, título, informações, Assistir, Mais Tarde, Trailer, Visto)
-// no lugar do cabeçalho do Stremio. A lista de fontes / episódios do Stremio continua embaixo.
+// no lugar da página do Stremio; as fontes abrem numa janela e os episódios aparecem numa lista própria.
 (function () {
     var SERVICES = [
         ['netflix', 'Netflix', '#e50914'], ['disney', 'Disney+', '#3aa3ff'], ['prime', 'Prime Video', '#1ba8e0'],
@@ -104,7 +104,6 @@
         var meta = state.metaItem && state.metaItem.content && state.metaItem.content.type === 'Ready' ? state.metaItem.content.content : null;
         if (!meta) return null;
         var sel = state.selected || {};
-        var streamPath = sel.streamPath;
         var isSeries = meta.type === 'series' || (meta.videos && meta.videos.length > 1);
         var lib = state.libraryItem;
         var video = null, urlVid = urlVideoId();
@@ -554,7 +553,6 @@
             box.setAttribute('data-id', location.hash);
             if (!fresh) box.classList.add('no-anim');
             if (root && root.parentNode) root.replaceWith(box); else content.insertBefore(box, content.firstChild);
-            var sp = state.selected && state.selected.streamPath;
             html.setAttribute('data-gf-detail', meta.type === 'series' ? 'series' : 'movie');
             var uv = urlVideoId();
             html.setAttribute('data-gf-detail-view', (meta.type === 'series' && !(uv && uv !== meta.id)) ? 'episodes' : 'sources');
