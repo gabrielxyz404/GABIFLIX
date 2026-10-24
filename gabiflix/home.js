@@ -54,15 +54,15 @@
 
     // Abas de cada serviço (categorias típicas de cada app)
     var TABS = {
-        netflix:    ['Início', 'Séries', 'Filmes', 'Bombando', 'Minha lista'],
+        netflix:    ['Início', 'Séries', 'Filmes', 'Bombando'],
         disney:     ['Início', 'Filmes', 'Séries', 'Disney', 'Pixar', 'Marvel', 'Star Wars', 'National Geographic'],
-        prime:      ['Início', 'Filmes', 'Séries', 'Esportes', 'Minha lista'],
-        hbo:        ['Início', 'Séries', 'Filmes', 'Infantil', 'Minha lista'],
-        appletv:    ['Início', 'Originais', 'Filmes', 'Séries', 'Minha lista'],
-        paramount:  ['Início', 'Ao vivo', 'Filmes', 'Séries', 'Minha lista'],
-        globoplay:  ['Início', 'Novelas', 'Séries', 'Filmes', 'Ao vivo', 'Minha lista'],
-        clarovideo: ['Início', 'Ao vivo', 'Filmes', 'Séries', 'Infantil', 'Minha lista'],
-        cinemateca: ['Início', 'Nos cinemas', 'Clássicos', 'Filmes', 'Séries', 'Minha lista']
+        prime:      ['Início', 'Filmes', 'Séries'],
+        hbo:        ['Início', 'Séries', 'Filmes'],
+        appletv:    ['Início', 'Filmes', 'Séries'],
+        paramount:  ['Início', 'Filmes', 'Séries'],
+        globoplay:  ['Início', 'Séries', 'Filmes'],
+        clarovideo: ['Início', 'Filmes', 'Séries'],
+        cinemateca: ['Início', 'Nos cinemas', 'Clássicos', 'Filmes', 'Séries']
     };
 
     var currentTab = 'Início';
