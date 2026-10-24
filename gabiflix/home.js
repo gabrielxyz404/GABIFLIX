@@ -447,10 +447,11 @@
         var meta = { id: item._id, type: item.type, name: item.name, poster: item.poster };
         var b = posterEl(meta, false, false);
         var st = item.state || {};
-        if (st.duration > 0 && st.timeOffset > 0) {
+        var pct = typeof item.progress === 'number' ? item.progress : (st.duration > 0 && st.timeOffset > 0 ? st.timeOffset / st.duration * 100 : 0);
+        if (pct > 0) {
             var bar = el('span', 'gf-progress');
             var fill = el('span', 'gf-progress-fill');
-            fill.style.width = Math.min(100, Math.max(3, (st.timeOffset / st.duration) * 100)).toFixed(1) + '%';
+            fill.style.width = Math.min(100, Math.max(3, pct)).toFixed(1) + '%';
             bar.appendChild(fill);
             b.appendChild(bar);
         }
@@ -558,6 +559,18 @@
             });
         return row;
     }
+
+    // o VLC do app salvou o progresso: atualiza a fileira Continuar assistindo que estiver na tela
+    window.gfRefreshContinue = function () {
+        var root = document.getElementById('gf-home');
+        var s = current && find(current);
+        if (!root || !s) return;
+        var old = [].filter.call(root.querySelectorAll('.gf-row'), function (r) {
+            var t = r.querySelector('.gf-row-title');
+            return t && t.textContent === 'Continuar assistindo';
+        })[0];
+        if (old) setTimeout(function () { old.replaceWith(renderContinue(s)); }, 300);
+    };
 
     function renderCatalog(root, s, tabSwitch) {
         // mantém a barra de abas na mesma posição lateral ao trocar de aba

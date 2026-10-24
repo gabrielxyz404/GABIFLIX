@@ -175,6 +175,21 @@ public class MainActivity extends Activity {
     protected void onResume() {
         super.onResume();
         web.onResume();
+        deliverPlayerProgress();
+    }
+
+    /** ao voltar do player, entrega ao site onde o vídeo parou (o site salva no Continuar assistindo do Stremio) */
+    private void deliverPlayerProgress() {
+        android.content.SharedPreferences sp = getSharedPreferences(PlayerActivity.LAST_PREFS, MODE_PRIVATE);
+        if (!sp.contains("time")) return;
+        long time = sp.getLong("time", 0), length = sp.getLong("length", 0);
+        boolean ended = sp.getBoolean("ended", false);
+        String js = "(function(){var a=[" + time + "," + length + "," + ended + "];"
+                + "function go(n){if(window.gfNativeProgress){window.gfNativeProgress(a[0],a[1],a[2]);}else if(n<40){setTimeout(function(){go(n+1)},500);}}go(0);})()";
+        web.postDelayed(() -> {
+            web.evaluateJavascript(js, null);
+            sp.edit().clear().apply();
+        }, 400);
     }
 
     @Override
@@ -247,7 +262,33 @@ public class MainActivity extends Activity {
             });
         }
 
+        /** player principal: link, legendas PT, tipo/código do título e onde começar (ms) */
         @JavascriptInterface
-        public int version() { return 3; }
+        public void playSession(String link, String subsJson, String type, String id, String startMs) {
+            if (link == null || !(link.startsWith("http://") || link.startsWith("https://"))) return;
+            ArrayList<String> list = new ArrayList<>();
+            try {
+                org.json.JSONArray arr = new org.json.JSONArray(subsJson == null ? "[]" : subsJson);
+                for (int k = 0; k < arr.length() && k < 8; k++) {
+                    String u = arr.optString(k, "");
+                    if (u.startsWith("http://") || u.startsWith("https://")) list.add(u);
+                }
+            } catch (Exception ignored) {}
+            long start = 0;
+            try { start = Long.parseLong(startMs == null ? "0" : startMs); } catch (Exception ignored) {}
+            final long startFinal = start;
+            runOnUiThread(() -> {
+                Intent i = new Intent(MainActivity.this, PlayerActivity.class);
+                i.putExtra(PlayerActivity.EXTRA_URL, link);
+                i.putExtra(PlayerActivity.EXTRA_SUBS, list.toArray(new String[0]));
+                i.putExtra(PlayerActivity.EXTRA_TYPE, type);
+                i.putExtra(PlayerActivity.EXTRA_ID, id);
+                i.putExtra(PlayerActivity.EXTRA_START, startFinal);
+                startActivity(i);
+            });
+        }
+
+        @JavascriptInterface
+        public int version() { return 4; }
     }
 }

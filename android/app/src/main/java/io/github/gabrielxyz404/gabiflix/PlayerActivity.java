@@ -40,6 +40,11 @@ public class PlayerActivity extends Activity {
     /** tipo (movie/series) e código do título, para buscar legendas sozinho se o site não mandar nenhuma */
     static final String EXTRA_TYPE = "type";
     static final String EXTRA_ID = "id";
+    /** onde começar (ms), vindo do Continuar assistindo do Stremio */
+    static final String EXTRA_START = "start";
+    /** última sessão (tempo/duração), lida pelo app ao voltar para devolver o progresso ao Stremio */
+    static final String LAST_PREFS = "gf-last-session";
+    private long startMs = 0;
     private String[] subs = new String[0];
     private String metaType, metaId;
     private boolean playing = false;
@@ -80,6 +85,8 @@ public class PlayerActivity extends Activity {
         if (extraSubs != null) subs = extraSubs;
         metaType = getIntent().getStringExtra(EXTRA_TYPE);
         metaId = getIntent().getStringExtra(EXTRA_ID);
+        startMs = getIntent().getLongExtra(EXTRA_START, 0);
+        getSharedPreferences(LAST_PREFS, MODE_PRIVATE).edit().clear().apply();
         loadSubtitlesInBackground();
         if (url == null) { finish(); return; }
 
@@ -170,6 +177,7 @@ public class PlayerActivity extends Activity {
             case MediaPlayer.Event.EndReached:
                 ended = true;
                 clearPosition();
+                reportSession(player.getLength(), player.getLength(), true);
                 finish();
                 break;
             case MediaPlayer.Event.EncounteredError:
@@ -189,7 +197,7 @@ public class PlayerActivity extends Activity {
 
     private void resume() {
         resumeDone = true;
-        long saved = prefs().getLong(key(), 0);
+        long saved = startMs > 0 ? startMs : prefs().getLong(key(), 0);
         long len = player.getLength();
         if (saved > 30000 && (len <= 0 || saved < len - 60000)) player.setTime(saved);
     }
@@ -202,9 +210,16 @@ public class PlayerActivity extends Activity {
         if (player == null) return;
         long t = player.getTime();
         if (t > 0) prefs().edit().putLong(key(), t).apply();
+        if (t > 0) reportSession(t, player.getLength(), false);
     }
 
     private void clearPosition() { prefs().edit().remove(key()).apply(); }
+
+    private void reportSession(long time, long length, boolean finished) {
+        getSharedPreferences(LAST_PREFS, MODE_PRIVATE).edit()
+                .putLong("time", time).putLong("length", length).putBoolean("ended", finished)
+                .putLong("at", System.currentTimeMillis()).apply();
+    }
 
     // ---------- controles ----------
     private View buildControls() {
