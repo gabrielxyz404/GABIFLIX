@@ -473,3 +473,13 @@ div[class^="board-content-"]:not([class*="container"]) > :not(#gf-home) { displa
     #gf-home .gf-svc, #gf-home .gf-svc.is-tab-switch .gf-tab-body, #gf-home .gf-grid > .gf-card,
     #gf-home .gf-row-track > .gf-poster.is-filled, #gf-home .gf-row-track > .gf-top10-item, #gf-home .gf-hero-inner { animation: none; }
 }
+
+/* nomes dos serviços: o tamanho acompanha a largura do botão e nunca quebram no meio */
+#gf-home .gf-grid .gf-card { container-type: inline-size; }
+#gf-home .gf-grid .gf-card-name {
+    font-size: clamp(1.05rem, 16cqw, 2.1rem);
+    white-space: nowrap;
+    overflow-wrap: normal;
+    max-width: 100%;
+}
+#gf-home .gf-card.is-wide .gf-card-name { font-size: clamp(1.4rem, 7cqw, 2.4rem); }

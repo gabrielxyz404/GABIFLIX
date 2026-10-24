@@ -387,3 +387,19 @@ a[href^="https://stremio.zendesk.com"], a[href="https://www.stremio.com/privacy"
     cursor: pointer;
 }
 .gf-skip-login:focus-visible { outline: 2px solid #f2f2f2; outline-offset: 2px; border-radius: 0.6rem; }
+
+/* menu: sem a caixa escura antiga por trás do vidro */
+.nav-menu-popup-label-XmUBo .menu-container-B6cqK { background: none !important; box-shadow: none !important; border-radius: 0 !important; overflow: visible; }
+/* Configurações: sem "Termos de serviço" do Stremio */
+a[href="https://www.stremio.com/tos"] { display: none !important; }
+
+/* ---------- Correção: no celular o fim das listas ficava escondido atrás da barra de baixo ---------- */
+@media only screen and (max-width: 640px) {
+    .settings-container-_g1tS .settings-content-co5eU .sections-container-ZaZpD,
+    .addons-container-ogGYu .addons-content-zhFBl .addons-list-container-Ovr2Z,
+    .library-container-zM_bj .library-content-PgX4O .meta-items-container-IKrND,
+    .library-container-zM_bj .library-content-PgX4O .message-container-MhY5t,
+    .list-fa_2a {
+        padding-bottom: calc(var(--vertical-nav-bar-size, 6rem) + 2.5rem) !important;
+    }
+}
