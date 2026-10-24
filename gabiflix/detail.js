@@ -297,11 +297,6 @@
     }
     // abre a fonte do mesmo jeito que a lista do app abriria (player do app, VLC, etc.)
     function playStream(stream) {
-        // app Android (versão nova): link direto toca no player embutido, que aceita qualquer formato e áudio
-        if (window.GabiFlixNative && stream && /^https?:\/\//i.test(stream.url || '')) {
-            closeSheet();
-            try { window.GabiFlixNative.play(stream.url); return; } catch (e) {}
-        }
         var dl = stream && stream.deepLinks;
         if (!dl) return;
         var ext = dl.externalPlayer, href = null;
@@ -383,10 +378,22 @@
                 b.appendChild(el('span', 'gf-sheet-q', name.replace(/\s*\n\s*/g, ' · ')));
                 var d = String(st.description || st.title || '').trim();
                 if (d) b.appendChild(el('span', 'gf-sheet-d', d));
-                var warn = isTorrent(st) ? 'Torrent: só toca com Real-Debrid no addon' : (HEAVY_AUDIO.test(name + ' ' + d) ? 'O áudio pode não tocar no celular' : '');
+                var native = window.GabiFlixNative && /^https?:\/\//i.test(st.url || '');
+                var heavy = HEAVY_AUDIO.test(name + ' ' + d);
+                var warn = isTorrent(st) ? 'Torrent: só toca com Real-Debrid no addon'
+                    : (heavy ? (native ? 'Sem som? Toque em VLC ao lado' : 'O áudio pode não tocar no celular') : '');
                 if (warn) { b.appendChild(el('span', 'gf-sheet-warn', warn)); if (isTorrent(st)) b.classList.add('is-torrent'); }
                 b.addEventListener('click', function () { playStream(st); });
-                list.appendChild(b);
+                if (native) {
+                    // app Android: o player VLC do app toca qualquer áudio (sem legendas do Stremio nem Continuar assistindo)
+                    var row = el('div', 'gf-sheet-row');
+                    var v = el('button', 'gf-sheet-vlc', 'VLC');
+                    v.type = 'button';
+                    v.setAttribute('aria-label', 'Abrir no VLC');
+                    v.addEventListener('click', function () { closeSheet(); try { window.GabiFlixNative.play(st.url); } catch (e) {} });
+                    row.appendChild(b); row.appendChild(v);
+                    list.appendChild(row);
+                } else list.appendChild(b);
             });
         }
         if (loading) {
