@@ -444,6 +444,12 @@
         }
     }
 
+    // a cor do serviço só vale enquanto a Home (com o catálogo aberto) está na tela
+    function onHome() { return /^#?\/?$/.test(location.hash); }
+    window.addEventListener('hashchange', function () {
+        applyTheme(onHome() && current ? find(current) : null);
+    });
+
     function render() {
         var root = document.getElementById('gf-home');
         if (!root) return;

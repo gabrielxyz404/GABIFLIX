@@ -26,3 +26,72 @@
     color: #000 !important;
     fill: #000 !important;
 }
+
+/* ---------- Barra de baixo no celular: "vidro líquido" leve ----------
+   Um único desfoque (backdrop-filter) + reflexos feitos só com gradientes e bordas,
+   sem imagens nem animações contínuas, para não pesar. */
+@media only screen and (max-width: 640px) {
+    /* o conteúdo passa por trás da barra, para o vidro ter o que desfocar */
+    .main-nav-bars-container-wNjS5 .nav-content-container-zl9hQ { bottom: 0; }
+    #gf-home { padding-bottom: calc(var(--vertical-nav-bar-size) + 2rem); }
+
+    .main-nav-bars-container-wNjS5 .vertical-nav-bar-qGRze {
+        left: 0;
+        right: 0;
+        bottom: 0.9rem;
+        display: flex;
+        justify-content: center;
+        pointer-events: none;
+        background: none;
+    }
+    .vertical-nav-bar-container-UPAkA {
+        pointer-events: auto;
+        margin: 0 auto;
+        width: min(22rem, calc(100% - 2.5rem));
+        height: 4.4rem;
+        padding: 0 0.45rem;
+        justify-content: space-around;
+        align-items: center;
+        overflow: hidden;
+        border-radius: 2.2rem;
+        background:
+            linear-gradient(180deg, rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0.04) 55%, rgba(255, 255, 255, 0.08) 100%),
+            rgba(24, 24, 26, 0.38);
+        -webkit-backdrop-filter: blur(16px) saturate(170%);
+        backdrop-filter: blur(16px) saturate(170%);
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        box-shadow:
+            inset 0 1px 0 rgba(255, 255, 255, 0.35),
+            inset 0 -1px 0 rgba(255, 255, 255, 0.06),
+            0 10px 30px rgba(0, 0, 0, 0.55);
+        transform: translateZ(0);
+    }
+    .vertical-nav-bar-container-UPAkA .nav-tab-button-tW6qT {
+        flex: 1 1 0;
+        height: 3.5rem;
+        min-height: 0;
+        width: auto;
+        border-radius: 1.75rem;
+        transition: background-color 0.2s ease;
+    }
+    /* item selecionado: uma "gota" de vidro mais clara */
+    .vertical-nav-bar-container-UPAkA .nav-tab-button-container-dYhs0.selected {
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.22), rgba(255, 255, 255, 0.08));
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+    }
+    .vertical-nav-bar-container-UPAkA .nav-tab-button-container-dYhs0 .icon-TzPrK {
+        height: 1.7rem;
+        width: 1.7rem;
+        margin-bottom: 0.25rem;
+        opacity: 0.6;
+    }
+    .vertical-nav-bar-container-UPAkA .nav-tab-button-container-dYhs0.selected .icon-TzPrK { opacity: 1; }
+    .vertical-nav-bar-container-UPAkA .nav-tab-button-container-dYhs0 .label-BCz2f { font-size: 0.75rem; opacity: 0.75; }
+    .vertical-nav-bar-container-UPAkA .nav-tab-button-container-dYhs0:hover { background-color: transparent; }
+}
+/* aparelhos sem suporte a desfoque: vidro mais opaco */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    @media only screen and (max-width: 640px) {
+        .vertical-nav-bar-container-UPAkA { background: rgba(28, 28, 30, 0.92); }
+    }
+}
