@@ -432,3 +432,34 @@ div[class^="board-content-"]:not([class*="container"]) > :not(#gf-home) { displa
 
 /* mais espaço entre o topo e os botões dos serviços */
 #gf-home .gf-grid { margin-top: 0.9rem; }
+
+/* ---------- Top 10: número grande ao lado da capa ---------- */
+#gf-home .gf-row-top10 .gf-row-track { grid-auto-columns: clamp(9.2rem, 40vw, 12rem); gap: 0.4rem; }
+#gf-home .gf-top10-item {
+    position: relative;
+    display: flex;
+    align-items: flex-end;
+    min-width: 0;
+}
+#gf-home .gf-top10-num {
+    flex: none;
+    width: 2.9rem;
+    margin-right: -0.9rem;
+    font-family: 'Outfit', 'PlusJakartaSans', system-ui, sans-serif;
+    font-size: 5.4rem;
+    font-weight: 900;
+    line-height: 0.8;
+    letter-spacing: -0.06em;
+    text-align: right;
+    color: #000;
+    -webkit-text-stroke: 2px rgba(255, 255, 255, 0.85);
+    paint-order: stroke fill;
+    user-select: none;
+    pointer-events: none;
+    z-index: 0;
+}
+#gf-home .gf-top10-item .gf-poster { flex: 1 1 auto; min-width: 0; position: relative; z-index: 1; }
+#gf-home .gf-top10-item .gf-order { display: none; }
+
+/* fim de uma grade longa: espaço para carregar mais */
+#gf-home .gf-grid-more { height: 1px; }

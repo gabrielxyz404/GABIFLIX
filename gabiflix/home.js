@@ -93,8 +93,39 @@
         }).then(function (d) { return (d && d.metas) || []; });
     }
 
-    // sec: { file } para dados próprios e/ou { type, id } para o addon
+    // Arquivo pequeno da aba Início: { top10, movie, series, genres: [{ code, title, metas }] }
+    var homeCache = {};
+    function loadHome(svc) {
+        if (!homeCache[svc]) {
+            homeCache[svc] = fetch('data/' + svc + '-home.json?v=' + DATA_VERSION)
+                .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+                .catch(function () {
+                    // reserva (antes da primeira atualização): monta a Início a partir das listas completas
+                    return Promise.all([
+                        loadCatalog({ file: svc + '-movie' }).catch(function () { return []; }),
+                        loadCatalog({ file: svc + '-series' }).catch(function () { return []; })
+                    ]).then(function (r) {
+                        var top = [];
+                        for (var i = 0; i < 10; i++) { if (r[0][i]) top.push(r[0][i]); if (r[1][i]) top.push(r[1][i]); }
+                        return { top10: top.slice(0, 10), movie: r[0].slice(0, 30), series: r[1].slice(0, 30), genres: [] };
+                    });
+                });
+            homeCache[svc].catch(function () { delete homeCache[svc]; });
+        }
+        return homeCache[svc];
+    }
+
+    // sec: { home, key } para a Início, { file } para dados próprios e/ou { type, id } para o addon
     function loadCatalog(sec) {
+        if (sec.home) {
+            return loadHome(sec.home).then(function (h) {
+                if (sec.key === 'genre') {
+                    var g = (h.genres || []).filter(function (x) { return x.code === sec.code; })[0];
+                    return (g && g.metas) || [];
+                }
+                return h[sec.key] || [];
+            });
+        }
         var key = (sec.file || '') + '|' + (sec.type || '') + '/' + (sec.id || '');
         if (!cache[key]) {
             var addon = function () {
@@ -108,6 +139,21 @@
             cache[key] = p.catch(function (e) { delete cache[key]; throw e; });
         }
         return cache[key];
+    }
+
+    // Aba Início, no estilo dos apps de streaming:
+    // Top 10, em alta, (extras do serviço) e uma fileira por gênero
+    function homeSections(s, extras) {
+        var top = s.id === 'netflix'
+            ? [
+                { title: 'Top 10 séries hoje', file: 'netflix-top10-br-series', type: 'series', id: 'netflix-top10-BR', top10: true },
+                { title: 'Top 10 filmes hoje', file: 'netflix-top10-br-movie', type: 'movie', id: 'netflix-top10-BR', top10: true }
+            ]
+            : [{ title: 'Top 10 em alta', home: s.id, key: 'top10', top10: true }];
+        return top.concat([
+            { title: 'Filmes em alta', home: s.id, key: 'movie' },
+            { title: 'Séries em alta', home: s.id, key: 'series' }
+        ], extras, [{ genresOf: s.id }]);
     }
 
     // O que cada aba mostra: lista de fileiras
@@ -144,17 +190,11 @@
                     return secs;
                 }
             }
-            if (tab === 'Início') return [
-                { title: 'Filmes em alta', file: 'disney-movie', type: 'movie', id: s.cat },
-                { title: 'Séries em alta', file: 'disney-series', type: 'series', id: s.cat }
-            ].concat(DISNEY_BRANDS.map(function (b) { return { title: b[0], file: 'disney-' + b[1] }; }));
+            if (tab === 'Início') return homeSections(s, DISNEY_BRANDS.map(function (b) { return { title: b[0], file: 'disney-' + b[1] }; }));
         }
         var c = s.cat;
         switch (tab) {
-            case 'Início': return [
-                { title: 'Filmes em alta', file: s.id + '-movie', type: 'movie', id: c },
-                { title: 'Séries em alta', file: s.id + '-series', type: 'series', id: c }
-            ];
+            case 'Início': return homeSections(s, []);
             case 'Filmes': return [{ title: 'Todos os filmes', file: s.id + '-movie', type: 'movie', id: c, grid: true }];
             case 'Séries': return [{ title: 'Todas as séries', file: s.id + '-series', type: 'series', id: c, grid: true }];
             case 'Bombando': return [
@@ -255,8 +295,47 @@
         hero.appendChild(inner);
     }
 
+    // fileiras de gênero: vêm do arquivo da Início e só aparecem as que têm títulos
+    function renderGenres(sec, s) {
+        var box = el('div', 'gf-genres');
+        loadHome(sec.genresOf).then(function (h) {
+            (h.genres || []).forEach(function (g) {
+                box.appendChild(renderSection({ title: g.title, home: sec.genresOf, key: 'genre', code: g.code }, s));
+            });
+            restoreScroll();
+        }).catch(function () {});
+        return box;
+    }
+
+    // grades longas: desenha 60 por vez, conforme a rolagem se aproxima do fim
+    var GRID_BATCH = 60;
+    function fillGrid(track, metas, sec) {
+        var shown = 0;
+        var sentinel = el('div', 'gf-grid-more');
+        function more() {
+            var frag = document.createDocumentFragment();
+            metas.slice(shown, shown + GRID_BATCH).forEach(function (m) { frag.appendChild(posterEl(m, false, sec.numbered)); });
+            shown = Math.min(metas.length, shown + GRID_BATCH);
+            track.appendChild(frag);
+            if (shown >= metas.length) { sentinel.remove(); if (io) io.disconnect(); }
+            else track.parentNode && track.parentNode.appendChild(sentinel);
+        }
+        var io = 'IntersectionObserver' in window ? new IntersectionObserver(function (es) {
+            if (es.some(function (e) { return e.isIntersecting; })) more();
+        }, { rootMargin: '1200px 0px' }) : null;
+        more();
+        if (io && shown < metas.length) io.observe(sentinel);
+        else if (!io) while (shown < metas.length) more();
+        // voltar de um título longe na lista: desenha o suficiente para chegar à posição guardada
+        if (pendingScroll) {
+            var guard = 0;
+            while (shown < metas.length && track.scrollHeight < pendingScroll + 1500 && guard++ < 40) more();
+        }
+    }
+
     function renderSection(sec, s, onFirst) {
-        var row = el('section', 'gf-row');
+        if (sec.genresOf) return renderGenres(sec, s);
+        var row = el('section', 'gf-row' + (sec.top10 ? ' gf-row-top10' : ''));
         row.appendChild(el('h2', 'gf-row-title', sec.title));
         var track = el('div', sec.grid ? 'gf-poster-grid' : 'gf-row-track');
         row.appendChild(track);
@@ -268,12 +347,23 @@
                 onFirst && onFirst(false);
                 return;
             }
-            var frag = document.createDocumentFragment();
-            metas.slice(0, sec.grid ? 300 : (sec.numbered ? 100 : 30)).forEach(function (m, i) {
-                if (sec.numbered && !m.order) m = Object.assign({}, m, { order: i + 1 });
-                frag.appendChild(posterEl(m, false, sec.numbered));
-            });
-            track.appendChild(frag);
+            if (sec.grid) {
+                fillGrid(track, metas, sec);
+            } else {
+                var frag = document.createDocumentFragment();
+                metas.slice(0, sec.top10 ? 10 : (sec.numbered ? 100 : 30)).forEach(function (m, i) {
+                    if ((sec.numbered || sec.top10) && !m.order) m = Object.assign({}, m, { order: i + 1 });
+                    var p = posterEl(m, false, sec.numbered || sec.top10);
+                    if (sec.top10) {
+                        // número grande ao lado da capa
+                        var wrap = el('div', 'gf-top10-item');
+                        wrap.appendChild(el('span', 'gf-top10-num', String(i + 1)));
+                        wrap.appendChild(p);
+                        frag.appendChild(wrap);
+                    } else frag.appendChild(p);
+                });
+                track.appendChild(frag);
+            }
             onFirst && onFirst(metas[0]);
             restoreScroll();
         }).catch(function () {
@@ -292,31 +382,48 @@
     // ---------- Continuar assistindo (por serviço) ----------
     // O progresso vem do próprio app (window.core). Cada título aparece no
     // catálogo do serviço onde ele está; o que não está em nenhum vai para o CineTime.
-    var ALL_FILES = ['netflix', 'disney', 'prime', 'hbo', 'appletv', 'paramount', 'globoplay', 'clarovideo']
-        .reduce(function (acc, id) { return acc.concat([id + '-movie', id + '-series']); }, [])
-        .concat(['disney-disney', 'disney-pixar', 'disney-marvel', 'disney-starwars', 'disney-natgeo',
-                 'cine-cinemas', 'cine-classicos', 'cine-movie', 'cine-series']);
+    var SERVICE_IDS = ['netflix', 'disney', 'prime', 'hbo', 'appletv', 'paramount', 'globoplay', 'clarovideo'];
+    var idsCache = {};
+    // data/<svc>-ids.json: só os códigos dos títulos do serviço (bem menor que as listas completas)
+    function loadIds(svc) {
+        if (!idsCache[svc]) {
+            idsCache[svc] = fetch('data/' + svc + '-ids.json?v=' + DATA_VERSION)
+                .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+                .catch(function () {
+                    return Promise.all([svc + '-movie', svc + '-series'].map(function (f) {
+                        return loadCatalog({ file: f }).catch(function () { return []; });
+                    })).then(function (r) { return r[0].concat(r[1]).map(function (m) { return m.id; }); });
+                });
+        }
+        return idsCache[svc];
+    }
 
     function prefetch(s) {
-        var secs = sectionsFor(s, 'Início');
-        secs.slice(0, 3).forEach(function (sec) { loadCatalog(sec).catch(function () {}); });
+        if (s.id === 'cinemateca') {
+            sectionsFor(s, 'Início').slice(0, 2).forEach(function (sec) { loadCatalog(sec).catch(function () {}); });
+        } else {
+            loadHome(s.id).catch(function () {});
+            if (s.id === 'netflix') loadCatalog({ file: 'netflix-top10-br-series' }).catch(function () {});
+        }
     }
 
-    function filesFor(s) {
-        if (s.id === 'cinemateca') return ['cine-cinemas', 'cine-classicos', 'cine-movie', 'cine-series'];
-        var f = [s.id + '-movie', s.id + '-series'];
-        if (s.id === 'disney') f = f.concat(['disney-disney', 'disney-pixar', 'disney-marvel', 'disney-starwars', 'disney-natgeo']);
-        return f;
+    function toSet(lists) {
+        var set = {};
+        lists.forEach(function (l) { (l || []).forEach(function (x) { set[typeof x === 'string' ? x : x.id] = true; }); });
+        return set;
     }
 
-    function idsOf(files) {
-        return Promise.all(files.map(function (f) {
+    // códigos dos títulos de um serviço; o CineTime usa os seus próprios arquivos
+    function idsOf(s) {
+        if (s.id === 'cinemateca') {
+            return Promise.all(['cine-cinemas', 'cine-classicos', 'cine-movie', 'cine-series'].map(function (f) {
+                return loadCatalog({ file: f }).catch(function () { return []; });
+            })).then(toSet);
+        }
+        var extra = s.id === 'disney' ? ['disney-disney', 'disney-pixar', 'disney-marvel', 'disney-starwars', 'disney-natgeo'].map(function (f) {
             return loadCatalog({ file: f }).catch(function () { return []; });
-        })).then(function (lists) {
-            var set = {};
-            lists.forEach(function (l) { l.forEach(function (m) { set[m.id] = true; }); });
-            return set;
-        });
+        }) : [];
+        return Promise.all([loadIds(s.id)].concat(extra)).then(toSet);
     }
 
     function getContinueItems() {
@@ -356,8 +463,13 @@
         row.appendChild(el('h2', 'gf-row-title', 'Continuar assistindo'));
         var track = el('div', 'gf-row-track');
         row.appendChild(track);
-        Promise.all([getContinueItems(), idsOf(filesFor(s)), s.id === 'cinemateca' ? idsOf(ALL_FILES.filter(function (f) { return f.indexOf('cine-') !== 0; })) : null])
-            .then(function (r) {
+        getContinueItems().then(function (items) {
+            if (!items.length) return null; // nada em andamento: não baixa nenhuma lista
+            return Promise.all([items, idsOf(s), s.id === 'cinemateca'
+                ? Promise.all(SERVICE_IDS.map(loadIds)).then(toSet)
+                : null]);
+        }).then(function (r) {
+                if (!r) return;
                 var items = r[0], mine = r[1], onServices = r[2];
                 var list = items.filter(function (it) {
                     if (!it || !it._id) return false;

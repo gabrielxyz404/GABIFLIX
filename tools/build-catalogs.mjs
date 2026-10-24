@@ -16,7 +16,15 @@ const COUNTRIES = [
     { country: 'BR', language: 'pt-BR' }, // nomes usados no Brasil
     { country: 'PT', language: 'pt' }
 ];
-const PER_SERVICE = 200;   // títulos por serviço, tipo e país (antes de juntar)
+const PER_SERVICE = 1000;  // títulos por serviço, tipo e país (antes de juntar)
+const MERGED_CAP = 1500;   // máximo por serviço e tipo depois de juntar Brasil + Portugal
+const HOME_ROW = 30;       // títulos por fileira na aba Início
+// Fileiras de gênero na aba Início (códigos do JustWatch)
+const GENRES = [
+    ['act', 'Ação e aventura'], ['cmy', 'Comédia'], ['drm', 'Drama'], ['trl', 'Suspense e mistério'],
+    ['hrr', 'Terror'], ['scf', 'Ficção científica'], ['rma', 'Romance'], ['crm', 'Crime'],
+    ['ani', 'Animação'], ['fml', 'Família'], ['doc', 'Documentários'], ['rly', 'Reality shows']
+];
 const CINE_POOL = 1000;    // títulos populares analisados para a Cinemateca
 const STREAMING_TYPES = new Set(['FLATRATE', 'FREE', 'ADS', 'FLATRATE_AND_BUY']);
 
@@ -115,7 +123,7 @@ async function popular({ country, language }, objectType, packages, total, sortB
     while (out.length < total) {
         const d = await gql(POPULAR_Q, {
             country, language, first: Math.min(100, total - out.length), after, sortBy,
-            filter: Object.assign({ objectTypes: [objectType], packages: packages || [], excludeIrrelevantTitles: false }, extra)
+            filter: Object.assign({ objectTypes: Array.isArray(objectType) ? objectType : [objectType], packages: packages || [], excludeIrrelevantTitles: false }, extra)
         });
         const p = d.popularTitles;
         for (const e of p.edges) { const m = toMeta(e.node); if (m) out.push(m); }
@@ -143,8 +151,10 @@ function clean(metas) {
     return metas.map(({ _date, _year, _streaming, _cinema, ...m }) => m);
 }
 
-async function save(name, metas) {
-    await writeFile(`data/${name}.json`, JSON.stringify({ metas: clean(metas) }));
+async function save(name, metas, opts = {}) {
+    let out = clean(metas);
+    if (opts.noBackground) out = out.map(({ background, ...m }) => m);
+    await writeFile(`data/${name}.json`, JSON.stringify({ metas: out }));
     console.log(`  data/${name}.json: ${metas.length} títulos`);
     return metas.length;
 }
@@ -387,17 +397,45 @@ async function main() {
 
     // 2) Catálogo de cada serviço (Brasil + Portugal juntos)
     for (const svc of Object.keys(SERVICES)) {
+        const countries = COUNTRIES.filter(c => !(ONLY_BR.has(svc) && c.country !== 'BR') && pk[c.country][svc].length);
+        const byType = {};
         for (const [objectType, type] of [['MOVIE', 'movie'], ['SHOW', 'series']]) {
             const lists = [];
-            for (const c of COUNTRIES) {
-                if (ONLY_BR.has(svc) && c.country !== 'BR') continue;
-                const codes = pk[c.country][svc];
-                if (!codes.length) continue;
-                try { lists.push(await popular(c, objectType, codes, PER_SERVICE)); }
-                catch (e) { console.error(`Erro em ${svc}/${type}/${c.country}:`, e.message); ERRORS.push(`Erro em ${svc}/${type}/${c.country}:` + ' ' + e.message); }
+            for (const c of countries) {
+                try { lists.push(await popular(c, objectType, pk[c.country][svc], PER_SERVICE)); }
+                catch (e) { console.error(`Erro em ${svc}/${type}/${c.country}:`, e.message); ERRORS.push(`Erro em ${svc}/${type}/${c.country}: ${e.message}`); }
             }
-            info.counts[`${svc}-${type}`] = await save(`${svc}-${type}`, interleave(lists).slice(0, 300));
+            byType[type] = interleave(lists).slice(0, MERGED_CAP);
+            info.counts[`${svc}-${type}`] = await save(`${svc}-${type}`, byType[type], { noBackground: true });
         }
+        // códigos de todos os títulos do serviço (para o "Continuar assistindo" saber de onde é cada um)
+        await writeFile(`data/${svc}-ids.json`, JSON.stringify([...byType.movie, ...byType.series].map(m => m.id)));
+
+        // aba Início: destaque, top 10, em alta e fileiras por gênero (arquivo pequeno)
+        const home = {
+            top10: interleave([byType.movie.slice(0, 10), byType.series.slice(0, 10)]).slice(0, 10),
+            movie: byType.movie.slice(0, HOME_ROW),
+            series: byType.series.slice(0, HOME_ROW),
+            genres: []
+        };
+        for (const [code, title] of GENRES) {
+            const lists = [];
+            for (const c of countries) {
+                try { lists.push(await popular(c, ['MOVIE', 'SHOW'], pk[c.country][svc], HOME_ROW, 'TRENDING', { genres: [code] })); }
+                catch (e) { ERRORS.push(`Gênero ${code} em ${svc}/${c.country}: ${e.message}`); }
+            }
+            const metas = interleave(lists).slice(0, HOME_ROW);
+            if (metas.length >= 8) home.genres.push({ code, title, metas });
+        }
+        const slim = list => clean(list).map(({ background, ...m }) => m);
+        await writeFile(`data/${svc}-home.json`, JSON.stringify({
+            top10: clean(home.top10),
+            movie: clean(home.movie.slice(0, 5)).concat(slim(home.movie.slice(5))),
+            series: clean(home.series.slice(0, 5)).concat(slim(home.series.slice(5))),
+            genres: home.genres.map(g => ({ code: g.code, title: g.title, metas: slim(g.metas) }))
+        }));
+        info.counts[`${svc}-home-genres`] = home.genres.length;
+        console.log(`  ${svc}: ${byType.movie.length} filmes, ${byType.series.length} séries, ${home.genres.length} gêneros`);
     }
 
     // 3) Cinemateca: populares que não estão em nenhum streaming no Brasil nem em Portugal
