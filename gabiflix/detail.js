@@ -292,6 +292,12 @@
     }
     // abre a fonte do mesmo jeito que a lista do app abriria (player do app, VLC, etc.)
     function playStream(stream) {
+        // dentro do app Android: link direto vai sempre para o VLC embutido (toca todos os áudios)
+        if (/GabiFlixApp\//.test(navigator.userAgent) && stream && /^https?:\/\//i.test(stream.url || '')) {
+            closeSheet();
+            location.href = 'vlc://' + stream.url;
+            return;
+        }
         var dl = stream && stream.deepLinks;
         if (!dl) return;
         var ext = dl.externalPlayer, href = null;
