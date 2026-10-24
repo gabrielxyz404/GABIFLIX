@@ -375,3 +375,16 @@ a[href^="https://stremio.zendesk.com"], a[href="https://www.stremio.com/privacy"
 .intro-container-tkNS6 .content-container-A1Drn { animation-delay: 0.06s; }
 @keyframes gf-intro-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
 @media (prefers-reduced-motion: reduce) { .intro-container-tkNS6 .heading-container-oI70m, .intro-container-tkNS6 .content-container-A1Drn { animation: none; } }
+.gf-skip-login {
+    align-self: center;
+    margin-top: 1.1rem;
+    padding: 0.6rem 1.2rem;
+    border: 0;
+    background: none;
+    color: rgba(255, 255, 255, 0.6);
+    font: inherit;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+.gf-skip-login:focus-visible { outline: 2px solid #f2f2f2; outline-offset: 2px; border-radius: 0.6rem; }

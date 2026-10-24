@@ -45,3 +45,26 @@
         setTimeout(go, 8000); // não fica preso se a internet estiver lenta
     };
 })();
+
+// Tela de entrada: botão "Agora não" para voltar à Home sem conectar
+(function () {
+    function addSkip() {
+        if (!/^#\/intro/.test(location.hash)) return;
+        var box = document.querySelector('[class*="intro-container"] [class*="content-container"]');
+        if (!box || box.querySelector('.gf-skip-login')) return;
+        var b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'gf-skip-login';
+        b.textContent = 'Agora não';
+        b.addEventListener('click', function () { location.hash = '#/'; });
+        box.appendChild(b);
+    }
+    var queued = false;
+    new MutationObserver(function () {
+        if (queued) return;
+        queued = true;
+        requestAnimationFrame(function () { queued = false; addSkip(); });
+    }).observe(document.documentElement, { childList: true, subtree: true });
+    window.addEventListener('hashchange', addSkip);
+    addSkip();
+})();
