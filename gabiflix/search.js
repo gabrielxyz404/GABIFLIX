@@ -121,26 +121,64 @@
         return a;
     }
 
+    // Filtro: null = tudo, 'movie' = só filmes, 'series' = só séries (tocar de novo volta para tudo)
+    var filter = null;
+    try { filter = sessionStorage.getItem('gf-search-filter') || null; } catch (e) {}
+    var lastData = null;
+
+    function chips(root) {
+        var bar = root.querySelector('.gf-s-filters');
+        if (bar) return bar;
+        bar = el('div', 'gf-s-filters');
+        bar.setAttribute('role', 'group');
+        bar.setAttribute('aria-label', 'Filtrar resultados');
+        [['movie', 'Filmes'], ['series', 'Séries']].forEach(function (f) {
+            var b = el('button', 'gf-s-chip', f[1]);
+            b.type = 'button';
+            b.setAttribute('data-filter', f[0]);
+            b.addEventListener('click', function () {
+                filter = filter === f[0] ? null : f[0];
+                try { if (filter) sessionStorage.setItem('gf-search-filter', filter); else sessionStorage.removeItem('gf-search-filter'); } catch (e) {}
+                lastSig = '';
+                var sc = container(); if (sc) sc.scrollTop = 0;
+                if (lastData) render(root, lastData);
+            });
+            bar.appendChild(b);
+        });
+        root.appendChild(bar);
+        return bar;
+    }
+
     function render(root, data) {
-        var sig = data.items.map(function (m) { return m.id; }).join(',') + '|' + (data.loading && !data.items.length ? 'L' : '');
-        if (sig === lastSig && root.firstChild) return;
+        lastData = data;
+        var bar = chips(root);
+        [].forEach.call(bar.children, function (b) {
+            var on = b.getAttribute('data-filter') === filter;
+            b.classList.toggle('is-active', on);
+            b.setAttribute('aria-pressed', on ? 'true' : 'false');
+        });
+        var items = filter ? data.items.filter(function (m) { return m.type === filter; }) : data.items;
+        var sig = (filter || '*') + '|' + items.map(function (m) { return m.id; }).join(',') + '|' + (data.loading && !items.length ? 'L' : '');
+        var body = root.querySelector('.gf-s-body');
+        if (sig === lastSig && body) return;
         lastSig = sig;
-        root.innerHTML = '';
-        if (!data.items.length) {
+        if (!body) { body = el('div', 'gf-s-body'); root.appendChild(body); }
+        body.innerHTML = '';
+        if (!items.length) {
             if (data.loading || !data.total) {
                 var grid = el('div', 'gf-s-grid');
                 for (var i = 0; i < 9; i++) grid.appendChild(el('div', 'gf-s-skel'));
-                root.appendChild(grid);
+                body.appendChild(grid);
             } else {
-                root.appendChild(el('div', 'gf-s-empty', 'Nenhum resultado encontrado.'));
+                body.appendChild(el('div', 'gf-s-empty', filter === 'movie' ? 'Nenhum filme encontrado.' : filter === 'series' ? 'Nenhuma série encontrada.' : 'Nenhum resultado encontrado.'));
             }
             return;
         }
         var g = el('div', 'gf-s-grid');
         var frag = document.createDocumentFragment();
-        data.items.forEach(function (m) { frag.appendChild(card(m)); });
+        items.forEach(function (m) { frag.appendChild(card(m)); });
         g.appendChild(frag);
-        root.appendChild(g);
+        body.appendChild(g);
     }
 
     function tick() {
