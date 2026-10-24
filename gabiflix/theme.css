@@ -1,0 +1,28 @@
+/* GabiFlix: tema preto e branco.
+   Preto puro com destaques em branco (o Apple TV+ usa cinza, então aqui o fundo é preto). */
+:root {
+    --primary-background-color: #000000;
+    --secondary-background-color: #0e0e0e;
+    --primary-accent-color: #f2f2f2;
+    --modal-background-color: #0b0b0b;
+    --outer-glow: 0px 0px 15px rgba(255, 255, 255, 0.22);
+}
+
+/* Elementos com fundo na cor de destaque: texto e ícones em preto para continuarem legíveis */
+[class*="update-banner-"],
+[class*="button-container-PmUa2"],
+[class*="play-button-"],
+[class*="filter-count-"],
+[class*="today-"] [class*="heading-"],
+[class*="today-"] [class*="day-"],
+[class*="checkbox-container-"][class*="checked-"] {
+    color: #000 !important;
+    fill: #000 !important;
+}
+[class*="update-banner-"] svg,
+[class*="button-container-PmUa2"] svg,
+[class*="play-button-"] svg,
+[class*="checkbox-container-"][class*="checked-"] svg {
+    color: #000 !important;
+    fill: #000 !important;
+}

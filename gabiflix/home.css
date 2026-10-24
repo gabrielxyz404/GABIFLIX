@@ -4,7 +4,7 @@ div[class^="board-content-"]:not([class*="container"]) > :not(#gf-home) { displa
 [class*="board-warning-container"] { display: none !important; }
 
 #gf-home {
-    --gf-red: #e3101e;
+    --gf-red: #f2f2f2;
     --gf-card: rgba(255, 255, 255, 0.05);
     --gf-card-hover: rgba(255, 255, 255, 0.09);
     --gf-line: rgba(255, 255, 255, 0.1);
@@ -41,7 +41,7 @@ div[class^="board-content-"]:not([class*="container"]) > :not(#gf-home) { displa
     border: 1px solid var(--gf-line);
     border-radius: 0.9rem;
     background:
-        linear-gradient(140deg, rgba(227, 16, 30, 0.22) 0%, rgba(227, 16, 30, 0) 50%),
+        linear-gradient(140deg, rgba(255, 255, 255, 0.07) 0%, rgba(255, 255, 255, 0) 50%),
         rgba(0, 0, 0, 0.45);
     color: var(--gf-text);
     font: inherit;
@@ -51,7 +51,7 @@ div[class^="board-content-"]:not([class*="container"]) > :not(#gf-home) { displa
     transition: transform 0.15s ease, background-color 0.15s ease, border-color 0.15s ease;
     -webkit-tap-highlight-color: transparent;
 }
-#gf-home .gf-card:hover { background-color: var(--gf-card-hover); border-color: var(--gf-brand, rgba(227, 16, 30, 0.6)); }
+#gf-home .gf-card:hover { background-color: var(--gf-card-hover); border-color: var(--gf-brand, rgba(255, 255, 255, 0.6)); }
 #gf-home .gf-card:active { transform: scale(0.97); }
 #gf-home .gf-card:focus-visible { outline: 2px solid var(--gf-red); outline-offset: 2px; }
 
@@ -110,7 +110,7 @@ div[class^="board-content-"]:not([class*="container"]) > :not(#gf-home) { displa
     color: var(--gf-text);
     cursor: pointer;
 }
-#gf-home .gf-back:hover { border-color: rgba(227, 16, 30, 0.6); }
+#gf-home .gf-back:hover { border-color: rgba(255, 255, 255, 0.6); }
 #gf-home .gf-back:focus-visible { outline: 2px solid var(--gf-red); outline-offset: 2px; }
 
 #gf-home .gf-empty {

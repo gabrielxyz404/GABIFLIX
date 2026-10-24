@@ -4,7 +4,7 @@
     // color: cor do nome no botão, inspirada na cor de cada serviço
     // bg: degradê do fundo dentro do catálogo [início, fim]; null mantém o tema padrão
     var SERVICES = [
-        { id: 'netflix', bg: null, cat: 'nfx', name: 'Netflix', color: '#e50914' },
+        { id: 'netflix', bg: ['#000000', '#4a0710'], cat: 'nfx', name: 'Netflix', color: '#e50914' },
         { id: 'disney', bg: ['#000000', '#0a1d52'], cat: 'dnp', name: 'Disney+', color: '#3aa3ff' },
         { id: 'prime', bg: ['#000000', '#0b3b55'], cat: 'amp', name: 'Prime Video', color: '#1ba8e0' },
         { id: 'hbo', bg: ['#000000', '#2c0b4f'], cat: 'hbm', name: 'HBO Max', color: '#a36bff' },
