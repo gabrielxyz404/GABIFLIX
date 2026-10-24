@@ -1,0 +1,52 @@
+plugins {
+    id 'com.android.application'
+}
+
+def ks = rootProject.file('keystore/gabiflix.jks')
+def ksPass = System.getenv('GABIFLIX_KEYSTORE_PASSWORD') ?: (rootProject.file('keystore/password.txt').exists() ? rootProject.file('keystore/password.txt').text.trim() : null)
+
+android {
+    namespace 'io.github.gabrielxyz404.gabiflix'
+    compileSdk 34
+
+    defaultConfig {
+        applicationId 'io.github.gabrielxyz404.gabiflix'
+        minSdk 24
+        targetSdk 34
+        versionCode Integer.parseInt(System.getenv('GABIFLIX_VERSION_CODE') ?: '1')
+        versionName System.getenv('GABIFLIX_VERSION_NAME') ?: '1.0'
+        // celulares modernos (64 bits) e mais antigos (32 bits)
+        ndk { abiFilters 'arm64-v8a', 'armeabi-v7a' }
+    }
+
+    signingConfigs {
+        release {
+            if (ks.exists() && ksPass) {
+                storeFile ks
+                storePassword ksPass
+                keyAlias 'gabiflix'
+                keyPassword ksPass
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            signingConfig (ks.exists() && ksPass) ? signingConfigs.release : signingConfigs.debug
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    packagingOptions {
+        jniLibs { useLegacyPackaging true }
+    }
+}
+
+dependencies {
+    implementation 'org.videolan.android:libvlc-all:3.6.0'
+}
