@@ -155,8 +155,10 @@
             case 'Filmes': return [{ title: 'Todos os filmes', file: s.id + '-movie', type: 'movie', id: c, grid: true }];
             case 'Séries': return [{ title: 'Todas as séries', file: s.id + '-series', type: 'series', id: c, grid: true }];
             case 'Bombando': return [
-                { title: 'Top 10 filmes no Brasil', type: 'movie', id: 'netflix-top10-BR' },
-                { title: 'Top 10 séries no Brasil', type: 'series', id: 'netflix-top10-BR' }
+                { title: 'Top 10 filmes hoje no Brasil', file: 'netflix-top10-br-movie', type: 'movie', id: 'netflix-top10-BR', numbered: true },
+                { title: 'Top 10 séries hoje no Brasil', file: 'netflix-top10-br-series', type: 'series', id: 'netflix-top10-BR', numbered: true },
+                { title: 'Top 10 filmes hoje em Portugal', file: 'netflix-top10-pt-movie', type: 'movie', id: 'netflix-top10-PT', numbered: true },
+                { title: 'Top 10 séries hoje em Portugal', file: 'netflix-top10-pt-series', type: 'series', id: 'netflix-top10-PT', numbered: true }
             ];
             default: return [{ title: tab, soon: true }];
         }
@@ -231,7 +233,10 @@
                 onFirst && onFirst(false);
                 return;
             }
-            metas.slice(0, sec.grid ? 300 : (sec.numbered ? 100 : 30)).forEach(function (m) { track.appendChild(posterEl(m, false, sec.numbered)); });
+            metas.slice(0, sec.grid ? 300 : (sec.numbered ? 100 : 30)).forEach(function (m, i) {
+                if (sec.numbered && !m.order) m = Object.assign({}, m, { order: i + 1 });
+                track.appendChild(posterEl(m, false, sec.numbered));
+            });
             onFirst && onFirst(metas[0]);
         }).catch(function () {
             var msg = el('div', 'gf-row-msg');

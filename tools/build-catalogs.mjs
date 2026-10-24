@@ -313,6 +313,57 @@ async function disneyBrands(pk, info, ERRORS) {
     catch (e) { ERRORS.push('Erro na cronologia Marvel: ' + e.message); }
 }
 
+// ---------- Netflix: Top 10 do dia (Brasil e Portugal) ----------
+const CHARTS_Q = `query Charts($country: Country!, $language: Language!, $first: Int!, $filter: StreamingChartsFilter) {
+  streamingCharts(country: $country, first: $first, filter: $filter) {
+    edges {
+      streamingChartInfo { rank }
+      node {
+        objectType
+        content(country: $country, language: $language) {
+          title
+          originalReleaseYear
+          originalReleaseDate
+          externalIds { imdbId }
+          posterUrl
+          backdrops { backdropUrl }
+        }
+        offersBR: offers(country: BR, platform: WEB) { monetizationType }
+        offersPT: offers(country: PT, platform: WEB) { monetizationType }
+      }
+    }
+  }
+}`;
+
+async function netflixTop10(pk, info, ERRORS) {
+    for (const c of COUNTRIES) {
+        const codes = pk[c.country].netflix;
+        if (!codes || !codes.length) continue;
+        for (const [objectType, type] of [['MOVIE', 'movie'], ['SHOW', 'series']]) {
+            const name = `netflix-top10-${c.country.toLowerCase()}-${type}`;
+            let metas = [], source = 'ranking diário';
+            try {
+                const d = await gql(CHARTS_Q, {
+                    country: c.country, language: c.language, first: 10,
+                    filter: { category: 'DAILY_POPULARITY_SAME_CONTENT_TYPE', objectType, packages: codes }
+                }, 2);
+                metas = d.streamingCharts.edges.map(e => toMeta(e.node)).filter(Boolean);
+            } catch (e) {
+                ERRORS.push(`Ranking diário ${name}: ${e.message}`);
+            }
+            if (!metas.length) {
+                // reserva: tendências do dia no JustWatch
+                source = 'tendências do dia';
+                try { metas = (await popular(c, objectType, codes, 10, 'TRENDING')).slice(0, 10); }
+                catch (e) { ERRORS.push(`Tendências ${name}: ${e.message}`); }
+            }
+            info.top10Source = info.top10Source || {};
+            info.top10Source[name] = source;
+            info.counts[name] = await save(name, metas.slice(0, 10));
+        }
+    }
+}
+
 async function main() {
     await mkdir('data', { recursive: true });
     const ERRORS = [];
@@ -385,6 +436,9 @@ async function main() {
     info.counts['cine-classicos'] = await save('cine-classicos', classicos.slice(0, 300));
     info.counts['cine-movie'] = await save('cine-movie', outros.slice(0, 300));
     info.counts['cine-series'] = await save('cine-series', pool.series.slice(0, 300));
+
+    // 5) Netflix: Top 10 do dia
+    await netflixTop10(pk, info, ERRORS);
 
     // 4) Disney+ separado por marca
     await disneyBrands(pk, info, ERRORS);
