@@ -8,7 +8,7 @@
         ['globoplay', 'Globoplay', '#c8d23a'], ['clarovideo', 'Claro Video', '#ff2a2a']
     ];
     var DATA_VERSION = Math.floor(Date.now() / 3600000);
-    var idsCache = null, timer = null, lastSig = '', expanded = false;
+    var idsCache = null, timer = null, lastSig = '', expanded = false, lastMeta = null;
 
     function el(tag, cls, text) {
         var e = document.createElement(tag);
@@ -34,13 +34,44 @@
         }
         return idsCache;
     }
-    var servicesFor = {};
+    // títulos que já estão nas listas do próprio CineTime
+    var cineCache = null;
+    function cineIds() {
+        if (!cineCache) {
+            cineCache = Promise.all(['cine-cinemas', 'cine-classicos', 'cine-movie', 'cine-series'].map(function (f) {
+                return fetch('data/' + f + '.json?v=' + DATA_VERSION).then(function (r) { return r.ok ? r.json() : []; }).catch(function () { return []; });
+            })).then(function (lists) {
+                var o = {};
+                lists.forEach(function (l) { ((l && l.metas) || l || []).forEach(function (m) { if (m && m.id) o[m.id] = true; }); });
+                return o;
+            });
+        }
+        return cineCache;
+    }
+    var servicesFor = {}, servicesDone = {};
+    // títulos que não estão em nenhum serviço vão para o CineTime (lista guardada neste aparelho)
+    var FOUND_KEY = 'gf-cinetime-found';
+    function addToCineTime(meta) {
+        if (!meta || !meta.id || !/^tt\d+/.test(meta.id) || (meta.type !== 'movie' && meta.type !== 'series')) return;
+        try {
+            var list = JSON.parse(localStorage.getItem(FOUND_KEY) || '[]').filter(function (m) { return m.id !== meta.id; });
+            list.unshift({ id: meta.id, type: meta.type, name: meta.name, poster: meta.poster || ('https://images.metahub.space/poster/medium/' + meta.id + '/img'),
+                background: meta.background || undefined, releaseInfo: meta.releaseInfo || undefined, addedAt: Date.now() });
+            localStorage.setItem(FOUND_KEY, JSON.stringify(list.slice(0, 120)));
+        } catch (e) {}
+    }
     function whereIs(id) {
         if (servicesFor[id]) return;
         servicesFor[id] = [];
         serviceIds().then(function (sets) {
             servicesFor[id] = SERVICES.filter(function (s, i) { return sets[i][id]; });
-            lastSig = ''; tick();
+            if (servicesFor[id].length) { servicesDone[id] = true; lastSig = ''; tick(); return; }
+            var meta = lastMeta && lastMeta.id === id ? lastMeta : null;
+            cineIds().then(function (cine) {
+                servicesDone[id] = true;
+                if (!cine[id]) addToCineTime(meta);
+                lastSig = ''; tick();
+            });
         });
     }
 
@@ -80,6 +111,7 @@
         if (urlVid && urlVid !== meta.id && meta.videos) video = meta.videos.filter(function (v) { return v.id === urlVid; })[0] || null;
         var episodeView = isSeries && !!video;
         loadPt(meta.id);
+        lastMeta = meta;
         whereIs(meta.id);
 
         var box = el('div', 'gf-detail');
@@ -106,6 +138,12 @@
                 tag.appendChild(n);
             });
             body.appendChild(tag);
+        } else if (servicesDone[meta.id]) {
+            var ct = el('div', 'gf-d-service');
+            var cn = el('span', null, 'CineTime');
+            cn.style.color = '#e9c46a';
+            ct.appendChild(cn);
+            body.appendChild(ct);
         }
         body.appendChild(el('h1', 'gf-d-title', meta.name || ''));
 
@@ -505,7 +543,7 @@
             }
             var lib = state.libraryItem && state.libraryItem.state;
             var sig = [location.hash, meta.id, meta.inLibrary, meta.watched, readyStreams(state).length, streamsLoading(state),
-                lib && lib.video_id, lib && Math.round(lib.timeOffset / 10000), (servicesFor[meta.id] || []).length, (meta.videos || []).length, seasonPick[meta.id], !!ptDesc[meta.id]].join('|');
+                lib && lib.video_id, lib && Math.round(lib.timeOffset / 10000), (servicesFor[meta.id] || []).length, !!servicesDone[meta.id], (meta.videos || []).length, seasonPick[meta.id], !!ptDesc[meta.id]].join('|');
             var root = document.getElementById('gf-detail');
             if (sig === lastSig && root && root.parentNode === content) return;
             var box = build(state);

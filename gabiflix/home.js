@@ -107,7 +107,23 @@
     }
 
     // sec: { home, key } para a Início, { file } para dados próprios e/ou { type, id } para o addon
+    // títulos encontrados pela busca que não estão em nenhum serviço (guardados neste aparelho pela página do título)
+    function foundInSearch(type) {
+        try {
+            var l = JSON.parse(localStorage.getItem('gf-cinetime-found') || '[]');
+            return type && type !== 'all' ? l.filter(function (m) { return m.type === type; }) : l;
+        } catch (e) { return []; }
+    }
+
     function loadCatalog(sec) {
+        if (sec.local) return Promise.resolve(foundInSearch(sec.local));
+        if (sec.withLocal) {
+            var base = Object.assign({}, sec, { withLocal: null });
+            return loadCatalog(base).catch(function () { return []; }).then(function (metas) {
+                var mine = foundInSearch(sec.withLocal), seen = {};
+                return mine.concat(metas).filter(function (m) { if (seen[m.id]) return false; seen[m.id] = 1; return true; });
+            });
+        }
         if (sec.home) {
             return loadHome(sec.home).then(function (h) {
                 if (sec.key === 'genre') {
@@ -152,6 +168,7 @@
         if (s.id === 'cinemateca') {
             switch (tab) {
                 case 'Início': return [
+                    { title: 'Encontrados na busca', local: 'all', hideEmpty: true },
                     { title: 'Nos cinemas e lançamentos', file: 'cine-cinemas' },
                     { title: 'Clássicos', file: 'cine-classicos' },
                     { title: 'Filmes fora dos streamings', file: 'cine-movie' },
@@ -159,8 +176,8 @@
                 ];
                 case 'Nos cinemas': return [{ title: 'Nos cinemas e lançamentos', file: 'cine-cinemas', grid: true }];
                 case 'Clássicos': return [{ title: 'Clássicos', file: 'cine-classicos', grid: true }];
-                case 'Filmes': return [{ title: 'Filmes fora dos streamings', file: 'cine-movie', grid: true }];
-                case 'Séries': return [{ title: 'Séries fora dos streamings', file: 'cine-series', grid: true }];
+                case 'Filmes': return [{ title: 'Filmes fora dos streamings', file: 'cine-movie', grid: true, withLocal: 'movie' }];
+                case 'Séries': return [{ title: 'Séries fora dos streamings', file: 'cine-series', grid: true, withLocal: 'series' }];
                 default: return [];
             }
         }
@@ -333,6 +350,7 @@
         for (var i = 0; i < (sec.grid ? 12 : 8); i++) track.appendChild(el('div', 'gf-poster'));
         loadCatalog(sec).then(function (metas) {
             track.innerHTML = '';
+            if (!metas.length && sec.hideEmpty) { row.remove(); return; }
             if (!metas.length) {
                 row.replaceChild(el('div', 'gf-row-msg', 'Nenhum título encontrado.'), track);
                 onFirst && onFirst(false);
@@ -409,7 +427,7 @@
         if (s.id === 'cinemateca') {
             return Promise.all(['cine-cinemas', 'cine-classicos', 'cine-movie', 'cine-series'].map(function (f) {
                 return loadCatalog({ file: f }).catch(function () { return []; });
-            })).then(toSet);
+            }).concat([Promise.resolve(foundInSearch('all'))])).then(toSet);
         }
         var extra = s.id === 'disney' ? ['disney-disney', 'disney-pixar', 'disney-marvel', 'disney-starwars', 'disney-natgeo'].map(function (f) {
             return loadCatalog({ file: f }).catch(function () { return []; });
