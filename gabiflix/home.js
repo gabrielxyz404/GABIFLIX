@@ -49,6 +49,7 @@
             b.appendChild(logo);
             b.appendChild(el('span', 'gf-card-name' + (s.grad ? ' gf-grad-text' : ''), s.name));
             b.appendChild(el('span', 'gf-card-hint', s.hint || 'Ver catálogo'));
+            b.addEventListener('pointerdown', function () { prefetch(s); }, { passive: true });
             b.addEventListener('click', function () { open(s.id, true); });
             grid.appendChild(b);
         });
@@ -167,8 +168,29 @@
         }
     }
 
+    // ---------- Posição da rolagem: ao voltar de um título, a lista continua onde estava ----------
+    var pendingScroll = 0;
+    function scroller() {
+        var root = document.getElementById('gf-home');
+        return root && root.parentNode;
+    }
+    function saveScroll() {
+        var sc = scroller();
+        if (!sc || !current) return;
+        try { history.replaceState(Object.assign({}, history.state, { gfScroll: sc.scrollTop }), '', location.href); } catch (e) {}
+    }
+    function restoreScroll() {
+        if (!pendingScroll) return;
+        var sc = scroller();
+        if (!sc) return;
+        sc.scrollTop = pendingScroll;
+        // só termina quando a página já tem altura suficiente
+        if (Math.abs(sc.scrollTop - pendingScroll) < 2) pendingScroll = 0;
+    }
+
     function openTitle(meta) {
         if (!meta || !meta.id || !meta.type) return;
+        saveScroll();
         location.hash = '#/detail/' + encodeURIComponent(meta.type) + '/' + encodeURIComponent(meta.id);
     }
 
@@ -180,6 +202,7 @@
         img.alt = '';
         img.loading = 'lazy';
         img.decoding = 'async';
+        img.onload = function () { b.classList.add('img-ready'); };
         img.onerror = function () { img.remove(); b.classList.add('no-img'); };
         if (meta.poster) img.src = meta.poster; else b.classList.add('no-img');
         b.appendChild(img);
@@ -195,6 +218,9 @@
             var bg = el('img', 'gf-hero-bg');
             bg.alt = '';
             bg.onerror = function () { bg.remove(); };
+            bg.onload = function () { bg.classList.add('is-ready'); };
+            bg.setAttribute('fetchpriority', 'high');
+            bg.decoding = 'async';
             bg.src = meta.background || ('https://images.metahub.space/background/medium/' + encodeURIComponent(meta.id) + '/img');
             hero.appendChild(bg);
         }
@@ -236,11 +262,14 @@
                 onFirst && onFirst(false);
                 return;
             }
+            var frag = document.createDocumentFragment();
             metas.slice(0, sec.grid ? 300 : (sec.numbered ? 100 : 30)).forEach(function (m, i) {
                 if (sec.numbered && !m.order) m = Object.assign({}, m, { order: i + 1 });
-                track.appendChild(posterEl(m, false, sec.numbered));
+                frag.appendChild(posterEl(m, false, sec.numbered));
             });
+            track.appendChild(frag);
             onFirst && onFirst(metas[0]);
+            restoreScroll();
         }).catch(function () {
             var msg = el('div', 'gf-row-msg');
             msg.appendChild(document.createTextNode('Não foi possível carregar. '));
@@ -261,6 +290,11 @@
         .reduce(function (acc, id) { return acc.concat([id + '-movie', id + '-series']); }, [])
         .concat(['disney-disney', 'disney-pixar', 'disney-marvel', 'disney-starwars', 'disney-natgeo',
                  'cine-cinemas', 'cine-classicos', 'cine-movie', 'cine-series']);
+
+    function prefetch(s) {
+        var secs = sectionsFor(s, 'Início');
+        secs.slice(0, 3).forEach(function (sec) { if (!sec.soon) loadCatalog(sec).catch(function () {}); });
+    }
 
     function filesFor(s) {
         if (s.id === 'cinemateca') return ['cine-cinemas', 'cine-classicos', 'cine-movie', 'cine-series'];
@@ -303,6 +337,7 @@
         if (link) {
             b.addEventListener('click', function (e) {
                 e.stopImmediatePropagation();
+                saveScroll();
                 location.hash = link.replace(/^#/, '');
             }, true);
         }
@@ -415,7 +450,7 @@
         var s = current && find(current);
         applyTheme(s);
         if (s) renderCatalog(root, s); else renderGrid(root);
-        root.parentNode && (root.parentNode.scrollTop = 0);
+        if (!pendingScroll && root.parentNode) root.parentNode.scrollTop = 0;
     }
 
     function open(id, push) {
@@ -426,8 +461,22 @@
     }
 
     window.addEventListener('popstate', function (e) {
+        // só reage na Home; abrir um título (outra rota) não deve recriar o catálogo
+        if (!/^#?\/?$/.test(location.hash)) return;
         var id = e.state && e.state.gfService;
         if (id !== current) { current = id || null; currentTab = (e.state && e.state.gfTab) || 'Início'; render(); }
+        else if (id && e.state && e.state.gfScroll) {
+            // voltou de um título para o mesmo catálogo: devolve a lista para onde estava
+            var target = e.state.gfScroll, ok = 0, tries = 0;
+            (function retry() {
+                var sc = scroller();
+                if (sc && sc.clientHeight > 0) {
+                    if (Math.abs(sc.scrollTop - target) > 2) { sc.scrollTop = target; ok = 0; } else ok++;
+                }
+                // confirma algumas vezes porque o app às vezes zera a rolagem logo depois de voltar
+                if (ok < 3 && ++tries < 30) setTimeout(retry, 100);
+            })();
+        }
     });
 
     function mount() {
@@ -439,9 +488,16 @@
         content.insertBefore(root, content.firstChild);
         current = (history.state && history.state.gfService) || null;
         currentTab = (history.state && history.state.gfTab) || 'Início';
+        pendingScroll = (current && history.state && history.state.gfScroll) || 0;
         render();
+        restoreScroll();
     }
 
-    new MutationObserver(mount).observe(document.documentElement, { childList: true, subtree: true });
+    var mountQueued = false;
+    new MutationObserver(function () {
+        if (mountQueued) return;
+        mountQueued = true;
+        requestAnimationFrame(function () { mountQueued = false; mount(); });
+    }).observe(document.documentElement, { childList: true, subtree: true });
     mount();
 })();

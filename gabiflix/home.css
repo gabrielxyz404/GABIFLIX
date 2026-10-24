@@ -404,3 +404,28 @@ div[class^="board-content-"]:not([class*="container"]) > :not(#gf-home) { displa
 }
 #gf-home .gf-grid .gf-card:hover { border-color: color-mix(in srgb, var(--gf-tint1, #fff) 60%, transparent); }
 #gf-home .gf-card.is-wide .gf-card-name { font-size: clamp(1.7rem, 7vw, 2.4rem); }
+
+/* ---------- Fluidez ---------- */
+/* entrada suave das telas */
+#gf-home .gf-grid, #gf-home .gf-svc { animation: gf-enter 0.22s ease-out both; }
+@keyframes gf-enter { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+/* capas aparecem suavemente quando carregam */
+#gf-home .gf-poster.is-filled img { opacity: 0; transition: opacity 0.25s ease; }
+#gf-home .gf-poster.is-filled.img-ready img { opacity: 1; }
+#gf-home .gf-poster.is-filled:not(.img-ready):not(.no-img) {
+    background: linear-gradient(90deg, rgba(255,255,255,0.04), rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.04));
+    background-size: 200% 100%;
+    animation: gf-shimmer 1.8s ease-in-out infinite;
+}
+#gf-home .gf-hero-bg { opacity: 0; transition: opacity 0.35s ease; }
+#gf-home .gf-hero-bg.is-ready { opacity: 1; }
+/* listas longas: o navegador só desenha o que está perto da tela */
+#gf-home .gf-poster-grid > .gf-poster { content-visibility: auto; contain-intrinsic-size: auto 13rem; }
+/* rolagem lateral com "encaixe" suave */
+#gf-home .gf-row-track { scroll-snap-type: x proximity; -webkit-overflow-scrolling: touch; overscroll-behavior-x: contain; }
+#gf-home .gf-row-track > * { scroll-snap-align: start; }
+#gf-home .gf-tabs { overscroll-behavior-x: contain; }
+@media (prefers-reduced-motion: reduce) {
+    #gf-home .gf-grid, #gf-home .gf-svc { animation: none; }
+    #gf-home .gf-poster.is-filled img, #gf-home .gf-hero-bg { transition: none; }
+}
