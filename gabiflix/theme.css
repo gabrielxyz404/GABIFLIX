@@ -284,3 +284,32 @@
 }
 @keyframes gf-spin { to { transform: rotate(360deg); } }
 @media (prefers-reduced-motion: reduce) { .gf-updating-spin { animation-duration: 2s; } }
+
+/* ---------- Login: só e-mail e senha (Facebook e Apple não funcionam dentro do app) ---------- */
+.intro-container-tkNS6 .facebook-button-LZ_kG,
+.intro-container-tkNS6 .apple-button-V5nEI { display: none !important; }
+
+/* ---------- Efeitos leves ---------- */
+/* troca de página (abrir um filme, Mais Tarde, Calendário...): fade curto com leve subida */
+::view-transition-group(root) { animation-duration: 0.22s; }
+::view-transition-old(root) { animation: 0.14s ease-in both gf-vt-out; }
+::view-transition-new(root) { animation: 0.22s cubic-bezier(0.2, 0.7, 0.2, 1) both gf-vt-in; }
+@keyframes gf-vt-out { to { opacity: 0; } }
+@keyframes gf-vt-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+/* menu das 3 barras: abre crescendo a partir do botão */
+.nav-menu-container-Pl25j { transform-origin: top right; animation: gf-pop 0.18s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+@keyframes gf-pop { from { opacity: 0; transform: scale(0.94) translateY(-6px); } to { opacity: 1; transform: none; } }
+
+/* botões da barra de baixo e do menu respondem ao toque */
+.vertical-nav-bar-container-UPAkA .nav-tab-button-tW6qT { transition: background-color 0.2s ease, transform 0.12s ease; }
+.vertical-nav-bar-container-UPAkA .nav-tab-button-tW6qT:active { transform: scale(0.94); }
+.nav-menu-container-Pl25j .nav-menu-section-j87xd .nav-menu-option-container-Qj9Xh:active { transform: scale(0.98); }
+
+@media (prefers-reduced-motion: reduce) {
+    ::view-transition-old(root), ::view-transition-new(root) { animation: none; }
+    .nav-menu-container-Pl25j { animation: none; }
+}
+
+/* Configurações: sem "Contate o suporte" e "Política de Privacidade" do Stremio (como no menu) */
+a[href^="https://stremio.zendesk.com"], a[href="https://www.stremio.com/privacy"] { display: none !important; }

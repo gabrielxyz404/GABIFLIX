@@ -17,7 +17,6 @@
     ];
 
     var current = null; // serviço aberto, ou null para a grade
-    var LOGO_VERSION = 1; // aumente para forçar o celular a recarregar os logos
 
     function el(tag, cls, text) {
         var e = document.createElement(tag);
@@ -38,14 +37,6 @@
             // tons do fundo suave do botão (Globoplay usa as duas cores do degradê)
             b.style.setProperty('--gf-tint1', s.grad ? s.grad[0] : s.color);
             b.style.setProperty('--gf-tint2', s.grad ? s.grad[1] : s.color);
-            // Logo opcional: coloque gabiflix/logos/<id>.png no repositório.
-            var logo = el('img', 'gf-card-logo');
-            logo.alt = '';
-            logo.decoding = 'async';
-            logo.onload = function () { b.classList.add('has-logo'); };
-            logo.onerror = function () { logo.remove(); };
-            logo.src = 'gabiflix/logos/' + s.id + '.png?v=' + LOGO_VERSION;
-            b.appendChild(logo);
             b.appendChild(el('span', 'gf-card-name' + (s.grad ? ' gf-grad-text' : ''), s.name));
             b.appendChild(el('span', 'gf-card-hint', s.hint || 'Ver catálogo'));
             b.addEventListener('pointerdown', function () { prefetch(s); }, { passive: true });
@@ -484,9 +475,12 @@
         return row;
     }
 
-    function renderCatalog(root, s) {
+    function renderCatalog(root, s, tabSwitch) {
+        // mantém a barra de abas na mesma posição lateral ao trocar de aba
+        var oldTabs = tabSwitch && root.querySelector('.gf-tabs');
+        var tabsScroll = oldTabs ? oldTabs.scrollLeft : 0;
         root.innerHTML = '';
-        var page = el('div', 'gf-svc');
+        var page = el('div', 'gf-svc' + (tabSwitch ? ' is-tab-switch' : ''));
         page.style.setProperty('--gf-brand', s.color);
         page.style.setProperty('--gf-on-brand', (s.id === 'appletv' || s.id === 'globoplay' || s.id === 'cinemateca') ? '#000' : '#fff');
         if (s.grad) page.style.setProperty('--gf-grad', 'linear-gradient(90deg, ' + s.grad.join(', ') + ')');
@@ -509,19 +503,15 @@
                 if (t === currentTab) return;
                 currentTab = t;
                 try { history.replaceState(Object.assign({}, history.state, { gfService: s.id, gfTab: t }), '', location.href); } catch (e) {}
-                renderCatalog(root, s);
+                renderCatalog(root, s, true);
             });
             bar.appendChild(b);
         });
         page.appendChild(bar);
+        if (tabsScroll) requestAnimationFrame(function () { bar.scrollLeft = tabsScroll; });
 
         var body = el('div', 'gf-tab-body');
-        if (currentTab === 'Minha lista') {
-            var empty = el('div', 'gf-empty');
-            empty.appendChild(el('div', 'gf-empty-title', 'Sua lista está vazia'));
-            empty.appendChild(el('div', 'gf-empty-text', 'Os títulos que você salvar em ' + s.name + ' vão aparecer aqui.'));
-            body.appendChild(empty);
-        } else {
+        {
             var hero = null;
             if (currentTab === 'Início') {
                 hero = el('div', 'gf-hero');
