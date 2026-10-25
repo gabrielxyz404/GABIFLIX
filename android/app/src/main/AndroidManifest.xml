@@ -29,9 +29,25 @@
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <!-- app nativo da TV (Fire TV / Android TV); o celular continua no MainActivity -->
+        <activity
+            android:name=".tv.TvHomeActivity"
+            android:exported="true"
+            android:launchMode="singleTask"
+            android:screenOrientation="landscape"
+            android:theme="@style/GabiFlix.Tv">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity android:name=".tv.TvCatalogActivity" android:exported="false" android:screenOrientation="landscape" android:theme="@style/GabiFlix.Tv" />
+        <activity android:name=".tv.TvDetailActivity" android:exported="false" android:screenOrientation="landscape" android:theme="@style/GabiFlix.Tv" />
+        <activity android:name=".tv.TvSearchActivity" android:exported="false" android:screenOrientation="landscape" android:theme="@style/GabiFlix.Tv" android:windowSoftInputMode="stateVisible|adjustPan" />
+        <activity android:name=".tv.TvLoginActivity" android:exported="false" android:screenOrientation="landscape" android:theme="@style/GabiFlix.Tv" android:windowSoftInputMode="adjustPan" />
 
         <activity
             android:name=".PlayerActivity"

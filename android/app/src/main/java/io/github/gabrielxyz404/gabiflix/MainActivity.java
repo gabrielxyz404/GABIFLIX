@@ -39,6 +39,12 @@ public class MainActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        // na TV abre o app nativo da TV (o celular não muda nada)
+        if (isTv(this)) {
+            startActivity(new android.content.Intent(this, io.github.gabrielxyz404.gabiflix.tv.TvHomeActivity.class));
+            finish();
+            return;
+        }
         Window w = getWindow();
         w.setStatusBarColor(Color.BLACK);
         w.setNavigationBarColor(Color.BLACK);
