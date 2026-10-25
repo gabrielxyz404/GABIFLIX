@@ -449,12 +449,23 @@ async function main() {
             const metas = interleave(lists).slice(0, HOME_ROW);
             if (metas.length >= 8) home.genres.push({ code, title, metas });
         }
+        // produções brasileiras do serviço (filmes e séries), só no catálogo do Brasil
+        const br = { movie: [], series: [] };
+        if (pk.BR && pk.BR[svc] && pk.BR[svc].length) {
+            for (const [objectType, type] of [['MOVIE', 'movie'], ['SHOW', 'series']]) {
+                try { br[type] = await popular(COUNTRIES[0], objectType, pk.BR[svc], HOME_ROW, 'TRENDING', { productionCountries: ['BR'] }); }
+                catch (e) { ERRORS.push(`Brasileiros ${type} em ${svc}: ${e.message}`); }
+            }
+        }
+        info.counts[`${svc}-br`] = br.movie.length + '/' + br.series.length;
         const slim = list => clean(list).map(({ background, ...m }) => m);
         await writeFile(`data/${svc}-home.json`, JSON.stringify({
             top10: clean(home.top10),
             movie: clean(home.movie.slice(0, 5)).concat(slim(home.movie.slice(5))),
             series: clean(home.series.slice(0, 5)).concat(slim(home.series.slice(5))),
-            genres: home.genres.map(g => ({ code: g.code, title: g.title, metas: slim(g.metas) }))
+            genres: home.genres.map(g => ({ code: g.code, title: g.title, metas: slim(g.metas) })),
+            brMovie: br.movie.length >= 6 ? slim(br.movie) : [],
+            brSeries: br.series.length >= 6 ? slim(br.series) : []
         }));
         info.counts[`${svc}-home-genres`] = home.genres.length;
         console.log(`  ${svc}: ${byType.movie.length} filmes, ${byType.series.length} séries, ${home.genres.length} gêneros`);

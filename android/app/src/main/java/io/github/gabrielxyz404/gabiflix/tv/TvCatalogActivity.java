@@ -45,7 +45,10 @@ public class TvCatalogActivity extends TvBase {
         super.onCreate(b);
         service = Services.find(getIntent().getStringExtra("service"));
         color = Ui.parseColor(service.color, 0xFFFFFFFF);
-        getWindow().getDecorView().setBackgroundColor(Ui.tint(color, 0.07f));
+        // fundo com a cor do serviço mais forte em cima, a escurecer para baixo
+        getWindow().getDecorView().setBackground(new android.graphics.drawable.GradientDrawable(
+                android.graphics.drawable.GradientDrawable.Orientation.TL_BR,
+                new int[]{Ui.tint(color, 0.34f), Ui.tint(color, 0.16f), Ui.tint(color, 0.07f)}));
 
         LinearLayout root = new LinearLayout(this);
         root.setOrientation(LinearLayout.VERTICAL);
@@ -124,6 +127,11 @@ public class TvCatalogActivity extends TvBase {
     @Override
     public boolean dispatchKeyEvent(android.view.KeyEvent e) {
         int k = e.getKeyCode();
+        if (e.getAction() == android.view.KeyEvent.ACTION_DOWN && outer != null
+                && (k == android.view.KeyEvent.KEYCODE_DPAD_RIGHT || k == android.view.KeyEvent.KEYCODE_DPAD_LEFT)) {
+            View f = getCurrentFocus();
+            if (f != null && !tabViews.contains(f) && edgeOfRow(f, k == android.view.KeyEvent.KEYCODE_DPAD_RIGHT)) return true;
+        }
         if (e.getAction() == android.view.KeyEvent.ACTION_DOWN && (k == android.view.KeyEvent.KEYCODE_DPAD_UP || k == android.view.KeyEvent.KEYCODE_DPAD_DOWN)) {
             View f = getCurrentFocus();
             boolean up = k == android.view.KeyEvent.KEYCODE_DPAD_UP;
@@ -136,6 +144,25 @@ public class TvCatalogActivity extends TvBase {
             }
         }
         return super.dispatchKeyEvent(e);
+    }
+
+    /** fim da fileira: à direita volta ao primeiro da mesma fileira; à esquerda do primeiro fica onde está */
+    private boolean edgeOfRow(View f, boolean right) {
+        View rowView = outer.findContainingItemView(f);
+        if (rowView == null) return false;
+        RowsAdapter.RH h = (RowsAdapter.RH) outer.getChildViewHolder(rowView);
+        View cell = h.list.findContainingItemView(f);
+        if (cell == null) return false;
+        int pos = h.list.getChildAdapterPosition(cell), n = h.adapter.getItemCount();
+        if (right && pos == n - 1) {
+            h.list.scrollToPosition(0);
+            h.list.post(() -> {
+                RecyclerView.ViewHolder c = h.list.findViewHolderForAdapterPosition(0);
+                if (c != null) c.itemView.requestFocus();
+            });
+            return true;
+        }
+        return !right && pos == 0;
     }
 
     private boolean moveRow(View f, boolean up) {

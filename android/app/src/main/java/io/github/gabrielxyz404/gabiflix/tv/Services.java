@@ -31,7 +31,7 @@ final class Services {
     static final String[] SERVICE_IDS = {"netflix", "disney", "prime", "hbo", "appletv", "paramount", "globoplay", "clarovideo"};
 
     static final List<Service> ALL = Arrays.asList(
-            new Service("netflix", "Netflix", "#e50914", "Início", "Séries", "Filmes", "Bombando"),
+            new Service("netflix", "Netflix", "#e50914", "Início", "Filmes", "Séries", "Bombando"),
             new Service("disney", "Disney+", "#3aa3ff", "Início", "Filmes", "Séries", "Disney", "Pixar", "Marvel", "Star Wars", "National Geographic"),
             new Service("prime", "Prime Video", "#1ba8e0", "Início", "Filmes", "Séries"),
             new Service("hbo", "HBO Max", "#a36bff", "Início", "Filmes", "Séries"),
@@ -80,11 +80,13 @@ final class Services {
             case "Início":
                 out.add(cont());
                 if (s.id.equals("netflix")) {
-                    out.add(new Section("Top 10 séries hoje").file("netflix-top10-br-series").top10());
                     out.add(new Section("Top 10 filmes hoje").file("netflix-top10-br-movie").top10());
+                    out.add(new Section("Top 10 séries hoje").file("netflix-top10-br-series").top10());
                 } else out.add(new Section("Top 10 em alta").home(s.id, "top10").top10());
                 out.add(new Section("Filmes em alta").home(s.id, "movie"));
                 out.add(new Section("Séries em alta").home(s.id, "series"));
+                out.add(new Section("Filmes brasileiros").home(s.id, "brMovie"));
+                out.add(new Section("Séries brasileiras").home(s.id, "brSeries"));
                 if (s.id.equals("disney")) for (String[] b : DISNEY_BRANDS) out.add(new Section(b[0]).file("disney-" + b[1]));
                 Section g = new Section("");
                 g.genres = true;

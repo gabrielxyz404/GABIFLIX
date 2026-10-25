@@ -159,7 +159,9 @@
             : [{ title: 'Top 10 em alta', home: s.id, key: 'top10', top10: true }];
         return top.concat([
             { title: 'Filmes em alta', home: s.id, key: 'movie' },
-            { title: 'Séries em alta', home: s.id, key: 'series' }
+            { title: 'Séries em alta', home: s.id, key: 'series' },
+            { title: 'Filmes brasileiros', home: s.id, key: 'brMovie', hideEmpty: true },
+            { title: 'Séries brasileiras', home: s.id, key: 'brSeries', hideEmpty: true }
         ], extras, [{ genresOf: s.id }]);
     }
 

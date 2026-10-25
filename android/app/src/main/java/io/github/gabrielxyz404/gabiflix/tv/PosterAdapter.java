@@ -78,6 +78,7 @@ class PosterAdapter extends RecyclerView.Adapter<PosterAdapter.H> {
         // segurar OK 2 segundos (ou o botão ☰) num "Continuar assistindo": opção de remover
         p.setLongClickable(false);
         final boolean[] held = {false};
+        final Runnable[] timer = {null};
         p.setOnKeyListener((v, code, ev) -> {
             int pos = holder.getBindingAdapterPosition();
             boolean can = longPress != null && pos >= 0 && pos < items.size();
@@ -87,14 +88,22 @@ class PosterAdapter extends RecyclerView.Adapter<PosterAdapter.H> {
             }
             if (code != android.view.KeyEvent.KEYCODE_DPAD_CENTER && code != android.view.KeyEvent.KEYCODE_ENTER) return false;
             if (ev.getAction() == android.view.KeyEvent.ACTION_DOWN) {
-                if (ev.getRepeatCount() == 0) { held[0] = false; return false; }
-                if (can && !held[0] && ev.getEventTime() - ev.getDownTime() >= 2000) {
-                    held[0] = true;
-                    v.setPressed(false);
-                    longPress.on(items.get(pos), pos);
+                if (ev.getRepeatCount() > 0) return true; // ignora as repetições do controle
+                held[0] = false;
+                if (can) {
+                    // relógio próprio: exatamente 2 s depois de apertar, se ainda estiver apertado
+                    timer[0] = () -> {
+                        int p2 = holder.getBindingAdapterPosition();
+                        if (longPress == null || p2 < 0 || p2 >= items.size()) return;
+                        held[0] = true;
+                        v.setPressed(false);
+                        longPress.on(items.get(p2), p2);
+                    };
+                    v.postDelayed(timer[0], 2000);
                 }
-                return true;
+                return false;
             }
+            if (timer[0] != null) { v.removeCallbacks(timer[0]); timer[0] = null; }
             if (held[0]) { held[0] = false; v.setPressed(false); return true; } // não abre o título
             return false;
         });
