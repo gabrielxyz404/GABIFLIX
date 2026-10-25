@@ -80,7 +80,7 @@ final class Ui {
         return b;
     }
 
-    static final int POSTER_W = 118, POSTER_H = 177;
+    static final int POSTER_W = 106, POSTER_H = 159;
 
     /** pôster: imagem com cantos arredondados (feita uma vez e guardada) e nome por baixo se não houver imagem */
     static FrameLayout poster(Context c, int wDp, int hDp) {

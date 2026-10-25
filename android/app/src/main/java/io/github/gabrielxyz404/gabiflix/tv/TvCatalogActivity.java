@@ -34,6 +34,7 @@ public class TvCatalogActivity extends TvBase {
     private RowsAdapter rows;
     private Row contRow;
     private int generation = 0;
+    private RecyclerView outer, gridView;
 
     static final class RecycledViewPool extends RecyclerView.RecycledViewPool {
         RecycledViewPool() { setMaxRecycledViews(0, 40); }
@@ -118,11 +119,81 @@ public class TvCatalogActivity extends TvBase {
         super.onBackPressed();
     }
 
+    // ---------- controle: cima/baixo vai fileira a fileira, sem procurar pela tela ----------
+
+    @Override
+    public boolean dispatchKeyEvent(android.view.KeyEvent e) {
+        int k = e.getKeyCode();
+        if (e.getAction() == android.view.KeyEvent.ACTION_DOWN && (k == android.view.KeyEvent.KEYCODE_DPAD_UP || k == android.view.KeyEvent.KEYCODE_DPAD_DOWN)) {
+            View f = getCurrentFocus();
+            boolean up = k == android.view.KeyEvent.KEYCODE_DPAD_UP;
+            if (f != null && outer != null && !tabViews.contains(f) && moveRow(f, up)) return true;
+            if (f != null && gridView != null && up && !tabViews.contains(f)) {
+                View item = gridView.findContainingItemView(f);
+                int pos = item != null ? gridView.getChildAdapterPosition(item) : -1;
+                int span = ((PosterAdapter.Grid) gridView.getLayoutManager()).getSpanCount();
+                if (pos >= 0 && pos < span) { tabViews.get(tab).requestFocus(); return true; }
+            }
+        }
+        return super.dispatchKeyEvent(e);
+    }
+
+    private boolean moveRow(View f, boolean up) {
+        View rowView = outer.findContainingItemView(f);
+        if (rowView == null) return false;
+        int rowPos = outer.getChildAdapterPosition(rowView);
+        if (rowPos < 0 || rowPos >= rows.shown.size()) return false;
+        RowsAdapter.RH h = (RowsAdapter.RH) outer.getChildViewHolder(rowView);
+        View cell = h.list.findContainingItemView(f);
+        Row cur = rows.shown.get(rowPos);
+        if (cell != null) cur.focus = h.list.getChildAdapterPosition(cell);
+        int target = rowPos + (up ? -1 : 1);
+        if (target < 0) { tabViews.get(tab).requestFocus(); return true; }
+        if (target >= rows.shown.size()) return true;
+        int[] loc = new int[2];
+        f.getLocationOnScreen(loc);
+        final int x = loc[0];
+        ((PosterAdapter.Linear) outer.getLayoutManager()).scrollToPositionWithOffset(target, 0);
+        outer.post(() -> focusRow(target, x, 0));
+        return true;
+    }
+
+    private void focusRow(int target, int x, int tries) {
+        RecyclerView.ViewHolder vh = outer.findViewHolderForAdapterPosition(target);
+        if (!(vh instanceof RowsAdapter.RH)) { if (tries < 5) outer.postDelayed(() -> focusRow(target, x, tries + 1), 16); return; }
+        RowsAdapter.RH h = (RowsAdapter.RH) vh;
+        Row r = rows.shown.get(target);
+        if (r.focus >= 0) {
+            RecyclerView.ViewHolder c = h.list.findViewHolderForAdapterPosition(r.focus);
+            if (c != null) { c.itemView.requestFocus(); return; }
+            h.list.scrollToPosition(r.focus);
+            int want = r.focus;
+            h.list.post(() -> {
+                RecyclerView.ViewHolder c2 = h.list.findViewHolderForAdapterPosition(want);
+                if (c2 != null) c2.itemView.requestFocus(); else h.list.requestFocus();
+            });
+            return;
+        }
+        View best = null;
+        int bestD = Integer.MAX_VALUE;
+        int[] loc = new int[2];
+        for (int i = 0; i < h.list.getChildCount(); i++) {
+            View c = h.list.getChildAt(i);
+            c.getLocationOnScreen(loc);
+            int d = Math.abs(loc[0] - x);
+            if (d < bestD) { bestD = d; best = c; }
+        }
+        if (best != null) best.requestFocus();
+        else if (tries < 5) outer.postDelayed(() -> focusRow(target, x, tries + 1), 16);
+    }
+
     // ---------- grade (abas Filmes / Séries) ----------
 
     private void showGrid(Services.Section sec) {
         final int gen = generation;
         RecyclerView grid = PosterAdapter.list(this);
+        gridView = grid;
+        outer = null;
         int pad = 22;
         grid.setPadding(Ui.dp(this, pad), Ui.dp(this, 6), Ui.dp(this, pad), Ui.dp(this, 30));
         grid.setLayoutManager(new PosterAdapter.Grid(this, PosterAdapter.span(this, Ui.POSTER_W, pad)));
@@ -145,11 +216,14 @@ public class TvCatalogActivity extends TvBase {
         String title;
         List<JSONObject> metas;
         boolean numbered, cont, loaded;
+        int focus = -1;   // último pôster selecionado nesta fileira
     }
 
     private void showRows(List<Services.Section> secs) {
         final int gen = generation;
         RecyclerView list = PosterAdapter.list(this);
+        outer = list;
+        gridView = null;
         list.setPadding(0, 0, 0, Ui.dp(this, 40));
         list.setLayoutManager(new PosterAdapter.Linear(this, RecyclerView.VERTICAL));
         list.setItemViewCacheSize(4);
@@ -317,7 +391,7 @@ public class TvCatalogActivity extends TvBase {
             h.adapter.progress = r.cont;
             h.adapter.longPress = r.cont ? (item, pos) -> removeDialog(item, r) : null;
             h.adapter.set(r.metas);
-            h.list.scrollToPosition(0);
+            h.list.scrollToPosition(Math.max(0, Math.min(r.focus, r.metas.size() - 1)));
         }
 
         @Override public int getItemCount() { return shown.size(); }
