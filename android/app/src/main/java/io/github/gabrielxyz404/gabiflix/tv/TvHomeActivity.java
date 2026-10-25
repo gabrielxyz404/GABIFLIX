@@ -85,7 +85,7 @@ public class TvHomeActivity extends TvBase {
         public CH onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
             Context c = parent.getContext();
             FrameLayout f = new FrameLayout(c);
-            RecyclerView.LayoutParams lp = new RecyclerView.LayoutParams(Ui.dp(c, 250), ViewGroup.LayoutParams.MATCH_PARENT);
+            RecyclerView.LayoutParams lp = new RecyclerView.LayoutParams(Ui.dp(c, 220), ViewGroup.LayoutParams.MATCH_PARENT);
             lp.setMargins(Ui.dp(c, 9), Ui.dp(c, 6), Ui.dp(c, 9), Ui.dp(c, 6));
             f.setLayoutParams(lp);
             GradientDrawable bg = new GradientDrawable(GradientDrawable.Orientation.TOP_BOTTOM, new int[]{0, 0});
@@ -102,7 +102,7 @@ public class TvHomeActivity extends TvBase {
             View accent = new View(c);
             col.addView(accent, new LinearLayout.LayoutParams(Ui.dp(c, 46), Ui.dp(c, 5)));
             col.addView(Ui.space(c, 1, 18));
-            TextView name = Ui.text(c, "", 30, true, Ui.TEXT);
+            TextView name = Ui.text(c, "", 28, true, Ui.TEXT);
             name.setGravity(Gravity.CENTER);
             name.setMaxLines(2);
             col.addView(name, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
