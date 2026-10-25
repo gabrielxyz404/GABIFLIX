@@ -69,8 +69,9 @@
         var lists = [], loading = false;
         (state.catalogs || []).forEach(function (cat) {
             var content = cat && cat.content;
-            if (!content || SKIP_TYPES[cat.type]) return;
-            if (content.type === 'Loading') loading = true;
+            if (!cat || SKIP_TYPES[cat.type]) return;
+            // catálogo ainda não pedido conta como carregando (senão a busca "termina" sem ele)
+            if (!content || content.type === 'Loading') { loading = true; return; }
             if (content.type === 'Ready' && Array.isArray(content.content)) {
                 var list = content.content;
                 var url = list.length >= 10 ? fullUrl(cat, q) : null;
@@ -257,15 +258,15 @@
             if (!state || queryFromHash() !== q) return;
             // pede para carregar todos os catálogos de uma vez (o app normal só carrega os visíveis)
             var n = (state.catalogs || []).length;
-            var key = q + '#' + n;
+            var key = q + '#' + n, justAsked = false;
             if (n && rangeAsked !== key && typeof c.dispatch === 'function') {
-                rangeAsked = key;
+                rangeAsked = key; justAsked = true;
                 try { c.dispatch({ action: 'CatalogsWithExtra', args: { action: 'LoadRange', args: { start: 0, end: n - 1 } } }, 'search'); } catch (e) {}
             }
             var data = collect(state, q);
             render(root, data);
             var pending = Object.keys(full).some(function (k) { return full[k] === 'loading'; });
-            if (n && !data.loading && !pending) settled = q;
+            if (n && !justAsked && !data.loading && !pending) settled = q;
         }).catch(function () {});
     }
 
