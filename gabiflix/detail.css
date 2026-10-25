@@ -330,3 +330,26 @@
 .gf-cw-card { max-width: 22rem; }
 .gf-cw-remove .gf-sheet-q { color: #ff6b6b; }
 .gf-cw-cancel { align-items: center; }
+
+/* ---------- Computador / Mac: imagem grande com as informações por cima, à esquerda ---------- */
+@media (min-width: 900px) {
+    .gf-d-hero { aspect-ratio: auto; height: 72vh; max-height: none; margin-top: 0; }
+    .gf-d-hero::after {
+        background:
+            linear-gradient(90deg, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.45) 38%, rgba(0,0,0,0) 65%),
+            linear-gradient(180deg, rgba(0,0,0,0.35) 0%, rgba(0,0,0,0) 25%, rgba(0,0,0,0) 60%, #000 100%);
+    }
+    .gf-d-body { max-width: 46rem; padding: 0 3.2rem; margin-top: -40vh; }
+    .gf-d-title { font-size: clamp(2.4rem, 3.6vw, 3.6rem); }
+    .gf-d-info { font-size: 1.05rem; }
+    .gf-d-play, .gf-d-choose { width: 22rem; max-width: 100%; }
+    .gf-d-desc { font-size: 1.05rem; line-height: 1.5; -webkit-line-clamp: 4; }
+    .gf-d-actions { justify-content: flex-start; gap: 2.4rem; }
+    .gf-d-ep { cursor: pointer; }
+    .gf-d-ep:hover { background: rgba(255,255,255,0.06); }
+    .gf-d-play:hover { filter: brightness(0.9); }
+    .gf-d-choose:hover { background: rgba(255,255,255,0.16); }
+    .gf-sheet-item:hover { background: rgba(255,255,255,0.1); }
+    .gf-d-action { cursor: pointer; }
+}
+@media (min-width: 1500px) { .gf-d-body { margin-top: -44vh; padding: 0 4.5rem; } }

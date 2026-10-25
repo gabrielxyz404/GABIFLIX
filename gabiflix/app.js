@@ -4,7 +4,7 @@
 (function () {
     var inApp = /GabiFlixApp\//.test(navigator.userAgent);
     if (!inApp) return;
-    document.documentElement.setAttribute('data-gf-app', 'android');
+    document.documentElement.setAttribute('data-gf-app', /GabiFlixApp\/mac/.test(navigator.userAgent) ? 'mac' : 'android');
 
     var KEY = 'gf-app-player-stremio';
     try { if (localStorage.getItem(KEY)) return; } catch (e) {}
@@ -104,7 +104,9 @@
         var info = parseLink(link);
         if (!info) return false;
         if (stream) return launch(stream, info);
-        decodeStream(info.rawStream).then(function (s) { launch(s, info); }).catch(function () {});
+        decodeStream(info.rawStream).then(function (s) {
+            if (!launch(s, info) && window.gfGo) window.gfGo(link); // sem link direto: player do site
+        }).catch(function () { if (window.gfGo) window.gfGo(link); });
         return true;
     };
 
