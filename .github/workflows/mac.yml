@@ -45,8 +45,11 @@ jobs:
           pkill -x GabiFlix || true
       - name: Testar o player (vídeo com áudio AC3)
         run: |
-          open -n mac/build/GabiFlix.app --args --gf-test-play "https://download.blender.org/peach/bigbuckbunny_movies/big_buck_bunny_480p_surround-fix.avi" tt1254207
+          V="https://download.blender.org/peach/bigbuckbunny_movies/big_buck_bunny_480p_surround-fix.avi"
+          curl -sI -m 15 "$V" | head -3 | while IFS= read -r l; do echo "::notice::curl: $l"; done
+          mac/build/GabiFlix.app/Contents/MacOS/GabiFlix --gf-test-play "$V" tt1254207 > app.log 2>&1 &
           sleep 45
+          grep -i -E "error|fail|cannot|unable|no suitable|module" app.log | grep -v -i "subtitle" | head -12 | while IFS= read -r l; do echo "::notice::vlc: $(echo "$l" | cut -c1-400)"; done
           screencapture -x player.png || true
           [ -f /tmp/gabiflix-player.log ] && { head -3 /tmp/gabiflix-player.log; tail -4 /tmp/gabiflix-player.log; } | while IFS= read -r line; do echo "::notice::$(echo "$line" | cut -c1-600)"; done
           cp /tmp/gabiflix-player.log player.log 2>/dev/null || true
@@ -59,7 +62,7 @@ jobs:
       - name: Guardar as telas do teste
         if: always()
         run: |
-          mkdir -p /tmp/telas && cp shot.png player.png player.log /tmp/telas/ 2>/dev/null || true
+          mkdir -p /tmp/telas && cp shot.png player.png player.log app.log /tmp/telas/ 2>/dev/null || true
           git config user.name "GabiFlix CI"; git config user.email "ci@gabiflix.local"
           git fetch origin mac-teste 2>/dev/null || true
           git checkout --orphan mac-teste-new
