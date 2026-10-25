@@ -76,9 +76,9 @@ public class TvHomeActivity extends TvBase {
     private final class Cards extends RecyclerView.Adapter<Cards.CH> {
         final class CH extends RecyclerView.ViewHolder {
             final GradientDrawable bg;
-            final View accent;
+            final ServiceIcon accent;
             final TextView name, tabs;
-            CH(View v, GradientDrawable bg, View accent, TextView name, TextView tabs) { super(v); this.bg = bg; this.accent = accent; this.name = name; this.tabs = tabs; }
+            CH(View v, GradientDrawable bg, ServiceIcon accent, TextView name, TextView tabs) { super(v); this.bg = bg; this.accent = accent; this.name = name; this.tabs = tabs; }
         }
 
         @NonNull @Override
@@ -99,9 +99,9 @@ public class TvHomeActivity extends TvBase {
             col.setOrientation(LinearLayout.VERTICAL);
             col.setGravity(Gravity.CENTER_HORIZONTAL);
             col.setPadding(Ui.dp(c, 18), 0, Ui.dp(c, 18), 0);
-            View accent = new View(c);
-            col.addView(accent, new LinearLayout.LayoutParams(Ui.dp(c, 46), Ui.dp(c, 5)));
-            col.addView(Ui.space(c, 1, 18));
+            ServiceIcon accent = new ServiceIcon(c);
+            col.addView(accent, new LinearLayout.LayoutParams(Ui.dp(c, 84), Ui.dp(c, 84)));
+            col.addView(Ui.space(c, 1, 20));
             TextView name = Ui.text(c, "", 28, true, Ui.TEXT);
             name.setGravity(Gravity.CENTER);
             name.setMaxLines(2);
@@ -133,7 +133,7 @@ public class TvHomeActivity extends TvBase {
             int color = Ui.parseColor(s.color, 0xFFFFFFFF);
             h.bg.setColors(new int[]{Ui.tint(color, 0.42f), Ui.tint(color, 0.16f), Ui.tint(color, 0.08f)});
             h.bg.setStroke(Ui.dp(h.itemView.getContext(), 1), Ui.tint(color, 0.5f));
-            h.accent.setBackground(Ui.round(color, Ui.dp(h.itemView.getContext(), 3)));
+            h.accent.set(s.id, color == 0xFFF5F5F7 ? Ui.TEXT : brighten(color));
             h.name.setText(s.name);
             h.name.setTextColor(color == 0xFFF5F5F7 ? Ui.TEXT : brighten(color));
             h.tabs.setText(TextUtils.join("  ·  ", s.tabs));
