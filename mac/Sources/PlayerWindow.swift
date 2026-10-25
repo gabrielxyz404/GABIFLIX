@@ -37,7 +37,8 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
 
     private let player = VLCMediaPlayer()
     private let videoView = VLCVideoView()
-    private let root = PlayerRootView()
+    private let root = NSView()
+    private let overlay = PlayerRootView()
     private let controls = NSVisualEffectView()
     private let topBar = NSVisualEffectView()
     private let playButton = NSButton()
@@ -113,6 +114,10 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
         message.translatesAutoresizingMaskIntoConstraints = false
         root.addSubview(message)
 
+        // camada transparente por cima do vídeo: recebe cliques, movimento do mouse e teclado
+        overlay.translatesAutoresizingMaskIntoConstraints = false
+        root.addSubview(overlay)
+
         // barra de cima: voltar
         topBar.material = .hudWindow
         topBar.blendingMode = .withinWindow
@@ -144,7 +149,7 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
         slider.maxValue = 1000
         slider.target = self
         slider.action = #selector(sliderMoved)
-        slider.isContinuous = true
+        slider.isContinuous = false
         let audio = button("Áudio", #selector(chooseAudio))
         let subs = button("Legendas", #selector(chooseSubtitles))
         let fs = button("Tela cheia", #selector(toggleFullScreen))
@@ -162,6 +167,10 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
             videoView.trailingAnchor.constraint(equalTo: root.trailingAnchor),
             videoView.topAnchor.constraint(equalTo: root.topAnchor),
             videoView.bottomAnchor.constraint(equalTo: root.bottomAnchor),
+            overlay.leadingAnchor.constraint(equalTo: root.leadingAnchor),
+            overlay.trailingAnchor.constraint(equalTo: root.trailingAnchor),
+            overlay.topAnchor.constraint(equalTo: root.topAnchor),
+            overlay.bottomAnchor.constraint(equalTo: root.bottomAnchor),
             spinner.centerXAnchor.constraint(equalTo: root.centerXAnchor),
             spinner.centerYAnchor.constraint(equalTo: root.centerYAnchor),
             message.centerXAnchor.constraint(equalTo: root.centerXAnchor),
@@ -184,10 +193,10 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
             row.centerYAnchor.constraint(equalTo: controls.centerYAnchor),
         ])
 
-        root.onMouseMove = { [weak self] in self?.showControls() }
-        root.onDoubleClick = { [weak self] in self?.toggleFullScreen() }
-        root.onKey = { [weak self] e in self?.handleKey(e) ?? false }
-        w.makeFirstResponder(root)
+        overlay.onMouseMove = { [weak self] in self?.showControls() }
+        overlay.onDoubleClick = { [weak self] in self?.toggleFullScreen() }
+        overlay.onKey = { [weak self] e in self?.handleKey(e) ?? false }
+        w.makeFirstResponder(overlay)
         w.acceptsMouseMovedEvents = true
     }
 
@@ -209,6 +218,7 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
         b.attributedTitle = NSAttributedString(string: "  \(b.title)  ", attributes: [
             .foregroundColor: NSColor.white, .font: b.font ?? NSFont.boldSystemFont(ofSize: 13)])
         b.setContentHuggingPriority(.required, for: .horizontal)
+        b.refusesFirstResponder = true
     }
 
     private func setTitle(_ b: NSButton, _ t: String) {
@@ -256,7 +266,7 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
             }
         case .buffering, .opening:
             if !startedPlaying { spinner.isHidden = false }
-        case .ended:
+        case .ended, .stopped where startedPlaying && lastLength > 0 && lastTime > lastLength - 8000:
             ended = true
             lastTime = lastLength
             closePlayer()
@@ -317,10 +327,7 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
         guard len > 0 else { return }
         let target = Int64(slider.doubleValue / 1000 * Double(len))
         timeLabel.stringValue = format(target)
-        let event = NSApp.currentEvent
-        let releasing = event?.type == .leftMouseUp
-        userSeeking = !releasing
-        if releasing || event == nil { player.time = VLCTime(int: Int32(truncatingIfNeeded: target)) }
+        player.time = VLCTime(int: Int32(truncatingIfNeeded: target))
         showControls()
     }
 
