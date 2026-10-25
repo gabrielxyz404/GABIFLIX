@@ -76,3 +76,25 @@ html[data-gf-tv][data-gf-route="home"][data-gf-view="grid"] #gf-home .gf-grid .g
     font-size: 2.3rem;
 }
 html[data-gf-tv][data-gf-route="home"][data-gf-view="grid"] #gf-home .gf-grid .gf-card:focus .gf-card-hint { display: block; padding: 0 0.6rem; }
+
+/* ---------- fluidez no Fire TV Stick (processador fraco) ----------
+   desfoques e animações contínuas pesam muito na TV: trocados por fundos sólidos */
+html[data-gf-tv] *, html[data-gf-tv] *::before, html[data-gf-tv] *::after {
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+}
+html[data-gf-tv] .horizontal-nav-bar-container-Y_zvK::before { background: rgba(20, 20, 22, 0.97) !important; box-shadow: none !important; }
+html[data-gf-tv] .gf-sheet { background: rgba(0, 0, 0, 0.82); }
+html[data-gf-tv] .gf-sheet-card { background: #141416; }
+html[data-gf-tv] #gf-home .gf-poster, html[data-gf-tv] #gf-search .gf-s-poster, html[data-gf-tv] #gf-search .gf-s-skel,
+html[data-gf-tv] .gf-d-sk, html[data-gf-tv] #gf-home .gf-hero, html[data-gf-tv] #gf-home .gf-grid > .gf-card,
+html[data-gf-tv] #gf-home .gf-row-track > .gf-poster.is-filled, html[data-gf-tv] #gf-home .gf-hero-inner,
+html[data-gf-tv] .gf-detail, html[data-gf-tv] .gf-sheet, html[data-gf-tv] .gf-sheet-card, html[data-gf-tv] .nav-menu-container-Pl25j {
+    animation: none !important;
+}
+html[data-gf-tv]::view-transition-old(root), html[data-gf-tv]::view-transition-new(root) { animation: none !important; }
+html[data-gf-tv] .gf-d-hero-img, html[data-gf-tv] #gf-home img { transition: none !important; }
+/* "tela cheia" não serve para nada na TV (o app já ocupa a tela toda) */
+html[data-gf-tv] [class*="horizontal-nav-bar"] [title="Entrar em modo de tela cheia"],
+html[data-gf-tv] [class*="horizontal-nav-bar"] [title="Sair do modo de tela cheia"],
+html[data-gf-tv] [class*="nav-menu-container"] [title*="tela cheia"] { display: none !important; }

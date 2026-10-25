@@ -20,28 +20,29 @@
     }
 
     // ---------- Voltar ----------
+    function tvRefocus() { if (tv) refocus(); } // no celular não há foco para recuperar
     function openLayer() {
         return document.getElementById('gf-cw-menu') || document.getElementById('gf-sheet') ||
             document.querySelector('[class*="nav-menu-container"], [class*="modal-container"], [class*="menu-container"][class*="open"]');
     }
     window.gfBack = function () {
         var cw = document.getElementById('gf-cw-menu');
-        if (cw) { cw.remove(); refocus(); return true; }
+        if (cw) { cw.remove(); tvRefocus(); return true; }
         var sheet = document.getElementById('gf-sheet');
-        if (sheet) { var x = sheet.querySelector('.gf-sheet-close'); if (x) x.click(); else sheet.remove(); setTimeout(refocus, 250); return true; }
+        if (sheet) { var x = sheet.querySelector('.gf-sheet-close'); if (x) x.click(); else sheet.remove(); setTimeout(tvRefocus, 250); return true; }
         var menu = document.querySelector('[class*="nav-menu-container"]');
         if (menu && visible(menu)) {
             var btn = document.querySelector('[class*="horizontal-nav-bar"] [class*="menu-button"], [class*="horizontal-nav-bar"] [title="Menu"]');
             document.body.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
             if (btn) btn.click();
-            setTimeout(refocus, 200);
+            setTimeout(tvRefocus, 200);
             return true;
         }
         var h = location.hash;
         var onHome = !h || h === '#' || h === '#/';
         if (onHome) {
             var back = document.querySelector('#gf-home .gf-back');
-            if (back) { back.click(); setTimeout(refocus, 300); return true; } // catálogo -> tela dos serviços
+            if (back) { back.click(); setTimeout(tvRefocus, 300); return true; } // catálogo -> tela dos serviços
             return false; // tela inicial: o app fecha
         }
         // sem página anterior (o app abriu direto aqui): vai para a Home
@@ -52,6 +53,8 @@
 
     if (!tv) return;
     html.setAttribute('data-gf-tv', '1');
+    // a animação de troca de página tira uma "foto" da tela inteira: pesada demais no Fire TV
+    try { document.startViewTransition = undefined; } catch (e) {}
 
     var SEL = 'a[href], button:not([disabled]), input:not([type="hidden"]), select, textarea, [tabindex]:not([tabindex="-1"]), [role="button"]';
 
@@ -59,7 +62,14 @@
         var layer = openLayer();
         return layer && visible(layer) ? layer : document;
     }
+    // botões do Stremio que não recebem foco pelo teclado (menu ☰ do topo e as opções dele): passam a receber
+    var FIX = '[class*="horizontal-nav-bar"] [class*="nav-menu-popup-label"][tabindex="-1"], [class*="nav-menu-container"] [tabindex="-1"], [class*="modal-dialog"] [class*="button"][tabindex="-1"]';
+    function fixTabindex() {
+        [].forEach.call(document.querySelectorAll(FIX), function (el) { el.setAttribute('tabindex', '0'); });
+    }
+
     function candidates() {
+        fixTabindex();
         return [].filter.call(scope().querySelectorAll(SEL), visible);
     }
     function center(r) { return { x: r.left + r.width / 2, y: r.top + r.height / 2 }; }
@@ -83,6 +93,15 @@
     function best(from, dir, list) {
         var a = from.getBoundingClientRect(), ca = center(a), pick = null, score = Infinity;
         var rf = region(from);
+        // esquerda/direita: fica na mesma linha se houver algo nela
+        if (dir === 'left' || dir === 'right') {
+            var row = list.filter(function (el) {
+                var b = el.getBoundingClientRect();
+                return el !== from && b.bottom > a.top + 6 && b.top < a.bottom - 6 && (dir === 'right' ? b.left >= a.right - 4 : b.right <= a.left + 4);
+            });
+            // nada na mesma linha: só sai para outra região (ex.: barra lateral), não pula de linha
+            list = row.length ? row : list.filter(function (el) { return region(el) !== rf; });
+        }
         list.forEach(function (el) {
             if (el === from || el.contains(from) || from.contains(el)) return;
             if (!allowed(rf, region(el), dir)) return;
@@ -151,6 +170,8 @@
 
     var DIRS = { ArrowUp: 'up', ArrowDown: 'down', ArrowLeft: 'left', ArrowRight: 'right' };
     window.addEventListener('keydown', function (e) {
+        // no player do site (trailers) as setas são do próprio player
+        if (/^#\/player\//.test(location.hash)) return;
         var dir = DIRS[e.key];
         var cur = current();
         if (dir) {
@@ -159,7 +180,14 @@
             e.preventDefault();
             e.stopPropagation();
             if (!cur) { focusEl(firstInContent()); return; }
-            var next = best(cur, dir, candidates());
+            var list = candidates(), next = null;
+            // entrando na barra lateral: vai para a página atual (Home, Mais Tarde...)
+            if (dir === 'left' && region(cur) !== 'side') {
+                var side = best(cur, dir, list);
+                if (side && region(side) === 'side') {
+                    next = list.filter(function (el) { return region(el) === 'side' && /\bselected\b/.test(el.className + ' ' + (el.parentElement && el.parentElement.className)); })[0] || side;
+                } else next = side;
+            } else next = best(cur, dir, list);
             if (next) focusEl(next);
             else if (dir === 'down' || dir === 'up') {
                 // nada mais nessa direção: rola um pouco a lista
@@ -170,7 +198,14 @@
         }
         if (e.key === 'Enter' && cur && !isTyping(cur)) {
             // elementos que não são botões de verdade precisam do clique
-            if (cur.tagName !== 'BUTTON' && cur.tagName !== 'A' && cur.tagName !== 'INPUT') { e.preventDefault(); cur.click(); }
+            // os botões do próprio Stremio já reagem ao OK sozinhos (clicar de novo abriria e fecharia na hora)
+            if (cur.tagName !== 'BUTTON' && cur.tagName !== 'A' && cur.tagName !== 'INPUT' && !/button-container/.test(String(cur.className))) {
+                e.preventDefault();
+                var r = cur.getBoundingClientRect(), o = { bubbles: true, cancelable: true, view: window, clientX: r.left + r.width / 2, clientY: r.top + r.height / 2, button: 0 };
+                ['pointerdown', 'mousedown', 'pointerup', 'mouseup', 'click'].forEach(function (t) {
+                    try { cur.dispatchEvent(t.indexOf('pointer') === 0 ? new PointerEvent(t, o) : new MouseEvent(t, o)); } catch (er) {}
+                });
+            }
             return;
         }
         if (e.key === 'ContextMenu') { e.preventDefault(); window.gfTvMenu(); }
