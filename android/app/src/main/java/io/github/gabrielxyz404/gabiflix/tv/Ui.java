@@ -17,8 +17,7 @@ import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
-import com.bumptech.glide.load.resource.bitmap.CenterCrop;
-import com.bumptech.glide.load.resource.bitmap.RoundedCorners;
+import com.bumptech.glide.load.DecodeFormat;
 
 import org.json.JSONObject;
 
@@ -90,6 +89,7 @@ final class Ui {
         f.setFocusable(true);
         f.setClickable(true);
         f.setForeground(focusRing(c, 8));
+        f.setClipToOutline(true); // cantos arredondados pela placa de vídeo (sem recortar cada imagem)
         TextView name = text(c, "", 13, true, MUTED);
         name.setGravity(Gravity.CENTER);
         name.setPadding(dp(c, 8), 0, dp(c, 8), 0);
@@ -110,13 +110,14 @@ final class Ui {
         if (url.isEmpty()) url = "https://images.metahub.space/poster/medium/" + meta.optString("id") + "/img";
         Context c = f.getContext();
         Glide.with(c).load(url).diskCacheStrategy(DiskCacheStrategy.ALL)
-                .transform(new CenterCrop(), new RoundedCorners(dp(c, 8)))
+                .format(DecodeFormat.PREFER_RGB_565).dontAnimate().centerCrop()
                 .into(img);
     }
 
     static void image(ImageView v, String url) {
         if (url == null || url.isEmpty()) { v.setImageDrawable(null); return; }
-        Glide.with(v.getContext()).load(url).diskCacheStrategy(DiskCacheStrategy.ALL).into(v);
+        Glide.with(v.getContext()).load(url).diskCacheStrategy(DiskCacheStrategy.ALL)
+                .format(DecodeFormat.PREFER_RGB_565).dontAnimate().into(v);
     }
 
     static int parseColor(String s, int def) {

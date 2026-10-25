@@ -63,6 +63,40 @@ public class TvHomeActivity extends TvBase {
         setContentView(root);
         ((PosterAdapter.Linear) list.getLayoutManager()).scrollToPositionWithOffset(MIDDLE, 0);
         focusCard(MIDDLE, 0);
+        prefetch();
+        testPlay(getIntent());
+    }
+
+    /** baixa já os dados do Início de cada catálogo: ao entrar, abre na hora */
+    private void prefetch() {
+        Net.async(() -> {
+            for (Services.Service s : Services.ALL) {
+                try {
+                    if (s.id.equals("cinemateca")) { Stremio.data("cine-cinemas"); Stremio.data("cine-classicos"); }
+                    else Stremio.data(s.id + "-home");
+                    if (s.id.equals("netflix")) { Stremio.data("netflix-top10-br-series"); Stremio.data("netflix-top10-br-movie"); }
+                } catch (Exception ignored) {}
+            }
+            return true;
+        }, (ok, e) -> {});
+    }
+
+    /** só para os testes automáticos: abre um vídeo direto no player */
+    private void testPlay(Intent i) {
+        String url = i != null ? i.getStringExtra("gfTestUrl") : null;
+        if (url == null) return;
+        try {
+            org.json.JSONObject meta = new org.json.JSONObject().put("id", "tt1254207").put("type", "movie").put("name", "Big Buck Bunny");
+            Stremio.Source src = new Stremio.Source();
+            src.url = url;
+            play(meta, "tt1254207", src);
+        } catch (Exception ignored) {}
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        testPlay(intent);
     }
 
     private void focusCard(int pos, int tries) {
@@ -150,7 +184,7 @@ public class TvHomeActivity extends TvBase {
                     h.name.invalidate();
                 });
             }
-            h.tabs.setText(TextUtils.join("  ·  ", s.tabs));
+            h.tabs.setText("Ver catálogo");
         }
 
         @Override public int getItemCount() { return Integer.MAX_VALUE; }

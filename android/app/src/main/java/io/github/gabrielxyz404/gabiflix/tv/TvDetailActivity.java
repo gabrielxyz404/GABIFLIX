@@ -379,6 +379,7 @@ public class TvDetailActivity extends TvBase {
             f.setLayoutParams(lp);
             f.setBackground(Ui.round(Ui.CARD, Ui.dp(c, 8)));
             f.setForeground(Ui.focusRing(c, 8));
+            f.setClipToOutline(true);
             f.setFocusable(true);
             f.setClickable(true);
             ImageView img = new ImageView(c);
