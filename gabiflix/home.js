@@ -307,7 +307,7 @@
     function renderGenres(sec, s) {
         var box = el('div', 'gf-genres');
         loadHome(sec.genresOf).then(function (h) {
-            (h.genres || []).forEach(function (g) {
+            (h.genres || []).slice(0, GENRES_MAX).forEach(function (g) {
                 box.appendChild(renderSection({ title: g.title, home: sec.genresOf, key: 'genre', code: g.code }, s));
             });
             restoreScroll();
@@ -315,8 +315,13 @@
         return box;
     }
 
-    // grades longas: desenha 60 por vez, conforme a rolagem se aproxima do fim
-    var GRID_BATCH = 60;
+    // TV (Fire TV): catálogo menor para ficar leve — menos títulos por fileira, menos fileiras e grades em partes menores
+    var TV = /GabiFlixTV/.test(navigator.userAgent) || /[?&]tv=1/.test(location.search);
+    try { if (localStorage.getItem('gf-tv') === '1') TV = true; } catch (e) {}
+    var ROW_MAX = TV ? 15 : 30, GENRES_MAX = TV ? 6 : 99;
+
+    // grades longas: desenha 60 por vez (24 na TV), conforme a rolagem se aproxima do fim
+    var GRID_BATCH = TV ? 24 : 60;
     function fillGrid(track, metas, sec) {
         var shown = 0;
         var sentinel = el('div', 'gf-grid-more');
@@ -330,7 +335,7 @@
         }
         var io = 'IntersectionObserver' in window ? new IntersectionObserver(function (es) {
             if (es.some(function (e) { return e.isIntersecting; })) more();
-        }, { rootMargin: '1200px 0px' }) : null;
+        }, { rootMargin: TV ? '500px 0px' : '1200px 0px' }) : null;
         more();
         if (io && shown < metas.length) io.observe(sentinel);
         else if (!io) while (shown < metas.length) more();
@@ -360,7 +365,7 @@
                 fillGrid(track, metas, sec);
             } else {
                 var frag = document.createDocumentFragment();
-                metas.slice(0, sec.top10 ? 10 : (sec.numbered ? 100 : 30)).forEach(function (m, i) {
+                metas.slice(0, sec.top10 ? 10 : (sec.numbered ? (TV ? 30 : 100) : ROW_MAX)).forEach(function (m, i) {
                     if ((sec.numbered || sec.top10) && !m.order) m = Object.assign({}, m, { order: i + 1 });
                     var p = posterEl(m, false, sec.numbered || sec.top10);
                     if (sec.top10) {

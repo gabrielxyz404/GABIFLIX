@@ -79,3 +79,26 @@ html[data-gf-tv] body { background: var(--primary-background-color, #000) !impor
 /* as listas que rolam viram uma camada própria: rolar não repinta a tela toda */
 html[data-gf-tv] div[class^="board-content-"]:not([class*="container"]), html[data-gf-tv] #gf-home .gf-row-track,
 html[data-gf-tv] [class*="metadetails-content"] { will-change: scroll-position; }
+
+/* ---------- sem "vidro" (liquid glass) na TV: tudo em cor sólida, sem reflexos, sombras ou degradês nos botões ---------- */
+html[data-gf-tv] *, html[data-gf-tv] *::before, html[data-gf-tv] *::after { box-shadow: none !important; text-shadow: none !important; }
+html[data-gf-tv] .nav-menu-container-Pl25j, html[data-gf-tv] [class*="nav-menu-container"] { background: #18181a !important; border: 1px solid #2c2c30 !important; }
+html[data-gf-tv] #gf-search .gf-s-chip { background: #232326 !important; border-color: #333338 !important; }
+html[data-gf-tv] #gf-search .gf-s-chip.is-active { background: #3a3a3f !important; }
+html[data-gf-tv] .search-bar-container-asfq1, html[data-gf-tv] .search-bar-container-asfq1 * { background-image: none !important; }
+html[data-gf-tv] .search-bar-container-asfq1 { background: #1c1c1f !important; }
+html[data-gf-tv] .gf-d-choose, html[data-gf-tv] #gf-home .gf-hero-btn:not(.is-primary), html[data-gf-tv] .gf-sheet-addons,
+html[data-gf-tv] [class*="install-button-container"] { background: #29292d !important; border-color: #38383d !important; }
+html[data-gf-tv] .gf-d-season { background: #1e1e21 !important; }
+html[data-gf-tv] .gf-d-season.is-active { background: #3a3a3f !important; }
+html[data-gf-tv] .gf-sheet-close, html[data-gf-tv] #gf-home .gf-back { background: #29292d !important; }
+html[data-gf-tv] .gf-sheet-item { background: #1d1d20 !important; }
+html[data-gf-tv] .gf-sheet-item:focus { background: #2e2e33 !important; }
+/* barras dos serviços: cor do serviço chapada, sem degradê */
+html[data-gf-tv] #gf-home .gf-grid .gf-card {
+    background: color-mix(in srgb, var(--gf-tint1, #fff) 20%, #0b0b0d) !important;
+    border-color: color-mix(in srgb, var(--gf-tint1, #fff) 40%, transparent) !important;
+}
+html[data-gf-tv] #gf-home .gf-grad-text { background: none !important; color: var(--gf-tint1) !important; -webkit-text-fill-color: var(--gf-tint1) !important; }
+/* destaque do catálogo: só a imagem e um escurecido simples */
+html[data-gf-tv] #gf-home .gf-hero { background: #111114 !important; }
