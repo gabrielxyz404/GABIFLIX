@@ -9,7 +9,8 @@ key() { for k in "$@"; do adb shell input keyevent "$k"; sleep 0.8; done; }
 adb logcat -c
 adb shell monkey -p io.github.gabrielxyz404.gabiflix -c android.intent.category.LEANBACK_LAUNCHER 1
 shot inicio 8
-key DPAD_RIGHT DPAD_RIGHT DPAD_RIGHT DPAD_RIGHT DPAD_RIGHT DPAD_RIGHT DPAD_RIGHT DPAD_RIGHT DPAD_RIGHT DPAD_RIGHT; shot inicio-direita
+key DPAD_RIGHT DPAD_RIGHT DPAD_RIGHT DPAD_RIGHT DPAD_RIGHT DPAD_RIGHT; shot inicio-meio
+key DPAD_RIGHT DPAD_RIGHT DPAD_RIGHT DPAD_RIGHT; shot inicio-direita
 key DPAD_LEFT DPAD_LEFT DPAD_LEFT DPAD_LEFT DPAD_LEFT DPAD_LEFT DPAD_LEFT DPAD_LEFT DPAD_LEFT DPAD_LEFT DPAD_LEFT DPAD_LEFT; shot inicio-esquerda
 key DPAD_RIGHT DPAD_RIGHT
 key DPAD_CENTER;                 shot netflix 9

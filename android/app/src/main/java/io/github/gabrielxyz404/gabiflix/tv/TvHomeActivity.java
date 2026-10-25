@@ -113,7 +113,9 @@ public class TvHomeActivity extends TvBase {
             tabs.setEllipsize(TextUtils.TruncateAt.END);
             tabs.setLineSpacing(0, 1.2f);
             col.addView(tabs, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
-            f.addView(col, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.CENTER));
+            FrameLayout.LayoutParams cl = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.TOP);
+            cl.topMargin = Ui.dp(c, 72); // símbolo e nome na mesma altura em todos os cartões
+            f.addView(col, cl);
 
             CH h = new CH(f, bg, accent, name, tabs);
             f.setOnClickListener(v -> {
