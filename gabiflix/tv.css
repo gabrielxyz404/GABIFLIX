@@ -1,8 +1,23 @@
 /* GabiFlix na TV (Fire TV): visual simples e leve para o controle remoto.
    Só uma borda branca no item selecionado — sem crescer, sem sombras, sem animações (o Fire TV é fraco). */
 html[data-gf-tv] { cursor: none; }
-html[data-gf-tv] *:focus { outline: none; }
-html[data-gf-tv] :focus { outline: 3px solid #fff !important; outline-offset: 2px; }
+/* borda do selecionado DENTRO do item (por fora ela era cortada pelas fileiras e saía torta) */
+html[data-gf-tv] *:focus, html[data-gf-tv] *:focus-visible { outline: 3px solid #fff !important; outline-offset: -3px !important; }
+/* pôsteres, serviços e cartões: um aro branco por cima da imagem, com os mesmos cantos arredondados */
+html[data-gf-tv] #gf-home .gf-poster, html[data-gf-tv] #gf-home .gf-card, html[data-gf-tv] #gf-search .gf-s-poster,
+html[data-gf-tv] .gf-d-ep-thumb { position: relative; }
+html[data-gf-tv] #gf-home .gf-poster:focus, html[data-gf-tv] #gf-home .gf-card:focus, html[data-gf-tv] #gf-search .gf-s-item:focus,
+html[data-gf-tv] .gf-d-ep:focus { outline: none !important; }
+html[data-gf-tv] #gf-home .gf-poster:focus::before, html[data-gf-tv] #gf-home .gf-card:focus::before,
+html[data-gf-tv] #gf-search .gf-s-item:focus .gf-s-poster::before, html[data-gf-tv] .gf-d-ep:focus .gf-d-ep-thumb::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border: 3px solid #fff;
+    border-radius: inherit;
+    pointer-events: none;
+    z-index: 5;
+}
 html[data-gf-tv] #gf-home .gf-poster, html[data-gf-tv] #gf-search .gf-s-item, html[data-gf-tv] .gf-d-ep,
 html[data-gf-tv] .gf-sheet-item, html[data-gf-tv] .gf-d-action, html[data-gf-tv] .gf-d-season, html[data-gf-tv] #gf-home .gf-card {
     scroll-margin: 3rem 2.5rem;
@@ -59,7 +74,15 @@ html[data-gf-tv][data-gf-route="home"][data-gf-view="grid"] #gf-home .gf-grid .g
 /* "tela cheia" não serve para nada na TV (o app já ocupa a tela toda) */
 html[data-gf-tv] [class*="horizontal-nav-bar"] [title="Entrar em modo de tela cheia"],
 html[data-gf-tv] [class*="horizontal-nav-bar"] [title="Sair do modo de tela cheia"],
-html[data-gf-tv] [class*="nav-menu-container"] [title*="tela cheia"] { display: none !important; }
+html[data-gf-tv] [class*="nav-menu-container"] [title*="tela cheia"],
+html[data-gf-tv] [class*="horizontal-nav-bar"] [title*="ullscreen"], html[data-gf-tv] [class*="nav-menu-container"] [title*="ullscreen"] { display: none !important; }
+/* fileiras sem "ímã" de rolagem: com o controle ele faz a lista pular e pesa */
+html[data-gf-tv] #gf-home .gf-row-track { scroll-snap-type: none !important; }
+html[data-gf-tv] #gf-home .gf-row-track > * { scroll-snap-align: none !important; }
+/* cantos arredondados que recortam imagens pesam no Fire TV: o pôster arredonda a própria imagem */
+html[data-gf-tv] #gf-home .gf-poster.is-filled { overflow: visible; border: 0; background: #141416; }
+html[data-gf-tv] #gf-home .gf-poster.is-filled img { border-radius: 0.6rem; }
+html[data-gf-tv] #gf-home .gf-top10-num { -webkit-text-stroke: 0; color: #3a3a40; }
 
 /* ---------- leveza: nada de desfoque, sombras grandes, animações ou transições ---------- */
 html[data-gf-tv] *, html[data-gf-tv] *::before, html[data-gf-tv] *::after {

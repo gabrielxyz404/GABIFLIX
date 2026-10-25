@@ -353,6 +353,18 @@
         var track = el('div', sec.grid ? 'gf-poster-grid' : 'gf-row-track');
         row.appendChild(track);
         for (var i = 0; i < (sec.grid ? 12 : 8); i++) track.appendChild(el('div', 'gf-poster'));
+        // TV: as fileiras de baixo só carregam quando chegam perto da tela (menos trabalho ao abrir o catálogo)
+        if (TV && !onFirst && !sec.grid && 'IntersectionObserver' in window) {
+            var io = new IntersectionObserver(function (es) {
+                if (!es.some(function (e) { return e.isIntersecting; })) return;
+                io.disconnect();
+                fill();
+            }, { rootMargin: '0px 0px 700px 0px' });
+            setTimeout(function () { io.observe(row); }, 0);
+        } else fill();
+        return row;
+
+        function fill() {
         loadCatalog(sec).then(function (metas) {
             track.innerHTML = '';
             if (!metas.length && sec.hideEmpty) { row.remove(); return; }
@@ -390,7 +402,7 @@
             row.replaceChild(msg, track);
             onFirst && onFirst(false);
         });
-        return row;
+        }
     }
 
     // ---------- Continuar assistindo (por serviço) ----------
