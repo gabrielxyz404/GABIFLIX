@@ -131,15 +131,62 @@ public class TvHomeActivity extends TvBase {
         public void onBindViewHolder(@NonNull CH h, int position) {
             Services.Service s = Services.ALL.get(position % N);
             int color = Ui.parseColor(s.color, 0xFFFFFFFF);
-            h.bg.setColors(new int[]{Ui.tint(color, 0.42f), Ui.tint(color, 0.16f), Ui.tint(color, 0.08f)});
-            h.bg.setStroke(Ui.dp(h.itemView.getContext(), 1), Ui.tint(color, 0.5f));
-            h.accent.setBackground(Ui.round(color, Ui.dp(h.itemView.getContext(), 3)));
+            Context c = h.itemView.getContext();
+            int color2 = s.id.equals("globoplay") ? 0xFF3ECF6B : color;
+            int color1 = s.id.equals("globoplay") ? 0xFFF5C518 : color;
+            h.itemView.setBackground(cardBackground(c, color1, color2));
+            h.accent.setBackground(s.id.equals("globoplay")
+                    ? gradientBar(c, color1, color2)
+                    : Ui.round(color, Ui.dp(c, 3)));
             h.name.setText(s.name);
-            h.name.setTextColor(color == 0xFFF5F5F7 ? Ui.TEXT : brighten(color));
+            h.name.getPaint().setShader(null);
+            h.name.setTextColor(color);
+            if (s.id.equals("globoplay")) {
+                // nome em degradê amarelo → verde, como no celular
+                float w = h.name.getPaint().measureText(s.name);
+                h.name.post(() -> {
+                    float start = (h.name.getWidth() - w) / 2f;
+                    h.name.getPaint().setShader(new android.graphics.LinearGradient(start, 0, start + w, 0, color1, color2, android.graphics.Shader.TileMode.CLAMP));
+                    h.name.invalidate();
+                });
+            }
             h.tabs.setText(TextUtils.join("  ·  ", s.tabs));
         }
 
         @Override public int getItemCount() { return Integer.MAX_VALUE; }
+    }
+
+    /** fundo igual ao do celular: quase preto, com um brilho da cor no canto de cima e outro no canto de baixo */
+    private static android.graphics.drawable.Drawable cardBackground(Context c, int color1, int color2) {
+        float r = Ui.dp(c, 20);
+        GradientDrawable base = Ui.round(0xFF0B0B0D, r);
+        GradientDrawable glow1 = new GradientDrawable();
+        glow1.setGradientType(GradientDrawable.RADIAL_GRADIENT);
+        glow1.setGradientCenter(0f, 0f);
+        glow1.setGradientRadius(Ui.dp(c, 330));
+        glow1.setColors(new int[]{alpha(color1, 0.34f), alpha(color1, 0.12f), 0x00000000});
+        glow1.setCornerRadius(r);
+        GradientDrawable glow2 = new GradientDrawable();
+        glow2.setGradientType(GradientDrawable.RADIAL_GRADIENT);
+        glow2.setGradientCenter(1f, 1f);
+        glow2.setGradientRadius(Ui.dp(c, 300));
+        glow2.setColors(new int[]{alpha(color2, 0.20f), 0x00000000});
+        glow2.setCornerRadius(r);
+        GradientDrawable border = new GradientDrawable();
+        border.setColor(0x00000000);
+        border.setCornerRadius(r);
+        border.setStroke(Ui.dp(c, 1), alpha(color1, 0.45f));
+        return new android.graphics.drawable.LayerDrawable(new android.graphics.drawable.Drawable[]{base, glow1, glow2, border});
+    }
+
+    private static GradientDrawable gradientBar(Context c, int a, int b) {
+        GradientDrawable g = new GradientDrawable(GradientDrawable.Orientation.LEFT_RIGHT, new int[]{a, b});
+        g.setCornerRadius(Ui.dp(c, 3));
+        return g;
+    }
+
+    private static int alpha(int color, float a) {
+        return (Math.round(a * 255) << 24) | (color & 0x00FFFFFF);
     }
 
     /** a cor do serviço um pouco mais clara, para o nome ler bem no fundo escuro */
