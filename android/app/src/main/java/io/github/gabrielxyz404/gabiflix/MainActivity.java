@@ -61,7 +61,11 @@ public class MainActivity extends Activity {
         s.setLoadWithOverviewMode(true);
         s.setUseWideViewPort(true);
         // o site reconhece que está dentro do app e liga o VLC como player
-        s.setUserAgentString(s.getUserAgentString() + " GabiFlixApp/" + BuildConfigHelper.versionName(this));
+        s.setUserAgentString(s.getUserAgentString() + " GabiFlixApp/" + BuildConfigHelper.versionName(this) + (isTv(this) ? " GabiFlixTV" : ""));
+        // na TV o controle remoto mexe no site (setas, OK)
+        web.setFocusable(true);
+        web.setFocusableInTouchMode(true);
+        web.requestFocus();
         CookieManager.getInstance().setAcceptCookie(true);
         CookieManager.getInstance().setAcceptThirdPartyCookies(web, true);
 
@@ -146,14 +150,37 @@ public class MainActivity extends Activity {
         }
     }
 
+    /** TV: Fire TV, Android TV ou qualquer aparelho em modo televisão */
+    static boolean isTv(android.content.Context c) {
+        android.app.UiModeManager ui = (android.app.UiModeManager) c.getSystemService(UI_MODE_SERVICE);
+        if (ui != null && ui.getCurrentModeType() == android.content.res.Configuration.UI_MODE_TYPE_TELEVISION) return true;
+        android.content.pm.PackageManager pm = c.getPackageManager();
+        return pm.hasSystemFeature("amazon.hardware.fire_tv") || pm.hasSystemFeature(android.content.pm.PackageManager.FEATURE_LEANBACK);
+    }
+
     @Override
     public void onBackPressed() {
         if (fullscreenView != null) {
             if (fullscreenCallback != null) fullscreenCallback.onCustomViewHidden();
             return;
         }
-        if (web.canGoBack()) web.goBack();
-        else super.onBackPressed();
+        // o site decide: fecha a janela aberta, volta de página, ou responde false na tela inicial (o app fecha)
+        web.evaluateJavascript("(function(){try{return window.gfBack?String(window.gfBack()):'none'}catch(e){return 'none'}})()", result -> {
+            String r = result == null ? "" : result.replace("\"", "");
+            if (r.equals("true")) return;
+            if (r.equals("false")) { finish(); return; }
+            if (web.canGoBack()) web.goBack(); else finish();
+        });
+    }
+
+    @Override
+    public boolean onKeyDown(int keyCode, android.view.KeyEvent event) {
+        // botão ☰ do controle: opções do item selecionado (ex.: remover do Continuar assistindo)
+        if (keyCode == android.view.KeyEvent.KEYCODE_MENU) {
+            web.evaluateJavascript("window.gfTvMenu && window.gfTvMenu()", null);
+            return true;
+        }
+        return super.onKeyDown(keyCode, event);
     }
 
     @Override

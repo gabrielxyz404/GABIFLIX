@@ -90,6 +90,7 @@ public class PlayerActivity extends Activity {
         loadSubtitlesInBackground();
         if (url == null) { finish(); return; }
 
+        tv = MainActivity.isTv(this);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         if (android.os.Build.VERSION.SDK_INT >= 28) {
             getWindow().getAttributes().layoutInDisplayCutoutMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES;
@@ -98,6 +99,8 @@ public class PlayerActivity extends Activity {
 
         FrameLayout root = new FrameLayout(this);
         root.setBackgroundColor(Color.BLACK);
+        focusSink = root;
+        if (tv) { root.setFocusable(true); root.setFocusableInTouchMode(true); }
         videoLayout = new VLCVideoLayout(this);
         root.addView(videoLayout, match());
 
@@ -114,6 +117,7 @@ public class PlayerActivity extends Activity {
         controls = buildControls();
         root.addView(controls, match());
         setContentView(root);
+        if (tv) root.requestFocus();
 
         // toque: mostra/esconde os controles; toque duplo nas laterais: volta ou avança 10 s
         GestureDetector gestures = new GestureDetector(this, new GestureDetector.SimpleOnGestureListener() {
@@ -235,6 +239,7 @@ public class PlayerActivity extends Activity {
         top.setBackground(gradient(new int[]{0xB3000000, 0x00000000}, GradientDrawable.Orientation.TOP_BOTTOM));
         TextView back = pill("←  Voltar");
         back.setOnClickListener(v -> finish());
+        makeRemoteFriendly(back, 0);
         top.addView(back);
         box.addView(top, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.TOP));
 
@@ -248,6 +253,9 @@ public class PlayerActivity extends Activity {
         playButton.setOnClickListener(v -> togglePlay());
         TextView ff = round("+10", 22);
         ff.setOnClickListener(v -> skip(10000));
+        makeRemoteFriendly(rw, 1);
+        makeRemoteFriendly(playButton, 1);
+        makeRemoteFriendly(ff, 1);
         LinearLayout.LayoutParams small = new LinearLayout.LayoutParams(dp(64), dp(64));
         LinearLayout.LayoutParams big = new LinearLayout.LayoutParams(dp(84), dp(84));
         small.setMargins(dp(22), 0, dp(22), 0);
@@ -270,6 +278,7 @@ public class PlayerActivity extends Activity {
         lengthLabel = text("0:00", 14, true);
         seek = new SeekBar(this);
         seek.setMax(1000);
+        seek.setFocusable(false);
         seek.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override public void onProgressChanged(SeekBar s, int p, boolean fromUser) {
                 if (fromUser && player != null && player.getLength() > 0) timeLabel.setText(format(player.getLength() * p / 1000));
@@ -294,7 +303,10 @@ public class PlayerActivity extends Activity {
         audio.setOnClickListener(v -> chooseAudio());
         TextView subs = pill("Legendas");
         subs.setOnClickListener(v -> chooseSubtitles());
+        makeRemoteFriendly(audio, 0);
+        makeRemoteFriendly(subs, 0);
         TextView scale = pill("Tela: " + SCALE_NAMES[0]);
+        makeRemoteFriendly(scale, 0);
         scale.setOnClickListener(v -> {
             scaleIndex = (scaleIndex + 1) % SCALES.length;
             player.setVideoScale(SCALES[scaleIndex]);
@@ -310,6 +322,81 @@ public class PlayerActivity extends Activity {
 
         box.addView(bottom, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.BOTTOM));
         return box;
+    }
+
+    // ---------- controle remoto da TV ----------
+    private boolean tv = false;
+    private View focusSink; // recebe o foco quando nenhum botão está selecionado
+    private final ArrayList<View> remoteButtons = new ArrayList<>();
+
+    /** botões que o controle remoto alcança (na TV): ficam com borda branca quando selecionados */
+    private void makeRemoteFriendly(TextView v, int oval) {
+        remoteButtons.add(v);
+        if (!tv) return;
+        v.setFocusable(true);
+        v.setOnFocusChangeListener((view, has) -> {
+            GradientDrawable g = (GradientDrawable) view.getBackground();
+            g.setStroke(dp(has ? 3 : 1), has ? 0xFFFFFFFF : (oval == 1 ? 0x33FFFFFF : 0x2EFFFFFF));
+            view.animate().scaleX(has ? 1.12f : 1f).scaleY(has ? 1.12f : 1f).setDuration(120).start();
+            if (has) setControlsVisible(true);
+        });
+    }
+
+    private boolean controlFocused() {
+        View f = getCurrentFocus();
+        return f != null && remoteButtons.contains(f);
+    }
+
+    @Override
+    public boolean dispatchKeyEvent(android.view.KeyEvent e) {
+        if (player == null) return super.dispatchKeyEvent(e);
+        int k = e.getKeyCode();
+        boolean down = e.getAction() == android.view.KeyEvent.ACTION_DOWN;
+        boolean visible = controls.getVisibility() == View.VISIBLE;
+        switch (k) {
+            case android.view.KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE:
+            case android.view.KeyEvent.KEYCODE_MEDIA_PLAY:
+            case android.view.KeyEvent.KEYCODE_MEDIA_PAUSE:
+                if (down) { togglePlay(); setControlsVisible(true); }
+                return true;
+            case android.view.KeyEvent.KEYCODE_MEDIA_FAST_FORWARD:
+                if (down) skip(30000);
+                return true;
+            case android.view.KeyEvent.KEYCODE_MEDIA_REWIND:
+                if (down) skip(-30000);
+                return true;
+            case android.view.KeyEvent.KEYCODE_BACK:
+                // com um botão selecionado: o Voltar só esconde os controles
+                if (tv && visible && controlFocused()) {
+                    if (down) setControlsVisible(false);
+                    return true;
+                }
+                return super.dispatchKeyEvent(e);
+        }
+        if (!tv) return super.dispatchKeyEvent(e);
+        // controles escondidos ou nenhum botão selecionado: OK pausa, esquerda/direita andam 10 s
+        if (!controlFocused()) {
+            switch (k) {
+                case android.view.KeyEvent.KEYCODE_DPAD_CENTER:
+                case android.view.KeyEvent.KEYCODE_ENTER:
+                    if (down && e.getRepeatCount() == 0) { togglePlay(); setControlsVisible(true); }
+                    return true;
+                case android.view.KeyEvent.KEYCODE_DPAD_LEFT:
+                    if (down) skip(-10000);
+                    return true;
+                case android.view.KeyEvent.KEYCODE_DPAD_RIGHT:
+                    if (down) skip(10000);
+                    return true;
+                case android.view.KeyEvent.KEYCODE_DPAD_UP:
+                case android.view.KeyEvent.KEYCODE_DPAD_DOWN:
+                    // cima/baixo: mostra os controles e seleciona o play (dali chega em Áudio, Legendas...)
+                    if (down) { setControlsVisible(true); playButton.requestFocus(); }
+                    return true;
+            }
+        } else if (down) {
+            scheduleHide();
+        }
+        return super.dispatchKeyEvent(e);
     }
 
     private void togglePlay() {
@@ -491,6 +578,7 @@ public class PlayerActivity extends Activity {
     }
 
     private void setControlsVisible(boolean show) {
+        if (!show && controlFocused() && focusSink != null) focusSink.requestFocus();
         controls.setVisibility(show ? View.VISIBLE : View.GONE);
         ui.removeCallbacks(hideControls);
         if (show) scheduleHide();

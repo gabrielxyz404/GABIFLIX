@@ -457,6 +457,7 @@
         }
         // segurar o dedo no pôster abre a opção de remover (e zera a linha do tempo)
         var pressed = false;
+        b._gfItem = item;
         onLongPress(b, function () { pressed = true; continueMenu(item, b); });
         // tocar retoma de onde parou, quando o app tiver esse atalho
         var link = item.deepLinks && (item.deepLinks.player || item.deepLinks.metaDetailsStreams || item.deepLinks.metaDetailsVideos);
@@ -486,6 +487,13 @@
         // o menu do sistema (copiar imagem etc.) não aparece
         node.addEventListener('contextmenu', function (e) { e.preventDefault(); });
     }
+
+    // controle da TV (botão ☰): abre o mesmo menu do "segurar o dedo"
+    window.gfContinueMenuFor = function (poster) {
+        if (!poster || !poster._gfItem) return false;
+        continueMenu(poster._gfItem, poster);
+        return true;
+    };
 
     function continueMenu(item, poster) {
         var old = document.getElementById('gf-cw-menu');
