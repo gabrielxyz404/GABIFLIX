@@ -79,6 +79,7 @@ const POPULAR_Q = `query Pop($country: Country!, $language: Language!, $first: I
       objectType
       content(country: $country, language: $language) {
         title
+        originalTitle
         shortDescription
         originalReleaseYear
         originalReleaseDate
@@ -115,7 +116,8 @@ function toMeta(node) {
         _year: c.originalReleaseYear || null,
         _streaming: [...(node.offersBR || []), ...(node.offersPT || [])].some(o => STREAMING_TYPES.has(o.monetizationType)),
         _cinema: [...(node.offersBR || []), ...(node.offersPT || [])].some(o => o.monetizationType === 'CINEMA'),
-        _desc: c.shortDescription || null
+        _desc: c.shortDescription || null,
+        _orig: c.originalTitle || null
     };
 }
 
@@ -151,7 +153,7 @@ function interleave(lists) {
 
 const DESC = new Map();
 function clean(metas) {
-    return metas.map(({ _date, _year, _streaming, _cinema, _desc, ...m }) => {
+    return metas.map(({ _date, _year, _streaming, _cinema, _desc, _orig, ...m }) => {
         if (_desc && !DESC.has(m.id)) DESC.set(m.id, _desc.trim());
         return m;
     });
@@ -457,6 +459,8 @@ async function main() {
                 catch (e) { ERRORS.push(`Brasileiros ${type} em ${svc}: ${e.message}`); }
             }
         }
+        // produção brasileira: o nome original já é o nome em português (o JustWatch às vezes dá o nome em inglês)
+        for (const l of [br.movie, br.series]) for (const m of l) if (m._orig) m.name = m._orig;
         info.counts[`${svc}-br`] = br.movie.length + '/' + br.series.length;
         const slim = list => clean(list).map(({ background, ...m }) => m);
         await writeFile(`data/${svc}-home.json`, JSON.stringify({
