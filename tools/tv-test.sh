@@ -44,7 +44,7 @@ key DPAD_UP DPAD_RIGHT DPAD_CENTER; shot login 4
 key BACK BACK;                   shot fim
 # player (VLC) com um vídeo de teste
 adb shell am force-stop io.github.gabrielxyz404.gabiflix
-adb shell am start -n io.github.gabrielxyz404.gabiflix/.tv.TvHomeActivity --es gfTestUrl "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
+adb shell am start -n io.github.gabrielxyz404.gabiflix/.tv.TvHomeActivity --es gfTestUrl "http://10.0.2.2:8000/teste.mkv"
 shot player-abre 15
 key DPAD_CENTER;   shot player-pausa 2
 key DPAD_CENTER DPAD_RIGHT DPAD_RIGHT;  shot player-avanca 3
