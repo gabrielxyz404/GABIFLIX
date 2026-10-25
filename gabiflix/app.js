@@ -109,12 +109,27 @@
     };
 
     // o progresso volta do VLC: salva no Stremio como o player do site faria
-    var saving = false;
-    window.gfNativeProgress = function (time, length, ended) {
+    var saving = false, pendingRewind = {};
+    function rewindNow(id) {
+        var c = core();
+        if (!c || !id) return;
+        try {
+            c.dispatch({ action: 'Ctx', args: { action: 'RewindLibraryItem', args: id } });
+            c.dispatch({ action: 'Ctx', args: { action: 'DismissNotificationItem', args: id } });
+        } catch (e) {}
+    }
+    // "Remover" do Continuar assistindo: se o progresso ainda estiver sendo salvo, remove de novo no fim
+    window.gfRewind = function (id) {
+        rewindNow(id);
+        if (saving) pendingRewind[id] = true;
+    };
+    window.gfNativeProgress = function (time, length, ended, mediaUrl) {
         var s = null;
         try { s = JSON.parse(localStorage.getItem(SESSION) || 'null'); } catch (e) {}
         var c = core();
         if (!s || !c || saving || !(time > 0)) return;
+        // o progresso tem que ser do mesmo vídeo que foi aberto
+        if (mediaUrl && s.stream && s.stream.url && s.stream.url !== mediaUrl) return;
         saving = true;
         if (ended && length > 0) time = length;
         c.dispatch({ action: 'Load', args: { model: 'Player', args: {
@@ -126,23 +141,34 @@
         var tries = 0;
         (function wait() {
             Promise.resolve(c.getState('player')).then(function (st) {
-                var ready = st && st.libraryItem && st.metaItem && st.metaItem.content && st.metaItem.content.type === 'Ready';
-                if (!ready && ++tries < 30) { setTimeout(wait, 300); return; }
+                // o item da biblioteca carregado é o que o Stremio atualiza
+                var ready = st && st.libraryItem;
+                if (!ready && ++tries < 40) { setTimeout(wait, 150); return; }
                 var tc = { action: 'Player', args: { action: 'TimeChanged', args: { time: Math.round(time), duration: Math.round(length || 0), device: 'android' } } };
                 c.dispatch(tc, 'player');
+                if (ended) {
+                    // terminou: marca como visto (filme) ou o episódio como visto (série)
+                    c.dispatch({ action: 'Player', args: { action: 'Ended' } }, 'player');
+                    var meta = st && st.metaItem && st.metaItem.content;
+                    var vid = meta && (meta.videos || []).filter(function (v) { return v && v.id === s.videoId; })[0];
+                    if (s.type === 'series' && vid) c.dispatch({ action: 'Player', args: { action: 'MarkVideoAsWatched', args: [vid, true] } }, 'player');
+                    else if (s.type !== 'series') c.dispatch({ action: 'Ctx', args: { action: 'LibraryItemMarkAsWatched', args: { id: s.id, is_watched: true } } });
+                }
                 setTimeout(function () {
-                    c.dispatch(tc, 'player');
                     c.dispatch({ action: 'Player', args: { action: 'PausedChanged', args: { paused: true } } }, 'player');
                     setTimeout(function () {
                         c.dispatch({ action: 'Unload' }, 'player');
                         try { localStorage.removeItem(SESSION); } catch (e) {}
                         saving = false;
+                        var again = Object.keys(pendingRewind);
+                        pendingRewind = {};
+                        if (again.length) setTimeout(function () { again.forEach(rewindNow); }, 300);
                         // o Stremio leva alguns segundos para atualizar a lista: confere de novo
-                        [500, 4000, 9000].forEach(function (ms) {
+                        [300, 2500].forEach(function (ms) {
                             setTimeout(function () { if (typeof window.gfRefreshContinue === 'function') window.gfRefreshContinue(); }, ms);
                         });
-                    }, 600);
-                }, 400);
+                    }, 250);
+                }, 150);
             }).catch(function () { saving = false; });
         })();
     };

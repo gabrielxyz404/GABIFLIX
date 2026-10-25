@@ -555,7 +555,7 @@
             }
             var lib = state.libraryItem && state.libraryItem.state;
             var sig = [location.hash, meta.id, meta.inLibrary, meta.watched, readyStreams(state).length, streamsLoading(state),
-                lib && lib.video_id, lib && Math.round(lib.timeOffset / 10000), (servicesFor[meta.id] || []).length, !!servicesDone[meta.id], (meta.videos || []).length, seasonPick[meta.id], !!ptDesc[meta.id]].join('|');
+                lib && lib.video_id, lib && Math.round(lib.timeOffset / 10000), (servicesFor[meta.id] || []).length, !!servicesDone[meta.id], (meta.videos || []).length, (meta.videos || []).filter(function (v) { return v.watched; }).length, lib && lib.timesWatched, seasonPick[meta.id], !!ptDesc[meta.id]].join('|');
             var root = document.getElementById('gf-detail');
             if (sig === lastSig && root && root.parentNode === content) return;
             var box = build(state);

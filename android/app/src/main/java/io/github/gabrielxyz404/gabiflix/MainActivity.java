@@ -175,8 +175,9 @@ public class MainActivity extends Activity {
         if (!sp.contains("time")) return;
         long time = sp.getLong("time", 0), length = sp.getLong("length", 0);
         boolean ended = sp.getBoolean("ended", false);
-        String js = "(function(){var a=[" + time + "," + length + "," + ended + "];"
-                + "function go(n){if(window.gfNativeProgress){window.gfNativeProgress(a[0],a[1],a[2]);}else if(n<40){setTimeout(function(){go(n+1)},500);}}go(0);})()";
+        String media = org.json.JSONObject.quote(sp.getString("url", ""));
+        String js = "(function(){var a=[" + time + "," + length + "," + ended + "," + media + "];"
+                + "function go(n){if(window.gfNativeProgress){window.gfNativeProgress(a[0],a[1],a[2],a[3]);}else if(n<40){setTimeout(function(){go(n+1)},500);}}go(0);})()";
         web.postDelayed(() -> {
             web.evaluateJavascript(js, null);
             sp.edit().clear().apply();

@@ -219,7 +219,7 @@ public class PlayerActivity extends Activity {
 
     private void reportSession(long time, long length, boolean finished) {
         getSharedPreferences(LAST_PREFS, MODE_PRIVATE).edit()
-                .putLong("time", time).putLong("length", length).putBoolean("ended", finished)
+                .putLong("time", time).putLong("length", length).putBoolean("ended", finished).putString("url", url)
                 .putLong("at", System.currentTimeMillis()).apply();
     }
 
@@ -332,7 +332,6 @@ public class PlayerActivity extends Activity {
         pickTrack("Áudio", tracks, player.getAudioTrack(), id -> player.setAudioTrack(id));
     }
 
-    // legendas: só as em português (as do Stremio e as do próprio arquivo que forem PT/BR)
     // ---------- legendas em português ----------
     // Baixa as legendas (dos addons, ou direto do OpenSubtitles do Stremio) para arquivos .srt
     // no celular e liga no VLC. Arquivo local com extensão é o jeito mais confiável para o VLC.
@@ -361,8 +360,17 @@ public class PlayerActivity extends Activity {
         }).start();
     }
 
+    /** legendas que já vinham no arquivo (as que forem adicionadas depois são as baixadas, em português) */
+    private final java.util.HashSet<Integer> embeddedSpu = new java.util.HashSet<>();
+    private boolean embeddedKnown = false;
+
     private void attachReadySubs() {
         if (player == null || !playing) return;
+        if (!embeddedKnown && addedSubs < readySubs.size()) {
+            embeddedKnown = true;
+            MediaPlayer.TrackDescription[] t = player.getSpuTracks();
+            if (t != null) for (MediaPlayer.TrackDescription d : t) embeddedSpu.add(d.id);
+        }
         while (addedSubs < readySubs.size()) {
             Uri u = readySubs.get(addedSubs);
             try { player.addSlave(0 /* legenda */, u, addedSubs == 0); } catch (Exception ignored) {}
@@ -424,15 +432,14 @@ public class PlayerActivity extends Activity {
     }
 
     private static boolean isPortuguese(String name) { return name != null && PT.matcher(name).find(); }
-    /** legendas do próprio arquivo vêm com o idioma entre colchetes ("... - [Russian]"); as que adicionamos, não */
-    private static boolean isExternal(String name) { return name == null || !name.contains("["); }
+    private boolean isDownloaded(int id) { return addedSubs > 0 && embeddedKnown && id != -1 && !embeddedSpu.contains(id); }
 
     private void chooseSubtitles() {
         MediaPlayer.TrackDescription[] all = player.getSpuTracks();
         ArrayList<MediaPlayer.TrackDescription> keep = new ArrayList<>();
         int n = 0;
         if (all != null) for (MediaPlayer.TrackDescription d : all) {
-            if (d.id == -1 || isPortuguese(d.name) || (addedSubs > 0 && isExternal(d.name))) keep.add(d);
+            if (d.id == -1 || isPortuguese(d.name) || isDownloaded(d.id)) keep.add(d);
         }
         String[] names = new String[keep.size()];
         int[] ids = new int[keep.size()];
@@ -440,7 +447,7 @@ public class PlayerActivity extends Activity {
             MediaPlayer.TrackDescription d = keep.get(i);
             ids[i] = d.id;
             if (d.id == -1) names[i] = "Desativado";
-            else if (isExternal(d.name) && !isPortuguese(d.name)) names[i] = "Português " + (++n);
+            else if (isDownloaded(d.id)) names[i] = "Português " + (++n);
             else names[i] = d.name;
         }
         if (keep.size() <= 1) {

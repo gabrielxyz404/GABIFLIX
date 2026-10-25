@@ -513,7 +513,8 @@
         rm.appendChild(el('span', 'gf-sheet-d', 'A linha do tempo volta para o início.'));
         rm.addEventListener('click', function () {
             var c = window.core && (window.core.transport || window.core);
-            if (c && c.dispatch) {
+            if (window.gfRewind) window.gfRewind(item._id);
+            else if (c && c.dispatch) {
                 try {
                     c.dispatch({ action: 'Ctx', args: { action: 'RewindLibraryItem', args: item._id } });
                     c.dispatch({ action: 'Ctx', args: { action: 'DismissNotificationItem', args: item._id } });
