@@ -285,7 +285,7 @@ public class PlayerActivity extends Activity {
             remoteButtons.add(seek);
             seek.setOnFocusChangeListener((view, has) -> {
                 GradientDrawable hl = new GradientDrawable();
-                hl.setColor(0x33FFFFFF);
+                hl.setColor(0x59FFFFFF);
                 hl.setCornerRadius(dp(12));
                 seek.setBackground(has ? hl : null);
                 if (has) setControlsVisible(true); else commitSeek.run();
