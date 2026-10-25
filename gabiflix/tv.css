@@ -36,26 +36,43 @@ html[data-gf-tv][data-gf-route="home"][data-gf-view="grid"] #gf-home {
     justify-content: center;
     padding: 0 !important;
 }
-html[data-gf-tv] #gf-home .gf-grid {
+/* serviços em barras verticais, de uma ponta à outra da tela; a selecionada se abre */
+html[data-gf-tv][data-gf-route="home"][data-gf-view="grid"] #gf-home .gf-grid {
     display: flex;
     flex-wrap: nowrap;
-    gap: 1.4rem;
+    gap: 0.9rem;
+    height: 100%;
+    box-sizing: border-box;
     margin: 0;
-    padding: 2.2rem 3rem;
-    overflow-x: auto;
-    overflow-y: visible;
-    scroll-behavior: smooth;
-    scroll-padding: 0 3rem;
+    padding: 1.4rem 1.8rem 2.6rem 0.8rem;
+    overflow: visible;
 }
-html[data-gf-tv] #gf-home .gf-grid .gf-card,
-html[data-gf-tv] #gf-home .gf-grid .gf-card.is-wide {
-    flex: 0 0 17rem;
-    grid-column: auto;
-    aspect-ratio: 16 / 10;
+html[data-gf-tv][data-gf-route="home"][data-gf-view="grid"] #gf-home .gf-grid .gf-card,
+html[data-gf-tv][data-gf-route="home"][data-gf-view="grid"] #gf-home .gf-grid .gf-card.is-wide {
+    flex: 1 1 0;
+    min-width: 0;
+    height: 100%;
+    aspect-ratio: auto;
     min-height: 0;
-    scroll-margin: 0 3rem;
+    grid-column: auto;
+    padding: 1rem 0.4rem;
+    border-radius: 1.1rem;
+    transition: flex-grow 0.28s cubic-bezier(0.2, 0.7, 0.2, 1), box-shadow 0.14s ease;
+    transform: none !important;
 }
-html[data-gf-tv] #gf-home .gf-grid .gf-card.is-wide .gf-card-name,
-html[data-gf-tv] #gf-home .gf-grid .gf-card .gf-card-name { font-size: 2rem; }
-html[data-gf-tv] #gf-home .gf-grid .gf-card .gf-card-hint { font-size: 0.85rem; }
-html[data-gf-tv] #gf-home .gf-grid .gf-card:focus { transform: scale(1.08); }
+html[data-gf-tv][data-gf-route="home"][data-gf-view="grid"] #gf-home .gf-grid .gf-card .gf-card-name {
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+    white-space: nowrap;
+    font-size: 1.9rem;
+}
+html[data-gf-tv][data-gf-route="home"][data-gf-view="grid"] #gf-home .gf-grid .gf-card .gf-card-hint { display: none; }
+/* a barra selecionada fica larga e mostra o nome deitado, com "Ver catálogo" */
+html[data-gf-tv][data-gf-route="home"][data-gf-view="grid"] #gf-home .gf-grid .gf-card:focus { flex-grow: 2.6; }
+html[data-gf-tv][data-gf-route="home"][data-gf-view="grid"] #gf-home .gf-grid .gf-card:focus .gf-card-name {
+    writing-mode: horizontal-tb;
+    transform: none;
+    white-space: normal;
+    font-size: 2.3rem;
+}
+html[data-gf-tv][data-gf-route="home"][data-gf-view="grid"] #gf-home .gf-grid .gf-card:focus .gf-card-hint { display: block; padding: 0 0.6rem; }
