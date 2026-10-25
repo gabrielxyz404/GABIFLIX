@@ -75,14 +75,27 @@ class PosterAdapter extends RecyclerView.Adapter<PosterAdapter.H> {
             int pos = holder.getBindingAdapterPosition();
             if (pos >= 0 && pos < items.size()) open((Activity) c, items.get(pos));
         });
-        p.setOnLongClickListener(v -> {
-            int pos = holder.getBindingAdapterPosition();
-            if (longPress == null || pos < 0 || pos >= items.size()) return false;
-            longPress.on(items.get(pos), pos);
-            return true;
-        });
+        // segurar OK 2 segundos (ou o botão ☰) num "Continuar assistindo": opção de remover
+        p.setLongClickable(false);
+        final boolean[] held = {false};
         p.setOnKeyListener((v, code, ev) -> {
-            if (code == android.view.KeyEvent.KEYCODE_MENU && ev.getAction() == android.view.KeyEvent.ACTION_UP) return v.performLongClick();
+            int pos = holder.getBindingAdapterPosition();
+            boolean can = longPress != null && pos >= 0 && pos < items.size();
+            if (code == android.view.KeyEvent.KEYCODE_MENU) {
+                if (can && ev.getAction() == android.view.KeyEvent.ACTION_UP) longPress.on(items.get(pos), pos);
+                return can;
+            }
+            if (code != android.view.KeyEvent.KEYCODE_DPAD_CENTER && code != android.view.KeyEvent.KEYCODE_ENTER) return false;
+            if (ev.getAction() == android.view.KeyEvent.ACTION_DOWN) {
+                if (ev.getRepeatCount() == 0) { held[0] = false; return false; }
+                if (can && !held[0] && ev.getEventTime() - ev.getDownTime() >= 2000) {
+                    held[0] = true;
+                    v.setPressed(false);
+                    longPress.on(items.get(pos), pos);
+                }
+                return true;
+            }
+            if (held[0]) { held[0] = false; v.setPressed(false); return true; } // não abre o título
             return false;
         });
         return holder;

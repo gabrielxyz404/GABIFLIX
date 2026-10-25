@@ -279,6 +279,18 @@ public class PlayerActivity extends Activity {
         seek = new SeekBar(this);
         seek.setMax(1000);
         seek.setFocusable(false);
+        if (tv) {
+            // na TV: selecione a barra e use esquerda/direita para correr o filme (segurar acelera)
+            seek.setFocusable(true);
+            remoteButtons.add(seek);
+            seek.setOnFocusChangeListener((view, has) -> {
+                GradientDrawable hl = new GradientDrawable();
+                hl.setColor(0x33FFFFFF);
+                hl.setCornerRadius(dp(12));
+                seek.setBackground(has ? hl : null);
+                if (has) setControlsVisible(true); else commitSeek.run();
+            });
+        }
         seek.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override public void onProgressChanged(SeekBar s, int p, boolean fromUser) {
                 if (fromUser && player != null && player.getLength() > 0) timeLabel.setText(format(player.getLength() * p / 1000));
@@ -338,7 +350,6 @@ public class PlayerActivity extends Activity {
         v.setOnFocusChangeListener((view, has) -> {
             GradientDrawable g = (GradientDrawable) view.getBackground();
             g.setStroke(dp(has ? 3 : 1), has ? 0xFFFFFFFF : (oval == 1 ? 0x33FFFFFF : 0x2EFFFFFF));
-            view.animate().scaleX(has ? 1.12f : 1f).scaleY(has ? 1.12f : 1f).setDuration(120).start();
             if (has) setControlsVisible(true);
         });
     }
@@ -380,6 +391,18 @@ public class PlayerActivity extends Activity {
                 return super.dispatchKeyEvent(e);
         }
         if (!tv) return super.dispatchKeyEvent(e);
+        if (getCurrentFocus() == seek) {
+            switch (k) {
+                case android.view.KeyEvent.KEYCODE_DPAD_LEFT:
+                case android.view.KeyEvent.KEYCODE_DPAD_RIGHT:
+                    if (down) scrub(k == android.view.KeyEvent.KEYCODE_DPAD_RIGHT ? 1 : -1, e.getRepeatCount());
+                    return true;
+                case android.view.KeyEvent.KEYCODE_DPAD_CENTER:
+                case android.view.KeyEvent.KEYCODE_ENTER:
+                    if (down && e.getRepeatCount() == 0) { if (pendingSeek >= 0) commitSeek.run(); else togglePlay(); }
+                    return true;
+            }
+        }
         // controles escondidos ou nenhum botão selecionado: OK pausa, esquerda/direita andam 10 s
         if (!controlFocused()) {
             switch (k) {
@@ -403,6 +426,31 @@ public class PlayerActivity extends Activity {
             scheduleHide();
         }
         return super.dispatchKeyEvent(e);
+    }
+
+    // ---------- correr a barra com o controle (TV) ----------
+    private long pendingSeek = -1;
+    private final Runnable commitSeek = () -> {
+        if (pendingSeek < 0 || player == null) return;
+        player.setTime(pendingSeek);
+        pendingSeek = -1;
+        userSeeking = false;
+        scheduleHide();
+    };
+
+    private void scrub(int dir, int repeat) {
+        if (player == null) return;
+        long len = player.getLength();
+        if (len <= 0) return;
+        long step = repeat < 6 ? 10000 : repeat < 20 ? 30000 : 60000;
+        if (pendingSeek < 0) pendingSeek = player.getTime();
+        pendingSeek = Math.max(0, Math.min(len - 1000, pendingSeek + dir * step));
+        userSeeking = true;
+        ui.removeCallbacks(hideControls);
+        seek.setProgress((int) (pendingSeek * 1000 / len));
+        timeLabel.setText(format(pendingSeek));
+        ui.removeCallbacks(commitSeek);
+        ui.postDelayed(commitSeek, 700);
     }
 
     private void togglePlay() {

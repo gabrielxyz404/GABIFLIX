@@ -36,6 +36,8 @@ final class Net {
         });
     }
 
+    static void clearCache() { CACHE.evictAll(); }
+
     /** GET com memória: o mesmo endereço não é baixado duas vezes enquanto o app está aberto */
     static String getCached(String url) throws IOException {
         String c = CACHE.get(url);

@@ -299,12 +299,25 @@ public class TvCatalogActivity extends TvBase {
             }
             return out;
         }, (list, err) -> {
-            if (gen != generation) return;
+            if (gen != generation || list == null) { if (!r.loaded) { r.loaded = true; rows.sync(); } return; }
+            boolean same = r.loaded && sig(r.metas).equals(sig(list));
             r.metas = list;
             r.loaded = true;
+            if (same) return; // nada mudou: não redesenha a fileira (sem piscar)
             rows.sync();
             rows.changed(r);
         });
+    }
+
+    /** resumo do Continuar assistindo (títulos e onde parou) para saber se mudou */
+    private static String sig(List<JSONObject> l) {
+        if (l == null) return "";
+        StringBuilder b = new StringBuilder();
+        for (JSONObject it : l) {
+            JSONObject st = it.optJSONObject("state");
+            b.append(it.optString("_id")).append(':').append(st != null ? st.optLong("timeOffset") / 30000 : 0).append(',');
+        }
+        return b.toString();
     }
 
     @Override

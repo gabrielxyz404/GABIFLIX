@@ -48,8 +48,19 @@ adb shell am start -n io.github.gabrielxyz404.gabiflix/.tv.TvHomeActivity --es g
 shot player-abre 15
 key DPAD_CENTER;   shot player-pausa 2
 key DPAD_CENTER DPAD_RIGHT DPAD_RIGHT;  shot player-avanca 3
-adb shell input keyevent DPAD_DOWN; sleep 0.5; adb shell input keyevent BACK; shot player-back1 1
+adb shell input keyevent DPAD_DOWN; sleep 0.3; adb shell input keyevent DPAD_DOWN; sleep 0.3
+adb shell input keyevent DPAD_RIGHT; adb shell input keyevent DPAD_RIGHT; adb shell input keyevent DPAD_RIGHT
+shot player-barra 0.2
+sleep 2; shot player-barra-depois 0.5
+adb shell input keyevent BACK; shot player-back1 1
 key BACK;          shot player-sai 4
+# botão Atualizar
+adb shell am force-stop io.github.gabrielxyz404.gabiflix
+adb shell monkey -p io.github.gabrielxyz404.gabiflix -c android.intent.category.LEANBACK_LAUNCHER 1
+sleep 6
+key DPAD_UP DPAD_RIGHT;          shot u-botao
+key DPAD_CENTER;                 shot u-atualizar 6
+key DPAD_CENTER;                 shot u-baixando 25
 # pesquisa
 adb shell am force-stop io.github.gabrielxyz404.gabiflix
 adb shell monkey -p io.github.gabrielxyz404.gabiflix -c android.intent.category.LEANBACK_LAUNCHER 1

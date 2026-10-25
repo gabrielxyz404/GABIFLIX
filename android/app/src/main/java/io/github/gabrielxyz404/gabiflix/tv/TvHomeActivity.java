@@ -43,6 +43,10 @@ public class TvHomeActivity extends TvBase {
         search.setOnClickListener(v -> startActivity(new Intent(this, TvSearchActivity.class)));
         top.addView(search);
         top.addView(Ui.space(this, 12, 1));
+        TextView update = Ui.button(this, "Atualizar", 0xFF232327, Ui.TEXT);
+        update.setOnClickListener(v -> { Updater.run(this); prefetchSoon(); });
+        top.addView(update);
+        top.addView(Ui.space(this, 12, 1));
         account = Ui.button(this, "Entrar", 0xFF232327, Ui.TEXT);
         account.setOnClickListener(v -> onAccount());
         top.addView(account);
@@ -66,6 +70,8 @@ public class TvHomeActivity extends TvBase {
         prefetch();
         testPlay(getIntent());
     }
+
+    private void prefetchSoon() { list.postDelayed(this::prefetch, 1500); }
 
     /** baixa já os dados do Início de cada catálogo: ao entrar, abre na hora */
     private void prefetch() {

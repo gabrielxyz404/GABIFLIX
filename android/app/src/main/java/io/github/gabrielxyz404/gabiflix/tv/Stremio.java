@@ -35,6 +35,9 @@ final class Stremio {
     static String email(Context c) { return prefs(c).getString("email", null); }
     static boolean loggedIn(Context c) { return authKey(c) != null; }
 
+    /** esquece addons e biblioteca guardados (vêm de novo no próximo pedido) */
+    static synchronized void forget() { addons = null; library = null; }
+
     static void logout(Context c) {
         prefs(c).edit().clear().apply();
         addons = null;
