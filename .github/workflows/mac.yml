@@ -47,7 +47,7 @@ jobs:
         run: |
           V=""; ID=""
           for c in "https://download.blender.org/durian/movies/Sintel.2010.720p.mkv tt1727587" \
-                   "https://test-videos.co.uk/vids/bigbuckbunny/mkv/360/Big_Buck_Bunny_360_10s_1MB.mkv tt1254207" \
+                   "https://test-videos.co.uk/vids/bigbuckbunny/mkv/360/Big_Buck_Bunny_360_10s_1MB.mkv tt0111161" \
                    "https://download.blender.org/peach/bigbuckbunny_movies/BigBuckBunny_320x180.mp4 tt1254207"; do
             u=${c% *}; i=${c#* }
             code=$(curl -s -o /dev/null -w '%{http_code}' -r 0-100 -m 15 "$u")
