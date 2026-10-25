@@ -326,6 +326,7 @@ public class PlayerActivity extends Activity {
 
     // ---------- controle remoto da TV ----------
     private boolean tv = false;
+    private boolean backEaten = false;
     private View focusSink; // recebe o foco quando nenhum botão está selecionado
     private final ArrayList<View> remoteButtons = new ArrayList<>();
 
@@ -366,9 +367,14 @@ public class PlayerActivity extends Activity {
                 if (down) skip(-30000);
                 return true;
             case android.view.KeyEvent.KEYCODE_BACK:
-                // com um botão selecionado: o Voltar só esconde os controles
-                if (tv && visible && controlFocused()) {
-                    if (down) setControlsVisible(false);
+                // na TV, com os controles à mostra: o Voltar só os esconde (o segundo Voltar sai)
+                if (tv && down && e.getRepeatCount() == 0 && visible) {
+                    setControlsVisible(false);
+                    backEaten = true;
+                    return true;
+                }
+                if (tv && backEaten) {
+                    if (!down) backEaten = false;
                     return true;
                 }
                 return super.dispatchKeyEvent(e);

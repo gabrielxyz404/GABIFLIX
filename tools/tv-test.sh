@@ -51,7 +51,17 @@ key DPAD_CENTER DPAD_RIGHT DPAD_RIGHT;  shot player-avanca 3
 key DPAD_DOWN;     shot player-baixo 2
 key BACK;          shot player-back1 2
 key BACK;          shot player-sai 4
-adb shell run-as io.github.gabrielxyz404.gabiflix cat shared_prefs/gf-last-session.xml >> shots/log.txt 2>&1
+# pesquisa
+adb shell am force-stop io.github.gabrielxyz404.gabiflix
+adb shell monkey -p io.github.gabrielxyz404.gabiflix -c android.intent.category.LEANBACK_LAUNCHER 1
+sleep 6
+key DPAD_UP;                     shot s-topo
+key DPAD_CENTER;                 shot s-pesquisa 3
+adb shell input text "matrix"
+adb shell input keyevent ENTER
+shot s-resultados 8
+key DPAD_DOWN DPAD_RIGHT;        shot s-desce
+key DPAD_CENTER;                 shot s-titulo 8
 adb logcat -d | grep -iE "vlc|PlayerActivity|gabiflix" | grep -v "BroadcastQueue\|ConnectivityService\|NetworkFactory\|Ethernet" | tail -60 > shots/player.txt
 adb logcat -d | grep -E "FATAL|AndroidRuntime: |E/AndroidRuntime|Exception" | grep -v "RuntimeInit\|boot image\|lock profiling\|Calling main\|Shutting down\|VM exiting" | head -60 > shots/crash.txt
 cat shots/crash.txt shots/log.txt
