@@ -31,7 +31,7 @@ jobs:
       - name: Mostrar o erro (se houver)
         if: failure()
         run: |
-          grep -n -E "error:|warning: unre|fatal|No such|cannot find" build.log | head -30 | while IFS= read -r line; do
+          grep -n -E "error:|fatal|No such|cannot find|VLCKit |framework:" build.log | head -40 | while IFS= read -r line; do
             echo "::error::$(echo "$line" | cut -c1-900)"
           done
       - uses: actions/upload-artifact@v4
