@@ -20,7 +20,7 @@ key BACK;                        shot foco-aba
 key DPAD_RIGHT DPAD_RIGHT DPAD_CENTER; shot aba-filmes 8
 key DPAD_DOWN DPAD_DOWN DPAD_DOWN DPAD_RIGHT; shot grade
 key DPAD_UP DPAD_UP DPAD_UP DPAD_UP DPAD_UP; shot grade-topo
-key BACK BACK;                   shot volta-inicio-netflix
+key BACK;                        shot volta-inicio-netflix
 key BACK;                        shot home
 key DPAD_RIGHT DPAD_CENTER;      shot disney 9
 key DPAD_DOWN DPAD_DOWN DPAD_DOWN DPAD_DOWN; shot disney-desce
