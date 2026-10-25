@@ -526,6 +526,15 @@
     }
 
     // ---------- ciclo ----------
+    // pergunta ao Stremio a cada 0,4 s só enquanto algo está carregando (página nova, janela de fontes, clique);
+    // depois, a cada 2 s — ler a página inteira do título toda hora pesa no Fire TV e em celulares simples
+    var busyUntil = 0, slowCount = 0;
+    function slowTick() {
+        if (sheet || Date.now() < busyUntil || ++slowCount % 5 === 0) tick();
+    }
+    document.addEventListener('click', function () { busyUntil = Date.now() + 5000; }, true);
+    document.addEventListener('keydown', function (e) { if (e.key === 'Enter') busyUntil = Date.now() + 5000; }, true);
+
     function tick() {
         var html = document.documentElement;
         if (!onDetail()) {
@@ -574,7 +583,7 @@
 
     function update() {
         var on = onDetail();
-        if (on && !timer) { tick(); timer = setInterval(tick, 400); }
+        if (on && !timer) { busyUntil = Date.now() + 8000; tick(); timer = setInterval(slowTick, 400); }
         if (!on && timer) { clearInterval(timer); timer = null; tick(); }
     }
     var queued = false;
@@ -594,7 +603,7 @@
         var orig = history[fn];
         history[fn] = function () { var r = orig.apply(this, arguments); setTimeout(update, 0); return r; };
     });
-    window.addEventListener('hashchange', function () { expanded = false; if (sheet) { sheet = null; var s2 = document.getElementById('gf-sheet'); if (s2) s2.remove(); } update(); });
+    window.addEventListener('hashchange', function () { busyUntil = Date.now() + 8000; expanded = false; if (sheet) { sheet = null; var s2 = document.getElementById('gf-sheet'); if (s2) s2.remove(); } update(); });
     window.addEventListener('popstate', update);
     setInterval(update, 1000);
     update();

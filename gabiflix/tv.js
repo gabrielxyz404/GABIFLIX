@@ -6,17 +6,11 @@
     var tv = /GabiFlixTV/.test(navigator.userAgent) || /[?&]tv=1/.test(location.search);
     try { if (localStorage.getItem('gf-tv') === '1') tv = true; } catch (e) {}
 
+    // rápido: só o tamanho na tela (escondido = tamanho zero). Nada de getComputedStyle, que pesa no Fire TV.
     function visible(el) {
         if (!el || !el.isConnected) return false;
         var r = el.getBoundingClientRect();
-        if (r.width < 4 || r.height < 4) return false;
-        if (r.bottom < 0 || r.right < 0 || r.top > innerHeight || r.left > innerWidth) {
-            // fora da tela, mas dentro de uma fileira/lista que rola: ainda vale
-            var cs = getComputedStyle(el);
-            if (cs.visibility === 'hidden' || cs.display === 'none') return false;
-        }
-        var s = getComputedStyle(el);
-        return s.visibility !== 'hidden' && s.display !== 'none' && parseFloat(s.opacity || '1') > 0.05 && !el.closest('[hidden],[aria-hidden="true"]');
+        return r.width >= 4 && r.height >= 4;
     }
 
     // ---------- Voltar ----------
@@ -56,7 +50,7 @@
     // a animação de troca de página tira uma "foto" da tela inteira: pesada demais no Fire TV
     try { document.startViewTransition = undefined; } catch (e) {}
 
-    var SEL = 'a[href], button:not([disabled]), input:not([type="hidden"]), select, textarea, [tabindex]:not([tabindex="-1"]), [role="button"]';
+    var SEL = 'a[href], button:not([disabled]), input:not([type="hidden"]):not([type="file"]), select, textarea, [tabindex]:not([tabindex="-1"]), [role="button"]';
 
     function scope() {
         var layer = openLayer();
@@ -68,10 +62,18 @@
         [].forEach.call(document.querySelectorAll(FIX), function (el) { el.setAttribute('tabindex', '0'); });
     }
 
-    function candidates() {
-        fixTabindex();
-        return [].filter.call(scope().querySelectorAll(SEL), visible);
+    // só o que está perto da tela (uma tela acima e duas abaixo); cada item já vem com posição e região
+    function items() {
+        var out = [], H = innerHeight, list = scope().querySelectorAll(SEL);
+        for (var i = 0; i < list.length; i++) {
+            var el = list[i], r = el.getBoundingClientRect();
+            if (r.width < 4 || r.height < 4 || r.bottom < -H || r.top > H * 2.5) continue;
+            out.push({ el: el, r: r, reg: null });
+        }
+        return out;
     }
+    function regionOf(it) { if (!it.reg) it.reg = region(it.el); return it.reg; }
+    function candidates() { return items().map(function (it) { return it.el; }); }
     function center(r) { return { x: r.left + r.width / 2, y: r.top + r.height / 2 }; }
 
     // regiões: barra lateral (Home, Mais Tarde...), barra de cima e o conteúdo.
@@ -90,22 +92,24 @@
         return true;
     }
 
+    // list: itens de items() (com posição); devolve o elemento escolhido
     function best(from, dir, list) {
         var a = from.getBoundingClientRect(), ca = center(a), pick = null, score = Infinity;
         var rf = region(from);
         // esquerda/direita: fica na mesma linha se houver algo nela
         if (dir === 'left' || dir === 'right') {
-            var row = list.filter(function (el) {
-                var b = el.getBoundingClientRect();
-                return el !== from && b.bottom > a.top + 6 && b.top < a.bottom - 6 && (dir === 'right' ? b.left >= a.right - 4 : b.right <= a.left + 4);
+            var row = list.filter(function (it) {
+                var b = it.r;
+                return it.el !== from && b.bottom > a.top + 6 && b.top < a.bottom - 6 && (dir === 'right' ? b.left >= a.right - 4 : b.right <= a.left + 4);
             });
             // nada na mesma linha: só sai para outra região (ex.: barra lateral), não pula de linha
-            list = row.length ? row : list.filter(function (el) { return region(el) !== rf; });
+            list = row.length ? row : list.filter(function (it) { return regionOf(it) !== rf; });
         }
-        list.forEach(function (el) {
+        list.forEach(function (it) {
+            var el = it.el;
             if (el === from || el.contains(from) || from.contains(el)) return;
-            if (!allowed(rf, region(el), dir)) return;
-            var b = el.getBoundingClientRect(), cb = center(b);
+            if (!allowed(rf, regionOf(it), dir)) return;
+            var b = it.r, cb = center(b);
             var main, cross;
             if (dir === 'right') { if (b.left < a.right - 4 && cb.x <= ca.x + 4) return; main = b.left - a.right; cross = Math.abs(cb.y - ca.y); }
             if (dir === 'left') { if (b.right > a.left + 4 && cb.x >= ca.x - 4) return; main = a.left - b.right; cross = Math.abs(cb.y - ca.y); }
@@ -120,7 +124,8 @@
     function focusEl(el) {
         if (!el) return;
         try { el.focus({ preventScroll: true }); } catch (e) { el.focus(); }
-        try { el.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: 'smooth' }); } catch (e) { el.scrollIntoView(false); }
+        // rolagem instantânea: a "suave" engasga no Fire TV
+        try { el.scrollIntoView({ block: 'nearest', inline: 'nearest' }); } catch (e) { el.scrollIntoView(false); }
     }
 
     function firstInContent() {
@@ -128,11 +133,13 @@
         var pref = list.filter(function (el) { return el.matches('.gf-hero-btn.is-primary, .gf-d-play, #gf-home .gf-grid .gf-card, .gf-sheet-item, .gf-cw-remove'); })[0];
         if (pref) return pref;
         var content = list.filter(function (el) { return !el.closest('[class*="vertical-nav-bar"], [class*="horizontal-nav-bar"]'); });
-        var pool = (content.length ? content : list).filter(function (el) {
+        // página ainda carregando: espera o conteúdo em vez de cair no menu de cima
+        if (!content.length) return null;
+        var pool = content.filter(function (el) {
             var r = el.getBoundingClientRect();
             return r.top >= 0 && r.top < innerHeight && r.left < innerWidth;
         });
-        if (!pool.length) pool = content.length ? content : list;
+        if (!pool.length) pool = content;
         pool.sort(function (x, y) {
             var a = x.getBoundingClientRect(), b = y.getBoundingClientRect();
             return (Math.round(a.top / 20) - Math.round(b.top / 20)) || (a.left - b.left);
@@ -157,11 +164,17 @@
         lastSig = sig(e.target);
         if (!openLayer()) routeSig[routeKey()] = lastSig;
     });
-    function refocus() {
+    var retries = 0;
+    var pageChangedAt = 0;
+    function refocus(newPage) {
         if (current()) return;
-        var want = openLayer() ? lastSig : (routeSig[routeKey()] || lastSig);
+        if (Date.now() - pageChangedAt < 2500) newPage = true;
+        // página nova: volta para onde estava nela (se já visitada) ou vai para o começo do conteúdo
+        var want = openLayer() ? lastSig : (newPage === true ? routeSig[routeKey()] : (routeSig[routeKey()] || lastSig));
         var same = want && candidates().filter(function (el) { return sig(el) === want; })[0];
-        focusEl(same || firstInContent());
+        var el = same || firstInContent();
+        if (el) { retries = 0; focusEl(el); }
+        else if (retries++ < 12) setTimeout(function () { refocus(newPage); }, 400);
     }
 
     function isTyping(el) {
@@ -180,12 +193,12 @@
             e.preventDefault();
             e.stopPropagation();
             if (!cur) { focusEl(firstInContent()); return; }
-            var list = candidates(), next = null;
+            var list = items(), next = null;
             // entrando na barra lateral: vai para a página atual (Home, Mais Tarde...)
             if (dir === 'left' && region(cur) !== 'side') {
                 var side = best(cur, dir, list);
                 if (side && region(side) === 'side') {
-                    next = list.filter(function (el) { return region(el) === 'side' && /\bselected\b/.test(el.className + ' ' + (el.parentElement && el.parentElement.className)); })[0] || side;
+                    next = list.filter(function (it) { return regionOf(it) === 'side' && /\bselected\b/.test(it.el.className + ' ' + (it.el.parentElement && it.el.parentElement.className)); }).map(function (it) { return it.el; })[0] || side;
                 } else next = side;
             } else next = best(cur, dir, list);
             if (next) focusEl(next);
@@ -221,7 +234,14 @@
     };
 
     // janelas que abrem (fontes, remover): o foco vai para dentro delas
+    var obsQueued = false;
     new MutationObserver(function () {
+        if (obsQueued) return;
+        obsQueued = true;
+        setTimeout(function () { obsQueued = false; onDomChange(); }, 120);
+    }).observe(document.documentElement, { childList: true, subtree: true });
+    function onDomChange() {
+        fixTabindex();
         var layer = openLayer();
         // a lista de fontes chegou depois de abrir: o foco sai do "fechar" e vai para a primeira fonte
         var a = document.activeElement;
@@ -235,10 +255,23 @@
             if (first) setTimeout(function () { if (!layer.contains(document.activeElement)) focusEl(first); }, 30);
         } else if (!current()) {
             clearTimeout(window.__gfTvRf);
-            window.__gfTvRf = setTimeout(refocus, 350);
+            window.__gfTvRf = setTimeout(refocus, 250);
         }
-    }).observe(document.documentElement, { childList: true, subtree: true });
+    }
 
-    window.addEventListener('hashchange', function () { setTimeout(refocus, 450); });
+    // página nova: o foco vai para o conteúdo (mesmo se estava no menu ou na barra lateral)
+    var lastRoute = location.hash;
+    function routeChanged() {
+        if (location.hash === lastRoute) return;
+        lastRoute = location.hash;
+        pageChangedAt = Date.now();
+        setTimeout(function () {
+            var c = current();
+            if (c && region(c) !== 'main' && !openLayer()) { try { c.blur(); } catch (e) {} }
+            refocus(true);
+        }, 450);
+    }
+    window.addEventListener('hashchange', routeChanged);
+    window.addEventListener('popstate', routeChanged);
     setTimeout(refocus, 1200);
 })();

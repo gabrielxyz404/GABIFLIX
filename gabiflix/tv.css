@@ -1,42 +1,28 @@
-/* GabiFlix na TV (Fire TV): foco bem visível para o controle remoto e tamanhos para ver do sofá */
+/* GabiFlix na TV (Fire TV): visual simples e leve para o controle remoto.
+   Só uma borda branca no item selecionado — sem crescer, sem sombras, sem animações (o Fire TV é fraco). */
 html[data-gf-tv] { cursor: none; }
 html[data-gf-tv] *:focus { outline: none; }
-html[data-gf-tv] :focus {
-    box-shadow: 0 0 0 3px #fff, 0 0 0 7px rgba(0, 0, 0, 0.55) !important;
-    border-radius: 0.6rem;
-    position: relative;
-    z-index: 3;
+html[data-gf-tv] :focus { outline: 3px solid #fff !important; outline-offset: 2px; }
+html[data-gf-tv] #gf-home .gf-poster, html[data-gf-tv] #gf-search .gf-s-item, html[data-gf-tv] .gf-d-ep,
+html[data-gf-tv] .gf-sheet-item, html[data-gf-tv] .gf-d-action, html[data-gf-tv] .gf-d-season, html[data-gf-tv] #gf-home .gf-card {
+    scroll-margin: 3rem 2.5rem;
 }
-/* pôsteres e botões de serviço crescem um pouco quando estão selecionados */
-html[data-gf-tv] #gf-home .gf-poster, html[data-gf-tv] #gf-home .gf-card, html[data-gf-tv] #gf-search .gf-s-item,
-html[data-gf-tv] .gf-d-ep, html[data-gf-tv] .gf-sheet-item, html[data-gf-tv] .gf-d-action, html[data-gf-tv] .gf-d-season {
-    transition: transform 0.14s ease, box-shadow 0.14s ease;
-    scroll-margin: 3.5rem 2.5rem;
-}
-html[data-gf-tv] #gf-home .gf-poster:focus, html[data-gf-tv] #gf-search .gf-s-item:focus { transform: scale(1.08); }
-html[data-gf-tv] #gf-home .gf-card:focus { transform: scale(1.04); }
-html[data-gf-tv] .gf-d-play:focus, html[data-gf-tv] .gf-d-choose:focus { transform: scale(1.03); }
-html[data-gf-tv] .gf-d-action:focus { background: rgba(255, 255, 255, 0.12); }
-html[data-gf-tv] .gf-d-ep:focus { background: rgba(255, 255, 255, 0.1); }
+html[data-gf-tv] .gf-d-action:focus, html[data-gf-tv] .gf-d-ep:focus { background: rgba(255, 255, 255, 0.1); }
 html[data-gf-tv] .gf-sheet-item:focus { background: rgba(255, 255, 255, 0.16); }
-/* as fileiras precisam de espaço para o pôster crescer sem ser cortado */
-html[data-gf-tv] #gf-home .gf-row-track { padding-top: 0.6rem; padding-bottom: 0.8rem; scroll-padding: 0 2.5rem; }
-/* sem barras de rolagem na TV */
+/* espaço para a borda do pôster selecionado não ser cortada */
+html[data-gf-tv] #gf-home .gf-row-track { padding-top: 0.4rem; padding-bottom: 0.5rem; }
 html[data-gf-tv] *::-webkit-scrollbar { display: none; }
-/* a descrição inteira já aparece (não há como "tocar para expandir") */
 html[data-gf-tv] .gf-d-desc { -webkit-line-clamp: 6; }
 
-/* tela inicial na TV: os serviços numa fileira só, de um lado ao outro (esquerda/direita no controle) */
+/* ---------- tela inicial: serviços em barras verticais, de uma ponta à outra ---------- */
 html[data-gf-tv][data-gf-route="home"][data-gf-view="grid"] div[class^="board-content-"]:not([class*="container"]) { overflow: hidden !important; }
 html[data-gf-tv][data-gf-route="home"][data-gf-view="grid"] #gf-home {
     box-sizing: border-box;
     height: 100%;
     display: flex;
     flex-direction: column;
-    justify-content: center;
     padding: 0 !important;
 }
-/* serviços em barras verticais, de uma ponta à outra da tela; a selecionada se abre */
 html[data-gf-tv][data-gf-route="home"][data-gf-view="grid"] #gf-home .gf-grid {
     display: flex;
     flex-wrap: nowrap;
@@ -57,7 +43,7 @@ html[data-gf-tv][data-gf-route="home"][data-gf-view="grid"] #gf-home .gf-grid .g
     grid-column: auto;
     padding: 1rem 0.4rem;
     border-radius: 1.1rem;
-    transition: flex-grow 0.28s cubic-bezier(0.2, 0.7, 0.2, 1), box-shadow 0.14s ease;
+    transition: none !important;
     transform: none !important;
 }
 html[data-gf-tv][data-gf-route="home"][data-gf-view="grid"] #gf-home .gf-grid .gf-card .gf-card-name {
@@ -65,36 +51,31 @@ html[data-gf-tv][data-gf-route="home"][data-gf-view="grid"] #gf-home .gf-grid .g
     transform: rotate(180deg);
     white-space: nowrap;
     font-size: 1.9rem;
+    text-shadow: none;
 }
 html[data-gf-tv][data-gf-route="home"][data-gf-view="grid"] #gf-home .gf-grid .gf-card .gf-card-hint { display: none; }
-/* a barra selecionada fica larga e mostra o nome deitado, com "Ver catálogo" */
-html[data-gf-tv][data-gf-route="home"][data-gf-view="grid"] #gf-home .gf-grid .gf-card:focus { flex-grow: 2.6; }
-html[data-gf-tv][data-gf-route="home"][data-gf-view="grid"] #gf-home .gf-grid .gf-card:focus .gf-card-name {
-    writing-mode: horizontal-tb;
-    transform: none;
-    white-space: normal;
-    font-size: 2.3rem;
-}
-html[data-gf-tv][data-gf-route="home"][data-gf-view="grid"] #gf-home .gf-grid .gf-card:focus .gf-card-hint { display: block; padding: 0 0.6rem; }
+html[data-gf-tv][data-gf-route="home"][data-gf-view="grid"] #gf-home .gf-grid .gf-card:focus { outline-offset: 3px; }
 
-/* ---------- fluidez no Fire TV Stick (processador fraco) ----------
-   desfoques e animações contínuas pesam muito na TV: trocados por fundos sólidos */
-html[data-gf-tv] *, html[data-gf-tv] *::before, html[data-gf-tv] *::after {
-    -webkit-backdrop-filter: none !important;
-    backdrop-filter: none !important;
-}
-html[data-gf-tv] .horizontal-nav-bar-container-Y_zvK::before { background: rgba(20, 20, 22, 0.97) !important; box-shadow: none !important; }
-html[data-gf-tv] .gf-sheet { background: rgba(0, 0, 0, 0.82); }
-html[data-gf-tv] .gf-sheet-card { background: #141416; }
-html[data-gf-tv] #gf-home .gf-poster, html[data-gf-tv] #gf-search .gf-s-poster, html[data-gf-tv] #gf-search .gf-s-skel,
-html[data-gf-tv] .gf-d-sk, html[data-gf-tv] #gf-home .gf-hero, html[data-gf-tv] #gf-home .gf-grid > .gf-card,
-html[data-gf-tv] #gf-home .gf-row-track > .gf-poster.is-filled, html[data-gf-tv] #gf-home .gf-hero-inner,
-html[data-gf-tv] .gf-detail, html[data-gf-tv] .gf-sheet, html[data-gf-tv] .gf-sheet-card, html[data-gf-tv] .nav-menu-container-Pl25j {
-    animation: none !important;
-}
-html[data-gf-tv]::view-transition-old(root), html[data-gf-tv]::view-transition-new(root) { animation: none !important; }
-html[data-gf-tv] .gf-d-hero-img, html[data-gf-tv] #gf-home img { transition: none !important; }
 /* "tela cheia" não serve para nada na TV (o app já ocupa a tela toda) */
 html[data-gf-tv] [class*="horizontal-nav-bar"] [title="Entrar em modo de tela cheia"],
 html[data-gf-tv] [class*="horizontal-nav-bar"] [title="Sair do modo de tela cheia"],
 html[data-gf-tv] [class*="nav-menu-container"] [title*="tela cheia"] { display: none !important; }
+
+/* ---------- leveza: nada de desfoque, sombras grandes, animações ou transições ---------- */
+html[data-gf-tv] *, html[data-gf-tv] *::before, html[data-gf-tv] *::after {
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+    animation: none !important;
+    transition: none !important;
+}
+html[data-gf-tv] .horizontal-nav-bar-container-Y_zvK::before { background: #141416 !important; box-shadow: none !important; }
+html[data-gf-tv] #gf-home .gf-card, html[data-gf-tv] #gf-home .gf-poster, html[data-gf-tv] .gf-sheet-card { box-shadow: none !important; }
+html[data-gf-tv] .gf-sheet { background: rgba(0, 0, 0, 0.85); }
+html[data-gf-tv] .gf-sheet-card { background: #141416; }
+html[data-gf-tv] #gf-home img, html[data-gf-tv] .gf-d-hero-img { opacity: 1 !important; }
+html[data-gf-tv]::view-transition-old(root), html[data-gf-tv]::view-transition-new(root) { animation: none !important; }
+/* fundo de cor sólida (o degradê de tela inteira é repintado a cada rolagem no Fire TV) */
+html[data-gf-tv] body { background: var(--primary-background-color, #000) !important; }
+/* as listas que rolam viram uma camada própria: rolar não repinta a tela toda */
+html[data-gf-tv] div[class^="board-content-"]:not([class*="container"]), html[data-gf-tv] #gf-home .gf-row-track,
+html[data-gf-tv] [class*="metadetails-content"] { will-change: scroll-position; }
