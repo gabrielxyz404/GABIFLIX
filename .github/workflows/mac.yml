@@ -45,11 +45,18 @@ jobs:
           pkill -x GabiFlix || true
       - name: Testar o player (vídeo com áudio AC3)
         run: |
-          V="https://download.blender.org/peach/bigbuckbunny_movies/big_buck_bunny_480p_surround-fix.avi"
-          curl -sI -m 15 "$V" | head -3 | while IFS= read -r l; do echo "::notice::curl: $l"; done
-          mac/build/GabiFlix.app/Contents/MacOS/GabiFlix --gf-test-play "$V" tt1254207 > app.log 2>&1 &
+          V=""; ID=""
+          for c in "https://download.blender.org/durian/movies/Sintel.2010.720p.mkv tt1727587" \
+                   "https://test-videos.co.uk/vids/bigbuckbunny/mkv/360/Big_Buck_Bunny_360_10s_1MB.mkv tt1254207" \
+                   "https://download.blender.org/peach/bigbuckbunny_movies/BigBuckBunny_320x180.mp4 tt1254207"; do
+            u=${c% *}; i=${c#* }
+            code=$(curl -s -o /dev/null -w '%{http_code}' -r 0-100 -m 15 "$u")
+            echo "::notice::teste $u -> $code"
+            if [ "$code" = "200" ] || [ "$code" = "206" ]; then V=$u; ID=$i; break; fi
+          done
+          mac/build/GabiFlix.app/Contents/MacOS/GabiFlix --gf-test-play "$V" "$ID" > app.log 2>&1 &
           sleep 45
-          grep -i -E "error|fail|cannot|unable|no suitable|module" app.log | grep -v -i "subtitle" | head -12 | while IFS= read -r l; do echo "::notice::vlc: $(echo "$l" | cut -c1-400)"; done
+          grep -i -E "\[err\]|error|fail|cannot|unable" app.log | head -10 | while IFS= read -r l; do echo "::notice::vlc: $(echo "$l" | cut -c1-400)"; done
           screencapture -x player.png || true
           [ -f /tmp/gabiflix-player.log ] && { head -3 /tmp/gabiflix-player.log; tail -4 /tmp/gabiflix-player.log; } | while IFS= read -r line; do echo "::notice::$(echo "$line" | cut -c1-600)"; done
           cp /tmp/gabiflix-player.log player.log 2>/dev/null || true
