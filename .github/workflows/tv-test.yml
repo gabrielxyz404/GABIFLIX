@@ -28,7 +28,8 @@ jobs:
           sudo apt-get install -y -qq ffmpeg >/dev/null
           mkdir -p /tmp/video && cd /tmp/video
           ffmpeg -loglevel error -f lavfi -i testsrc2=size=1280x720:rate=24 -f lavfi -i sine=frequency=440:sample_rate=48000 -t 120 -c:v libx264 -preset veryfast -pix_fmt yuv420p -c:a ac3 -ac 6 teste.mkv
-          nohup python3 -m http.server 8000 >/dev/null 2>&1 &
+          nohup npx --yes http-server -p 8000 -s /tmp/video >/dev/null 2>&1 &
+          sleep 8
           sleep 1 && curl -sI http://127.0.0.1:8000/teste.mkv | head -1
       - name: KVM
         run: |
