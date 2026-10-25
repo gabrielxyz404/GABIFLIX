@@ -71,6 +71,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, WKScriptMessageHandler
         let args = CommandLine.arguments
         if let i = args.firstIndex(of: "--gf-test-play"), i + 2 < args.count, let u = URL(string: args[i + 1]) {
             let id = args[i + 2]
+            PlayerWindowController.testLog = true
             DispatchQueue.main.asyncAfter(deadline: .now() + 6) {
                 let p = PlayerWindowController(url: u, subtitles: [], type: "movie", id: id, startMs: 0)
                 self.player = p

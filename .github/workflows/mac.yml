@@ -46,8 +46,10 @@ jobs:
       - name: Testar o player (vídeo com áudio AC3)
         run: |
           open -n mac/build/GabiFlix.app --args --gf-test-play "https://download.blender.org/peach/bigbuckbunny_movies/big_buck_bunny_480p_surround-fix.avi" tt1254207
-          sleep 40
+          sleep 45
           screencapture -x player.png || true
+          [ -f /tmp/gabiflix-player.log ] && { head -3 /tmp/gabiflix-player.log; tail -4 /tmp/gabiflix-player.log; } | while IFS= read -r line; do echo "::notice::$(echo "$line" | cut -c1-600)"; done
+          cp /tmp/gabiflix-player.log player.log 2>/dev/null || true
           if pgrep -x GabiFlix >/dev/null; then echo "::notice::player abriu e o app continua aberto"; else
             echo "::error::o app fechou ao abrir o player"
             f=$(ls -t ~/Library/Logs/DiagnosticReports/GabiFlix* 2>/dev/null | head -1)
@@ -57,13 +59,13 @@ jobs:
       - name: Guardar as telas do teste
         if: always()
         run: |
-          mkdir -p /tmp/telas && cp shot.png player.png /tmp/telas/ 2>/dev/null || true
+          mkdir -p /tmp/telas && cp shot.png player.png player.log /tmp/telas/ 2>/dev/null || true
           git config user.name "GabiFlix CI"; git config user.email "ci@gabiflix.local"
           git fetch origin mac-teste 2>/dev/null || true
           git checkout --orphan mac-teste-new
           git rm -rfq . >/dev/null 2>&1 || true
-          cp /tmp/telas/*.png . 2>/dev/null || true
-          git add *.png 2>/dev/null || true
+          cp /tmp/telas/* . 2>/dev/null || true
+          git add -A . 2>/dev/null || true
           git commit -qm "telas do teste do Mac" || true
           git push -f origin mac-teste-new:mac-teste || true
       - uses: actions/upload-artifact@v4

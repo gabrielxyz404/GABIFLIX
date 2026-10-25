@@ -245,10 +245,20 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
         timer = Timer.scheduledTimer(withTimeInterval: 0.4, repeats: true) { [weak self] _ in self?.tick() }
     }
 
+    static var testLog = false
+    private func log(_ text: String) {
+        guard PlayerWindowController.testLog else { return }
+        let line = "\(Date().timeIntervalSince1970) \(text)\n"
+        let url = URL(fileURLWithPath: "/tmp/gabiflix-player.log")
+        if let h = try? FileHandle(forWritingTo: url) { h.seekToEndOfFile(); h.write(line.data(using: .utf8)!); h.closeFile() }
+        else { try? line.write(to: url, atomically: true, encoding: .utf8) }
+    }
+
     private func tick() {
         let state = player.state
         let t = Int64(player.time.intValue)
         let len = Int64(player.media?.length.intValue ?? 0)
+        log("estado=\(state.rawValue) tempo=\(t) duração=\(len) tocando=\(player.isPlaying) legendas=\(addedSubs)/\(readySubs.count) faixasLeg=\((player.videoSubTitlesNames as? [String]) ?? []) audio=\((player.audioTrackNames as? [String]) ?? [])")
         if t > 0 { lastTime = t }
         if len > 0 { lastLength = len }
 
