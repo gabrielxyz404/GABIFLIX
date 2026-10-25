@@ -28,6 +28,27 @@ jobs:
         run: |
           set -o pipefail
           ./mac/build.sh 2>&1 | tee build.log
+      - name: Testar se o app abre
+        run: |
+          xattr -cr mac/build/GabiFlix.app
+          open -n mac/build/GabiFlix.app
+          sleep 20
+          if pgrep -x GabiFlix >/dev/null; then
+            echo "::notice::GabiFlix abriu e continua aberto depois de 20 s"
+            screencapture -x shot.png || true
+          else
+            echo "::error::GabiFlix fechou sozinho"
+            f=$(ls -t ~/Library/Logs/DiagnosticReports/GabiFlix* 2>/dev/null | head -1)
+            [ -n "$f" ] && head -60 "$f" | while IFS= read -r line; do echo "::error::$line"; done
+            exit 1
+          fi
+          pkill -x GabiFlix || true
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: tela-do-teste
+          path: shot.png
+          if-no-files-found: ignore
       - name: Mostrar o erro (se houver)
         if: failure()
         run: |
