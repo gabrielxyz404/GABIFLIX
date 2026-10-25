@@ -68,16 +68,15 @@ jobs:
           pkill -x GabiFlix || true
       - name: Guardar as telas do teste
         if: always()
+        env:
+          TOKEN: ${{ github.token }}
         run: |
           mkdir -p /tmp/telas && cp shot.png player.png player.log app.log /tmp/telas/ 2>/dev/null || true
+          cd /tmp/telas
+          git init -q && git checkout -q -b mac-teste
           git config user.name "GabiFlix CI"; git config user.email "ci@gabiflix.local"
-          git fetch origin mac-teste 2>/dev/null || true
-          git checkout --orphan mac-teste-new
-          git rm -rfq . >/dev/null 2>&1 || true
-          cp /tmp/telas/* . 2>/dev/null || true
-          git add -A . 2>/dev/null || true
-          git commit -qm "telas do teste do Mac" || true
-          git push -f origin mac-teste-new:mac-teste || true
+          git add -A && git commit -qm "telas do teste do Mac" || true
+          git push -q -f "https://x-access-token:${TOKEN}@github.com/${{ github.repository }}.git" mac-teste || echo "::warning::não guardou as telas"
       - uses: actions/upload-artifact@v4
         if: always()
         with:
