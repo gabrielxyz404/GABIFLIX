@@ -48,8 +48,7 @@ adb shell am start -n io.github.gabrielxyz404.gabiflix/.tv.TvHomeActivity --es g
 shot player-abre 15
 key DPAD_CENTER;   shot player-pausa 2
 key DPAD_CENTER DPAD_RIGHT DPAD_RIGHT;  shot player-avanca 3
-key DPAD_DOWN;     shot player-baixo 2
-key BACK;          shot player-back1 2
+adb shell input keyevent DPAD_DOWN; sleep 0.5; adb shell input keyevent BACK; shot player-back1 1
 key BACK;          shot player-sai 4
 # pesquisa
 adb shell am force-stop io.github.gabrielxyz404.gabiflix
