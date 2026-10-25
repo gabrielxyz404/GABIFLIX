@@ -66,6 +66,17 @@ final class AppDelegate: NSObject, NSApplicationDelegate, WKScriptMessageHandler
         NSApp.activate(ignoringOtherApps: true)
 
         web.load(URLRequest(url: APP_URL))
+
+        // teste automático (só no GitHub): --gf-test-play <link do vídeo> <código IMDb>
+        let args = CommandLine.arguments
+        if let i = args.firstIndex(of: "--gf-test-play"), i + 2 < args.count, let u = URL(string: args[i + 1]) {
+            let id = args[i + 2]
+            DispatchQueue.main.asyncAfter(deadline: .now() + 6) {
+                let p = PlayerWindowController(url: u, subtitles: [], type: "movie", id: id, startMs: 0)
+                self.player = p
+                p.showWindow(nil)
+            }
+        }
     }
 
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool { true }
