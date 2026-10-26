@@ -38,7 +38,12 @@ async function all(c, objectType, packages) {
     }
     return { total, ids };
 }
-async function mine(file) { try { return new Set(JSON.parse(await readFile(`data/${file}.json`, 'utf8')).metas.map(m => m.id)); } catch { return new Set(); } }
+async function mine(file) {
+    // inclui o arquivo -extra (só o celular Android o usa)
+    const ids = new Set();
+    for (const f of [file, file + '-extra']) { try { JSON.parse(await readFile(`data/${f}.json`, 'utf8')).metas.forEach(m => ids.add(m.id)); } catch {} }
+    return ids;
+}
 
 const out = [];
 for (const c of COUNTRIES) {

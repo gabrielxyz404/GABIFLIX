@@ -16,8 +16,12 @@ const COUNTRIES = [
     { country: 'BR', language: 'pt-BR' }, // nomes usados no Brasil
     { country: 'PT', language: 'pt' }
 ];
-const PER_SERVICE = 1000;  // títulos por serviço, tipo e país (antes de juntar)
+const PER_SERVICE = 2000;  // títulos pedidos ao JustWatch por serviço, tipo e país (antes de juntar)
+// TV e Mac continuam com o catálogo de antes (arquivos <serviço>-movie.json e -series.json):
+const LEGACY_PER_SERVICE = 1000; // por país
 const MERGED_CAP = 1500;   // máximo por serviço e tipo depois de juntar Brasil + Portugal
+// Celular Android: os mesmos arquivos + <serviço>-movie-extra.json / -series-extra.json com os títulos a mais, até este total
+const PHONE_CAP = 2000;
 const HOME_ROW = 30;       // títulos por fileira na aba Início
 // Fileiras de gênero na aba Início (códigos do JustWatch)
 const GENRES = [
@@ -422,18 +426,23 @@ async function main() {
     // 2) Catálogo de cada serviço (Brasil + Portugal juntos)
     for (const svc of Object.keys(SERVICES)) {
         const countries = COUNTRIES.filter(c => !(ONLY_BR.has(svc) && c.country !== 'BR') && pk[c.country][svc].length);
-        const byType = {};
+        const byType = {}, extraByType = {};
         for (const [objectType, type] of [['MOVIE', 'movie'], ['SHOW', 'series']]) {
             const lists = [];
             for (const c of countries) {
                 try { lists.push(await popular(c, objectType, pk[c.country][svc], PER_SERVICE)); }
                 catch (e) { console.error(`Erro em ${svc}/${type}/${c.country}:`, e.message); ERRORS.push(`Erro em ${svc}/${type}/${c.country}: ${e.message}`); }
             }
-            byType[type] = interleave(lists).slice(0, MERGED_CAP);
+            // lista de sempre (TV e Mac): só os primeiros 1000 de cada país, como antes
+            byType[type] = interleave(lists.map(l => l.slice(0, LEGACY_PER_SERVICE))).slice(0, MERGED_CAP);
             info.counts[`${svc}-${type}`] = await save(`${svc}-${type}`, byType[type], { noBackground: true });
+            // celular Android: o que passa da lista de sempre, até PHONE_CAP no total
+            const have = new Set(byType[type].map(m => m.id));
+            extraByType[type] = interleave(lists).filter(m => !have.has(m.id)).slice(0, Math.max(0, PHONE_CAP - byType[type].length));
+            info.counts[`${svc}-${type}-extra`] = await save(`${svc}-${type}-extra`, extraByType[type], { noBackground: true });
         }
         // códigos de todos os títulos do serviço (para o "Continuar assistindo" saber de onde é cada um)
-        await writeFile(`data/${svc}-ids.json`, JSON.stringify([...byType.movie, ...byType.series].map(m => m.id)));
+        await writeFile(`data/${svc}-ids.json`, JSON.stringify([...byType.movie, ...byType.series, ...extraByType.movie, ...extraByType.series].map(m => m.id)));
 
         // aba Início: destaque, top 10, em alta e fileiras por gênero (arquivo pequeno)
         const home = {
@@ -472,7 +481,7 @@ async function main() {
             brSeries: br.series.length >= 6 ? slim(br.series) : []
         }));
         info.counts[`${svc}-home-genres`] = home.genres.length;
-        console.log(`  ${svc}: ${byType.movie.length} filmes, ${byType.series.length} séries, ${home.genres.length} gêneros`);
+        console.log(`  ${svc}: ${byType.movie.length} filmes, ${byType.series.length} séries (+${extraByType.movie.length}/${extraByType.series.length} no celular), ${home.genres.length} gêneros`);
     }
 
     // 3) Cinemateca: populares que não estão em nenhum streaming no Brasil nem em Portugal

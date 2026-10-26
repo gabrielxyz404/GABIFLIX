@@ -115,6 +115,16 @@
         } catch (e) { return []; }
     }
 
+    // celular Android: os catálogos dos serviços têm até 2000 títulos (lista de sempre + data/<arquivo>-extra.json); TV, Mac e navegador usam só a lista de sempre
+    var EXTRA_FILE = /^(netflix|disney|prime|hbo|appletv|paramount|globoplay|clarovideo)-(movie|series)$/;
+    function withExtra(file, metas) {
+        if (!metas.length || !EXTRA_FILE.test(file || '') || document.documentElement.getAttribute('data-gf-app') !== 'android') return metas;
+        return getJSON('data/' + file + '-extra.json?v=' + DATA_VERSION).catch(function () { return []; }).then(function (more) {
+            var seen = {};
+            metas.forEach(function (m) { seen[m.id] = 1; });
+            return metas.concat(more.filter(function (m) { return !seen[m.id]; }));
+        });
+    }
     function loadCatalog(sec) {
         if (sec.local) return Promise.resolve(foundInSearch(sec.local));
         if (sec.withLocal) {
@@ -141,6 +151,7 @@
             };
             var p = sec.file
                 ? getJSON('data/' + sec.file + '.json?v=' + DATA_VERSION)
+                    .then(function (m) { return withExtra(sec.file, m); })
                     .then(function (m) { return m.length ? m : addon(); }, addon)
                 : addon();
             cache[key] = p.catch(function (e) { delete cache[key]; throw e; });
