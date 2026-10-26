@@ -110,14 +110,16 @@ final class Ui {
         if (url.isEmpty()) url = "https://images.metahub.space/poster/medium/" + meta.optString("id") + "/img";
         Context c = f.getContext();
         Glide.with(c).load(url).diskCacheStrategy(DiskCacheStrategy.ALL)
-                .format(DecodeFormat.PREFER_RGB_565).dontAnimate().centerCrop()
+                .format(DecodeFormat.PREFER_RGB_565).centerCrop()
+                .transition(com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions.withCrossFade(160))
                 .into(img);
     }
 
     static void image(ImageView v, String url) {
         if (url == null || url.isEmpty()) { v.setImageDrawable(null); return; }
         Glide.with(v.getContext()).load(url).diskCacheStrategy(DiskCacheStrategy.ALL)
-                .format(DecodeFormat.PREFER_RGB_565).dontAnimate().into(v);
+                .format(DecodeFormat.PREFER_RGB_565)
+                .transition(com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions.withCrossFade(200)).into(v);
     }
 
     /** logo do título (imagem); se não houver ou falhar, fica o nome em texto */

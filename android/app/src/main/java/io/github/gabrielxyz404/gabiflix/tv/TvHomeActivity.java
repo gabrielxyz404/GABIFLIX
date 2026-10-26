@@ -67,7 +67,9 @@ public class TvHomeActivity extends TvBase {
         // cartões dos serviços (infinitos: depois do último vem o primeiro)
         list = PosterAdapter.list(this);
         list.setPadding(Ui.dp(this, 24), Ui.dp(this, 30), Ui.dp(this, 24), Ui.dp(this, 26));
-        list.setLayoutManager(new PosterAdapter.Linear(this, RecyclerView.HORIZONTAL));
+        PosterAdapter.Linear hlm = new PosterAdapter.Linear(this, RecyclerView.HORIZONTAL);
+        hlm.smooth = true; // os cartões deslizam ao mudar de catálogo
+        list.setLayoutManager(hlm);
         list.setHasFixedSize(true);
         list.setItemViewCacheSize(N + 2);
         list.setAdapter(new Cards());

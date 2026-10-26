@@ -103,6 +103,12 @@ public abstract class TvBase extends Activity {
         overridePendingTransition(io.github.gabrielxyz404.gabiflix.R.anim.gf_stay, io.github.gabrielxyz404.gabiflix.R.anim.gf_out);
     }
 
+    /** aparece suavemente (usado quando um texto só chega depois) */
+    static void fadeIn(View v) {
+        v.setAlpha(0f);
+        v.animate().alpha(1f).setDuration(220).setInterpolator(new android.view.animation.DecelerateInterpolator()).start();
+    }
+
     /** realce leve ao selecionar (aumenta um pouco), igual em todas as telas */
     static void focusGrow(View v, float scale) {
         v.setOnFocusChangeListener((x, has) -> x.animate().scaleX(has ? scale : 1f).scaleY(has ? scale : 1f)

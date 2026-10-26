@@ -39,7 +39,7 @@ public class TvDetailActivity extends TvBase {
     private ImageView backdrop, logo;
     private TextView where;
     private final TreeMap<Integer, List<JSONObject>> seasons = new TreeMap<>();
-    private boolean full, autoDone;
+    private boolean full, autoDone, faded;
 
     // painel dos episódios (escondido até carregar em "Episódios")
     private FrameLayout panel;
@@ -190,6 +190,7 @@ public class TvDetailActivity extends TvBase {
                 b.setSpan(new android.text.style.ForegroundColorSpan(Ui.parseColor(found.get(i)[2], 0xFFFFFFFF)), start, b.length(), 0);
             }
             where.setText(b);
+            fadeIn(where);
         });
     }
 
@@ -238,6 +239,7 @@ public class TvDetailActivity extends TvBase {
         if (!meta.optString("imdbRating").isEmpty()) parts.add("IMDb " + meta.optString("imdbRating"));
         info.setText(TextUtils.join("  •  ", parts));
         desc.setText(meta.optString("gfDesc", meta.optString("description", "")));
+        if (!faded) { faded = true; fadeIn(info); fadeIn(desc); }
         if (backdrop.getDrawable() == null) Ui.image(backdrop, meta.optString("background", ""));
 
         JSONArray vids = meta.optJSONArray("videos");
@@ -354,7 +356,9 @@ public class TvDetailActivity extends TvBase {
         row.addView(Ui.space(this, 24, 1));
 
         episodes = PosterAdapter.list(this);
-        episodes.setLayoutManager(new PosterAdapter.Linear(this, RecyclerView.VERTICAL));
+        PosterAdapter.Linear elm = new PosterAdapter.Linear(this, RecyclerView.VERTICAL);
+        elm.smooth = true;
+        episodes.setLayoutManager(elm);
         episodes.setPadding(0, 0, 0, Ui.dp(this, 30));
         episodes.setAdapter(epAdapter);
         row.addView(episodes, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, 1f));

@@ -60,7 +60,8 @@ public class TvCatalogActivity extends TvBase {
         header.setOrientation(LinearLayout.HORIZONTAL);
         header.setGravity(Gravity.CENTER_VERTICAL);
         header.setPadding(Ui.dp(this, 28), Ui.dp(this, 16), Ui.dp(this, 28), Ui.dp(this, 6));
-        TextView name = Ui.text(this, service.name, 24, true, color);
+        TextView name = Ui.text(this, service.name, 25, false, color);
+        TvHomeActivity.outfit(name, 600);
         header.addView(name);
         header.addView(Ui.space(this, 24, 1));
         HorizontalScrollView hs = new HorizontalScrollView(this);
@@ -72,6 +73,7 @@ public class TvCatalogActivity extends TvBase {
             final int idx = i;
             TextView t = Ui.button(this, service.tabs[i], 0x00000000, Ui.TEXT);
             t.setTextSize(15);
+            TvHomeActivity.outfit(t, 500);
             t.setPadding(Ui.dp(this, 16), Ui.dp(this, 9), Ui.dp(this, 16), Ui.dp(this, 9));
             t.setOnClickListener(v -> selectTab(idx));
             LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
@@ -196,7 +198,7 @@ public class TvCatalogActivity extends TvBase {
         int[] loc = new int[2];
         f.getLocationOnScreen(loc);
         final int x = loc[0];
-        ((PosterAdapter.Linear) outer.getLayoutManager()).scrollToPositionWithOffset(target, 0);
+        ((PosterAdapter.Linear) outer.getLayoutManager()).glideToTop(outer, target);
         outer.post(() -> focusRow(target, x, 0));
         return true;
     }
@@ -204,7 +206,7 @@ public class TvCatalogActivity extends TvBase {
     private void focusRow(int target, int x, int tries) {
         RecyclerView.ViewHolder vh = outer.findViewHolderForAdapterPosition(target);
         if (vh instanceof RowsAdapter.HeroH) { ((RowsAdapter.HeroH) vh).play.requestFocus(); return; }
-        if (!(vh instanceof RowsAdapter.RH)) { if (tries < 5) outer.postDelayed(() -> focusRow(target, x, tries + 1), 16); return; }
+        if (!(vh instanceof RowsAdapter.RH)) { if (tries < 14) outer.postDelayed(() -> focusRow(target, x, tries + 1), 20); return; }
         RowsAdapter.RH h = (RowsAdapter.RH) vh;
         Row r = rows.shown.get(target);
         if (r.focus >= 0) {
@@ -228,7 +230,7 @@ public class TvCatalogActivity extends TvBase {
             if (d < bestD) { bestD = d; best = c; }
         }
         if (best != null) best.requestFocus();
-        else if (tries < 5) outer.postDelayed(() -> focusRow(target, x, tries + 1), 16);
+        else if (tries < 14) outer.postDelayed(() -> focusRow(target, x, tries + 1), 20);
     }
 
     // ---------- grade (abas Filmes / Séries) ----------
@@ -247,7 +249,7 @@ public class TvCatalogActivity extends TvBase {
         TextView loading = loading();
         content.addView(loading);
         Net.async(() -> load(sec), (list, err) -> {
-            if (gen != generation) return;
+            if (gen != generation || isFinishing()) return;
             content.removeView(loading);
             if (list == null || list.isEmpty()) { content.addView(message(err != null ? "Não foi possível carregar. Verifique a internet." : "Nada por aqui.")); return; }
             a.set(list);
@@ -270,7 +272,9 @@ public class TvCatalogActivity extends TvBase {
         outer = list;
         gridView = null;
         list.setPadding(0, 0, 0, Ui.dp(this, 40));
-        list.setLayoutManager(new PosterAdapter.Linear(this, RecyclerView.VERTICAL));
+        PosterAdapter.Linear lm = new PosterAdapter.Linear(this, RecyclerView.VERTICAL);
+        lm.suppress = true; // a rolagem vertical é feita por moveRow, deslizando
+        list.setLayoutManager(lm);
         list.setItemViewCacheSize(4);
         rows = new RowsAdapter();
         list.setAdapter(rows);
@@ -287,7 +291,7 @@ public class TvCatalogActivity extends TvBase {
             if (sec.genres) {
                 r.loaded = true; // o próprio espaço fica vazio; os gêneros entram logo a seguir
                 Net.async(() -> Stremio.data(sec.home + "-home"), (home, err) -> {
-                    if (gen != generation || home == null) return;
+                    if (gen != generation || isFinishing() || home == null) return;
                     JSONArray gs = home.optJSONArray("genres");
                     if (gs == null) return;
                     int at = rows.slots.indexOf(r) + 1;
@@ -305,7 +309,7 @@ public class TvCatalogActivity extends TvBase {
                 continue;
             }
             Net.async(() -> load(sec), (metas, err) -> {
-                if (gen != generation) return;
+                if (gen != generation || isFinishing()) return;
                 r.metas = metas == null ? null : cap(metas, r.numbered ? (sec.top10 ? 10 : 100) : 30);
                 r.loaded = true;
                 rows.sync();
@@ -329,7 +333,7 @@ public class TvCatalogActivity extends TvBase {
             if (withBg.isEmpty()) return null;
             return new JSONObject(withBg.get((int) (Math.random() * withBg.size())).toString());
         }, (pick, err) -> {
-            if (gen != generation || pick == null) return;
+            if (gen != generation || isFinishing() || pick == null) return;
             h.hero = pick;
             h.metas = new ArrayList<>();
             h.metas.add(pick);
@@ -350,7 +354,7 @@ public class TvCatalogActivity extends TvBase {
                 if (pt != null) pick2.put("description", pt);
                 return pick2;
             }, (done, e2) -> {
-                if (gen != generation || done == null) return;
+                if (gen != generation || isFinishing() || done == null) return;
                 h.hero = done;
                 h.metas.set(0, done);
                 rows.changed(h);
@@ -401,7 +405,7 @@ public class TvCatalogActivity extends TvBase {
             }
             return out;
         }, (list, err) -> {
-            if (gen != generation || list == null) { if (!r.loaded) { r.loaded = true; rows.sync(); } return; }
+            if (gen != generation || isFinishing() || list == null) { if (!r.loaded) { r.loaded = true; rows.sync(); } return; }
             boolean same = r.loaded && sig(r.metas).equals(sig(list));
             r.metas = list;
             r.loaded = true;
@@ -554,7 +558,9 @@ public class TvCatalogActivity extends TvBase {
             v.addView(t);
             RecyclerView l = PosterAdapter.list(c);
             l.setPadding(Ui.dp(c, 21), 0, Ui.dp(c, 21), 0);
-            l.setLayoutManager(new PosterAdapter.Linear(c, RecyclerView.HORIZONTAL));
+            PosterAdapter.Linear llm = new PosterAdapter.Linear(c, RecyclerView.HORIZONTAL);
+            llm.smooth = true; // o pôster selecionado desliza em vez de saltar
+            l.setLayoutManager(llm);
             l.setRecycledViewPool(pool);
             PosterAdapter a = new PosterAdapter(Ui.POSTER_W, Ui.POSTER_H);
             l.setAdapter(a);

@@ -152,13 +152,29 @@ class PosterAdapter extends RecyclerView.Adapter<PosterAdapter.H> {
         } catch (Exception ignored) {}
     }
 
-    // ---------- listas que rolam sem animação (mais rápido no Fire TV) ----------
+    // ---------- listas: rolagem suave ao mudar o foco (leve no Fire TV) ----------
 
     static final class Linear extends LinearLayoutManager {
+        boolean smooth;      // o foco arrasta a lista suavemente em vez de saltar
+        boolean suppress;    // a tela está a rolar por conta própria: ignora o pedido do foco
+
         Linear(Context c, int orientation) { super(c, orientation, false); setInitialPrefetchItemCount(8); }
+
         @Override
         public boolean requestChildRectangleOnScreen(@NonNull RecyclerView parent, @NonNull View child, @NonNull Rect rect, boolean immediate, boolean focusedChildVisible) {
-            return super.requestChildRectangleOnScreen(parent, child, rect, true, focusedChildVisible);
+            if (suppress) return false;
+            return super.requestChildRectangleOnScreen(parent, child, rect, !smooth, focusedChildVisible);
+        }
+
+        /** leva a posição para o topo da lista, deslizando */
+        void glideToTop(RecyclerView rv, int position) {
+            androidx.recyclerview.widget.LinearSmoothScroller s = new androidx.recyclerview.widget.LinearSmoothScroller(rv.getContext()) {
+                @Override protected int getVerticalSnapPreference() { return SNAP_TO_START; }
+                @Override protected int getHorizontalSnapPreference() { return SNAP_TO_START; }
+                @Override protected float calculateSpeedPerPixel(android.util.DisplayMetrics dm) { return 42f / dm.densityDpi; }
+            };
+            s.setTargetPosition(position);
+            startSmoothScroll(s);
         }
     }
 
@@ -166,7 +182,7 @@ class PosterAdapter extends RecyclerView.Adapter<PosterAdapter.H> {
         Grid(Context c, int span) { super(c, span); }
         @Override
         public boolean requestChildRectangleOnScreen(@NonNull RecyclerView parent, @NonNull View child, @NonNull Rect rect, boolean immediate, boolean focusedChildVisible) {
-            return super.requestChildRectangleOnScreen(parent, child, rect, true, focusedChildVisible);
+            return super.requestChildRectangleOnScreen(parent, child, rect, false, focusedChildVisible);
         }
     }
 

@@ -129,7 +129,9 @@ final class SourcePicker {
         box.addView(Ui.space(a, 1, 12));
 
         list = PosterAdapter.list(a);
-        list.setLayoutManager(new PosterAdapter.Linear(a, RecyclerView.VERTICAL));
+        PosterAdapter.Linear lm = new PosterAdapter.Linear(a, RecyclerView.VERTICAL);
+        lm.smooth = true;
+        list.setLayoutManager(lm);
         list.setAdapter(adapter);
         box.addView(list, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, Ui.dp(a, 330)));
         android.widget.FrameLayout dim = new android.widget.FrameLayout(a);
