@@ -316,6 +316,7 @@ public class TvCatalogActivity extends TvBase {
         Row h = new Row();
         h.title = "";
         rows.slots.add(h);
+        // 1) aparece já com o que está guardado (imagem, nome, ano)
         Net.async(() -> {
             List<JSONObject> pool = service.id.equals("cinemateca")
                     ? Stremio.metas(Stremio.data("cine-cinemas").optJSONArray("metas"))
@@ -323,19 +324,7 @@ public class TvCatalogActivity extends TvBase {
             List<JSONObject> withBg = new ArrayList<>();
             for (JSONObject m : pool) if (!m.optString("background").isEmpty() && withBg.size() < 6) withBg.add(m);
             if (withBg.isEmpty()) return null;
-            JSONObject pick = new JSONObject(withBg.get((int) (Math.random() * withBg.size())).toString());
-            // detalhes: logo, gênero, sinopse em português
-            try {
-                JSONObject full = Stremio.meta(pick.optString("type"), pick.optString("id"));
-                pick.put("logo", full.optString("logo", ""));
-                JSONArray g = full.optJSONArray("genres");
-                if (g != null && g.length() > 0) pick.put("genre", g.optString(0));
-                pick.put("description", full.optString("description", ""));
-                if (!pick.has("releaseInfo")) pick.put("releaseInfo", full.optString("releaseInfo", ""));
-            } catch (Exception ignored) {}
-            String pt = Stremio.ptDescription(pick.optString("id"));
-            if (pt != null) pick.put("description", pt);
-            return pick;
+            return new JSONObject(withBg.get((int) (Math.random() * withBg.size())).toString());
         }, (pick, err) -> {
             if (gen != generation || pick == null) return;
             h.hero = pick;
@@ -343,6 +332,19 @@ public class TvCatalogActivity extends TvBase {
             h.metas.add(pick);
             h.loaded = true;
             rows.sync();
+            // 2) depois completa: logo, gênero e sinopse em português
+            Net.async(() -> {
+                try {
+                    JSONObject full = Stremio.meta(pick.optString("type"), pick.optString("id"));
+                    pick.put("logo", full.optString("logo", ""));
+                    JSONArray g = full.optJSONArray("genres");
+                    if (g != null && g.length() > 0) pick.put("genre", g.optString(0));
+                    pick.put("description", full.optString("description", ""));
+                } catch (Exception ignored) {}
+                String pt = Stremio.ptDescription(pick.optString("id"));
+                if (pt != null) pick.put("description", pt);
+                return true;
+            }, (ok, e2) -> { if (gen == generation) rows.changed(h); });
         });
     }
 
@@ -453,6 +455,9 @@ public class TvCatalogActivity extends TvBase {
             for (int i = 0; i < next.size(); i++) if (i >= shown.size() || shown.get(i) != next.get(i)) {
                 if (!shown.contains(next.get(i))) { shown.add(i, next.get(i)); notifyItemInserted(i); }
             }
+            // ainda não entrou nas fileiras: fica sempre no topo (o que carrega depois não empurra a tela)
+            View f = getCurrentFocus();
+            if (outer != null && (f == null || tabViews.contains(f))) outer.scrollToPosition(0);
         }
 
         void changed(Row r) {
