@@ -155,10 +155,16 @@ public class TvCatalogActivity extends TvBase {
         if (cell == null) return false;
         int pos = h.list.getChildAdapterPosition(cell), n = h.adapter.getItemCount();
         if (right && pos == n - 1) {
+            // a própria fileira segura o foco enquanto volta ao início (senão ele salta para as abas)
+            h.list.setDescendantFocusability(ViewGroup.FOCUS_BEFORE_DESCENDANTS);
+            h.list.setFocusable(true);
+            h.list.requestFocus();
             h.list.scrollToPosition(0);
             h.list.post(() -> {
+                h.list.setDescendantFocusability(ViewGroup.FOCUS_AFTER_DESCENDANTS);
                 RecyclerView.ViewHolder c = h.list.findViewHolderForAdapterPosition(0);
                 if (c != null) c.itemView.requestFocus();
+                h.list.setFocusable(false);
             });
             return true;
         }

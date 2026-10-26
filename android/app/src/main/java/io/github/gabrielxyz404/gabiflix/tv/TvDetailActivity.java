@@ -130,8 +130,9 @@ public class TvDetailActivity extends TvBase {
         GradientDrawable on = Ui.round(0xFFFFFFFF, Ui.dp(this, 28));
         on.setStroke(Ui.dp(this, 3), 0xFFFFFFFF);
         s.addState(new int[]{android.R.attr.state_focused}, on);
-        s.addState(new int[]{}, Ui.round(0xD9FFFFFF, Ui.dp(this, 28)));
+        s.addState(new int[]{}, Ui.round(0x33FFFFFF, Ui.dp(this, 28))); // sem seleção: cinza transparente
         t.setBackground(s);
+        t.setTextColor(new ColorStateList(new int[][]{{android.R.attr.state_focused}, {}}, new int[]{0xFF000000, 0xFFFFFFFF}));
         t.setFocusable(true);
         t.setClickable(true);
         return t;
