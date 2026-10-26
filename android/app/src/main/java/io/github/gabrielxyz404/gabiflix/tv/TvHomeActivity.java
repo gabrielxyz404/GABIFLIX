@@ -21,9 +21,7 @@ public class TvHomeActivity extends TvBase {
 
     private View accountBtn;
     private View rootView;
-    private int bgTop = 0xFF000000, bgMid = 0xFF000000;
-    private final GradientDrawable bgDrawable = new GradientDrawable(GradientDrawable.Orientation.TL_BR, new int[]{0xFF000000, 0xFF000000, 0xFF060607});
-    private android.animation.ValueAnimator bgAnim;
+    private android.graphics.drawable.Drawable bgNow = new android.graphics.drawable.ColorDrawable(0xFF0B0B0D);
     private RecyclerView list;
     private static final int N = Services.ALL.size();
     private static final int MIDDLE = (Integer.MAX_VALUE / 2) - ((Integer.MAX_VALUE / 2) % Services.ALL.size());
@@ -35,7 +33,7 @@ public class TvHomeActivity extends TvBase {
         root.setOrientation(LinearLayout.VERTICAL);
         root.setPadding(0, Ui.dp(this, 22), 0, Ui.dp(this, 14));
         rootView = root;
-        root.setBackground(bgDrawable);
+        root.setBackground(bgNow);
 
         // topo: logo + "Home" à esquerda, ícones à direita
         LinearLayout top = new LinearLayout(this);
@@ -268,24 +266,30 @@ public class TvHomeActivity extends TvBase {
 
     /** fundo da tela na cor do serviço selecionado (troca suave) */
     private void paintBackground(Services.Service s) {
-        // mistura da cor do serviço com preto (como no fundo dos catálogos); a Globoplay vai de amarelo a verde
+        // o mesmo visual dos cartões, na tela inteira: quase preto com brilho da cor no canto de cima
+        // e outro mais fraco no canto de baixo (a Globoplay mistura amarelo e verde)
         boolean globo = s.id.equals("globoplay");
         int c1 = globo ? 0xFFF5C518 : Ui.parseColor(s.color, 0xFFFFFFFF);
         int c2 = globo ? 0xFF3ECF6B : c1;
-        boolean apple = s.id.equals("appletv");
-        int top = Ui.tint(c1, apple ? 0.22f : 0.42f), mid = Ui.tint(c2, apple ? 0.10f : 0.18f);
-        final int fromTop = bgTop, fromMid = bgMid;
-        if (bgAnim != null) bgAnim.cancel();
-        bgAnim = android.animation.ValueAnimator.ofFloat(0f, 1f);
-        bgAnim.setDuration(280);
-        android.animation.ArgbEvaluator ev = new android.animation.ArgbEvaluator();
-        bgAnim.addUpdateListener(a -> {
-            float f = (float) a.getAnimatedValue();
-            bgTop = (int) ev.evaluate(f, fromTop, top);
-            bgMid = (int) ev.evaluate(f, fromMid, mid);
-            bgDrawable.setColors(new int[]{bgTop, bgMid, 0xFF060607});
-        });
-        bgAnim.start();
+        float w = getResources().getDisplayMetrics().widthPixels;
+        GradientDrawable base = new GradientDrawable();
+        base.setColor(0xFF0B0B0D);
+        GradientDrawable g1 = new GradientDrawable();
+        g1.setGradientType(GradientDrawable.RADIAL_GRADIENT);
+        g1.setGradientCenter(0f, 0f);
+        g1.setGradientRadius(w * 0.95f);
+        g1.setColors(new int[]{alpha(c1, 0.34f), alpha(c1, 0.12f), 0x00000000});
+        GradientDrawable g2 = new GradientDrawable();
+        g2.setGradientType(GradientDrawable.RADIAL_GRADIENT);
+        g2.setGradientCenter(1f, 1f);
+        g2.setGradientRadius(w * 0.75f);
+        g2.setColors(new int[]{alpha(c2, 0.20f), 0x00000000});
+        android.graphics.drawable.Drawable next = new android.graphics.drawable.LayerDrawable(new android.graphics.drawable.Drawable[]{base, g1, g2});
+        android.graphics.drawable.TransitionDrawable t = new android.graphics.drawable.TransitionDrawable(new android.graphics.drawable.Drawable[]{bgNow, next});
+        t.setCrossFadeEnabled(true);
+        rootView.setBackground(t);
+        t.startTransition(260);
+        bgNow = next;
     }
 
     /** aplica a fonte Outfit com o peso pedido (a fonte é variável: o peso vai por "wght") */
