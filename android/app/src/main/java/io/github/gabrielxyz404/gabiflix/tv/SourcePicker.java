@@ -141,7 +141,6 @@ final class SourcePicker {
     }
 
     void show() { d.show(); }
-    boolean showing() { return d.isShowing(); }
     void dismiss() { if (d.isShowing()) d.dismiss(); }
     void onDismiss(Runnable r) { d.setOnDismissListener(x -> r.run()); }
 

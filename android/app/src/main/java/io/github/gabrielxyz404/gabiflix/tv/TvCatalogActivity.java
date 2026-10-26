@@ -38,6 +38,8 @@ public class TvCatalogActivity extends TvBase {
     private Row contRow;
     private int generation = 0;
     private RecyclerView outer, gridView;
+    private int pending;         // seções que ainda não responderam
+    private View heroLoadingView;
 
     static final class RecycledViewPool extends RecyclerView.RecycledViewPool {
         RecycledViewPool() { setMaxRecycledViews(0, 40); }
@@ -279,8 +281,13 @@ public class TvCatalogActivity extends TvBase {
         rows = new RowsAdapter();
         list.setAdapter(rows);
         content.addView(list);
+        final TextView loading = loading();
+        content.addView(loading);
+        rows.onFirstRow = () -> content.removeView(loading);
+        heroLoadingView = loading;
+        pending = secs.size();
 
-        if (service.tabs[tab].equals("Início")) addHero(gen);
+        if (service.tabs[tab].equals("Início")) { pending++; addHero(gen); }
         for (Services.Section sec : secs) {
             Row r = new Row();
             r.title = sec.title;
@@ -289,10 +296,12 @@ public class TvCatalogActivity extends TvBase {
             rows.slots.add(r);
             if (sec.cont) { contRow = r; loadContinue(r, gen); continue; }
             if (sec.genres) {
-                r.loaded = true; // o próprio espaço fica vazio; os gêneros entram logo a seguir
+                r.loaded = true;
+                // o espaço fica vazio; os gêneros entram logo a seguir
                 Net.async(() -> Stremio.data(sec.home + "-home"), (home, err) -> {
-                    if (gen != generation || isFinishing() || home == null) return;
-                    JSONArray gs = home.optJSONArray("genres");
+                    if (gen != generation || isFinishing()) return;
+                    done(loading);
+                    JSONArray gs = home != null ? home.optJSONArray("genres") : null;
                     if (gs == null) return;
                     int at = rows.slots.indexOf(r) + 1;
                     for (int i = 0; i < gs.length(); i++) {
@@ -312,6 +321,7 @@ public class TvCatalogActivity extends TvBase {
                 if (gen != generation || isFinishing()) return;
                 r.metas = metas == null ? null : cap(metas, r.numbered ? (sec.top10 ? 10 : 100) : 30);
                 r.loaded = true;
+                done(loading);
                 rows.sync();
             });
         }
@@ -320,6 +330,7 @@ public class TvCatalogActivity extends TvBase {
     // ---------- destaque no topo do Início ----------
 
     private void addHero(int gen) {
+        final View heroLoading = heroLoadingView;
         Row h = new Row();
         h.title = "";
         rows.slots.add(h);
@@ -333,7 +344,9 @@ public class TvCatalogActivity extends TvBase {
             if (withBg.isEmpty()) return null;
             return new JSONObject(withBg.get((int) (Math.random() * withBg.size())).toString());
         }, (pick, err) -> {
-            if (gen != generation || isFinishing() || pick == null) return;
+            if (gen != generation || isFinishing()) return;
+            done(heroLoading);
+            if (pick == null) return;
             h.hero = pick;
             h.metas = new ArrayList<>();
             h.metas.add(pick);
@@ -371,6 +384,15 @@ public class TvCatalogActivity extends TvBase {
             if (autoplay) i.putExtra("autoplay", true);
             startActivity(i);
         } catch (Exception ignored) {}
+    }
+
+    /** uma seção respondeu: quando todas responderem e não houver nada, avisa */
+    private void done(View loading) {
+        if (pending <= 0 || --pending > 0) return;
+        if (rows.shown.isEmpty()) {
+            content.removeView(loading);
+            content.addView(message("Não foi possível carregar. Verifique a internet."));
+        }
     }
 
     private static List<JSONObject> cap(List<JSONObject> l, int n) {
@@ -460,6 +482,7 @@ public class TvCatalogActivity extends TvBase {
     private final class RowsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         final List<Row> slots = new ArrayList<>();
         final List<Row> shown = new ArrayList<>();
+        Runnable onFirstRow;
 
         /** mostra só as fileiras já carregadas e com títulos, sem perder o item selecionado */
         void sync() {
@@ -469,6 +492,7 @@ public class TvCatalogActivity extends TvBase {
             for (int i = 0; i < next.size(); i++) if (i >= shown.size() || shown.get(i) != next.get(i)) {
                 if (!shown.contains(next.get(i))) { shown.add(i, next.get(i)); notifyItemInserted(i); }
             }
+            if (!shown.isEmpty() && onFirstRow != null) { onFirstRow.run(); onFirstRow = null; }
             // ainda não entrou nas fileiras: fica sempre no topo (o que carrega depois não empurra a tela)
             View f = getCurrentFocus();
             if (outer != null && (f == null || tabViews.contains(f))) outer.scrollToPosition(0);
