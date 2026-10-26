@@ -182,10 +182,12 @@
         if (!isSeries || episodeView) {
             var resumable = st && st.timeOffset > 0 && st.duration > 0 && (!isSeries || st.video_id === (video && video.id)) && st.timeOffset < st.duration * 0.95;
             if (resumable) label = '▶  Continuar';
-            if (!episodeView && !streams.length) label = streamsLoading(state) ? 'Procurando fontes…' : 'Nenhuma fonte encontrada';
-            play.disabled = !episodeView && !streams.length;
+            // no app Android o Assistir abre a janela de fontes (que mostra "Procurando…" ou "Nenhuma fonte" sozinha)
+            if (!episodeView && !streams.length && !androidApp()) label = streamsLoading(state) ? 'Procurando fontes…' : 'Nenhuma fonte encontrada';
+            play.disabled = !episodeView && !streams.length && !androidApp();
             play.addEventListener('click', function () {
-                if (episodeView) openSheet(video.id, true); else if (streams[0]) playStream(firstSource(streams));
+                if (androidApp()) openSheet(episodeView ? video.id : meta.id, false);
+                else if (episodeView) openSheet(video.id, true); else if (streams[0]) playStream(firstSource(streams));
             });
             if (resumable) {
                 var bar = el('div', 'gf-d-progress');
@@ -208,7 +210,7 @@
             label = target ? (last ? '▶  Continuar ' : '▶  Assistir ') + epLabel(target) : '▶  Assistir';
             play.textContent = label;
             play.disabled = !target;
-            play.addEventListener('click', function () { if (target) openSheet(target.id, true); });
+            play.addEventListener('click', function () { if (target) openSheet(target.id, !androidApp()); });
             body.appendChild(play);
         }
 
@@ -223,7 +225,7 @@
             choose.textContent = 'Escolher fonte';
             choose.addEventListener('click', function () { openSheet(episodeView ? video.id : meta.id, false); });
         }
-        body.appendChild(choose);
+        if (!androidApp()) body.appendChild(choose); // no app Android o Assistir já abre as fontes
 
         // resumo (3 linhas, toque para ver tudo)
         var desc = (episodeView && video.overview) || ptDesc[meta.id] || meta.description;
