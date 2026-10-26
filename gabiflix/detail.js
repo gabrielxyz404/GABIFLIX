@@ -185,7 +185,7 @@
             if (!episodeView && !streams.length) label = streamsLoading(state) ? 'Procurando fontes…' : 'Nenhuma fonte encontrada';
             play.disabled = !episodeView && !streams.length;
             play.addEventListener('click', function () {
-                if (episodeView) openSheet(video.id, true); else if (streams[0]) playStream(streams[0]);
+                if (episodeView) openSheet(video.id, true); else if (streams[0]) playStream(firstSource(streams));
             });
             if (resumable) {
                 var bar = el('div', 'gf-d-progress');
@@ -290,6 +290,77 @@
     function ptGenre(g) { return GENRES[g] || g; }
 
     // ---------- janela de fontes ----------
+    // ---- fontes: lógica ----
+    // seletor de fontes do celular (igual ao da TV): abas por addon + linhas com 2 selos
+    var sheetTab = null; // nome do addon escolhido na aba; volta para null a cada janela nova
+    // lê o nome/descrição da fonte: serviço (RD, TB...), se está em cache e a qualidade
+    function parseSource(st) {
+        var text = (st.name || '') + ' ' + (st.description || st.title || '');
+        var lower = text.toLowerCase();
+        var tag = text.match(/\[(RD|TB|AD|PM|DL|OC|ED|PKP)\s*(\+|⚡️?|⬇️?|download)?\]/i);
+        var service = '', cached = true;
+        if (tag) {
+            service = tag[1].toUpperCase();
+            // "⬇️" ou "download" = o debrid ainda vai baixar antes de tocar (não está em cache)
+            cached = !(tag[2] && (tag[2].indexOf('⬇') === 0 || tag[2].toLowerCase() === 'download'));
+        } else {
+            if (lower.indexOf('real-debrid') >= 0 || lower.indexOf('realdebrid') >= 0) service = 'RD';
+            else if (lower.indexOf('torbox') >= 0) service = 'TB';
+        }
+        var quality = '', rank = 0;
+        if (/2160p|\b4k\b|\buhd\b/.test(lower)) { quality = '4K'; rank = 4; }
+        else if (/1080p/.test(lower)) { quality = '1080p'; rank = 3; }
+        else if (/720p/.test(lower)) { quality = '720p'; rank = 2; }
+        else if (/\b480p\b|\b576p\b/.test(lower)) { quality = 'SD'; rank = 1; }
+        // nome do addon: do manifest; se faltar, a primeira linha do nome sem a tag [..]
+        var addon = String((st.addon && st.addon.manifest && st.addon.manifest.name) || '').trim();
+        if (!addon) addon = String(st.name || '').replace(/^\s+/, '').split(/\r?\n/)[0].replace(/^\[[^\]]*\]\s*/, '').trim();
+        if (!addon) addon = 'Fontes';
+        return { service: service, cached: cached, quality: quality, rank: rank, addon: addon };
+    }
+    var SVC_NAMES = { RD: 'Real-Debrid', TB: 'TorBox', AD: 'AllDebrid', PM: 'Premiumize', DL: 'Debrid-Link', OC: 'Offcloud', ED: 'EasyDebrid', PKP: 'PikPak' };
+    function serviceLabel(code) {
+        return code && SVC_NAMES.hasOwnProperty(code) ? SVC_NAMES[code] : 'Direto';
+    }
+    // escolhe a fonte do "Assistir": a de maior qualidade já em cache; empate fica com a primeira
+    function pickBest(streams) {
+        var best = null, bestCached = null;
+        streams.forEach(function (st) {
+            if (!st || isTorrent(st)) return;
+            var p = parseSource(st);
+            if (!best || p.rank > best.p.rank) best = { st: st, p: p };
+            if (p.cached && (!bestCached || p.rank > bestCached.p.rank)) bestCached = { st: st, p: p };
+        });
+        if (bestCached) return bestCached.st;
+        if (best) return best.st;
+        return streams[0];
+    }
+    // só no app Android do celular (o Mac e o navegador ficam como antes)
+    function androidApp() { return !!window.gfPlayNative && document.documentElement.getAttribute('data-gf-app') === 'android'; }
+    // no app Android usa a escolha inteligente; no resto continua o primeiro da lista
+    function firstSource(streams) { return androidApp() ? pickBest(streams) : streams[0]; }
+    // nomes das abas, na ordem em que cada addon aparece pela primeira vez (torrents não entram)
+    function sourceTabs(streams) {
+        var names = [];
+        streams.forEach(function (st) {
+            if (!st || isTorrent(st)) return;
+            var a = parseSource(st).addon;
+            if (names.indexOf(a) < 0) names.push(a);
+        });
+        return names;
+    }
+    // fontes de uma aba, da melhor qualidade para a pior; empate mantém a ordem original
+    function sourceRows(streams, tab) {
+        var rows = [];
+        streams.forEach(function (st, i) {
+            if (!st || isTorrent(st)) return;
+            var p = parseSource(st);
+            if (p.addon === tab) rows.push({ st: st, i: i, p: p });
+        });
+        rows.sort(function (a, b) { return (b.p.rank - a.p.rank) || (a.i - b.i); });
+        return rows;
+    }
+    // ---- fim: fontes ----
     var sheet = null; // { id, autoplay, label, since }
     function platformName() {
         var ua = navigator.userAgent;
@@ -323,6 +394,7 @@
             var meta = state.metaItem && state.metaItem.content && state.metaItem.content.content;
             var vid = v || (meta && meta.videos || []).filter(function (x) { return x.id === videoId; })[0];
             sheet = { id: videoId, autoplay: !!autoplay, since: Date.now(), label: vid && vid.season != null ? epLabel(vid) + (realName(vid) ? ' · ' + realName(vid) : '') : '' };
+            sheetTab = null; // janela nova: começa na primeira aba
             // carrega as fontes desse episódio sem trocar de página
             if (!sel.streamPath || sel.streamPath.id !== videoId) {
                 c.dispatch({ action: 'Load', args: { model: 'MetaDetails', args: {
@@ -341,14 +413,41 @@
         if (s0) { s0.classList.add('is-closing'); setTimeout(function () { s0.remove(); }, 180); }
     }
     var sheetSig = '';
+    var sheetState = null; // último estado recebido, para trocar de aba sem esperar o próximo tick
+    // monta o seletor do celular (abas + linhas com 2 selos); devolve null se não houver fonte tocável
+    function buildPicker(streams) {
+        var names = sourceTabs(streams);
+        if (!names.length) return null;
+        var tab = sheetTab && names.indexOf(sheetTab) >= 0 ? sheetTab : names[0];
+        var frag = document.createDocumentFragment();
+        var tabs = el('div', 'gf-src-tabs');
+        names.forEach(function (name) {
+            var t = el('button', 'gf-src-tab' + (name === tab ? ' is-on' : ''), name);
+            t.type = 'button';
+            t.setAttribute('aria-pressed', name === tab ? 'true' : 'false');
+            t.addEventListener('click', function () { sheetTab = name; renderSheet(sheetState); });
+            tabs.appendChild(t);
+        });
+        frag.appendChild(tabs);
+        sourceRows(streams, tab).forEach(function (row) {
+            var b = el('button', 'gf-src-row');
+            b.type = 'button';
+            b.appendChild(el('span', 'gf-src-badge svc', serviceLabel(row.p.service)));
+            b.appendChild(el('span', 'gf-src-badge q', row.p.quality || '?'));
+            b.addEventListener('click', function () { playStream(row.st); });
+            frag.appendChild(b);
+        });
+        return frag;
+    }
     function renderSheet(state) {
         if (!sheet) return;
+        sheetState = state;
         var ready = state && state.selected && state.selected.streamPath && state.selected.streamPath.id === sheet.id;
         var streams = ready ? readyStreams(state) : [];
         var loading = !ready || streamsLoading(state);
         // "Assistir": toca a primeira fonte assim que todas responderem (ou depois de 6 s, se já houver alguma)
-        if (sheet.autoplay && ready && streams.length && (!loading || Date.now() - sheet.since > 6000)) { playStream(streams[0]); return; }
-        var sig = [sheet.id, sheet.autoplay, streams.length, loading].join('|');
+        if (sheet.autoplay && ready && streams.length && (!loading || Date.now() - sheet.since > 6000)) { playStream(firstSource(streams)); return; }
+        var sig = [sheet.id, sheet.autoplay, streams.length, loading, sheetTab].join('|');
         var root = document.getElementById('gf-sheet');
         if (root && sig === sheetSig) return;
         sheetSig = sig;
@@ -359,6 +458,9 @@
             root.addEventListener('click', function (e) { if (e.target === root) closeSheet(); });
             document.body.appendChild(root);
         }
+        // guarda a posição de rolagem das abas: ao trocar de aba a janela é refeita e não deve voltar ao início
+        var oldTabs = root.querySelector('.gf-src-tabs');
+        var tabsX = oldTabs ? oldTabs.scrollLeft : 0;
         root.innerHTML = '';
         var card = el('div', 'gf-sheet-card' + (fresh ? '' : ' no-anim'));
         card.setAttribute('role', 'dialog');
@@ -375,7 +477,15 @@
         head.appendChild(x);
         card.appendChild(head);
         var list = el('div', 'gf-sheet-list');
-        if (streams.length && !sheet.autoplay) {
+        // no app Android: seletor novo (abas + 2 selos); se algo falhar, cai na lista antiga abaixo
+        var isNative = androidApp(), failed = false;
+        var playable = isNative ? streams.filter(function (st) { return !isTorrent(st); }) : streams;
+        if (isNative && streams.length && !sheet.autoplay) {
+            var picked = null;
+            try { picked = buildPicker(streams); } catch (e) { picked = null; failed = true; }
+            if (picked) list.appendChild(picked);
+        }
+        if (streams.length && !sheet.autoplay && (!isNative || failed)) {
             streams.forEach(function (st) {
                 var b = el('button', 'gf-sheet-item');
                 b.type = 'button';
@@ -395,7 +505,7 @@
             ld.appendChild(el('span', 'gf-sheet-spin'));
             ld.appendChild(document.createTextNode(streams.length ? 'Procurando mais fontes…' : 'Procurando fontes…'));
             list.appendChild(ld);
-        } else if (!streams.length) {
+        } else if (!(isNative && !failed ? playable.length : streams.length)) {
             var em = el('div', 'gf-sheet-empty');
             em.appendChild(el('div', null, 'Nenhuma fonte encontrada.'));
             em.appendChild(el('div', 'gf-sheet-empty-sub', 'As fontes vêm dos seus addons.'));
@@ -407,6 +517,8 @@
         }
         card.appendChild(list);
         root.appendChild(card);
+        var newTabs = root.querySelector('.gf-src-tabs');
+        if (newTabs) newTabs.scrollLeft = tabsX;
     }
 
 
