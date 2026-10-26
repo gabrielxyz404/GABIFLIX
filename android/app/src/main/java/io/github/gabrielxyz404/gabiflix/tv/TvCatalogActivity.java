@@ -2,12 +2,15 @@ package io.github.gabrielxyz404.gabiflix.tv;
 
 import android.app.AlertDialog;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.HorizontalScrollView;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -150,6 +153,7 @@ public class TvCatalogActivity extends TvBase {
     private boolean edgeOfRow(View f, boolean right) {
         View rowView = outer.findContainingItemView(f);
         if (rowView == null) return false;
+        if (!(outer.getChildViewHolder(rowView) instanceof RowsAdapter.RH)) return false; // destaque: botões normais
         RowsAdapter.RH h = (RowsAdapter.RH) outer.getChildViewHolder(rowView);
         View cell = h.list.findContainingItemView(f);
         if (cell == null) return false;
@@ -176,10 +180,13 @@ public class TvCatalogActivity extends TvBase {
         if (rowView == null) return false;
         int rowPos = outer.getChildAdapterPosition(rowView);
         if (rowPos < 0 || rowPos >= rows.shown.size()) return false;
-        RowsAdapter.RH h = (RowsAdapter.RH) outer.getChildViewHolder(rowView);
-        View cell = h.list.findContainingItemView(f);
         Row cur = rows.shown.get(rowPos);
-        if (cell != null) cur.focus = h.list.getChildAdapterPosition(cell);
+        RecyclerView.ViewHolder curVh = outer.getChildViewHolder(rowView);
+        if (curVh instanceof RowsAdapter.RH) {
+            RowsAdapter.RH h = (RowsAdapter.RH) curVh;
+            View cell = h.list.findContainingItemView(f);
+            if (cell != null) cur.focus = h.list.getChildAdapterPosition(cell);
+        }
         int target = rowPos + (up ? -1 : 1);
         if (target < 0) { tabViews.get(tab).requestFocus(); return true; }
         if (target >= rows.shown.size()) return true;
@@ -193,6 +200,7 @@ public class TvCatalogActivity extends TvBase {
 
     private void focusRow(int target, int x, int tries) {
         RecyclerView.ViewHolder vh = outer.findViewHolderForAdapterPosition(target);
+        if (vh instanceof RowsAdapter.HeroH) { ((RowsAdapter.HeroH) vh).play.requestFocus(); return; }
         if (!(vh instanceof RowsAdapter.RH)) { if (tries < 5) outer.postDelayed(() -> focusRow(target, x, tries + 1), 16); return; }
         RowsAdapter.RH h = (RowsAdapter.RH) vh;
         Row r = rows.shown.get(target);
@@ -250,6 +258,7 @@ public class TvCatalogActivity extends TvBase {
         List<JSONObject> metas;
         boolean numbered, cont, loaded;
         int focus = -1;   // último pôster selecionado nesta fileira
+        JSONObject hero;  // destaque grande no topo (estilo Netflix)
     }
 
     private void showRows(List<Services.Section> secs) {
@@ -264,6 +273,7 @@ public class TvCatalogActivity extends TvBase {
         list.setAdapter(rows);
         content.addView(list);
 
+        if (service.tabs[tab].equals("Início")) addHero(gen);
         for (Services.Section sec : secs) {
             Row r = new Row();
             r.title = sec.title;
@@ -298,6 +308,53 @@ public class TvCatalogActivity extends TvBase {
                 rows.sync();
             });
         }
+    }
+
+    // ---------- destaque no topo do Início ----------
+
+    private void addHero(int gen) {
+        Row h = new Row();
+        h.title = "";
+        rows.slots.add(h);
+        Net.async(() -> {
+            List<JSONObject> pool = service.id.equals("cinemateca")
+                    ? Stremio.metas(Stremio.data("cine-cinemas").optJSONArray("metas"))
+                    : Stremio.metas(Stremio.data(service.id + "-home").optJSONArray("top10"));
+            List<JSONObject> withBg = new ArrayList<>();
+            for (JSONObject m : pool) if (!m.optString("background").isEmpty() && withBg.size() < 6) withBg.add(m);
+            if (withBg.isEmpty()) return null;
+            JSONObject pick = new JSONObject(withBg.get((int) (Math.random() * withBg.size())).toString());
+            // detalhes: logo, gênero, sinopse em português
+            try {
+                JSONObject full = Stremio.meta(pick.optString("type"), pick.optString("id"));
+                pick.put("logo", full.optString("logo", ""));
+                JSONArray g = full.optJSONArray("genres");
+                if (g != null && g.length() > 0) pick.put("genre", g.optString(0));
+                pick.put("description", full.optString("description", ""));
+                if (!pick.has("releaseInfo")) pick.put("releaseInfo", full.optString("releaseInfo", ""));
+            } catch (Exception ignored) {}
+            String pt = Stremio.ptDescription(pick.optString("id"));
+            if (pt != null) pick.put("description", pt);
+            return pick;
+        }, (pick, err) -> {
+            if (gen != generation || pick == null) return;
+            h.hero = pick;
+            h.metas = new ArrayList<>();
+            h.metas.add(pick);
+            h.loaded = true;
+            rows.sync();
+        });
+    }
+
+    private void openTitle(JSONObject m, boolean autoplay) {
+        try {
+            JSONObject meta = new JSONObject().put("id", m.optString("id")).put("type", m.optString("type"))
+                    .put("name", m.optString("name")).put("poster", m.optString("poster", "")).put("background", m.optString("background", ""));
+            Intent i = new Intent(this, TvDetailActivity.class);
+            i.putExtra("meta", meta.toString());
+            if (autoplay) i.putExtra("autoplay", true);
+            startActivity(i);
+        } catch (Exception ignored) {}
     }
 
     private static List<JSONObject> cap(List<JSONObject> l, int n) {
@@ -384,7 +441,7 @@ public class TvCatalogActivity extends TvBase {
 
     // ---------- adaptador das fileiras ----------
 
-    private final class RowsAdapter extends RecyclerView.Adapter<RowsAdapter.RH> {
+    private final class RowsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         final List<Row> slots = new ArrayList<>();
         final List<Row> shown = new ArrayList<>();
 
@@ -410,9 +467,70 @@ public class TvCatalogActivity extends TvBase {
             RH(LinearLayout v, TextView t, RecyclerView l, PosterAdapter a) { super(v); title = t; list = l; adapter = a; }
         }
 
+        final class HeroH extends RecyclerView.ViewHolder {
+            final ImageView bg, logo;
+            final TextView title, info, desc, play, more;
+            HeroH(View v, ImageView bg, ImageView logo, TextView title, TextView info, TextView desc, TextView play, TextView more) {
+                super(v); this.bg = bg; this.logo = logo; this.title = title; this.info = info; this.desc = desc; this.play = play; this.more = more;
+            }
+        }
+
+        @Override public int getItemViewType(int position) { return shown.get(position).hero != null ? 1 : 0; }
+
+        private HeroH hero(Context c) {
+            FrameLayout f = new FrameLayout(c);
+            RecyclerView.LayoutParams lp = new RecyclerView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, Ui.dp(c, 290));
+            lp.setMargins(Ui.dp(c, 28), Ui.dp(c, 6), Ui.dp(c, 28), Ui.dp(c, 8));
+            f.setLayoutParams(lp);
+            f.setBackground(Ui.round(Ui.CARD, Ui.dp(c, 16)));
+            f.setClipToOutline(true);
+            ImageView bg = new ImageView(c);
+            bg.setScaleType(ImageView.ScaleType.CENTER_CROP);
+            f.addView(bg, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+            View shade = new View(c);
+            shade.setBackground(new android.graphics.drawable.GradientDrawable(android.graphics.drawable.GradientDrawable.Orientation.LEFT_RIGHT, new int[]{0xE6000000, 0x8C000000, 0x00000000}));
+            f.addView(shade, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+            LinearLayout col = new LinearLayout(c);
+            col.setOrientation(LinearLayout.VERTICAL);
+            col.setGravity(Gravity.BOTTOM);
+            col.setPadding(Ui.dp(c, 30), Ui.dp(c, 20), Ui.dp(c, 30), Ui.dp(c, 24));
+            ImageView logo = new ImageView(c);
+            logo.setAdjustViewBounds(true);
+            logo.setScaleType(ImageView.ScaleType.FIT_START);
+            col.addView(logo, new LinearLayout.LayoutParams(Ui.dp(c, 340), Ui.dp(c, 78)));
+            TextView title = Ui.text(c, "", 30, true, Ui.TEXT);
+            title.setMaxLines(2);
+            title.setEllipsize(TextUtils.TruncateAt.END);
+            col.addView(title, new LinearLayout.LayoutParams(Ui.dp(c, 480), ViewGroup.LayoutParams.WRAP_CONTENT));
+            col.addView(Ui.space(c, 1, 8));
+            TextView info = Ui.text(c, "", 14, true, 0xD9FFFFFF);
+            col.addView(info);
+            col.addView(Ui.space(c, 1, 8));
+            TextView desc = Ui.text(c, "", 14, false, 0xE6FFFFFF);
+            desc.setMaxLines(3);
+            desc.setEllipsize(TextUtils.TruncateAt.END);
+            desc.setLineSpacing(0, 1.2f);
+            col.addView(desc, new LinearLayout.LayoutParams(Ui.dp(c, 460), ViewGroup.LayoutParams.WRAP_CONTENT));
+            col.addView(Ui.space(c, 1, 14));
+            LinearLayout btns = new LinearLayout(c);
+            btns.setOrientation(LinearLayout.HORIZONTAL);
+            TextView play = Ui.pill(c, "▶  Assistir");
+            btns.addView(play);
+            btns.addView(Ui.space(c, 12, 1));
+            TextView more = Ui.pill(c, "ⓘ  Mais informações");
+            btns.addView(more);
+            col.addView(btns);
+            f.addView(col, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+            HeroH h = new HeroH(f, bg, logo, title, info, desc, play, more);
+            play.setOnClickListener(v -> { int p = h.getBindingAdapterPosition(); if (p >= 0 && shown.get(p).hero != null) openTitle(shown.get(p).hero, true); });
+            more.setOnClickListener(v -> { int p = h.getBindingAdapterPosition(); if (p >= 0 && shown.get(p).hero != null) openTitle(shown.get(p).hero, false); });
+            return h;
+        }
+
         @NonNull @Override
-        public RH onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
             Context c = parent.getContext();
+            if (viewType == 1) return hero(c);
             LinearLayout v = new LinearLayout(c);
             v.setOrientation(LinearLayout.VERTICAL);
             v.setLayoutParams(new RecyclerView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
@@ -430,8 +548,23 @@ public class TvCatalogActivity extends TvBase {
         }
 
         @Override
-        public void onBindViewHolder(@NonNull RH h, int position) {
+        public void onBindViewHolder(@NonNull RecyclerView.ViewHolder vh, int position) {
             Row r = shown.get(position);
+            if (vh instanceof HeroH) {
+                HeroH hh = (HeroH) vh;
+                JSONObject m = r.hero;
+                Ui.image(hh.bg, m.optString("background", ""));
+                hh.title.setText(m.optString("name"));
+                Ui.logo(hh.logo, hh.title, m.optString("logo", ""));
+                List<String> parts = new ArrayList<>();
+                if (!m.optString("genre").isEmpty()) parts.add(m.optString("genre"));
+                if (!m.optString("releaseInfo").isEmpty()) parts.add(m.optString("releaseInfo"));
+                parts.add("series".equals(m.optString("type")) ? "Série" : "Filme");
+                hh.info.setText(TextUtils.join("  •  ", parts));
+                hh.desc.setText(m.optString("description", ""));
+                return;
+            }
+            RH h = (RH) vh;
             h.title.setText(r.title);
             h.adapter.numbered = r.numbered;
             h.adapter.progress = r.cont;

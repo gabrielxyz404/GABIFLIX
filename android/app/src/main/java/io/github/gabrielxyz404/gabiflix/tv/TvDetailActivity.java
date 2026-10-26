@@ -42,7 +42,7 @@ public class TvDetailActivity extends TvBase {
     private TextView title, info, desc, playBtn, episodesBtn, listBtn, removeBtn, status;
     private ImageView backdrop, logo;
     private final TreeMap<Integer, List<JSONObject>> seasons = new TreeMap<>();
-    private boolean full;
+    private boolean full, autoDone;
 
     // painel dos episódios (escondido até carregar em "Episódios")
     private FrameLayout panel;
@@ -176,6 +176,8 @@ public class TvDetailActivity extends TvBase {
             meta = m;
             full = true;
             fill();
+            // veio do "Assistir" do destaque: abre logo as fontes
+            if (getIntent().getBooleanExtra("autoplay", false) && !autoDone) { autoDone = true; playMain(); }
         });
         Net.async(() -> Stremio.library(c, false), (lib, err) -> { if (!isFinishing()) updateButtons(); });
     }

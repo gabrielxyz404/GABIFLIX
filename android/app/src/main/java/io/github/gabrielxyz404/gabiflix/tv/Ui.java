@@ -120,6 +120,37 @@ final class Ui {
                 .format(DecodeFormat.PREFER_RGB_565).dontAnimate().into(v);
     }
 
+    /** logo do título (imagem); se não houver ou falhar, fica o nome em texto */
+    static void logo(ImageView v, TextView fallback, String url) {
+        v.setVisibility(View.GONE);
+        fallback.setVisibility(View.VISIBLE);
+        if (url == null || url.isEmpty()) return;
+        Glide.with(v.getContext()).load(url).dontAnimate()
+                .listener(new com.bumptech.glide.request.RequestListener<Drawable>() {
+                    @Override public boolean onLoadFailed(com.bumptech.glide.load.engine.GlideException e, Object model, com.bumptech.glide.request.target.Target<Drawable> t, boolean first) { return false; }
+                    @Override public boolean onResourceReady(Drawable r, Object model, com.bumptech.glide.request.target.Target<Drawable> t, com.bumptech.glide.load.DataSource ds, boolean first) {
+                        v.setVisibility(View.VISIBLE);
+                        fallback.setVisibility(View.GONE);
+                        return false;
+                    }
+                }).into(v);
+    }
+
+    /** botão principal (pílula): branco quando selecionado, cinza transparente quando não */
+    static TextView pill(Context c, String label) {
+        TextView t = text(c, label, 17, true, Color.WHITE);
+        t.setGravity(Gravity.CENTER_VERTICAL);
+        t.setPadding(dp(c, 24), dp(c, 11), dp(c, 24), dp(c, 11));
+        StateListDrawable s = new StateListDrawable();
+        s.addState(new int[]{android.R.attr.state_focused}, round(0xFFFFFFFF, dp(c, 26)));
+        s.addState(new int[]{}, round(0x40FFFFFF, dp(c, 26)));
+        t.setBackground(s);
+        t.setTextColor(new android.content.res.ColorStateList(new int[][]{{android.R.attr.state_focused}, {}}, new int[]{0xFF000000, 0xFFFFFFFF}));
+        t.setFocusable(true);
+        t.setClickable(true);
+        return t;
+    }
+
     static int parseColor(String s, int def) {
         try { return Color.parseColor(s); } catch (Exception e) { return def; }
     }
