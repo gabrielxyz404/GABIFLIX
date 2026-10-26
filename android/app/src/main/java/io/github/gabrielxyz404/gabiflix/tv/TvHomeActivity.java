@@ -89,6 +89,21 @@ public class TvHomeActivity extends TvBase {
 
     /** só para os testes automáticos: abre um vídeo direto no player */
     private void testPlay(Intent i) {
+        if (i != null && i.getBooleanExtra("gfTestPicker", false)) {
+            java.util.List<Stremio.Source> l = new java.util.ArrayList<>();
+            String[][] f = {
+                    {"Torrentio", "[RD+] Torrentio\n1080p", "Filme.2024.1080p.WEB-DL.DUAL.mkv\n👤 120 💾 2.4 GB ⚙️ TPB"},
+                    {"Torrentio", "[TB+] Torrentio\n4k", "Filme.2024.2160p.HDR.mkv\n👤 80 💾 14.2 GB ⚙️ RARBG"},
+                    {"Torrentio", "[RD download] Torrentio\n720p", "Filme.2024.720p.mkv\n👤 5 💾 900 MB"},
+                    {"Torrentio", "[TB+] Torrentio\n1080p", "Filme.2024.1080p.Dublado.PT-BR.mkv\n💾 3.1 GB"},
+                    {"TorrentsDB", "[RD+] TorrentsDB 1080p", "Filme 2024 1080p BluRay\n💾 8.7 GB"},
+                    {"TorrentsDB", "[TB⚡] TorrentsDB 720p", "Filme 2024 720p\n💾 1.2 GB"}};
+            for (String[] x : f) { Stremio.Source s = new Stremio.Source(); s.addon = x[0]; s.name = x[1]; s.title = x[2]; s.url = "http://x/" + l.size(); l.add(s); }
+            SourcePicker p = new SourcePicker(this, "Filme de teste", src -> {});
+            p.show();
+            list.postDelayed(() -> p.update(l, true), 500);
+            return;
+        }
         String testMeta = i != null ? i.getStringExtra("gfTestMeta") : null;
         if (testMeta != null) {
             Intent d = new Intent(this, TvDetailActivity.class);

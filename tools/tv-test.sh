@@ -61,6 +61,12 @@ sleep 6
 key DPAD_UP DPAD_RIGHT;          shot u-botao
 key DPAD_CENTER;                 shot u-atualizar 6
 key DPAD_CENTER;                 shot u-baixando 25
+# janela das fontes (dados de exemplo)
+adb shell am force-stop io.github.gabrielxyz404.gabiflix
+adb shell am start -n io.github.gabrielxyz404.gabiflix/.tv.TvHomeActivity --ez gfTestPicker true
+shot f-fontes 6
+key DPAD_UP DPAD_RIGHT;          shot f-provedor2 2
+key DPAD_DOWN;                   shot f-fonte 2
 # pesquisa
 adb shell am force-stop io.github.gabrielxyz404.gabiflix
 adb shell monkey -p io.github.gabrielxyz404.gabiflix -c android.intent.category.LEANBACK_LAUNCHER 1

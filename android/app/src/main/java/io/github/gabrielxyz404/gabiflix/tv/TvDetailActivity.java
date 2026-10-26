@@ -1,6 +1,5 @@
 package io.github.gabrielxyz404.gabiflix.tv;
 
-import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.ColorStateList;
@@ -11,12 +10,9 @@ import android.text.TextUtils;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.Window;
-import android.widget.BaseAdapter;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.ListView;
 import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -390,9 +386,9 @@ public class TvDetailActivity extends TvBase {
 
     // ---------- fontes ----------
 
-    private Dialog sourcesDialog;
+    private SourcePicker picker;
 
-    /** procura as fontes nos addons da conta e deixa escolher */
+    /** janela das fontes: provedores em cima, fontes (Real-Debrid / TorBox e qualidade) em baixo */
     private void sources(String videoId) {
         if (!Stremio.loggedIn(this)) {
             Toast.makeText(this, "Entre na sua conta do Stremio para ver as fontes.", Toast.LENGTH_LONG).show();
@@ -400,88 +396,23 @@ public class TvDetailActivity extends TvBase {
             return;
         }
         final JSONObject m = meta;
-        final boolean[] done = {false};
-        SourceList adapter = new SourceList();
-        Dialog d = new Dialog(this, android.R.style.Theme_DeviceDefault_Dialog_NoActionBar);
-        d.requestWindowFeature(Window.FEATURE_NO_TITLE);
-        LinearLayout box = new LinearLayout(this);
-        box.setOrientation(LinearLayout.VERTICAL);
-        box.setPadding(Ui.dp(this, 20), Ui.dp(this, 18), Ui.dp(this, 20), Ui.dp(this, 12));
-        box.setBackground(Ui.round(0xFF17171A, Ui.dp(this, 14)));
         String what = meta.optString("name");
         JSONObject v = isSeries() ? video(videoId) : null;
-        if (v != null) what += String.format(Locale.ROOT, "  ·  T%d:E%d", v.optInt("season"), v.optInt("episode"));
-        TextView name = Ui.text(this, what, 15, false, Ui.MUTED);
-        box.addView(name);
-        box.addView(Ui.space(this, 1, 6));
-        TextView head = Ui.text(this, "Procurando fontes…", 18, true, Ui.TEXT);
-        box.addView(head);
-        box.addView(Ui.space(this, 1, 10));
-        ListView lv = new ListView(this);
-        lv.setAdapter(adapter);
-        lv.setDivider(null);
-        lv.setSelector(android.R.color.transparent);
-        lv.setItemsCanFocus(true);
-        box.addView(lv, new LinearLayout.LayoutParams(Ui.dp(this, 620), Ui.dp(this, 380)));
-        d.setContentView(box);
-        d.setOnDismissListener(x -> done[0] = true);
-        adapter.onPick = src -> { done[0] = true; d.dismiss(); play(m, videoId, src); };
-        d.show();
-        sourcesDialog = d;
-
+        if (v != null) what += "  ·  Temporada " + v.optInt("season") + ": E" + v.optInt("episode");
+        final boolean[] done = {false};
+        SourcePicker p = new SourcePicker(this, what, src -> { done[0] = true; play(m, videoId, src); });
+        p.onDismiss(() -> done[0] = true);
+        p.show();
+        picker = p;
         Stremio.streams(getApplicationContext(), m.optString("type"), videoId, (all, finished) -> {
-            if (done[0]) return;
-            adapter.set(all);
-            if (all.isEmpty()) head.setText(finished ? "Nenhuma fonte encontrada. Verifique os addons da conta." : "Procurando fontes…");
-            else head.setText((finished ? "Escolha a fonte · " : "Procurando… ") + all.size() + (all.size() == 1 ? " fonte" : " fontes"));
+            if (!done[0]) p.update(all, finished);
         });
     }
 
     @Override
     protected void onDestroy() {
-        if (sourcesDialog != null && sourcesDialog.isShowing()) sourcesDialog.dismiss();
+        if (picker != null) picker.dismiss();
         super.onDestroy();
-    }
-
-    private final class SourceList extends BaseAdapter {
-        interface Pick { void pick(Stremio.Source s); }
-        final List<Stremio.Source> items = new ArrayList<>();
-        Pick onPick;
-        private boolean focusedOnce;
-
-        void set(List<Stremio.Source> l) { items.clear(); items.addAll(l); notifyDataSetChanged(); }
-
-        @Override public int getCount() { return items.size(); }
-        @Override public Object getItem(int i) { return items.get(i); }
-        @Override public long getItemId(int i) { return i; }
-
-        @Override
-        public View getView(int i, View v, ViewGroup parent) {
-            Context c = parent.getContext();
-            TextView t = v instanceof TextView ? (TextView) v : null;
-            if (t == null) {
-                t = Ui.button(c, "", 0xFF232327, Ui.TEXT);
-                t.setGravity(Gravity.START | Gravity.CENTER_VERTICAL);
-                t.setTextSize(14);
-                t.setTypeface(android.graphics.Typeface.DEFAULT);
-                t.setMaxLines(3);
-                t.setEllipsize(TextUtils.TruncateAt.END);
-                t.setPadding(Ui.dp(c, 16), Ui.dp(c, 10), Ui.dp(c, 16), Ui.dp(c, 10));
-            }
-            Stremio.Source s = items.get(i);
-            String firstLine = s.title.split("\n")[0];
-            String rest = s.title.contains("\n") ? s.title.substring(s.title.indexOf('\n') + 1).replace('\n', ' ') : "";
-            t.setText((s.torrent ? "🧲 " : "") + s.name + "  ·  " + firstLine + (rest.isEmpty() ? "" : "\n" + rest));
-            t.setAlpha(s.torrent ? 0.55f : 1f);
-            t.setOnClickListener(x -> {
-                if (s.torrent) { Toast.makeText(c, "Torrent: só toca com Real-Debrid no addon.", Toast.LENGTH_LONG).show(); return; }
-                if (onPick != null) onPick.pick(s);
-            });
-            ListView.LayoutParams lp = new ListView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-            t.setLayoutParams(lp);
-            if (i == 0 && !focusedOnce) { focusedOnce = true; TextView ft = t; ft.post(ft::requestFocus); }
-            return t;
-        }
     }
 
     // ---------- lista de episódios (no painel) ----------
