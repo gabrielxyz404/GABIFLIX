@@ -67,7 +67,7 @@ public class MainActivity extends Activity {
         s.setLoadWithOverviewMode(true);
         s.setUseWideViewPort(true);
         // o site reconhece que está dentro do app e liga o VLC como player
-        s.setUserAgentString(s.getUserAgentString() + " GabiFlixApp/" + BuildConfigHelper.versionName(this) + (isTv(this) ? " GabiFlixTV" : ""));
+        s.setUserAgentString(s.getUserAgentString() + " GabiFlixApp/" + BuildConfigHelper.versionName(this));
         // na TV o controle remoto mexe no site (setas, OK)
         web.setFocusable(true);
         web.setFocusableInTouchMode(true);
@@ -177,16 +177,6 @@ public class MainActivity extends Activity {
             if (r.equals("false")) { finish(); return; }
             if (web.canGoBack()) web.goBack(); else finish();
         });
-    }
-
-    @Override
-    public boolean onKeyDown(int keyCode, android.view.KeyEvent event) {
-        // botão ☰ do controle: opções do item selecionado (ex.: remover do Continuar assistindo)
-        if (keyCode == android.view.KeyEvent.KEYCODE_MENU) {
-            web.evaluateJavascript("window.gfTvMenu && window.gfTvMenu()", null);
-            return true;
-        }
-        return super.onKeyDown(keyCode, event);
     }
 
     @Override

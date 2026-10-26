@@ -90,6 +90,25 @@ public abstract class TvBase extends Activity {
         }, (ok, err) -> onProgressSaved());
     }
 
+    // ---------- efeito leve ao trocar de tela ----------
+    @Override
+    public void startActivity(Intent i) {
+        super.startActivity(i);
+        overridePendingTransition(io.github.gabrielxyz404.gabiflix.R.anim.gf_in, io.github.gabrielxyz404.gabiflix.R.anim.gf_stay);
+    }
+
+    @Override
+    public void finish() {
+        super.finish();
+        overridePendingTransition(io.github.gabrielxyz404.gabiflix.R.anim.gf_stay, io.github.gabrielxyz404.gabiflix.R.anim.gf_out);
+    }
+
+    /** realce leve ao selecionar (aumenta um pouco), igual em todas as telas */
+    static void focusGrow(View v, float scale) {
+        v.setOnFocusChangeListener((x, has) -> x.animate().scaleX(has ? scale : 1f).scaleY(has ? scale : 1f)
+                .setDuration(110).setInterpolator(new android.view.animation.DecelerateInterpolator()).start());
+    }
+
     /** o progresso foi salvo: as telas atualizam o Continuar assistindo */
     protected void onProgressSaved() {}
 

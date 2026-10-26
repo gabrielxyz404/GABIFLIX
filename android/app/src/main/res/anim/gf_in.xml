@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- entrada leve entre telas da TV (rápida para não pesar) -->
+<set xmlns:android="http://schemas.android.com/apk/res/android" android:duration="170" android:interpolator="@android:interpolator/decelerate_quad">
+    <alpha android:fromAlpha="0" android:toAlpha="1" />
+    <scale android:fromXScale="1.03" android:toXScale="1" android:fromYScale="1.03" android:toYScale="1" android:pivotX="50%" android:pivotY="50%" />
+</set>

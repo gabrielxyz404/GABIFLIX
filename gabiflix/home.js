@@ -317,13 +317,10 @@
         return box;
     }
 
-    // TV (Fire TV): catálogo menor para ficar leve — menos títulos por fileira, menos fileiras e grades em partes menores
-    var TV = /GabiFlixTV/.test(navigator.userAgent) || /[?&]tv=1/.test(location.search);
-    try { if (localStorage.getItem('gf-tv') === '1') TV = true; } catch (e) {}
-    var ROW_MAX = TV ? 15 : 30, GENRES_MAX = TV ? 6 : 99;
+    var ROW_MAX = 30, GENRES_MAX = 99;
 
-    // grades longas: desenha 60 por vez (24 na TV), conforme a rolagem se aproxima do fim
-    var GRID_BATCH = TV ? 24 : 60;
+    // grades longas: desenha 60 por vez, conforme a rolagem se aproxima do fim
+    var GRID_BATCH = 60;
     function fillGrid(track, metas, sec) {
         var shown = 0;
         var sentinel = el('div', 'gf-grid-more');
@@ -337,7 +334,7 @@
         }
         var io = 'IntersectionObserver' in window ? new IntersectionObserver(function (es) {
             if (es.some(function (e) { return e.isIntersecting; })) more();
-        }, { rootMargin: TV ? '500px 0px' : '1200px 0px' }) : null;
+        }, { rootMargin: '1200px 0px' }) : null;
         more();
         if (io && shown < metas.length) io.observe(sentinel);
         else if (!io) while (shown < metas.length) more();
@@ -355,15 +352,7 @@
         var track = el('div', sec.grid ? 'gf-poster-grid' : 'gf-row-track');
         row.appendChild(track);
         for (var i = 0; i < (sec.grid ? 12 : 8); i++) track.appendChild(el('div', 'gf-poster'));
-        // TV: as fileiras de baixo só carregam quando chegam perto da tela (menos trabalho ao abrir o catálogo)
-        if (TV && !onFirst && !sec.grid && 'IntersectionObserver' in window) {
-            var io = new IntersectionObserver(function (es) {
-                if (!es.some(function (e) { return e.isIntersecting; })) return;
-                io.disconnect();
-                fill();
-            }, { rootMargin: '0px 0px 700px 0px' });
-            setTimeout(function () { io.observe(row); }, 0);
-        } else fill();
+        fill();
         return row;
 
         function fill() {
@@ -379,7 +368,7 @@
                 fillGrid(track, metas, sec);
             } else {
                 var frag = document.createDocumentFragment();
-                metas.slice(0, sec.top10 ? 10 : (sec.numbered ? (TV ? 30 : 100) : ROW_MAX)).forEach(function (m, i) {
+                metas.slice(0, sec.top10 ? 10 : (sec.numbered ? 100 : ROW_MAX)).forEach(function (m, i) {
                     if ((sec.numbered || sec.top10) && !m.order) m = Object.assign({}, m, { order: i + 1 });
                     var p = posterEl(m, false, sec.numbered || sec.top10);
                     if (sec.top10) {
@@ -506,13 +495,6 @@
         // o menu do sistema (copiar imagem etc.) não aparece
         node.addEventListener('contextmenu', function (e) { e.preventDefault(); });
     }
-
-    // controle da TV (botão ☰): abre o mesmo menu do "segurar o dedo"
-    window.gfContinueMenuFor = function (poster) {
-        if (!poster || !poster._gfItem) return false;
-        continueMenu(poster._gfItem, poster);
-        return true;
-    };
 
     function continueMenu(item, poster) {
         var old = document.getElementById('gf-cw-menu');

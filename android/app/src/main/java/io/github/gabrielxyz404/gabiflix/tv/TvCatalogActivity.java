@@ -115,6 +115,9 @@ public class TvCatalogActivity extends TvBase {
         List<Services.Section> secs = Services.sections(service, name);
         if (secs.size() == 1 && secs.get(0).grid) showGrid(secs.get(0));
         else showRows(secs);
+        // troca de aba com um esmaecer rápido
+        content.setAlpha(0f);
+        content.animate().alpha(1f).setDuration(150).start();
     }
 
     @Override
@@ -333,18 +336,25 @@ public class TvCatalogActivity extends TvBase {
             h.loaded = true;
             rows.sync();
             // 2) depois completa: logo, gênero e sinopse em português
+            final String base = pick.toString();
             Net.async(() -> {
+                JSONObject pick2 = new JSONObject(base); // cópia: a original continua na tela enquanto isto corre
                 try {
-                    JSONObject full = Stremio.meta(pick.optString("type"), pick.optString("id"));
-                    pick.put("logo", full.optString("logo", ""));
+                    JSONObject full = Stremio.meta(pick2.optString("type"), pick2.optString("id"));
+                    pick2.put("logo", full.optString("logo", ""));
                     JSONArray g = full.optJSONArray("genres");
-                    if (g != null && g.length() > 0) pick.put("genre", g.optString(0));
-                    pick.put("description", full.optString("description", ""));
+                    if (g != null && g.length() > 0) pick2.put("genre", g.optString(0));
+                    pick2.put("description", full.optString("description", ""));
                 } catch (Exception ignored) {}
-                String pt = Stremio.ptDescription(pick.optString("id"));
-                if (pt != null) pick.put("description", pt);
-                return true;
-            }, (ok, e2) -> { if (gen == generation) rows.changed(h); });
+                String pt = Stremio.ptDescription(pick2.optString("id"));
+                if (pt != null) pick2.put("description", pt);
+                return pick2;
+            }, (done, e2) -> {
+                if (gen != generation || done == null) return;
+                h.hero = done;
+                h.metas.set(0, done);
+                rows.changed(h);
+            });
         });
     }
 

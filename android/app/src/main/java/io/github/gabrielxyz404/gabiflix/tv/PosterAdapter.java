@@ -70,6 +70,7 @@ class PosterAdapter extends RecyclerView.Adapter<PosterAdapter.H> {
         FrameLayout.LayoutParams fl = new FrameLayout.LayoutParams(0, Ui.dp(c, 5), Gravity.BOTTOM | Gravity.START);
         fl.setMargins(Ui.dp(c, 8), 0, 0, Ui.dp(c, 8));
         p.addView(fill, fl);
+        TvBase.focusGrow(p, 1.07f);
         H holder = new H(p, num, bar, fill);
         p.setOnClickListener(v -> {
             int pos = holder.getBindingAdapterPosition();
@@ -113,6 +114,9 @@ class PosterAdapter extends RecyclerView.Adapter<PosterAdapter.H> {
     @Override
     public void onBindViewHolder(@NonNull H holder, int position) {
         JSONObject m = items.get(position);
+        float sc = holder.poster.hasFocus() ? 1.07f : 1f; // reaproveitado: tira o realce que ficou
+        holder.poster.setScaleX(sc);
+        holder.poster.setScaleY(sc);
         Ui.bindPoster(holder.poster, m);
         if (numbered) { holder.num.setVisibility(View.VISIBLE); holder.num.setText(String.valueOf(position + 1)); }
         else holder.num.setVisibility(View.GONE);

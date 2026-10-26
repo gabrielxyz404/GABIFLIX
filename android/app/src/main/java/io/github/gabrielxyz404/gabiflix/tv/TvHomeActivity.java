@@ -23,7 +23,6 @@ public class TvHomeActivity extends TvBase {
     private RecyclerView list;
     private static final int N = Services.ALL.size();
     private static final int MIDDLE = (Integer.MAX_VALUE / 2) - ((Integer.MAX_VALUE / 2) % Services.ALL.size());
-    private int lastFocused = MIDDLE;
 
     @Override
     protected void onCreate(Bundle b) {
@@ -145,10 +144,9 @@ public class TvHomeActivity extends TvBase {
 
     private final class Cards extends RecyclerView.Adapter<Cards.CH> {
         final class CH extends RecyclerView.ViewHolder {
-            final GradientDrawable bg;
             final View accent;
             final TextView name, tabs;
-            CH(View v, GradientDrawable bg, View accent, TextView name, TextView tabs) { super(v); this.bg = bg; this.accent = accent; this.name = name; this.tabs = tabs; }
+            CH(View v, View accent, TextView name, TextView tabs) { super(v); this.accent = accent; this.name = name; this.tabs = tabs; }
         }
 
         @NonNull @Override
@@ -158,12 +156,10 @@ public class TvHomeActivity extends TvBase {
             RecyclerView.LayoutParams lp = new RecyclerView.LayoutParams(Ui.dp(c, 220), ViewGroup.LayoutParams.MATCH_PARENT);
             lp.setMargins(Ui.dp(c, 9), Ui.dp(c, 6), Ui.dp(c, 9), Ui.dp(c, 6));
             f.setLayoutParams(lp);
-            GradientDrawable bg = new GradientDrawable(GradientDrawable.Orientation.TOP_BOTTOM, new int[]{0, 0});
-            bg.setCornerRadius(Ui.dp(c, 20));
-            f.setBackground(bg);
             f.setForeground(Ui.focusRing(c, 20));
             f.setFocusable(true);
             f.setClickable(true);
+            TvBase.focusGrow(f, 1.04f);
 
             LinearLayout col = new LinearLayout(c);
             col.setOrientation(LinearLayout.VERTICAL);
@@ -185,11 +181,10 @@ public class TvHomeActivity extends TvBase {
             col.addView(tabs, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
             f.addView(col, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.CENTER));
 
-            CH h = new CH(f, bg, accent, name, tabs);
+            CH h = new CH(f, accent, name, tabs);
             f.setOnClickListener(v -> {
                 int p = h.getBindingAdapterPosition();
                 if (p < 0) return;
-                lastFocused = p;
                 Intent i = new Intent(TvHomeActivity.this, TvCatalogActivity.class);
                 i.putExtra("service", Services.ALL.get(p % N).id);
                 startActivity(i);
