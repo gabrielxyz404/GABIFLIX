@@ -27,7 +27,7 @@ import java.util.regex.Pattern;
 final class Updater {
     private Updater() {}
 
-    private static final String RELEASE = "https://api.github.com/repos/gabrielxyz404/GABIFLIX/releases/tags/android";
+    private static final String RELEASE = "https://api.github.com/repos/gabrielxyz404/GABIFLIX/releases/tags/tv";
 
     static void run(Activity a) {
         Toast.makeText(a, "Procurando atualização…", Toast.LENGTH_SHORT).show();

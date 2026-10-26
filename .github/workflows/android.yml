@@ -51,7 +51,19 @@ jobs:
         with:
           name: GabiFlix-apk
           path: out/GabiFlix.apk
-      - name: Publicar para download
+      # O celular só recebe versão nova quando muda algo do celular.
+      # Mudanças só da TV (pasta tv/ e animações) vão apenas para a versão da TV.
+      - name: Mudou algo do celular?
+        id: phone
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          HASH=$(git ls-files android | grep -v '/gabiflix/tv/' | grep -v '/res/anim/' | sort | xargs sha256sum | sha256sum | cut -c1-16)
+          OLD=$(gh release view android --repo ${{ github.repository }} --json body -q .body 2>/dev/null | grep -o 'celular:[0-9a-f]*' | cut -d: -f2 || true)
+          echo "hash=$HASH" >> "$GITHUB_OUTPUT"
+          if [ "$HASH" = "$OLD" ]; then echo "publish=false" >> "$GITHUB_OUTPUT"; echo "Celular sem mudanças: não publica."; else echo "publish=true" >> "$GITHUB_OUTPUT"; fi
+      - name: Publicar para o celular
+        if: steps.phone.outputs.publish == 'true'
         uses: softprops/action-gh-release@v2
         with:
           tag_name: android
@@ -59,5 +71,16 @@ jobs:
           body: |
             Versão 1.0.${{ github.run_number }}
             Baixe o GabiFlix.apk abaixo no celular Android e toque nele para instalar.
+            <!-- celular:${{ steps.phone.outputs.hash }} -->
           files: out/GabiFlix.apk
           make_latest: true
+      - name: Publicar para a TV
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: tv
+          name: GabiFlix para TV
+          body: |
+            Versão 1.0.${{ github.run_number }}
+            App da TV (Fire TV). Instale pelo Downloader: gabrielxyz404.github.io/GABIFLIX/tv
+          files: out/GabiFlix.apk
+          make_latest: false
