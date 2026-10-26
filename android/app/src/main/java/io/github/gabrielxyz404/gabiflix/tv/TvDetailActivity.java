@@ -70,11 +70,9 @@ public class TvDetailActivity extends TvBase {
         col.setPadding(Ui.dp(this, 48), Ui.dp(this, 30), 0, Ui.dp(this, 30));
 
         // onde está disponível (como no celular): nome do serviço na cor dele, em cima do título
-        where = Ui.text(this, "", 17, true, Ui.TEXT);
+        where = Ui.text(this, "", 20, true, Ui.TEXT);
         TvHomeActivity.outfit(where, 800);
         where.setLetterSpacing(0.04f);
-        where.setPadding(0, 0, 0, Ui.dp(this, 8));
-        col.addView(where);
 
         logo = new ImageView(this);
         logo.setAdjustViewBounds(true);
@@ -116,6 +114,10 @@ public class TvDetailActivity extends TvBase {
         col.addView(status);
 
         root.addView(col, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.MATCH_PARENT));
+        // serviço(s) no topo da página, canto esquerdo
+        FrameLayout.LayoutParams wl = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.TOP | Gravity.START);
+        wl.setMargins(Ui.dp(this, 48), Ui.dp(this, 28), 0, 0);
+        root.addView(where, wl);
         root.addView(buildPanel(), new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
         setContentView(root);
         Ui.image(backdrop, meta.optString("background", ""));
