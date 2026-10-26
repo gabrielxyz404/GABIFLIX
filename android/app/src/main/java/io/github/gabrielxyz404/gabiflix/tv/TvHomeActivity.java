@@ -21,7 +21,8 @@ public class TvHomeActivity extends TvBase {
 
     private View accountBtn;
     private View rootView;
-    private int bgColor = 0xFF000000;
+    private int bgTop = 0xFF000000, bgMid = 0xFF000000;
+    private final GradientDrawable bgDrawable = new GradientDrawable(GradientDrawable.Orientation.TL_BR, new int[]{0xFF000000, 0xFF000000, 0xFF060607});
     private android.animation.ValueAnimator bgAnim;
     private RecyclerView list;
     private static final int N = Services.ALL.size();
@@ -34,7 +35,7 @@ public class TvHomeActivity extends TvBase {
         root.setOrientation(LinearLayout.VERTICAL);
         root.setPadding(0, Ui.dp(this, 22), 0, Ui.dp(this, 14));
         rootView = root;
-        root.setBackgroundColor(bgColor);
+        root.setBackground(bgDrawable);
 
         // topo: logo + "Home" à esquerda, ícones à direita
         LinearLayout top = new LinearLayout(this);
@@ -267,12 +268,23 @@ public class TvHomeActivity extends TvBase {
 
     /** fundo da tela na cor do serviço selecionado (troca suave) */
     private void paintBackground(Services.Service s) {
-        int color = Ui.parseColor(s.id.equals("globoplay") ? "#2f9e55" : s.color, 0xFFFFFFFF);
-        int target = Ui.tint(color, s.id.equals("appletv") ? 0.16f : 0.30f);
+        // mistura da cor do serviço com preto (como no fundo dos catálogos); a Globoplay vai de amarelo a verde
+        boolean globo = s.id.equals("globoplay");
+        int c1 = globo ? 0xFFF5C518 : Ui.parseColor(s.color, 0xFFFFFFFF);
+        int c2 = globo ? 0xFF3ECF6B : c1;
+        boolean apple = s.id.equals("appletv");
+        int top = Ui.tint(c1, apple ? 0.22f : 0.42f), mid = Ui.tint(c2, apple ? 0.10f : 0.18f);
+        final int fromTop = bgTop, fromMid = bgMid;
         if (bgAnim != null) bgAnim.cancel();
-        bgAnim = android.animation.ValueAnimator.ofArgb(bgColor, target);
-        bgAnim.setDuration(260);
-        bgAnim.addUpdateListener(a -> { bgColor = (int) a.getAnimatedValue(); rootView.setBackgroundColor(bgColor); });
+        bgAnim = android.animation.ValueAnimator.ofFloat(0f, 1f);
+        bgAnim.setDuration(280);
+        android.animation.ArgbEvaluator ev = new android.animation.ArgbEvaluator();
+        bgAnim.addUpdateListener(a -> {
+            float f = (float) a.getAnimatedValue();
+            bgTop = (int) ev.evaluate(f, fromTop, top);
+            bgMid = (int) ev.evaluate(f, fromMid, mid);
+            bgDrawable.setColors(new int[]{bgTop, bgMid, 0xFF060607});
+        });
         bgAnim.start();
     }
 
