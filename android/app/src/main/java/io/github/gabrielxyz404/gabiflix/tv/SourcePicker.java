@@ -150,6 +150,11 @@ final class SourcePicker {
 
     /** chegaram mais fontes (os addons respondem um a um) */
     void update(List<Stremio.Source> all, boolean finished) {
+        try { doUpdate(all, finished); }
+        catch (Exception e) { head.setText("Erro ao mostrar as fontes: " + e); }
+    }
+
+    private void doUpdate(List<Stremio.Source> all, boolean finished) {
         byAddon.clear();
         for (Stremio.Source s : all) {
             if (s.torrent || s.url == null) continue; // sem Real-Debrid/TorBox não toca

@@ -68,6 +68,14 @@ public class TvHomeActivity extends TvBase {
         ((PosterAdapter.Linear) list.getLayoutManager()).scrollToPositionWithOffset(MIDDLE, 0);
         focusCard(MIDDLE, 0);
         prefetch();
+        String crash = takeCrash(this);
+        if (crash != null) {
+            new AlertDialog.Builder(this, android.R.style.Theme_DeviceDefault_Dialog_Alert)
+                    .setTitle("O app fechou com um erro")
+                    .setMessage("Tire uma foto desta tela e mande para o Claude corrigir:\n\n" + crash)
+                    .setPositiveButton("OK", null)
+                    .show();
+        }
         testPlay(getIntent());
     }
 

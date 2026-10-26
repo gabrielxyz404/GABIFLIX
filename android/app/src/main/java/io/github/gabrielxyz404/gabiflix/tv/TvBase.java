@@ -17,9 +17,40 @@ public abstract class TvBase extends Activity {
 
     private static final String PLAY_PREFS = "gf-tv-play";
 
+    private static boolean crashHook;
+
+    /** se o app fechar com erro, guarda o motivo para mostrar na próxima vez que abrir */
+    static void installCrashHook(android.content.Context c) {
+        if (crashHook) return;
+        crashHook = true;
+        final java.io.File f = new java.io.File(c.getFilesDir(), "gf-crash.txt");
+        final Thread.UncaughtExceptionHandler prev = Thread.getDefaultUncaughtExceptionHandler();
+        Thread.setDefaultUncaughtExceptionHandler((t, e) -> {
+            try (java.io.PrintWriter w = new java.io.PrintWriter(new java.io.FileWriter(f))) {
+                w.println(new java.util.Date() + " · " + t.getName());
+                e.printStackTrace(w);
+            } catch (Exception ignored) {}
+            if (prev != null) prev.uncaughtException(t, e);
+        });
+    }
+
+    /** o erro guardado da última vez (e apaga) */
+    static String takeCrash(android.content.Context c) {
+        java.io.File f = new java.io.File(c.getFilesDir(), "gf-crash.txt");
+        if (!f.exists()) return null;
+        StringBuilder b = new StringBuilder();
+        try (java.io.BufferedReader r = new java.io.BufferedReader(new java.io.FileReader(f))) {
+            String line; int n = 0;
+            while ((line = r.readLine()) != null && n++ < 18) b.append(line.trim()).append('\n');
+        } catch (Exception ignored) {}
+        f.delete();
+        return b.toString();
+    }
+
     @Override
     protected void onCreate(Bundle b) {
         super.onCreate(b);
+        installCrashHook(getApplicationContext());
         getWindow().getDecorView().setBackgroundColor(Ui.BG);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
     }
