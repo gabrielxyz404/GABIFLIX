@@ -1,0 +1,24 @@
+name: Cobertura dos catálogos
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  medir:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: node tools/coverage.mjs
+      - name: Publicar o resultado
+        run: |
+          mkdir -p /tmp/out && cp cobertura.json cobertura.md /tmp/out/ && cd /tmp/out
+          git init -q -b cobertura && git add -A
+          git -c user.name=ci -c user.email=ci@x commit -qm cobertura
+          git push -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" cobertura
