@@ -51,6 +51,8 @@ public class TvHomeActivity extends TvBase {
         outfit(home, 600);
         top.addView(home, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
         View later = iconButton("later", "Mais Tarde");
+        later.setId(View.generateViewId());
+        later.setNextFocusLeftId(later.getId()); // à esquerda do primeiro ícone não salta para os cartões
         later.setOnClickListener(v -> startActivity(new Intent(this, TvSearchActivity.class).putExtra("library", true)));
         top.addView(later);
         View search = iconButton("search", "Pesquisar");
