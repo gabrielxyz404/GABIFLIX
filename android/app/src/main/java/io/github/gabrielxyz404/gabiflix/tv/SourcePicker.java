@@ -9,7 +9,6 @@ import android.text.TextUtils;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.Window;
 import android.widget.HorizontalScrollView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -110,8 +109,8 @@ final class SourcePicker {
     SourcePicker(Activity a, String title, OnPick onPick) {
         this.a = a;
         this.onPick = onPick;
-        d = new Dialog(a, android.R.style.Theme_DeviceDefault_Dialog_NoActionBar);
-        d.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        // ocupa a tela toda (fundo escurecido) com a janela quadrada no meio: sem cortes nem posições estranhas
+        d = new Dialog(a, android.R.style.Theme_Translucent_NoTitleBar_Fullscreen);
         LinearLayout box = new LinearLayout(a);
         box.setOrientation(LinearLayout.VERTICAL);
         box.setPadding(Ui.dp(a, 24), Ui.dp(a, 20), Ui.dp(a, 24), Ui.dp(a, 16));
@@ -138,13 +137,13 @@ final class SourcePicker {
         list.setLayoutManager(new PosterAdapter.Linear(a, RecyclerView.VERTICAL));
         list.setAdapter(adapter);
         box.addView(list, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, Ui.dp(a, 330)));
-        d.setContentView(box, new ViewGroup.LayoutParams(Ui.dp(a, 720), ViewGroup.LayoutParams.WRAP_CONTENT));
+        android.widget.FrameLayout dim = new android.widget.FrameLayout(a);
+        dim.setBackgroundColor(0xCC000000);
+        dim.addView(box, new android.widget.FrameLayout.LayoutParams(Ui.dp(a, 720), ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.CENTER));
+        d.setContentView(dim);
     }
 
-    void show() {
-        d.show();
-        if (d.getWindow() != null) d.getWindow().setLayout(Ui.dp(a, 720), ViewGroup.LayoutParams.WRAP_CONTENT);
-    }
+    void show() { d.show(); }
     boolean showing() { return d.isShowing(); }
     void dismiss() { if (d.isShowing()) d.dismiss(); }
     void onDismiss(Runnable r) { d.setOnDismissListener(x -> r.run()); }
@@ -161,6 +160,7 @@ final class SourcePicker {
         }
         for (List<Item> l : byAddon.values()) l.sort((x, y) -> {
             if (x.cached != y.cached) return x.cached ? -1 : 1;
+            if (x.pt != y.pt) return x.pt ? -1 : 1; // em português primeiro
             if (x.qRank != y.qRank) return y.qRank - x.qRank;
             return Double.compare(y.sizeGb, x.sizeGb);
         });
