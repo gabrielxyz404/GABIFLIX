@@ -390,9 +390,11 @@
 /* cápsula mais transparente: dá para ver a imagem por trás */
 :root[data-gf-route="detail"] .horizontal-nav-bar-container-Y_zvK::before {
     background:
-        linear-gradient(180deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 100%),
-        rgba(12, 12, 14, 0.28);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22), 0 8px 22px rgba(0, 0, 0, 0.28);
+        linear-gradient(180deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.01) 100%),
+        rgba(12, 12, 14, 0.04);
+    -webkit-backdrop-filter: blur(3px) saturate(130%);
+    backdrop-filter: blur(3px) saturate(130%);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22), 0 6px 18px rgba(0, 0, 0, 0.18);
 }
 /* imagem maior, de ponta a ponta, também por baixo da barra de estado */
 :root[data-gf-route="detail"] .gf-d-hero { margin-top: 0; aspect-ratio: 4 / 5; max-height: 64vh; }
