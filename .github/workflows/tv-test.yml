@@ -9,7 +9,7 @@ permissions:
 jobs:
   tv:
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 40
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v5
@@ -25,7 +25,7 @@ jobs:
         run: gradle -p android assembleRelease --no-daemon -q
       - name: Vídeo de teste (som AC3, como os do Real-Debrid)
         run: |
-          sudo apt-get install -y -qq ffmpeg >/dev/null
+          timeout 300 sudo apt-get install -y -qq ffmpeg >/dev/null || (sudo apt-get update -qq && timeout 300 sudo apt-get install -y -qq ffmpeg >/dev/null)
           mkdir -p /tmp/video && cd /tmp/video
           ffmpeg -loglevel error -f lavfi -i testsrc2=size=1280x720:rate=24 -f lavfi -i sine=frequency=440:sample_rate=48000 -t 120 -c:v libx264 -preset veryfast -pix_fmt yuv420p -c:a ac3 -ac 6 teste.mkv
           nohup npx --yes http-server -p 8000 -s /tmp/video >/dev/null 2>&1 &
