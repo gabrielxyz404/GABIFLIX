@@ -278,12 +278,12 @@ public class TvCatalogActivity extends TvBase {
                     JSONArray gs = home.optJSONArray("genres");
                     if (gs == null) return;
                     int at = rows.slots.indexOf(r) + 1;
-                    for (int i = 0; i < gs.length() && i < 6; i++) {
+                    for (int i = 0; i < gs.length(); i++) {
                         JSONObject g = gs.optJSONObject(i);
                         if (g == null) continue;
                         Row gr = new Row();
                         gr.title = g.optString("title");
-                        gr.metas = cap(Stremio.metas(g.optJSONArray("metas")), 15);
+                        gr.metas = cap(Stremio.metas(g.optJSONArray("metas")), 30);
                         gr.loaded = true;
                         rows.slots.add(at++, gr);
                     }
@@ -293,7 +293,7 @@ public class TvCatalogActivity extends TvBase {
             }
             Net.async(() -> load(sec), (metas, err) -> {
                 if (gen != generation) return;
-                r.metas = metas == null ? null : cap(metas, r.numbered ? (sec.top10 ? 10 : 30) : 15);
+                r.metas = metas == null ? null : cap(metas, r.numbered ? (sec.top10 ? 10 : 100) : 30);
                 r.loaded = true;
                 rows.sync();
             });

@@ -48,13 +48,13 @@
 
     // Abas de cada serviço (categorias típicas de cada app)
     var TABS = {
-        netflix:    ['Início', 'Séries', 'Filmes', 'Bombando'],
+        netflix:    ['Início', 'Filmes', 'Séries', 'Bombando'],
         disney:     ['Início', 'Filmes', 'Séries', 'Disney', 'Pixar', 'Marvel', 'Star Wars', 'National Geographic'],
         prime:      ['Início', 'Filmes', 'Séries'],
-        hbo:        ['Início', 'Séries', 'Filmes'],
+        hbo:        ['Início', 'Filmes', 'Séries'],
         appletv:    ['Início', 'Filmes', 'Séries'],
         paramount:  ['Início', 'Filmes', 'Séries'],
-        globoplay:  ['Início', 'Séries', 'Filmes'],
+        globoplay:  ['Início', 'Filmes', 'Séries'],
         clarovideo: ['Início', 'Filmes', 'Séries'],
         cinemateca: ['Início', 'Nos cinemas', 'Clássicos', 'Filmes', 'Séries']
     };
@@ -153,8 +153,8 @@
     function homeSections(s, extras) {
         var top = s.id === 'netflix'
             ? [
-                { title: 'Top 10 séries hoje', file: 'netflix-top10-br-series', type: 'series', id: 'netflix-top10-BR', top10: true },
-                { title: 'Top 10 filmes hoje', file: 'netflix-top10-br-movie', type: 'movie', id: 'netflix-top10-BR', top10: true }
+                { title: 'Top 10 filmes hoje', file: 'netflix-top10-br-movie', type: 'movie', id: 'netflix-top10-BR', top10: true },
+                { title: 'Top 10 séries hoje', file: 'netflix-top10-br-series', type: 'series', id: 'netflix-top10-BR', top10: true }
             ]
             : [{ title: 'Top 10 em alta', home: s.id, key: 'top10', top10: true }];
         return top.concat([
@@ -431,7 +431,7 @@
             sectionsFor(s, 'Início').slice(0, 2).forEach(function (sec) { loadCatalog(sec).catch(function () {}); });
         } else {
             loadHome(s.id).catch(function () {});
-            if (s.id === 'netflix') loadCatalog({ file: 'netflix-top10-br-series' }).catch(function () {});
+            if (s.id === 'netflix') loadCatalog({ file: 'netflix-top10-br-movie' }).catch(function () {});
         }
     }
 
