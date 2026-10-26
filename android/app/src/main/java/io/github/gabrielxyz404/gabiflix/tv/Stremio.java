@@ -254,6 +254,12 @@ final class Stremio {
         return out;
     }
 
+    /** item da biblioteca já guardado (sem ir à internet; null se ainda não carregou) */
+    static JSONObject cachedItem(String id) {
+        Map<String, JSONObject> l = library;
+        return l != null ? l.get(id) : null;
+    }
+
     static boolean inLibrary(Context c, String id) {
         JSONObject it = library != null ? library.get(id) : null;
         return it != null && !it.optBoolean("removed") && !it.optBoolean("temp");

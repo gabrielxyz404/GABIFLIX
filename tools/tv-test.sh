@@ -67,11 +67,16 @@ adb shell monkey -p io.github.gabrielxyz404.gabiflix -c android.intent.category.
 sleep 6
 key DPAD_UP;                     shot s-topo
 key DPAD_CENTER;                 shot s-pesquisa 3
-adb shell input text "matrix"
+adb shell input text "breaking%sbad"
 adb shell input keyevent ENTER
 shot s-resultados 8
-key DPAD_DOWN DPAD_RIGHT;        shot s-desce
+key DPAD_DOWN;                   shot s-desce
 key DPAD_CENTER;                 shot s-titulo 8
+key DPAD_DOWN;                   shot d-foco-episodios
+key DPAD_CENTER;                 shot d-painel 3
+key DPAD_LEFT DPAD_DOWN DPAD_DOWN; shot d-temporada 3
+key DPAD_RIGHT DPAD_DOWN;        shot d-episodio 2
+key BACK;                        shot d-fecha 2
 adb logcat -d | grep -iE "vlc|PlayerActivity|gabiflix" | grep -v "BroadcastQueue\|ConnectivityService\|NetworkFactory\|Ethernet" | tail -60 > shots/player.txt
 adb logcat -d | grep -E "FATAL|AndroidRuntime: |E/AndroidRuntime|Exception" | grep -v "RuntimeInit\|boot image\|lock profiling\|Calling main\|Shutting down\|VM exiting" | head -60 > shots/crash.txt
 cat shots/crash.txt shots/log.txt
