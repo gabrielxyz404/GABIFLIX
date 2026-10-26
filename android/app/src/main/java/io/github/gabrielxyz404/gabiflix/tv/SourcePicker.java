@@ -116,14 +116,9 @@ final class SourcePicker {
         box.setPadding(Ui.dp(a, 24), Ui.dp(a, 20), Ui.dp(a, 24), Ui.dp(a, 16));
         box.setBackground(Ui.round(0xFF141417, Ui.dp(a, 18)));
 
-        TextView name = Ui.text(a, title, 20, true, Ui.TEXT);
-        name.setMaxLines(1);
-        name.setEllipsize(TextUtils.TruncateAt.END);
-        box.addView(name);
-        box.addView(Ui.space(a, 1, 4));
-        head = Ui.text(a, "Procurando fontes…", 14, false, Ui.MUTED);
+        head = Ui.text(a, "Procurando fontes…", 15, false, Ui.MUTED);
+        head.setPadding(0, 0, 0, Ui.dp(a, 12));
         box.addView(head);
-        box.addView(Ui.space(a, 1, 14));
 
         HorizontalScrollView hs = new HorizontalScrollView(a);
         hs.setHorizontalScrollBarEnabled(false);
@@ -163,16 +158,10 @@ final class SourcePicker {
             if (l == null) byAddon.put(s.addon, l = new ArrayList<>());
             l.add(it);
         }
-        for (List<Item> l : byAddon.values()) l.sort((x, y) -> {
-            if (x.cached != y.cached) return x.cached ? -1 : 1;
-            if (x.pt != y.pt) return x.pt ? -1 : 1; // em português primeiro
-            if (x.qRank != y.qRank) return y.qRank - x.qRank;
-            return Double.compare(y.sizeGb, x.sizeGb);
-        });
         int total = 0;
         for (List<Item> l : byAddon.values()) total += l.size();
         if (total == 0) head.setText(finished ? "Nenhuma fonte disponível. Verifique o Real-Debrid/TorBox nos addons." : "Procurando fontes…");
-        else head.setText((finished ? "" : "Procurando… ") + total + (total == 1 ? " fonte" : " fontes") + " · escolha o provedor em cima");
+        head.setVisibility(total > 0 ? View.GONE : View.VISIBLE);
 
         // abas: só acrescenta as novas e atualiza os números (não mexe no que está selecionado)
         for (Map.Entry<String, List<Item>> e : byAddon.entrySet()) {
@@ -180,7 +169,7 @@ final class SourcePicker {
             if (t == null) {
                 String key = e.getKey();
                 t = Ui.pill(a, "");
-                t.setTextSize(15);
+                t.setTextSize(19);
                 // muda a lista só depois (o foco pode mudar enquanto a lista se redesenha)
                 t.setOnFocusChangeListener((v, has) -> { if (has) v.post(() -> { if (v.hasFocus()) select(key); }); });
                 t.setOnClickListener(v -> focusFirstSource());
@@ -189,7 +178,7 @@ final class SourcePicker {
                 tabs.addView(t, lp);
                 tabViews.put(key, t);
             }
-            t.setText(e.getKey() + "  " + e.getValue().size());
+            t.setText(e.getKey());
         }
         if (current == null && !byAddon.isEmpty()) select(byAddon.keySet().iterator().next());
         else if (current != null) {
@@ -269,8 +258,8 @@ final class SourcePicker {
         }
 
         private TextView badge(Context c) {
-            TextView t = Ui.text(c, "", 13, true, Ui.TEXT);
-            t.setPadding(Ui.dp(c, 8), Ui.dp(c, 3), Ui.dp(c, 8), Ui.dp(c, 3));
+            TextView t = Ui.text(c, "", 17, true, Ui.TEXT);
+            t.setPadding(Ui.dp(c, 12), Ui.dp(c, 5), Ui.dp(c, 12), Ui.dp(c, 5));
             return t;
         }
 
@@ -280,17 +269,14 @@ final class SourcePicker {
             Context c = h.itemView.getContext();
             String svc = serviceName(it.service);
             h.svc.setText(svc);
-            int col = it.service.equals("RD") ? 0xFF1F7A3A : it.service.equals("TB") ? 0xFF5B3FC4 : 0xFF3A3A40;
-            h.svc.setBackground(Ui.round(col, Ui.dp(c, 6)));
-            h.quality.setText(it.quality.isEmpty() ? "?" : it.quality);
-            h.quality.setBackground(Ui.round(it.qRank >= 4 ? 0xFFB8860B : it.qRank == 3 ? 0xFF2F6FD0 : 0xFF4A4A50, Ui.dp(c, 6)));
-            List<String> parts = new ArrayList<>();
-            if (it.sizeGb > 0) parts.add(String.format(Locale.ROOT, "%.1f GB", it.sizeGb));
-            if (it.hdr) parts.add("HDR");
-            if (it.pt) parts.add("🇧🇷 Português");
-            parts.add(it.cached ? "pronto" : "pode demorar a começar");
-            h.info.setText(TextUtils.join("  ·  ", parts));
-            h.file.setText(it.file);
+            // só isto: serviço em amarelo e qualidade em verde
+            h.svc.setTextColor(0xFF000000);
+            h.svc.setBackground(Ui.round(0xFFF5C518, Ui.dp(c, 6)));
+            h.quality.setText(it.quality.isEmpty() ? "Qualidade ?" : it.quality);
+            h.quality.setTextColor(0xFFFFFFFF);
+            h.quality.setBackground(Ui.round(0xFF1E9E4A, Ui.dp(c, 6)));
+            h.info.setVisibility(View.GONE);
+            h.file.setVisibility(View.GONE);
         }
 
         @Override public int getItemCount() { return items.size(); }
