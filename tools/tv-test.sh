@@ -40,7 +40,7 @@ key BACK
 shot pesquisa 8
 key DPAD_DOWN;                   shot pesquisa-desce
 key BACK BACK;                   shot home3
-key DPAD_UP DPAD_RIGHT DPAD_CENTER; shot login 4
+key DPAD_UP DPAD_RIGHT DPAD_RIGHT DPAD_RIGHT DPAD_CENTER; shot login 4
 key BACK BACK;                   shot fim
 # player (VLC) com um vídeo de teste
 adb shell am force-stop io.github.gabrielxyz404.gabiflix
@@ -58,9 +58,18 @@ key BACK;          shot player-sai 4
 adb shell am force-stop io.github.gabrielxyz404.gabiflix
 adb shell monkey -p io.github.gabrielxyz404.gabiflix -c android.intent.category.LEANBACK_LAUNCHER 1
 sleep 6
-key DPAD_UP DPAD_RIGHT;          shot u-botao
+key DPAD_UP DPAD_RIGHT DPAD_RIGHT; shot u-botao
 key DPAD_CENTER;                 shot u-atualizar 6
 key DPAD_CENTER;                 shot u-baixando 25
+# Mais Tarde e fundo colorido
+adb shell am force-stop io.github.gabrielxyz404.gabiflix
+adb shell monkey -p io.github.gabrielxyz404.gabiflix -c android.intent.category.LEANBACK_LAUNCHER 1
+sleep 6
+key DPAD_RIGHT DPAD_RIGHT;       shot h-prime 2
+key DPAD_RIGHT DPAD_RIGHT DPAD_RIGHT DPAD_RIGHT; shot h-globo 2
+key DPAD_UP;                     shot h-icones 2
+key DPAD_CENTER;                 shot h-maistarde 4
+key BACK
 # janela das fontes (dados de exemplo)
 adb shell am force-stop io.github.gabrielxyz404.gabiflix
 adb shell am start -n io.github.gabrielxyz404.gabiflix/.tv.TvHomeActivity --ez gfTestPicker true
@@ -71,7 +80,7 @@ key DPAD_DOWN;                   shot f-fonte 2
 adb shell am force-stop io.github.gabrielxyz404.gabiflix
 adb shell monkey -p io.github.gabrielxyz404.gabiflix -c android.intent.category.LEANBACK_LAUNCHER 1
 sleep 6
-key DPAD_UP;                     shot s-topo
+key DPAD_UP DPAD_RIGHT;          shot s-topo
 key DPAD_CENTER;                 shot s-pesquisa 3
 adb shell input text "breaking%sbad"
 adb shell input keyevent ENTER

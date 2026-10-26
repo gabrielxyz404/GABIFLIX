@@ -76,7 +76,7 @@ class PosterAdapter extends RecyclerView.Adapter<PosterAdapter.H> {
             int pos = holder.getBindingAdapterPosition();
             if (pos >= 0 && pos < items.size()) open((Activity) c, items.get(pos));
         });
-        // segurar OK 2 segundos (ou o botão ☰) num "Continuar assistindo": opção de remover
+        // segurar OK (menos de 1 segundo) (ou o botão ☰) num "Continuar assistindo": opção de remover
         p.setLongClickable(false);
         final boolean[] held = {false};
         final Runnable[] timer = {null};
@@ -100,7 +100,7 @@ class PosterAdapter extends RecyclerView.Adapter<PosterAdapter.H> {
                         v.setPressed(false);
                         longPress.on(items.get(p2), p2);
                     };
-                    v.postDelayed(timer[0], 2000);
+                    v.postDelayed(timer[0], 800);
                 }
                 return false;
             }

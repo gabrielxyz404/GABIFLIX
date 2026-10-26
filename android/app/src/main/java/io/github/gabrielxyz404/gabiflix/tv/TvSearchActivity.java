@@ -78,11 +78,54 @@ public class TvSearchActivity extends TvBase {
         box.addView(grid);
         root.addView(box, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f));
         setContentView(root);
+        if (getIntent().getBooleanExtra("library", false)) { showLibrary(); return; }
         input.requestFocus();
         input.postDelayed(() -> {
             InputMethodManager im = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
             if (im != null) im.showSoftInput(input, InputMethodManager.SHOW_IMPLICIT);
         }, 250);
+    }
+
+    // ---------- Mais Tarde (a lista da conta) ----------
+    private boolean library;
+
+    private void showLibrary() {
+        library = true;
+        getWindow().setSoftInputMode(android.view.WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
+        input.setVisibility(android.view.View.GONE);
+        TextView title = Ui.text(this, "Mais Tarde", 26, true, Ui.TEXT);
+        title.setTypeface(TvHomeActivity.font(this, 700));
+        ((LinearLayout) input.getParent()).addView(title, 0);
+        loadLibrary();
+    }
+
+    private void loadLibrary() {
+        if (!Stremio.loggedIn(this)) { status.setText("Entre na sua conta para ver o Mais Tarde."); return; }
+        status.setText("Carregando…");
+        android.content.Context c = getApplicationContext();
+        Net.async(() -> {
+            java.util.List<org.json.JSONObject> out = new java.util.ArrayList<>();
+            for (org.json.JSONObject it : Stremio.library(c, true).values()) {
+                if (it.optBoolean("removed") || it.optBoolean("temp") || "other".equals(it.optString("type"))) continue;
+                out.add(it);
+            }
+            out.sort((x, y) -> y.optString("_mtime").compareTo(x.optString("_mtime")));
+            return out;
+        }, (list, err) -> {
+            if (list == null) { status.setText("Não foi possível carregar."); return; }
+            adapter.set(list);
+            status.setText(list.isEmpty() ? "Nada no Mais Tarde ainda. Na página de um filme, use \"+ Mais Tarde\"." : list.size() + (list.size() == 1 ? " título" : " títulos"));
+            grid.post(() -> { RecyclerView.ViewHolder h = grid.findViewHolderForAdapterPosition(0); if (h != null) h.itemView.requestFocus(); });
+        });
+    }
+
+    private boolean resumedOnce;
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (library && resumedOnce) loadLibrary(); // tirou ou pôs algo na lista
+        resumedOnce = true;
     }
 
     private void hideKeyboard() {

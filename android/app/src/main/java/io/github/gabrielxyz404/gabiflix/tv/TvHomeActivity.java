@@ -19,7 +19,10 @@ import androidx.recyclerview.widget.RecyclerView;
 /** Tela inicial da TV: os serviços em cartões altos, lado a lado, com rolagem infinita para a direita e a esquerda. */
 public class TvHomeActivity extends TvBase {
 
-    private TextView account;
+    private View accountBtn;
+    private View rootView;
+    private int bgColor = 0xFF000000;
+    private android.animation.ValueAnimator bgAnim;
     private RecyclerView list;
     private static final int N = Services.ALL.size();
     private static final int MIDDLE = (Integer.MAX_VALUE / 2) - ((Integer.MAX_VALUE / 2) % Services.ALL.size());
@@ -29,35 +32,39 @@ public class TvHomeActivity extends TvBase {
         super.onCreate(b);
         LinearLayout root = new LinearLayout(this);
         root.setOrientation(LinearLayout.VERTICAL);
-        root.setPadding(0, Ui.dp(this, 18), 0, Ui.dp(this, 30));
+        root.setPadding(0, Ui.dp(this, 22), 0, Ui.dp(this, 14));
+        rootView = root;
+        root.setBackgroundColor(bgColor);
 
-        // topo: nome, pesquisar e conta
+        // topo: logo + "Home" à esquerda, ícones à direita
         LinearLayout top = new LinearLayout(this);
         top.setOrientation(LinearLayout.HORIZONTAL);
         top.setGravity(Gravity.CENTER_VERTICAL);
-        top.setPadding(Ui.dp(this, 32), 0, Ui.dp(this, 32), 0);
-        TextView logo = Ui.text(this, "GabiFlix", 26, true, Ui.TEXT);
-        top.addView(logo, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
-        TextView search = Ui.button(this, "Pesquisar", 0xFF232327, Ui.TEXT);
+        top.setPadding(Ui.dp(this, 34), 0, Ui.dp(this, 34), 0);
+        android.widget.ImageView logo = new android.widget.ImageView(this);
+        logo.setImageResource(io.github.gabrielxyz404.gabiflix.R.mipmap.ic_launcher);
+        top.addView(logo, new LinearLayout.LayoutParams(Ui.dp(this, 40), Ui.dp(this, 40)));
+        top.addView(Ui.space(this, 14, 1));
+        TextView home = Ui.text(this, "Home", 26, true, Ui.TEXT);
+        home.setTypeface(font(this, 700));
+        top.addView(home, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
+        View later = iconButton("later", "Mais Tarde");
+        later.setOnClickListener(v -> startActivity(new Intent(this, TvSearchActivity.class).putExtra("library", true)));
+        top.addView(later);
+        View search = iconButton("search", "Pesquisar");
         search.setOnClickListener(v -> startActivity(new Intent(this, TvSearchActivity.class)));
         top.addView(search);
-        top.addView(Ui.space(this, 12, 1));
-        TextView update = Ui.button(this, "Atualizar", 0xFF232327, Ui.TEXT);
+        View update = iconButton("refresh", "Atualizar");
         update.setOnClickListener(v -> { Updater.run(this); prefetchSoon(); });
         top.addView(update);
-        top.addView(Ui.space(this, 12, 1));
-        account = Ui.button(this, "Entrar", 0xFF232327, Ui.TEXT);
-        account.setOnClickListener(v -> onAccount());
-        top.addView(account);
+        accountBtn = iconButton("account", "Conta");
+        accountBtn.setOnClickListener(v -> onAccount());
+        top.addView(accountBtn);
         root.addView(top);
-
-        TextView hint = Ui.text(this, "Escolha um catálogo", 16, false, Ui.MUTED);
-        hint.setPadding(Ui.dp(this, 34), Ui.dp(this, 22), 0, Ui.dp(this, 10));
-        root.addView(hint);
 
         // cartões dos serviços (infinitos: depois do último vem o primeiro)
         list = PosterAdapter.list(this);
-        list.setPadding(Ui.dp(this, 24), Ui.dp(this, 6), Ui.dp(this, 24), Ui.dp(this, 6));
+        list.setPadding(Ui.dp(this, 24), Ui.dp(this, 30), Ui.dp(this, 24), Ui.dp(this, 26));
         list.setLayoutManager(new PosterAdapter.Linear(this, RecyclerView.HORIZONTAL));
         list.setHasFixedSize(true);
         list.setItemViewCacheSize(N + 2);
@@ -144,9 +151,9 @@ public class TvHomeActivity extends TvBase {
 
     private final class Cards extends RecyclerView.Adapter<Cards.CH> {
         final class CH extends RecyclerView.ViewHolder {
-            final View accent;
+            final ServiceIcon accent;
             final TextView name, tabs;
-            CH(View v, View accent, TextView name, TextView tabs) { super(v); this.accent = accent; this.name = name; this.tabs = tabs; }
+            CH(View v, ServiceIcon accent, TextView name, TextView tabs) { super(v); this.accent = accent; this.name = name; this.tabs = tabs; }
         }
 
         @NonNull @Override
@@ -154,21 +161,21 @@ public class TvHomeActivity extends TvBase {
             Context c = parent.getContext();
             FrameLayout f = new FrameLayout(c);
             RecyclerView.LayoutParams lp = new RecyclerView.LayoutParams(Ui.dp(c, 220), ViewGroup.LayoutParams.MATCH_PARENT);
-            lp.setMargins(Ui.dp(c, 9), Ui.dp(c, 6), Ui.dp(c, 9), Ui.dp(c, 6));
+            lp.setMargins(Ui.dp(c, 14), 0, Ui.dp(c, 14), 0);
             f.setLayoutParams(lp);
             f.setForeground(Ui.focusRing(c, 20));
             f.setFocusable(true);
             f.setClickable(true);
-            TvBase.focusGrow(f, 1.04f);
 
             LinearLayout col = new LinearLayout(c);
             col.setOrientation(LinearLayout.VERTICAL);
             col.setGravity(Gravity.CENTER_HORIZONTAL);
             col.setPadding(Ui.dp(c, 18), 0, Ui.dp(c, 18), 0);
-            View accent = new View(c);
-            col.addView(accent, new LinearLayout.LayoutParams(Ui.dp(c, 46), Ui.dp(c, 5)));
+            ServiceIcon accent = new ServiceIcon(c);
+            col.addView(accent, new LinearLayout.LayoutParams(Ui.dp(c, 78), Ui.dp(c, 78)));
             col.addView(Ui.space(c, 1, 18));
-            TextView name = Ui.text(c, "", 28, true, Ui.TEXT);
+            TextView name = Ui.text(c, "", 30, true, Ui.TEXT);
+            name.setTypeface(font(c, 800));
             name.setGravity(Gravity.CENTER);
             name.setMaxLines(2);
             col.addView(name, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
@@ -179,9 +186,18 @@ public class TvHomeActivity extends TvBase {
             tabs.setEllipsize(TextUtils.TruncateAt.END);
             tabs.setLineSpacing(0, 1.2f);
             col.addView(tabs, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
-            f.addView(col, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.CENTER));
+            FrameLayout.LayoutParams cl = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.TOP);
+            cl.topMargin = Ui.dp(c, 70); // símbolo e nome na mesma altura em todos os cartões
+            f.addView(col, cl);
 
             CH h = new CH(f, accent, name, tabs);
+            // selecionado: cresce suavemente e o fundo da tela ganha a cor do serviço
+            f.setOnFocusChangeListener((v, has) -> {
+                v.animate().scaleX(has ? 1.08f : 1f).scaleY(has ? 1.08f : 1f).translationZ(has ? 8f : 0f)
+                        .setDuration(200).setInterpolator(new android.view.animation.DecelerateInterpolator()).start();
+                int p = h.getBindingAdapterPosition();
+                if (has && p >= 0) paintBackground(Services.ALL.get(p % N));
+            });
             f.setOnClickListener(v -> {
                 int p = h.getBindingAdapterPosition();
                 if (p < 0) return;
@@ -200,9 +216,10 @@ public class TvHomeActivity extends TvBase {
             int color2 = s.id.equals("globoplay") ? 0xFF3ECF6B : color;
             int color1 = s.id.equals("globoplay") ? 0xFFF5C518 : color;
             h.itemView.setBackground(cardBackground(c, color1, color2));
-            h.accent.setBackground(s.id.equals("globoplay")
-                    ? gradientBar(c, color1, color2)
-                    : Ui.round(color, Ui.dp(c, 3)));
+            h.accent.set(s.id, color == 0xFFF5F5F7 ? Ui.TEXT : color);
+            float sc = h.itemView.hasFocus() ? 1.08f : 1f;
+            h.itemView.setScaleX(sc);
+            h.itemView.setScaleY(sc);
             h.name.setText(s.name);
             h.name.getPaint().setShader(null);
             h.name.setTextColor(color);
@@ -244,38 +261,69 @@ public class TvHomeActivity extends TvBase {
         return new android.graphics.drawable.LayerDrawable(new android.graphics.drawable.Drawable[]{base, glow1, glow2, border});
     }
 
-    private static GradientDrawable gradientBar(Context c, int a, int b) {
-        GradientDrawable g = new GradientDrawable(GradientDrawable.Orientation.LEFT_RIGHT, new int[]{a, b});
-        g.setCornerRadius(Ui.dp(c, 3));
-        return g;
-    }
-
     private static int alpha(int color, float a) {
         return (Math.round(a * 255) << 24) | (color & 0x00FFFFFF);
     }
 
-    /** a cor do serviço um pouco mais clara, para o nome ler bem no fundo escuro */
-    private static int brighten(int c) {
-        int r = (c >> 16) & 0xFF, g = (c >> 8) & 0xFF, b = c & 0xFF;
-        r = r + (255 - r) / 4; g = g + (255 - g) / 4; b = b + (255 - b) / 4;
-        return 0xFF000000 | (r << 16) | (g << 8) | b;
+    /** fundo da tela na cor do serviço selecionado (troca suave) */
+    private void paintBackground(Services.Service s) {
+        int color = Ui.parseColor(s.id.equals("globoplay") ? "#2f9e55" : s.color, 0xFFFFFFFF);
+        int target = Ui.tint(color, s.id.equals("appletv") ? 0.16f : 0.30f);
+        if (bgAnim != null) bgAnim.cancel();
+        bgAnim = android.animation.ValueAnimator.ofArgb(bgColor, target);
+        bgAnim.setDuration(260);
+        bgAnim.addUpdateListener(a -> { bgColor = (int) a.getAnimatedValue(); rootView.setBackgroundColor(bgColor); });
+        bgAnim.start();
     }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-        String email = Stremio.email(this);
-        account.setText(email != null ? "Conta" : "Entrar");
+    /** fonte moderna (Outfit, a mesma do celular) */
+    static android.graphics.Typeface font(Context c, int weight) {
+        try {
+            android.graphics.Typeface t = androidx.core.content.res.ResourcesCompat.getFont(c, io.github.gabrielxyz404.gabiflix.R.font.outfit);
+            if (t == null) return android.graphics.Typeface.DEFAULT_BOLD;
+            return android.os.Build.VERSION.SDK_INT >= 28 ? android.graphics.Typeface.create(t, weight, false) : android.graphics.Typeface.create(t, android.graphics.Typeface.BOLD);
+        } catch (Exception e) { return android.graphics.Typeface.DEFAULT_BOLD; }
+    }
+
+    /** botão redondo só com ícone (o nome aparece por baixo quando selecionado) */
+    private View iconButton(String icon, String label) {
+        LinearLayout box = new LinearLayout(this);
+        box.setOrientation(LinearLayout.VERTICAL);
+        box.setGravity(Gravity.CENTER_HORIZONTAL);
+        FrameLayout circle = new FrameLayout(this);
+        android.graphics.drawable.StateListDrawable bg = new android.graphics.drawable.StateListDrawable();
+        GradientDrawable on = new GradientDrawable(); on.setShape(GradientDrawable.OVAL); on.setColor(0xFFFFFFFF);
+        GradientDrawable off = new GradientDrawable(); off.setShape(GradientDrawable.OVAL); off.setColor(0x33FFFFFF);
+        bg.addState(new int[]{android.R.attr.state_focused}, on);
+        bg.addState(new int[]{}, off);
+        box.setFocusable(true);
+        box.setClickable(true);
+        circle.setBackground(bg);
+        circle.setDuplicateParentStateEnabled(true);
+        ServiceIcon ic = new ServiceIcon(this);
+        ic.set(icon, 0xFFFFFFFF);
+        FrameLayout.LayoutParams il = new FrameLayout.LayoutParams(Ui.dp(this, 26), Ui.dp(this, 26), Gravity.CENTER);
+        circle.addView(ic, il);
+        box.addView(circle, new LinearLayout.LayoutParams(Ui.dp(this, 52), Ui.dp(this, 52)));
+        TextView t = Ui.text(this, label, 12, true, Ui.TEXT);
+        t.setVisibility(View.INVISIBLE);
+        t.setPadding(0, Ui.dp(this, 4), 0, 0);
+        box.addView(t);
+        box.setOnFocusChangeListener((v, has) -> {
+            ic.set(icon, has ? 0xFF000000 : 0xFFFFFFFF);
+            t.setVisibility(has ? View.VISIBLE : View.INVISIBLE);
+            v.animate().scaleX(has ? 1.1f : 1f).scaleY(has ? 1.1f : 1f).setDuration(160).start();
+        });
+        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(Ui.dp(this, 76), ViewGroup.LayoutParams.WRAP_CONTENT);
+        box.setLayoutParams(lp);
+        return box;
     }
 
     private void onAccount() {
         if (!Stremio.loggedIn(this)) { startActivity(new Intent(this, TvLoginActivity.class)); return; }
         new AlertDialog.Builder(this, android.R.style.Theme_DeviceDefault_Dialog_Alert)
                 .setTitle(Stremio.email(this))
-                .setItems(new String[]{"Sair da conta"}, (d, w) -> {
-                    Stremio.logout(this);
-                    account.setText("Entrar");
-                })
+                .setItems(new String[]{"Sair da conta"}, (d, w) -> Stremio.logout(this))
                 .setNegativeButton("Fechar", null)
                 .show();
     }

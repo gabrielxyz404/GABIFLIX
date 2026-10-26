@@ -58,7 +58,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          HASH=$(git ls-files android | grep -v '/gabiflix/tv/' | grep -v '/res/anim/' | sort | xargs sha256sum | sha256sum | cut -c1-16)
+          HASH=$(git ls-files android | grep -v '/gabiflix/tv/' | grep -v '/res/anim/' | grep -v '/res/font/' | sort | xargs sha256sum | sha256sum | cut -c1-16)
           OLD=$(gh release view android --repo ${{ github.repository }} --json body -q .body 2>/dev/null | grep -o 'celular:[0-9a-f]*' | cut -d: -f2 || true)
           # a versão do celular que já está publicada (antes de existir a marca na descrição)
           [ -z "$OLD" ] && OLD=$(cat .github/phone-hash 2>/dev/null || true)
