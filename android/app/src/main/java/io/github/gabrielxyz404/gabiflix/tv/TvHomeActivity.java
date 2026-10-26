@@ -124,6 +124,25 @@ public class TvHomeActivity extends TvBase {
             list.postDelayed(() -> p.update(l, true), 500);
             return;
         }
+        if (i != null && i.getBooleanExtra("gfTestContinue", false)) {
+            Net.async(() -> {
+                java.util.Map<String, org.json.JSONObject> m = new java.util.LinkedHashMap<>();
+                int n = 0;
+                for (String id : Stremio.ids("netflix")) {
+                    org.json.JSONObject meta = Stremio.meta("series", id);
+                    org.json.JSONObject st = new org.json.JSONObject().put("timeOffset", 900000L).put("duration", 2700000L)
+                            .put("lastWatched", "2026-10-26T20:00:0" + n + ".000Z").put("video_id", org.json.JSONObject.NULL);
+                    m.put(id, new org.json.JSONObject().put("_id", id).put("type", "series").put("name", meta.optString("name"))
+                            .put("poster", meta.optString("poster", "")).put("state", st));
+                    if (++n >= 3) break;
+                }
+                return m;
+            }, (m, e) -> {
+                if (m != null) Stremio.fakeLibrary(getApplicationContext(), m);
+                startActivity(new Intent(this, TvCatalogActivity.class).putExtra("service", "netflix"));
+            });
+            return;
+        }
         if (i != null && i.getBooleanExtra("gfTestLibrary", false)) {
             startActivity(new Intent(this, TvSearchActivity.class).putExtra("library", true));
             return;

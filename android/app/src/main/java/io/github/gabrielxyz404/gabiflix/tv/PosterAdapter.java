@@ -89,6 +89,14 @@ class PosterAdapter extends RecyclerView.Adapter<PosterAdapter.H> {
             }
             if (code != android.view.KeyEvent.KEYCODE_DPAD_CENTER && code != android.view.KeyEvent.KEYCODE_ENTER) return false;
             if (ev.getAction() == android.view.KeyEvent.ACTION_DOWN) {
+                // alguns controles avisam sozinhos que o botão ficou apertado
+                if (can && ev.isLongPress() && !held[0]) {
+                    held[0] = true;
+                    if (timer[0] != null) { v.removeCallbacks(timer[0]); timer[0] = null; }
+                    v.setPressed(false);
+                    longPress.on(items.get(pos), pos);
+                    return true;
+                }
                 if (ev.getRepeatCount() > 0) return true; // ignora as repetições do controle
                 held[0] = false;
                 if (can) {

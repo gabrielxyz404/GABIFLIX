@@ -73,6 +73,19 @@ adb shell am force-stop io.github.gabrielxyz404.gabiflix
 adb shell am start -n io.github.gabrielxyz404.gabiflix/.tv.TvHomeActivity --ez gfTestLibrary true
 shot h-maistarde 6
 key BACK
+# Continuar assistindo: segurar OK para remover
+adb shell am force-stop io.github.gabrielxyz404.gabiflix
+adb shell am start -n io.github.gabrielxyz404.gabiflix/.tv.TvHomeActivity --ez gfTestContinue true
+shot c-continuar 14
+key DPAD_DOWN DPAD_DOWN
+shot c-foco 3
+adb shell input keyevent --longpress KEYCODE_DPAD_CENTER
+shot c-segurar 3
+key DPAD_DOWN DPAD_CENTER
+shot c-removido 5
+key DPAD_UP; adb shell input keyevent KEYCODE_MENU
+shot c-menu 3
+key BACK BACK
 # janela das fontes (dados de exemplo)
 adb shell am force-stop io.github.gabrielxyz404.gabiflix
 adb shell am start -n io.github.gabrielxyz404.gabiflix/.tv.TvHomeActivity --ez gfTestPicker true

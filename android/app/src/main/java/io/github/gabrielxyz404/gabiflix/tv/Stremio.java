@@ -226,7 +226,17 @@ final class Stremio {
     // ---------- biblioteca (Mais Tarde e Continuar assistindo) ----------
     private static Map<String, JSONObject> library;
 
+    private static boolean fakeLib; // só nos testes automáticos
+
+    /** biblioteca de mentira para os testes (não usa internet) */
+    static synchronized void fakeLibrary(Context c, Map<String, JSONObject> items) {
+        prefs(c).edit().putString("authKey", "teste").putString("email", "teste@gabiflix").apply();
+        library = items;
+        fakeLib = true;
+    }
+
     static synchronized Map<String, JSONObject> library(Context c, boolean refresh) throws Exception {
+        if (fakeLib) return library;
         if (library != null && !refresh) return library;
         Map<String, JSONObject> map = new HashMap<>();
         if (loggedIn(c)) {
