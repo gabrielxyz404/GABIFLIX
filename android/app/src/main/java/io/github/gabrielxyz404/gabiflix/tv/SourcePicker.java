@@ -160,7 +160,11 @@ final class SourcePicker {
             l.add(it);
         }
         int total = 0;
-        for (List<Item> l : byAddon.values()) total += l.size();
+        for (List<Item> l : byAddon.values()) {
+            // 4K primeiro, depois 1080p (a ordenação é estável: a ordem do addon se mantém dentro de cada qualidade)
+            java.util.Collections.sort(l, (x, y) -> Integer.compare(y.qRank, x.qRank));
+            total += l.size();
+        }
         if (total == 0) head.setText(finished ? "Nenhuma fonte disponível. Verifique o Real-Debrid/TorBox nos addons." : "Procurando fontes…");
         head.setVisibility(total > 0 ? View.GONE : View.VISIBLE);
 
