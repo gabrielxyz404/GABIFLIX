@@ -181,7 +181,8 @@ final class SourcePicker {
                 String key = e.getKey();
                 t = Ui.pill(a, "");
                 t.setTextSize(15);
-                t.setOnFocusChangeListener((v, has) -> { if (has) select(key); });
+                // muda a lista só depois (o foco pode mudar enquanto a lista se redesenha)
+                t.setOnFocusChangeListener((v, has) -> { if (has) v.post(() -> { if (v.hasFocus()) select(key); }); });
                 t.setOnClickListener(v -> focusFirstSource());
                 LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
                 lp.rightMargin = Ui.dp(a, 10);
@@ -191,11 +192,16 @@ final class SourcePicker {
             t.setText(e.getKey() + "  " + e.getValue().size());
         }
         if (current == null && !byAddon.isEmpty()) select(byAddon.keySet().iterator().next());
-        else if (current != null) adapter.set(byAddon.get(current));
+        else if (current != null) {
+            List<Item> l = byAddon.get(current);
+            if (list.isComputingLayout()) list.post(() -> adapter.set(l)); else adapter.set(l);
+        }
         if (!focusedOnce && adapter.getItemCount() > 0) { focusedOnce = true; focusFirstSource(); }
     }
 
     private void select(String key) {
+        if (list.isComputingLayout()) { list.post(() -> select(key)); return; }
+        if (key.equals(current) && adapter.getItemCount() > 0) return;
         current = key;
         for (Map.Entry<String, TextView> e : tabViews.entrySet()) e.getValue().setAlpha(e.getKey().equals(key) ? 1f : 0.55f);
         adapter.set(byAddon.get(key));
