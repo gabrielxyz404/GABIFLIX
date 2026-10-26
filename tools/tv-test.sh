@@ -73,7 +73,7 @@ shot s-resultados 8
 key DPAD_DOWN;                   shot s-desce
 key DPAD_CENTER;                 shot s-titulo 8
 adb shell am force-stop io.github.gabrielxyz404.gabiflix
-adb shell am start -n io.github.gabrielxyz404.gabiflix/.tv.TvHomeActivity --es gfTestMeta '{"id":"tt0903747","type":"series","name":"Breaking Bad"}'
+adb shell "am start -n io.github.gabrielxyz404.gabiflix/.tv.TvHomeActivity --es gfTestMeta '{\"id\":\"tt0903747\",\"type\":\"series\",\"name\":\"Breaking Bad\"}'"
 shot d-serie 8
 key DPAD_DOWN;                   shot d-foco-episodios
 key DPAD_CENTER;                 shot d-painel 3
