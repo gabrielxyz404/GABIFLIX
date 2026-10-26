@@ -129,10 +129,15 @@ public class TvHomeActivity extends TvBase {
                 java.util.Map<String, org.json.JSONObject> m = new java.util.LinkedHashMap<>();
                 int n = 0;
                 for (String id : Stremio.ids("netflix")) {
-                    org.json.JSONObject meta = Stremio.meta("series", id);
+                    org.json.JSONObject meta = null;
+                    String type = "movie";
+                    for (String t : new String[]{"movie", "series"}) {
+                        try { meta = Stremio.meta(t, id); type = t; break; } catch (Exception ignored) {}
+                    }
+                    if (meta == null) continue;
                     org.json.JSONObject st = new org.json.JSONObject().put("timeOffset", 900000L).put("duration", 2700000L)
                             .put("lastWatched", "2026-10-26T20:00:0" + n + ".000Z").put("video_id", org.json.JSONObject.NULL);
-                    m.put(id, new org.json.JSONObject().put("_id", id).put("type", "series").put("name", meta.optString("name"))
+                    m.put(id, new org.json.JSONObject().put("_id", id).put("type", type).put("name", meta.optString("name"))
                             .put("poster", meta.optString("poster", "")).put("state", st));
                     if (++n >= 3) break;
                 }

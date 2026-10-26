@@ -81,7 +81,7 @@ key DPAD_DOWN DPAD_DOWN
 shot c-foco 3
 adb shell input keyevent --longpress KEYCODE_DPAD_CENTER
 shot c-segurar 3
-key DPAD_DOWN DPAD_CENTER
+key DPAD_CENTER
 shot c-removido 5
 key DPAD_UP; adb shell input keyevent KEYCODE_MENU
 shot c-menu 3
