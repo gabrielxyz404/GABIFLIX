@@ -79,7 +79,8 @@ public class TvDetailActivity extends TvBase {
         logo.setScaleType(ImageView.ScaleType.FIT_START);
         logo.setVisibility(View.GONE);
         col.addView(logo, new LinearLayout.LayoutParams(Ui.dp(this, 440), Ui.dp(this, 110)));
-        title = Ui.text(this, meta.optString("name"), 38, true, Ui.TEXT);
+        title = Ui.text(this, meta.optString("name"), 39, false, Ui.TEXT);
+        TvHomeActivity.outfit(title, 600);
         title.setMaxLines(2);
         title.setEllipsize(TextUtils.TruncateAt.END);
         col.addView(title, new LinearLayout.LayoutParams(Ui.dp(this, 560), ViewGroup.LayoutParams.WRAP_CONTENT));
@@ -130,7 +131,8 @@ public class TvDetailActivity extends TvBase {
 
     /** botão principal: branco */
     private TextView pill(String label) {
-        TextView t = Ui.text(this, label, 18, true, 0xFF000000);
+        TextView t = Ui.text(this, label, 18, false, 0xFF000000);
+        TvHomeActivity.outfit(t, 600);
         t.setGravity(Gravity.CENTER_VERTICAL);
         t.setPadding(Ui.dp(this, 26), Ui.dp(this, 13), Ui.dp(this, 26), Ui.dp(this, 13));
         StateListDrawable s = new StateListDrawable();
@@ -147,7 +149,8 @@ public class TvDetailActivity extends TvBase {
 
     /** botões de baixo: só texto; selecionado fica com fundo branco */
     private TextView item(String label) {
-        TextView t = Ui.text(this, label, 17, true, Ui.TEXT);
+        TextView t = Ui.text(this, label, 17, false, Ui.TEXT);
+        TvHomeActivity.outfit(t, 500);
         t.setGravity(Gravity.CENTER_VERTICAL);
         t.setPadding(Ui.dp(this, 26), Ui.dp(this, 11), Ui.dp(this, 26), Ui.dp(this, 11));
         StateListDrawable s = new StateListDrawable();
@@ -505,7 +508,8 @@ public class TvDetailActivity extends TvBase {
 
             LinearLayout texts = new LinearLayout(c);
             texts.setOrientation(LinearLayout.VERTICAL);
-            TextView n = Ui.text(c, "", 17, true, Ui.TEXT);
+            TextView n = Ui.text(c, "", 17, false, Ui.TEXT);
+            TvHomeActivity.outfit(n, 600);
             n.setMaxLines(1);
             n.setEllipsize(TextUtils.TruncateAt.END);
             texts.addView(n);

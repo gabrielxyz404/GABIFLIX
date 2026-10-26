@@ -171,6 +171,7 @@ final class SourcePicker {
                 String key = e.getKey();
                 t = Ui.pill(a, "");
                 t.setTextSize(19);
+                TvHomeActivity.outfit(t, 600);
                 // muda a lista só depois (o foco pode mudar enquanto a lista se redesenha)
                 t.setOnFocusChangeListener((v, has) -> { if (has) v.post(() -> { if (v.hasFocus()) select(key); }); });
                 t.setOnClickListener(v -> focusFirstSource());
@@ -259,7 +260,8 @@ final class SourcePicker {
         }
 
         private TextView badge(Context c) {
-            TextView t = Ui.text(c, "", 17, true, Ui.TEXT);
+            TextView t = Ui.text(c, "", 17, false, Ui.TEXT);
+            TvHomeActivity.outfit(t, 600);
             t.setPadding(Ui.dp(c, 12), Ui.dp(c, 5), Ui.dp(c, 12), Ui.dp(c, 5));
             return t;
         }

@@ -124,6 +124,10 @@ public class TvHomeActivity extends TvBase {
             list.postDelayed(() -> p.update(l, true), 500);
             return;
         }
+        if (i != null && i.getBooleanExtra("gfTestLibrary", false)) {
+            startActivity(new Intent(this, TvSearchActivity.class).putExtra("library", true));
+            return;
+        }
         String testMeta = i != null ? i.getStringExtra("gfTestMeta") : null;
         if (testMeta != null) {
             Intent d = new Intent(this, TvDetailActivity.class);

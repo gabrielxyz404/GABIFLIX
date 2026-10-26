@@ -26,7 +26,9 @@ public class TvLoginActivity extends TvBase {
         box.setOrientation(LinearLayout.VERTICAL);
         box.setPadding(Ui.dp(this, 30), Ui.dp(this, 26), Ui.dp(this, 30), Ui.dp(this, 26));
         box.setBackground(Ui.round(0xFF17171A, Ui.dp(this, 16)));
-        box.addView(Ui.text(this, "Entrar na conta do Stremio", 24, true, Ui.TEXT));
+        TextView head = Ui.text(this, "Entrar na conta do Stremio", 24, false, Ui.TEXT);
+        TvHomeActivity.outfit(head, 600);
+        box.addView(head);
         box.addView(Ui.space(this, 1, 6));
         box.addView(Ui.text(this, "Use a mesma conta do celular: os addons e o Continuar assistindo vêm dela.", 14, false, Ui.MUTED));
         box.addView(Ui.space(this, 1, 18));

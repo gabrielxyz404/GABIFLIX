@@ -541,7 +541,8 @@ public class TvCatalogActivity extends TvBase {
             logo.setAdjustViewBounds(true);
             logo.setScaleType(ImageView.ScaleType.FIT_START);
             col.addView(logo, new LinearLayout.LayoutParams(Ui.dp(c, 340), Ui.dp(c, 78)));
-            TextView title = Ui.text(c, "", 30, true, Ui.TEXT);
+            TextView title = Ui.text(c, "", 31, false, Ui.TEXT);
+            TvHomeActivity.outfit(title, 600);
             title.setMaxLines(2);
             title.setEllipsize(TextUtils.TruncateAt.END);
             col.addView(title, new LinearLayout.LayoutParams(Ui.dp(c, 480), ViewGroup.LayoutParams.WRAP_CONTENT));
@@ -577,7 +578,8 @@ public class TvCatalogActivity extends TvBase {
             LinearLayout v = new LinearLayout(c);
             v.setOrientation(LinearLayout.VERTICAL);
             v.setLayoutParams(new RecyclerView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
-            TextView t = Ui.text(c, "", 17, true, Ui.TEXT);
+            TextView t = Ui.text(c, "", 18, false, Ui.TEXT);
+            TvHomeActivity.outfit(t, 600);
             t.setPadding(Ui.dp(c, 30), Ui.dp(c, 12), Ui.dp(c, 30), Ui.dp(c, 2));
             v.addView(t);
             RecyclerView l = PosterAdapter.list(c);

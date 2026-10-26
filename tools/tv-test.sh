@@ -69,7 +69,8 @@ key DPAD_RIGHT DPAD_RIGHT;       shot h-prime 2
 key DPAD_RIGHT DPAD_RIGHT DPAD_RIGHT DPAD_RIGHT; shot h-globo 2
 key DPAD_UP;                     shot h-icones 2
 key DPAD_LEFT DPAD_LEFT DPAD_LEFT DPAD_LEFT; shot h-primeiro-icone 2
-adb shell "am start -n io.github.gabrielxyz404.gabiflix/.tv.TvSearchActivity --ez library true"
+adb shell am force-stop io.github.gabrielxyz404.gabiflix
+adb shell am start -n io.github.gabrielxyz404.gabiflix/.tv.TvHomeActivity --ez gfTestLibrary true
 shot h-maistarde 6
 key BACK
 # janela das fontes (dados de exemplo)
