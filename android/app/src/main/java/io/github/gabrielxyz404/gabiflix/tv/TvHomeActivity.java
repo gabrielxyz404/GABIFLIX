@@ -48,7 +48,7 @@ public class TvHomeActivity extends TvBase {
         top.addView(logo, new LinearLayout.LayoutParams(Ui.dp(this, 40), Ui.dp(this, 40)));
         top.addView(Ui.space(this, 14, 1));
         TextView home = Ui.text(this, "Home", 26, true, Ui.TEXT);
-        outfit(home, 700);
+        outfit(home, 600);
         top.addView(home, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
         View later = iconButton("later", "Mais Tarde");
         later.setOnClickListener(v -> startActivity(new Intent(this, TvSearchActivity.class).putExtra("library", true)));
@@ -176,13 +176,15 @@ public class TvHomeActivity extends TvBase {
             ServiceIcon accent = new ServiceIcon(c);
             col.addView(accent, new LinearLayout.LayoutParams(Ui.dp(c, 78), Ui.dp(c, 78)));
             col.addView(Ui.space(c, 1, 18));
-            TextView name = Ui.text(c, "", 30, true, Ui.TEXT);
-            outfit(name, 800);
+            TextView name = Ui.text(c, "", 31, false, Ui.TEXT);
+            outfit(name, 500);
+            name.setLetterSpacing(0.005f);
             name.setGravity(Gravity.CENTER);
             name.setMaxLines(2);
             col.addView(name, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
             col.addView(Ui.space(c, 1, 12));
-            TextView tabs = Ui.text(c, "", 14, false, 0xB3FFFFFF);
+            TextView tabs = Ui.text(c, "", 14, false, 0xA6FFFFFF);
+            outfit(tabs, 400);
             tabs.setGravity(Gravity.CENTER);
             tabs.setMaxLines(3);
             tabs.setEllipsize(TextUtils.TruncateAt.END);
@@ -306,8 +308,9 @@ public class TvHomeActivity extends TvBase {
         try {
             android.graphics.Typeface t = androidx.core.content.res.ResourcesCompat.getFont(c, io.github.gabrielxyz404.gabiflix.R.font.outfit);
             if (t == null) return android.graphics.Typeface.DEFAULT_BOLD;
-            return android.os.Build.VERSION.SDK_INT >= 28 ? android.graphics.Typeface.create(t, weight, false) : android.graphics.Typeface.create(t, android.graphics.Typeface.BOLD);
-        } catch (Exception e) { return android.graphics.Typeface.DEFAULT_BOLD; }
+            if (android.os.Build.VERSION.SDK_INT >= 28) return android.graphics.Typeface.create(t, weight, false);
+            return android.graphics.Typeface.create(t, weight >= 700 ? android.graphics.Typeface.BOLD : android.graphics.Typeface.NORMAL);
+        } catch (Exception e) { return weight >= 700 ? android.graphics.Typeface.DEFAULT_BOLD : android.graphics.Typeface.DEFAULT; }
     }
 
     /** botão redondo só com ícone (o nome aparece por baixo quando selecionado) */
