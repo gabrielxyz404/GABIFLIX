@@ -83,7 +83,7 @@ adb shell input keyevent --longpress KEYCODE_DPAD_CENTER
 shot c-segurar 3
 key DPAD_CENTER
 shot c-removido 5
-key DPAD_UP; adb shell input keyevent KEYCODE_MENU
+adb shell input keyevent KEYCODE_MENU
 shot c-menu 3
 key BACK BACK
 # janela das fontes (dados de exemplo)

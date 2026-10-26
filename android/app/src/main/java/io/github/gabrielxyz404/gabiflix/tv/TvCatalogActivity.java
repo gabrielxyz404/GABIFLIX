@@ -471,9 +471,14 @@ public class TvCatalogActivity extends TvBase {
         }
         new TvSheet(this, item, sub)
                 .action("✕   Remover do Continuar assistindo", () -> {
+                    int pos = r.metas.indexOf(item), at = rows.shown.indexOf(r);
                     r.metas.remove(item);
+                    r.focus = Math.min(Math.max(pos, 0), r.metas.size() - 1);
                     rows.sync();
                     rows.changed(r);
+                    // a seleção fica no título ao lado (ou na fileira de baixo, se esvaziou)
+                    int target = Math.min(Math.max(at, 0), rows.shown.size() - 1);
+                    if (target >= 0) outer.postDelayed(() -> { if (!isFinishing()) focusRow(target, 0, 0); }, 60);
                     Context c = getApplicationContext();
                     Net.async(() -> { Stremio.rewind(c, item.optString("_id")); return true; }, (ok, e) -> {});
                 })
