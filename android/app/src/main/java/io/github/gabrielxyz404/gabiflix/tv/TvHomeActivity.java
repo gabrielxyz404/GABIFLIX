@@ -33,13 +33,16 @@ public class TvHomeActivity extends TvBase {
         root.setOrientation(LinearLayout.VERTICAL);
         root.setPadding(0, Ui.dp(this, 22), 0, Ui.dp(this, 14));
         rootView = root;
+        root.setClipChildren(false);
         root.setBackground(bgNow);
 
         // topo: logo + "Home" à esquerda, ícones à direita
         LinearLayout top = new LinearLayout(this);
         top.setOrientation(LinearLayout.HORIZONTAL);
         top.setGravity(Gravity.CENTER_VERTICAL);
-        top.setPadding(Ui.dp(this, 34), 0, Ui.dp(this, 34), 0);
+        top.setPadding(Ui.dp(this, 34), Ui.dp(this, 6), Ui.dp(this, 34), Ui.dp(this, 6));
+        top.setClipChildren(false); // o ícone selecionado cresce sem ser cortado
+        top.setClipToPadding(false);
         android.widget.ImageView logo = new android.widget.ImageView(this);
         logo.setImageResource(io.github.gabrielxyz404.gabiflix.R.mipmap.ic_launcher);
         top.addView(logo, new LinearLayout.LayoutParams(Ui.dp(this, 40), Ui.dp(this, 40)));

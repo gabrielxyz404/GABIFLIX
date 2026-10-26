@@ -37,6 +37,7 @@ public class TvDetailActivity extends TvBase {
     private JSONObject meta;
     private TextView title, info, desc, playBtn, episodesBtn, listBtn, removeBtn, status;
     private ImageView backdrop, logo;
+    private TextView where;
     private final TreeMap<Integer, List<JSONObject>> seasons = new TreeMap<>();
     private boolean full, autoDone;
 
@@ -67,6 +68,13 @@ public class TvDetailActivity extends TvBase {
         col.setOrientation(LinearLayout.VERTICAL);
         col.setGravity(Gravity.CENTER_VERTICAL);
         col.setPadding(Ui.dp(this, 48), Ui.dp(this, 30), 0, Ui.dp(this, 30));
+
+        // onde está disponível (como no celular): nome do serviço na cor dele, em cima do título
+        where = Ui.text(this, "", 17, true, Ui.TEXT);
+        TvHomeActivity.outfit(where, 800);
+        where.setLetterSpacing(0.04f);
+        where.setPadding(0, 0, 0, Ui.dp(this, 8));
+        col.addView(where);
 
         logo = new ImageView(this);
         logo.setAdjustViewBounds(true);
@@ -113,6 +121,7 @@ public class TvDetailActivity extends TvBase {
         Ui.image(backdrop, meta.optString("background", ""));
         focusLater(playBtn);
         load();
+        loadWhere();
     }
 
     // ---------- botões no estilo da Netflix ----------
@@ -153,6 +162,33 @@ public class TvDetailActivity extends TvBase {
         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(Ui.dp(this, 380), ViewGroup.LayoutParams.WRAP_CONTENT);
         lp.topMargin = Ui.dp(this, 4);
         return lp;
+    }
+
+    // ---------- em que serviço está ----------
+
+    private static final String[][] SVC = {
+            {"netflix", "Netflix", "#e50914"}, {"disney", "Disney+", "#3aa3ff"}, {"prime", "Prime Video", "#1ba8e0"},
+            {"hbo", "HBO Max", "#a36bff"}, {"appletv", "Apple TV+", "#f5f5f7"}, {"paramount", "Paramount+", "#2f7dff"},
+            {"globoplay", "Globoplay", "#c8d23a"}, {"clarovideo", "Claro Video", "#ff2a2a"}};
+
+    private void loadWhere() {
+        String id = meta.optString("id");
+        Net.async(() -> {
+            List<String[]> found = new ArrayList<>();
+            for (String[] s : SVC) if (Stremio.ids(s[0]).contains(id)) found.add(s);
+            return found;
+        }, (found, err) -> {
+            if (isFinishing() || found == null) return;
+            android.text.SpannableStringBuilder b = new android.text.SpannableStringBuilder();
+            if (found.isEmpty()) found.add(new String[]{"cinemateca", "CineTime", "#e9c46a"});
+            for (int i = 0; i < found.size() && i < 2; i++) {
+                if (i > 0) b.append("  ·  ");
+                int start = b.length();
+                b.append(found.get(i)[1]);
+                b.setSpan(new android.text.style.ForegroundColorSpan(Ui.parseColor(found.get(i)[2], 0xFFFFFFFF)), start, b.length(), 0);
+            }
+            where.setText(b);
+        });
     }
 
     // ---------- dados ----------
