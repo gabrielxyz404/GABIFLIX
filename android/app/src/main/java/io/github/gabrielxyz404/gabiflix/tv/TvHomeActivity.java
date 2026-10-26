@@ -89,6 +89,13 @@ public class TvHomeActivity extends TvBase {
 
     /** só para os testes automáticos: abre um vídeo direto no player */
     private void testPlay(Intent i) {
+        String testMeta = i != null ? i.getStringExtra("gfTestMeta") : null;
+        if (testMeta != null) {
+            Intent d = new Intent(this, TvDetailActivity.class);
+            d.putExtra("meta", testMeta);
+            startActivity(d);
+            return;
+        }
         String url = i != null ? i.getStringExtra("gfTestUrl") : null;
         if (url == null) return;
         try {
