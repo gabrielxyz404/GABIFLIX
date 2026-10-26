@@ -139,7 +139,9 @@ public class PlayerActivity extends Activity {
         options.add("--sub-text-scale=90");
         libVLC = new LibVLC(this, options);
         player = new MediaPlayer(libVLC);
-        player.attachViews(videoLayout, null, true, false);
+        // na TV (Fire TV) o vídeo vai por TextureView: com SurfaceView a imagem ficava preta (só som)
+        // quando os controles sumiam, porque o Fire TV passa o vídeo para outra camada da tela
+        player.attachViews(videoLayout, null, true, tv);
         player.setEventListener(this::onPlayerEvent);
 
         Media media = new Media(libVLC, Uri.parse(url));
