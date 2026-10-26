@@ -379,3 +379,24 @@
     .gf-d-action { cursor: pointer; }
 }
 @media (min-width: 1500px) { .gf-d-body { margin-top: -44vh; padding: 0 4.5rem; } }
+
+/* ---------- celular: a imagem sobe até o topo e a cápsula de cima flutua em vidro por cima dela ---------- */
+/* sem a faixa preta do cabeçalho: a barra sai do fluxo e o conteúdo começa no topo da tela */
+:root[data-gf-route="detail"] .horizontal-nav-bar-container-Y_zvK {
+    position: absolute; top: 0; left: 0; right: 0; z-index: 5;
+    background: none;
+}
+:root[data-gf-route="detail"] .nav-content-container-zl9hQ { top: 0; }
+/* cápsula mais transparente: dá para ver a imagem por trás */
+:root[data-gf-route="detail"] .horizontal-nav-bar-container-Y_zvK::before {
+    background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 100%),
+        rgba(12, 12, 14, 0.28);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22), 0 8px 22px rgba(0, 0, 0, 0.28);
+}
+/* imagem maior, de ponta a ponta, também por baixo da barra de estado */
+:root[data-gf-route="detail"] .gf-d-hero { margin-top: 0; aspect-ratio: 4 / 5; max-height: 64vh; }
+/* escurece um pouco o topo para a cápsula e a barra de estado continuarem legíveis */
+:root[data-gf-route="detail"] .gf-d-hero::after {
+    background: linear-gradient(180deg, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0) 24%, rgba(0,0,0,0) 55%, #000 100%);
+}
