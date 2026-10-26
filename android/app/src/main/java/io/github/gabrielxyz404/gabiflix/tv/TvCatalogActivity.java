@@ -1,6 +1,5 @@
 package io.github.gabrielxyz404.gabiflix.tv;
 
-import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
@@ -464,16 +463,21 @@ public class TvCatalogActivity extends TvBase {
     }
 
     private void removeDialog(JSONObject item, Row r) {
-        new AlertDialog.Builder(this, android.R.style.Theme_DeviceDefault_Dialog_Alert)
-                .setTitle(item.optString("name"))
-                .setItems(new String[]{"Remover do Continuar assistindo"}, (d, w) -> {
+        JSONObject st = item.optJSONObject("state");
+        String sub = "";
+        if (st != null && st.optLong("duration") > 0) {
+            long off = st.optLong("timeOffset") / 60000, dur = st.optLong("duration") / 60000;
+            sub = "Parou em " + off + " min de " + dur + " min";
+        }
+        new TvSheet(this, item, sub)
+                .action("✕   Remover do Continuar assistindo", () -> {
                     r.metas.remove(item);
                     rows.sync();
                     rows.changed(r);
                     Context c = getApplicationContext();
                     Net.async(() -> { Stremio.rewind(c, item.optString("_id")); return true; }, (ok, e) -> {});
                 })
-                .setNegativeButton("Cancelar", null)
+                .action("Cancelar", null)
                 .show();
     }
 

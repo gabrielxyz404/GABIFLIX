@@ -76,7 +76,7 @@ class PosterAdapter extends RecyclerView.Adapter<PosterAdapter.H> {
             int pos = holder.getBindingAdapterPosition();
             if (pos >= 0 && pos < items.size()) open((Activity) c, items.get(pos));
         });
-        // segurar OK (menos de 1 segundo) (ou o botão ☰) num "Continuar assistindo": opção de remover
+        // segurar OK (meio segundo) (ou o botão ☰) num "Continuar assistindo": opção de remover
         p.setLongClickable(false);
         final boolean[] held = {false};
         final Runnable[] timer = {null};
@@ -97,7 +97,16 @@ class PosterAdapter extends RecyclerView.Adapter<PosterAdapter.H> {
                     longPress.on(items.get(pos), pos);
                     return true;
                 }
-                if (ev.getRepeatCount() > 0) return true; // ignora as repetições do controle
+                if (ev.getRepeatCount() > 0) {
+                    // a primeira repetição do controle chega ~0,4 s depois de apertar: já conta como "segurar"
+                    if (can && !held[0]) {
+                        held[0] = true;
+                        if (timer[0] != null) { v.removeCallbacks(timer[0]); timer[0] = null; }
+                        v.setPressed(false);
+                        longPress.on(items.get(pos), pos);
+                    }
+                    return true;
+                }
                 held[0] = false;
                 if (can) {
                     // relógio próprio: exatamente 2 s depois de apertar, se ainda estiver apertado
@@ -108,7 +117,7 @@ class PosterAdapter extends RecyclerView.Adapter<PosterAdapter.H> {
                         v.setPressed(false);
                         longPress.on(items.get(p2), p2);
                     };
-                    v.postDelayed(timer[0], 800);
+                    v.postDelayed(timer[0], 450);
                 }
                 return false;
             }
