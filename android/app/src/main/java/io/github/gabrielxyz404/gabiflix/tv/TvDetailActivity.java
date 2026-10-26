@@ -302,7 +302,7 @@ public class TvDetailActivity extends TvBase {
 
     private View buildPanel() {
         panel = new FrameLayout(this);
-        panel.setBackgroundColor(0xF2000000);
+        panel.setBackgroundColor(0xFF0B0B0D);
         panel.setVisibility(View.GONE);
         LinearLayout row = new LinearLayout(this);
         row.setOrientation(LinearLayout.HORIZONTAL);
