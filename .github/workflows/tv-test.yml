@@ -24,6 +24,7 @@ jobs:
           GABIFLIX_ABIS: x86,x86_64
         run: gradle -p android assembleRelease --no-daemon -q
       - name: Vídeo de teste (som AC3, como os do Real-Debrid)
+        continue-on-error: true
         run: |
           timeout 300 sudo apt-get install -y -qq ffmpeg >/dev/null || (sudo apt-get update -qq && timeout 300 sudo apt-get install -y -qq ffmpeg >/dev/null)
           mkdir -p /tmp/video && cd /tmp/video
