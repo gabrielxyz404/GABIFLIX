@@ -60,6 +60,8 @@ jobs:
         run: |
           HASH=$(git ls-files android | grep -v '/gabiflix/tv/' | grep -v '/res/anim/' | sort | xargs sha256sum | sha256sum | cut -c1-16)
           OLD=$(gh release view android --repo ${{ github.repository }} --json body -q .body 2>/dev/null | grep -o 'celular:[0-9a-f]*' | cut -d: -f2 || true)
+          # a versão do celular que já está publicada (antes de existir a marca na descrição)
+          [ -z "$OLD" ] && OLD=$(cat .github/phone-hash 2>/dev/null || true)
           echo "hash=$HASH" >> "$GITHUB_OUTPUT"
           if [ "$HASH" = "$OLD" ]; then echo "publish=false" >> "$GITHUB_OUTPUT"; echo "Celular sem mudanças: não publica."; else echo "publish=true" >> "$GITHUB_OUTPUT"; fi
       - name: Publicar para o celular
