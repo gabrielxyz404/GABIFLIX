@@ -485,3 +485,20 @@ div[class^="board-content-"]:not([class*="container"]) > :not(#gf-home) { displa
 
 /* segurar o dedo no pôster não seleciona nem abre o menu do sistema */
 #gf-home .gf-poster, #gf-home .gf-poster img { -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; -webkit-user-drag: none; }
+
+/* ---------- celular: no catálogo, a cápsula de cima flutua em vidro transparente e o conteúdo passa por baixo dela ---------- */
+:root[data-gf-app="android"][data-gf-route="home"][data-gf-view="catalog"] .horizontal-nav-bar-container-Y_zvK {
+    position: absolute; top: 0; left: 0; right: 0; z-index: 5;
+    background: none;
+}
+:root[data-gf-app="android"][data-gf-route="home"][data-gf-view="catalog"] .nav-content-container-zl9hQ { top: 0; }
+:root[data-gf-app="android"][data-gf-route="home"][data-gf-view="catalog"] .horizontal-nav-bar-container-Y_zvK::before {
+    background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.01) 100%),
+        rgba(12, 12, 14, 0.04);
+    -webkit-backdrop-filter: blur(3px) saturate(130%);
+    backdrop-filter: blur(3px) saturate(130%);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22), 0 6px 18px rgba(0, 0, 0, 0.18);
+}
+/* o começo da página continua no mesmo lugar de antes (abaixo da cápsula); ao rolar, o conteúdo sobe por baixo dela */
+:root[data-gf-app="android"][data-gf-route="home"][data-gf-view="catalog"] #gf-home { padding-top: calc(var(--horizontal-nav-bar-size, 5.5rem) + var(--safe-area-inset-top, 0px) + 1rem); }
