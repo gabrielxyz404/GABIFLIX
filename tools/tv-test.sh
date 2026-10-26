@@ -67,7 +67,7 @@ adb shell monkey -p io.github.gabrielxyz404.gabiflix -c android.intent.category.
 sleep 6
 key DPAD_RIGHT DPAD_RIGHT;       shot h-prime 2
 key DPAD_RIGHT DPAD_RIGHT DPAD_RIGHT DPAD_RIGHT; shot h-globo 2
-key DPAD_UP;                     shot h-icones 2
+key DPAD_UP DPAD_LEFT DPAD_LEFT DPAD_LEFT; shot h-icones 2
 key DPAD_CENTER;                 shot h-maistarde 4
 key BACK
 # janela das fontes (dados de exemplo)
