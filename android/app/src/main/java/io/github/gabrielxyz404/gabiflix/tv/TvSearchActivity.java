@@ -94,7 +94,7 @@ public class TvSearchActivity extends TvBase {
         getWindow().setSoftInputMode(android.view.WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
         input.setVisibility(android.view.View.GONE);
         TextView title = Ui.text(this, "Mais Tarde", 26, true, Ui.TEXT);
-        title.setTypeface(TvHomeActivity.font(this, 700));
+        TvHomeActivity.outfit(title, 700);
         ((LinearLayout) input.getParent()).addView(title, 0);
         loadLibrary();
     }

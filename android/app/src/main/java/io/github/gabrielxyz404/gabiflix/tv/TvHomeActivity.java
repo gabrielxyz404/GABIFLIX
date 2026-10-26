@@ -46,7 +46,7 @@ public class TvHomeActivity extends TvBase {
         top.addView(logo, new LinearLayout.LayoutParams(Ui.dp(this, 40), Ui.dp(this, 40)));
         top.addView(Ui.space(this, 14, 1));
         TextView home = Ui.text(this, "Home", 26, true, Ui.TEXT);
-        home.setTypeface(font(this, 700));
+        outfit(home, 700);
         top.addView(home, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
         View later = iconButton("later", "Mais Tarde");
         later.setOnClickListener(v -> startActivity(new Intent(this, TvSearchActivity.class).putExtra("library", true)));
@@ -175,7 +175,7 @@ public class TvHomeActivity extends TvBase {
             col.addView(accent, new LinearLayout.LayoutParams(Ui.dp(c, 78), Ui.dp(c, 78)));
             col.addView(Ui.space(c, 1, 18));
             TextView name = Ui.text(c, "", 30, true, Ui.TEXT);
-            name.setTypeface(font(c, 800));
+            outfit(name, 800);
             name.setGravity(Gravity.CENTER);
             name.setMaxLines(2);
             col.addView(name, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
@@ -274,6 +274,12 @@ public class TvHomeActivity extends TvBase {
         bgAnim.setDuration(260);
         bgAnim.addUpdateListener(a -> { bgColor = (int) a.getAnimatedValue(); rootView.setBackgroundColor(bgColor); });
         bgAnim.start();
+    }
+
+    /** aplica a fonte Outfit com o peso pedido (a fonte é variável: o peso vai por "wght") */
+    static void outfit(TextView t, int weight) {
+        t.setTypeface(font(t.getContext(), weight));
+        if (android.os.Build.VERSION.SDK_INT >= 26) t.setFontVariationSettings("'wght' " + weight);
     }
 
     /** fonte moderna (Outfit, a mesma do celular) */
