@@ -45,7 +45,7 @@ jobs:
           profile: tv_1080p
           disable-animations: true
           emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
-          script: bash tools/tv-test.sh
+          script: bash tools/tv-test-marvel.sh
       - name: Publicar as fotos
         if: always()
         run: |
