@@ -17,6 +17,7 @@
     ];
 
     var current = null; // serviço aberto, ou null para a grade
+    var gridIndex = 0; // celular Android: serviço que estava na tela da grade, para voltar a ele
 
     function el(tag, cls, text) {
         var e = document.createElement(tag);
@@ -27,7 +28,9 @@
 
     function renderGrid(root) {
         root.innerHTML = '';
-        var grid = el('div', 'gf-grid');
+        // celular Android: os botões viram um carrossel, um serviço por tela
+        var android = document.documentElement.getAttribute('data-gf-app') === 'android';
+        var grid = el('div', android ? 'gf-grid gf-pager' : 'gf-grid');
         SERVICES.forEach(function (s) {
             var b = el('button', 'gf-card' + (s.wide ? ' is-wide' : ''));
             b.type = 'button';
@@ -44,6 +47,64 @@
             grid.appendChild(b);
         });
         root.appendChild(grid);
+        if (!android) return;
+
+        // celular Android: as bolinhas embaixo mostram em qual serviço está; tocar numa leva até ele
+        var cards = grid.children;
+        var dots = el('div', 'gf-dots');
+        var raf = 0;
+
+        // largura de uma tela: distância entre o primeiro e o segundo botão (inclui o espaço entre eles)
+        function step() {
+            var d = cards.length > 1 ? cards[1].offsetLeft - cards[0].offsetLeft : 0;
+            return d > 0 ? d : (grid.clientWidth || 1);
+        }
+        // número do serviço que está na tela agora
+        function indexNow() {
+            var i = Math.round(grid.scrollLeft / step());
+            return Math.max(0, Math.min(cards.length - 1, i));
+        }
+        function showDot(i) {
+            for (var k = 0; k < dots.children.length; k++) {
+                if (k === i) dots.children[k].classList.add('is-on');
+                else dots.children[k].classList.remove('is-on');
+            }
+        }
+        function goTo(i) {
+            var x = i * step();
+            // rolagem suave só onde o navegador entende as opções; no resto, pula direto
+            if (typeof grid.scrollTo === 'function' && 'scrollBehavior' in document.documentElement.style) {
+                grid.scrollTo({ left: x, behavior: 'smooth' });
+            } else {
+                grid.scrollLeft = x;
+            }
+        }
+
+        SERVICES.forEach(function (s, i) {
+            var d = el('button', 'gf-dot' + (i === gridIndex ? ' is-on' : ''));
+            d.type = 'button';
+            d.setAttribute('aria-label', s.name);
+            d.addEventListener('click', function () { goTo(i); });
+            dots.appendChild(d);
+        });
+        root.appendChild(dots);
+
+        // ao rolar, guarda o serviço da tela e atualiza as bolinhas (no máximo uma vez por quadro)
+        grid.addEventListener('scroll', function () {
+            if (raf) return;
+            raf = requestAnimationFrame(function () {
+                raf = 0;
+                gridIndex = indexNow();
+                showDot(gridIndex);
+            });
+        }, { passive: true });
+
+        // volta para o serviço em que o usuário estava (ex.: ao fechar um catálogo), sem animação
+        requestAnimationFrame(function () {
+            gridIndex = gridIndex >= 0 && gridIndex < cards.length ? gridIndex : 0;
+            grid.scrollLeft = gridIndex * step();
+            showDot(gridIndex);
+        });
     }
 
     // Abas de cada serviço (categorias típicas de cada app)

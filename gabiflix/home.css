@@ -502,3 +502,75 @@ div[class^="board-content-"]:not([class*="container"]) > :not(#gf-home) { displa
 }
 /* o começo da página continua no mesmo lugar de antes (abaixo da cápsula); ao rolar, o conteúdo sobe por baixo dela */
 :root[data-gf-app="android"][data-gf-route="home"][data-gf-view="catalog"] #gf-home { padding-top: calc(var(--horizontal-nav-bar-size, 5.5rem) + var(--safe-area-inset-top, 0px) + 1rem); }
+
+/* ---------- Android: serviços em carrossel (um por tela, arrasta para o lado; para no último) ---------- */
+html[data-gf-app="android"][data-gf-route="home"][data-gf-view="grid"] #gf-home .gf-pager {
+    display: flex;
+    flex: none;
+    flex-direction: row;
+    gap: 2rem;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-snap-type: x mandatory;
+    overscroll-behavior-x: contain;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    touch-action: pan-x;
+    width: auto;
+    margin: 0 -1rem;
+    margin-top: 0;
+    padding: 0 1rem;
+    scroll-padding: 0 1rem;
+}
+html[data-gf-app="android"][data-gf-route="home"][data-gf-view="grid"] #gf-home .gf-pager::-webkit-scrollbar { display: none; }
+html[data-gf-app="android"][data-gf-route="home"][data-gf-view="grid"] #gf-home .gf-pager .gf-card,
+html[data-gf-app="android"][data-gf-route="home"][data-gf-view="grid"] #gf-home .gf-pager .gf-card.is-wide {
+    flex: 0 0 100%;
+    scroll-snap-align: center;
+    scroll-snap-stop: always;
+    aspect-ratio: auto;
+    height: min(58vh, 30rem);
+    min-height: 0;
+    grid-column: auto;
+}
+html[data-gf-app="android"][data-gf-route="home"][data-gf-view="grid"] #gf-home .gf-pager .gf-card-name,
+html[data-gf-app="android"][data-gf-route="home"][data-gf-view="grid"] #gf-home .gf-pager .gf-card.is-wide .gf-card-name {
+    font-size: clamp(2.3rem, 11vw, 3.4rem);
+}
+html[data-gf-app="android"][data-gf-route="home"][data-gf-view="grid"] #gf-home .gf-pager .gf-card-hint {
+    font-size: 1rem;
+    bottom: 1.2rem;
+}
+html[data-gf-app="android"][data-gf-route="home"][data-gf-view="grid"] #gf-home .gf-dots {
+    display: flex;
+    justify-content: center;
+    gap: 0.55rem;
+    margin-top: 1.2rem;
+}
+html[data-gf-app="android"][data-gf-route="home"][data-gf-view="grid"] #gf-home .gf-dot {
+    position: relative;
+    flex: none;
+    width: 0.5rem;
+    height: 0.5rem;
+    padding: 0;
+    border: 0;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.3);
+    transition: width 0.2s ease, background 0.2s ease;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+}
+/* área de toque maior que a bolinha, sem mudar o tamanho visual */
+html[data-gf-app="android"][data-gf-route="home"][data-gf-view="grid"] #gf-home .gf-dot::after {
+    content: "";
+    position: absolute;
+    inset: -0.6rem -0.25rem;
+}
+html[data-gf-app="android"][data-gf-route="home"][data-gf-view="grid"] #gf-home .gf-dot.is-on {
+    width: 1.4rem;
+    background: #fff;
+}
+html[data-gf-app="android"][data-gf-route="home"][data-gf-view="grid"] #gf-home .gf-dot:focus-visible { outline: 2px solid var(--gf-red); outline-offset: 2px; }
+@media (prefers-reduced-motion: reduce) {
+    html[data-gf-app="android"][data-gf-route="home"][data-gf-view="grid"] #gf-home .gf-dot { transition: none; }
+}
