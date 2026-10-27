@@ -21,6 +21,9 @@ public class TvHomeActivity extends TvBase {
 
     private View accountBtn;
     private View rootView;
+    private FrameLayout stage;
+    private View bgFront, bgBack;   // camada de fundo visível e a que vai aparecer
+    private String bgId = "";
     private android.graphics.drawable.Drawable bgNow = new android.graphics.drawable.ColorDrawable(0xFF0B0B0D);
     private RecyclerView list;
     private static final int N = Services.ALL.size();
@@ -34,7 +37,15 @@ public class TvHomeActivity extends TvBase {
         root.setPadding(0, Ui.dp(this, 22), 0, Ui.dp(this, 14));
         rootView = root;
         root.setClipChildren(false);
-        root.setBackground(bgNow);
+        // o fundo fica em duas camadas por trás (cada uma vira uma textura da placa de vídeo): trocar de serviço é só esmaecer uma sobre a outra
+        stage = new FrameLayout(this);
+        bgBack = new View(this);
+        bgFront = new View(this);
+        for (View v : new View[]{bgBack, bgFront}) {
+            v.setLayerType(View.LAYER_TYPE_HARDWARE, null);
+            stage.addView(v, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+        }
+        bgFront.setBackground(bgNow);
 
         // topo: logo + "Home" à esquerda, ícones à direita
         LinearLayout top = new LinearLayout(this);
@@ -76,7 +87,8 @@ public class TvHomeActivity extends TvBase {
         list.setItemViewCacheSize(N + 2);
         list.setAdapter(new Cards());
         root.addView(list, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f));
-        setContentView(root);
+        stage.addView(root, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+        setContentView(stage);
         ((PosterAdapter.Linear) list.getLayoutManager()).scrollToPositionWithOffset(MIDDLE, 0);
         focusCard(MIDDLE, 0);
         prefetch();
@@ -229,7 +241,7 @@ public class TvHomeActivity extends TvBase {
             CH h = new CH(f, accent, name, tabs);
             // selecionado: cresce suavemente e o fundo da tela ganha a cor do serviço
             f.setOnFocusChangeListener((v, has) -> {
-                v.animate().scaleX(has ? 1.08f : 1f).scaleY(has ? 1.08f : 1f).translationZ(has ? 8f : 0f)
+                v.animate().scaleX(has ? 1.08f : 1f).scaleY(has ? 1.08f : 1f)
                         .setDuration(200).setInterpolator(new android.view.animation.DecelerateInterpolator()).start();
                 int p = h.getBindingAdapterPosition();
                 if (has && p >= 0) paintBackground(Services.ALL.get(p % N));
@@ -305,6 +317,8 @@ public class TvHomeActivity extends TvBase {
     private void paintBackground(Services.Service s) {
         // o mesmo visual dos cartões, na tela inteira: quase preto com brilho da cor no canto de cima
         // e outro mais fraco no canto de baixo (a Globoplay mistura amarelo e verde)
+        if (s.id.equals(bgId)) return;
+        bgId = s.id;
         boolean globo = s.id.equals("globoplay");
         int c1 = globo ? 0xFFF5C518 : Ui.parseColor(s.color, 0xFFFFFFFF);
         int c2 = globo ? 0xFF3ECF6B : c1;
@@ -322,10 +336,18 @@ public class TvHomeActivity extends TvBase {
         g2.setGradientRadius(w * 0.75f);
         g2.setColors(new int[]{alpha(c2, 0.20f), 0x00000000});
         android.graphics.drawable.Drawable next = new android.graphics.drawable.LayerDrawable(new android.graphics.drawable.Drawable[]{base, g1, g2});
-        android.graphics.drawable.TransitionDrawable t = new android.graphics.drawable.TransitionDrawable(new android.graphics.drawable.Drawable[]{bgNow, next});
-        t.setCrossFadeEnabled(true);
-        rootView.setBackground(t);
-        t.startTransition(260);
+        // a camada que estava atrás recebe o novo fundo, sobe por cima da atual e aparece suavemente (esmaecer pela placa de vídeo: leve)
+        View incoming = bgBack, old = bgFront;
+        incoming.animate().cancel();
+        old.animate().cancel();
+        old.setAlpha(1f);
+        incoming.setBackground(next);
+        incoming.setAlpha(0f);
+        stage.bringChildToFront(incoming);
+        stage.bringChildToFront(rootView);
+        incoming.animate().alpha(1f).setDuration(220).setInterpolator(new android.view.animation.DecelerateInterpolator()).start();
+        bgFront = incoming;
+        bgBack = old;
         bgNow = next;
     }
 
