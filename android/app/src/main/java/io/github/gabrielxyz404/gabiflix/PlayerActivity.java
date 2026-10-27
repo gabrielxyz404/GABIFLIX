@@ -857,7 +857,7 @@ public class PlayerActivity extends Activity {
     private String delayKey() { return "d:" + (metaId != null ? metaId : String.valueOf(url.hashCode())); }
 
     private int savedSubDelay() {
-        try { return getSharedPreferences("sub-delay", MODE_PRIVATE).getInt(delayKey(), 0); } catch (Exception e) { return 0; }
+        try { return getSharedPreferences("sub-delay-2", MODE_PRIVATE).getInt(delayKey(), 0); } catch (Exception e) { return 0; }
     }
 
     private void applySubDelay() {
@@ -869,7 +869,7 @@ public class PlayerActivity extends Activity {
 
     private void changeSubDelay(int deltaMs, boolean reset, TextView label) {
         subDelayMs = reset ? 0 : Math.max(-60000, Math.min(60000, subDelayMs + deltaMs));
-        try { getSharedPreferences("sub-delay", MODE_PRIVATE).edit().putInt(delayKey(), subDelayMs).apply(); } catch (Exception ignored) {}
+        try { getSharedPreferences("sub-delay-2", MODE_PRIVATE).edit().putInt(delayKey(), subDelayMs).apply(); } catch (Exception ignored) {}
         applySubDelay();
         label.setText(delayLabel());
         glog("atraso da legenda: " + subDelayMs + " ms");
