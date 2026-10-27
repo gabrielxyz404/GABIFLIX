@@ -642,13 +642,24 @@ public class TvCatalogActivity extends TvBase {
 
         private final Map<String, String> descCache = new HashMap<>();
 
+        private void setListHeight(RH h, int dp) {
+            ViewGroup.LayoutParams lp = h.list.getLayoutParams();
+            int px = Ui.dp(h.list.getContext(), dp);
+            if (lp.height != px) { lp.height = px; h.list.setLayoutParams(lp); }
+        }
+
         /** o foco entrou ou saiu de um título da fileira: mostra ou esconde a sinopse embaixo */
         void rowFocus(RH h, JSONObject item, boolean has) {
             if (!has) {
                 // só esconde se o foco saiu mesmo da fileira (e não só passou para o título do lado)
-                h.list.post(() -> { if (!h.list.hasFocus()) h.panel.setVisibility(View.GONE); });
+                h.list.post(() -> {
+                    if (h.list.hasFocus()) return;
+                    h.panel.setVisibility(View.GONE);
+                    setListHeight(h, Ui.POSTER_H + 14);
+                });
                 return;
             }
+            setListHeight(h, PosterAdapter.BANNER_H + 14); // a fileira ganha altura para o banner maior
             final int tok = ++h.token;
             List<String> parts = new ArrayList<>();
             parts.add("series".equals(item.optString("type")) ? "Série" : "Filme");
@@ -698,6 +709,7 @@ public class TvCatalogActivity extends TvBase {
             h.adapter.numbered = r.numbered;
             h.adapter.progress = r.cont;
             h.adapter.longPress = r.cont ? (item, pos) -> removeDialog(item, r) : null;
+            if (!h.list.hasFocus()) { setListHeight(h, Ui.POSTER_H + 14); h.panel.setVisibility(View.GONE); }
             h.adapter.set(r.metas);
             h.list.scrollToPosition(Math.max(0, Math.min(r.focus, r.metas.size() - 1)));
         }

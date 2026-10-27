@@ -30,8 +30,8 @@ class PosterAdapter extends RecyclerView.Adapter<PosterAdapter.H> {
     /** o foco entrou (has = true) ou saiu de um título */
     interface FocusItem { void on(JSONObject item, int position, boolean has); }
 
-    /** largura (dp) do título selecionado quando abre em banner 16:9 (a altura é a do pôster) */
-    static final int BANNER_W = 283;
+    /** tamanho (dp) do título selecionado quando abre em banner 16:9: maior que os pôsteres vizinhos */
+    static final int BANNER_W = 340, BANNER_H = 191;
 
     final List<JSONObject> items = new ArrayList<>();
     boolean numbered, progress;
@@ -97,7 +97,7 @@ class PosterAdapter extends RecyclerView.Adapter<PosterAdapter.H> {
         banner.addView(bimg, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
         View shade = new View(c);
         shade.setBackground(new GradientDrawable(GradientDrawable.Orientation.BOTTOM_TOP, new int[]{0xD9000000, 0x00000000}));
-        banner.addView(shade, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, Ui.dp(c, 80), Gravity.BOTTOM));
+        banner.addView(shade, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, Ui.dp(c, 90), Gravity.BOTTOM));
         TextView bt = Ui.text(c, "", 15, false, Ui.TEXT);
         TvHomeActivity.outfit(bt, 600);
         bt.setMaxLines(2);
@@ -200,8 +200,8 @@ class PosterAdapter extends RecyclerView.Adapter<PosterAdapter.H> {
         if (h.anim != null) { h.anim.cancel(); h.anim = null; }
         h.expanded = false;
         ViewGroup.LayoutParams lp = h.poster.getLayoutParams();
-        int base = Ui.dp(h.poster.getContext(), w);
-        if (lp.width != base) { lp.width = base; h.poster.setLayoutParams(lp); }
+        int base = Ui.dp(h.poster.getContext(), w), baseH = Ui.dp(h.poster.getContext(), this.h);
+        if (lp.width != base || lp.height != baseH) { lp.width = base; lp.height = baseH; h.poster.setLayoutParams(lp); }
         h.banner.setVisibility(View.GONE);
         h.img.setVisibility(View.VISIBLE);
         h.name.setVisibility(View.VISIBLE);
@@ -234,9 +234,15 @@ class PosterAdapter extends RecyclerView.Adapter<PosterAdapter.H> {
         Ui.logo(h.logoImg, h.bannerTitle, lg);
         // abre devagar o bastante para ver, rápido o bastante para não pesar na TV
         final ViewGroup.LayoutParams lp = h.poster.getLayoutParams();
-        ValueAnimator a = ValueAnimator.ofInt(lp.width, Ui.dp(c, BANNER_W));
+        final int w0 = lp.width, h0 = lp.height, w1 = Ui.dp(c, BANNER_W), h1 = Ui.dp(c, BANNER_H);
+        ValueAnimator a = ValueAnimator.ofFloat(0f, 1f);
         a.setDuration(130);
-        a.addUpdateListener(v -> { lp.width = (Integer) v.getAnimatedValue(); h.poster.setLayoutParams(lp); });
+        a.addUpdateListener(v -> {
+            float t = (Float) v.getAnimatedValue();
+            lp.width = w0 + Math.round((w1 - w0) * t);
+            lp.height = h0 + Math.round((h1 - h0) * t);
+            h.poster.setLayoutParams(lp);
+        });
         h.anim = a;
         a.start();
     }
