@@ -279,10 +279,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, WKScriptMessageHandler
         if latest > mine, let zip = zip {
             let a = NSAlert()
             a.messageText = "Nova versão do FramePlay"
-            a.informativeText = "A versão 1.0.\(latest) está disponível (a sua é a 1.0.\(mine)). Baixe, abra o .zip e substitua o FramePlay na pasta Aplicativos."
-            a.addButton(withTitle: "Baixar")
+            a.informativeText = "A versão 1.0.\(latest) está disponível (a sua é a 1.0.\(mine)). O FramePlay baixa, instala e abre sozinho."
+            a.addButton(withTitle: "Atualizar agora")
             a.addButton(withTitle: "Agora não")
-            if a.runModal() == .alertFirstButtonReturn { NSWorkspace.shared.open(zip) }
+            if a.runModal() == .alertFirstButtonReturn { installUpdate(zip: zip) }
         } else if !silent {
             let a = NSAlert()
             a.messageText = "Já tens a versão mais recente"
@@ -290,6 +290,83 @@ final class AppDelegate: NSObject, NSApplicationDelegate, WKScriptMessageHandler
             a.addButton(withTitle: "OK")
             a.runModal()
         }
+    }
+
+    // baixa o .zip pelo próprio app (sem a marca "vindo da internet", que o macOS usa para bloquear), troca o app e abre de novo
+    private var updatePanel: NSPanel?
+
+    private func updateFailed(_ text: String) {
+        let a = NSAlert()
+        a.messageText = "Não foi possível atualizar"
+        a.informativeText = text
+        a.addButton(withTitle: "OK")
+        a.runModal()
+    }
+
+    private func installUpdate(zip: URL) {
+        let appPath = Bundle.main.bundlePath
+        let parent = (appPath as NSString).deletingLastPathComponent
+        if !FileManager.default.isWritableFile(atPath: parent) {
+            updateFailed("O FramePlay não tem permissão para se atualizar nesta pasta. Mova-o para a pasta Aplicativos e tente de novo.")
+            return
+        }
+        let panel = NSPanel(contentRect: NSRect(x: 0, y: 0, width: 320, height: 90), styleMask: [.titled], backing: .buffered, defer: false)
+        panel.title = "FramePlay"
+        let label = NSTextField(labelWithString: "A baixar a atualização…")
+        label.frame = NSRect(x: 20, y: 50, width: 280, height: 20)
+        let bar = NSProgressIndicator(frame: NSRect(x: 20, y: 22, width: 280, height: 16))
+        bar.style = .bar
+        bar.isIndeterminate = true
+        bar.startAnimation(nil)
+        panel.contentView?.addSubview(label)
+        panel.contentView?.addSubview(bar)
+        panel.center()
+        panel.makeKeyAndOrderFront(nil)
+        updatePanel = panel
+        URLSession.shared.downloadTask(with: zip) { [weak self] tmp, resp, err in
+            var dest: URL?
+            let code = (resp as? HTTPURLResponse)?.statusCode ?? 200
+            if let tmp = tmp, err == nil, code < 400 {
+                let d = FileManager.default.temporaryDirectory.appendingPathComponent("FramePlay-update.zip")
+                try? FileManager.default.removeItem(at: d)
+                if (try? FileManager.default.moveItem(at: tmp, to: d)) != nil { dest = d }
+            }
+            DispatchQueue.main.async { self?.finishInstall(zipFile: dest) }
+        }.resume()
+    }
+
+    private func finishInstall(zipFile: URL?) {
+        updatePanel?.close()
+        updatePanel = nil
+        guard let zipFile = zipFile else {
+            updateFailed("Não consegui baixar a nova versão. Verifique a internet e tente de novo.")
+            return
+        }
+        let appPath = Bundle.main.bundlePath
+        let pid = ProcessInfo.processInfo.processIdentifier
+        let script = """
+        #!/bin/bash
+        while kill -0 \(pid) 2>/dev/null; do sleep 0.3; done
+        T=$(mktemp -d /tmp/frameplay-upd.XXXXXX)
+        if ditto -x -k "\(zipFile.path)" "$T" && [ -d "$T/FramePlay.app" ]; then
+          rm -rf "\(appPath)" && mv "$T/FramePlay.app" "\(appPath)" && xattr -cr "\(appPath)"
+        fi
+        rm -rf "$T" "\(zipFile.path)"
+        open "\(appPath)"
+        """
+        let sh = "/tmp/frameplay-update.sh"
+        do { try script.write(toFile: sh, atomically: true, encoding: .utf8) } catch {
+            updateFailed("Não consegui preparar a atualização.")
+            return
+        }
+        let p = Process()
+        p.executableURL = URL(fileURLWithPath: "/bin/bash")
+        p.arguments = ["-c", "nohup /bin/bash \(sh) >/dev/null 2>&1 &"]
+        do { try p.run() } catch {
+            updateFailed("Não consegui iniciar a atualização.")
+            return
+        }
+        NSApp.terminate(nil)
     }
 
     // ---------- links ----------
