@@ -40,6 +40,11 @@
             // tons do fundo suave do botão (Globoplay usa as duas cores do degradê)
             b.style.setProperty('--gf-tint1', s.grad ? s.grad[0] : s.color);
             b.style.setProperty('--gf-tint2', s.grad ? s.grad[1] : s.color);
+            // celular Android: o cartão ocupa a tela toda, com o degradê de fundo do serviço (a cápsula de baixo e de cima ficam sobre ele)
+            if (android && s.bg) {
+                b.style.setProperty('--gf-bg0', s.bg[0]);
+                b.style.setProperty('--gf-bg1', s.bg[1]);
+            }
             b.appendChild(el('span', 'gf-card-name' + (s.grad ? ' gf-grad-text' : ''), s.name));
             b.appendChild(el('span', 'gf-card-hint', s.hint || 'Ver catálogo'));
             b.addEventListener('pointerdown', function () { prefetch(s); }, { passive: true });

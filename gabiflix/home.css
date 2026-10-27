@@ -508,7 +508,7 @@ html[data-gf-app="android"][data-gf-route="home"][data-gf-view="grid"] #gf-home 
     display: flex;
     flex: none;
     flex-direction: row;
-    gap: 2rem;
+    gap: 0;
     overflow-x: auto;
     overflow-y: hidden;
     scroll-snap-type: x mandatory;
@@ -516,36 +516,55 @@ html[data-gf-app="android"][data-gf-route="home"][data-gf-view="grid"] #gf-home 
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
     touch-action: pan-x;
-    width: auto;
-    margin: 0 -1rem;
+    width: 100vw;
+    height: 100%;
+    margin: 0 calc(50% - 50vw);
     margin-top: 0;
-    padding: 0 1rem;
-    scroll-padding: 0 1rem;
+    padding: 0;
+    scroll-padding: 0;
 }
 html[data-gf-app="android"][data-gf-route="home"][data-gf-view="grid"] #gf-home .gf-pager::-webkit-scrollbar { display: none; }
 html[data-gf-app="android"][data-gf-route="home"][data-gf-view="grid"] #gf-home .gf-pager .gf-card,
 html[data-gf-app="android"][data-gf-route="home"][data-gf-view="grid"] #gf-home .gf-pager .gf-card.is-wide {
-    flex: 0 0 100%;
-    scroll-snap-align: center;
+    flex: 0 0 100vw;
+    box-sizing: border-box;
+    scroll-snap-align: start;
     scroll-snap-stop: always;
     aspect-ratio: auto;
-    height: min(58vh, 30rem);
+    height: 100%;
+    max-height: none;
     min-height: 0;
     grid-column: auto;
+    padding: var(--horizontal-nav-bar-size, 5.5rem) 1rem 6.2rem;
+    border: 0;
+    border-radius: 0;
+    transform: none;
+    background:
+        radial-gradient(120% 60% at 50% 38%, color-mix(in srgb, var(--gf-tint1, #fff) 22%, transparent) 0%, transparent 70%),
+        linear-gradient(180deg, var(--gf-bg0, #000) 0%, var(--gf-bg1, #111) 100%);
 }
+html[data-gf-app="android"][data-gf-route="home"][data-gf-view="grid"] #gf-home .gf-pager .gf-card:active { transform: none; }
 html[data-gf-app="android"][data-gf-route="home"][data-gf-view="grid"] #gf-home .gf-pager .gf-card-name,
 html[data-gf-app="android"][data-gf-route="home"][data-gf-view="grid"] #gf-home .gf-pager .gf-card.is-wide .gf-card-name {
     font-size: clamp(2.3rem, 11vw, 3.4rem);
 }
 html[data-gf-app="android"][data-gf-route="home"][data-gf-view="grid"] #gf-home .gf-pager .gf-card-hint {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 8rem;
     font-size: 1rem;
-    bottom: 1.2rem;
 }
 html[data-gf-app="android"][data-gf-route="home"][data-gf-view="grid"] #gf-home .gf-dots {
     display: flex;
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 6.2rem;
+    z-index: 2;
     justify-content: center;
     gap: 0.55rem;
-    margin-top: 1.2rem;
+    margin: 0;
 }
 html[data-gf-app="android"][data-gf-route="home"][data-gf-view="grid"] #gf-home .gf-dot {
     position: relative;
@@ -573,4 +592,28 @@ html[data-gf-app="android"][data-gf-route="home"][data-gf-view="grid"] #gf-home 
 html[data-gf-app="android"][data-gf-route="home"][data-gf-view="grid"] #gf-home .gf-dot:focus-visible { outline: 2px solid var(--gf-red); outline-offset: 2px; }
 @media (prefers-reduced-motion: reduce) {
     html[data-gf-app="android"][data-gf-route="home"][data-gf-view="grid"] #gf-home .gf-dot { transition: none; }
+}
+
+/* ---------- Android: cards em tela cheia; a cápsula de cima e a de baixo flutuam sobre o degradê do serviço ---------- */
+/* a cápsula de cima flutua em vidro transparente, como no catálogo */
+html[data-gf-app="android"][data-gf-route="home"][data-gf-view="grid"] .horizontal-nav-bar-container-Y_zvK {
+    position: absolute; top: 0; left: 0; right: 0; z-index: 5;
+    background: none;
+}
+html[data-gf-app="android"][data-gf-route="home"][data-gf-view="grid"] .nav-content-container-zl9hQ { top: 0; }
+html[data-gf-app="android"][data-gf-route="home"][data-gf-view="grid"] .horizontal-nav-bar-container-Y_zvK::before {
+    background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.01) 100%),
+        rgba(12, 12, 14, 0.04);
+    -webkit-backdrop-filter: blur(3px) saturate(130%);
+    backdrop-filter: blur(3px) saturate(130%);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22), 0 6px 18px rgba(0, 0, 0, 0.18);
+}
+/* a tela inicial ocupa a altura toda e começa no topo, por baixo da cápsula */
+html[data-gf-app="android"][data-gf-route="home"][data-gf-view="grid"] #gf-home {
+    position: relative;
+    padding: 0 !important;
+    justify-content: flex-start;
+    height: 100%;
+    overflow: visible; /* o carrossel vai de borda a borda: não cortar nas margens da página */
 }
