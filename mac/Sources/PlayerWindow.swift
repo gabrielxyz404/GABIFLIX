@@ -274,9 +274,13 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
         else { try? line.write(to: url, atomically: true, encoding: .utf8) }
     }
 
+    private var prevTickTime: Int64 = -1
     private func tick() {
-        let state = player.state
+        var state = player.state
         let t = Int64(player.time.intValue)
+        // o VLCKit às vezes continua a dizer "carregando" mesmo com o vídeo a andar: se o tempo avança, está tocando
+        if state != .playing && state != .error && player.isPlaying && t > 0 && t != prevTickTime { state = .playing }
+        prevTickTime = t
         let len = Int64(player.media?.length.intValue ?? 0)
         log("estado=\(state.rawValue) tempo=\(t) duração=\(len) tocando=\(player.isPlaying) legendas=\(addedSubs)/\(cands.count) faixasLeg=\((player.videoSubTitlesNames as? [String]) ?? []) audio=\((player.audioTrackNames as? [String]) ?? [])")
         if t > 0 { lastTime = t }
