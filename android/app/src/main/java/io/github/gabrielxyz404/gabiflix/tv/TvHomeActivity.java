@@ -16,6 +16,8 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import org.json.JSONObject;
+
 /** Tela inicial da TV: os serviços em cartões altos, lado a lado, com rolagem infinita para a direita e a esquerda. */
 public class TvHomeActivity extends TvBase {
 
@@ -92,6 +94,17 @@ public class TvHomeActivity extends TvBase {
         ((PosterAdapter.Linear) list.getLayoutManager()).scrollToPositionWithOffset(MIDDLE, 0);
         focusCard(MIDDLE, 0);
         prefetch();
+        Net.async(() -> Stremio.data("service-art"), (d, e) -> {
+            if (d == null || isFinishing()) return;
+            artData = d;
+            for (int i = 0; i < list.getChildCount(); i++) {
+                RecyclerView.ViewHolder vh = list.getChildViewHolder(list.getChildAt(i));
+                if (vh instanceof Cards.CH) {
+                    int p = vh.getBindingAdapterPosition();
+                    if (p >= 0) bindArt((Cards.CH) vh, Services.ALL.get(p % N).id);
+                }
+            }
+        });
         String crash = takeCrash(this);
         if (crash != null) {
             new AlertDialog.Builder(this, android.R.style.Theme_DeviceDefault_Dialog_Alert)
@@ -195,11 +208,28 @@ public class TvHomeActivity extends TvBase {
         });
     }
 
+    private JSONObject artData; // data/service-art.json: backdrops por serviço (renovados todo dia)
+
+    /** coloca o backdrop do dia no cartão (a imagem muda de um dia para o outro, entre as 4 do serviço) */
+    private void bindArt(Cards.CH h, String serviceId) {
+        if (artData == null) return;
+        org.json.JSONArray a = artData.optJSONArray(serviceId);
+        if (a == null || a.length() == 0) { h.artUrl = ""; h.art.setImageDrawable(null); return; }
+        JSONObject pick = a.optJSONObject((int) ((System.currentTimeMillis() / 86400000L) % a.length()));
+        String url = pick != null ? pick.optString("url", "") : "";
+        if (url.equals(h.artUrl)) return;
+        h.artUrl = url;
+        Context c = h.itemView.getContext();
+        Ui.imageSized(h.art, url, Ui.dp(c, 220), Ui.dp(c, 340));
+    }
+
     private final class Cards extends RecyclerView.Adapter<Cards.CH> {
         final class CH extends RecyclerView.ViewHolder {
             final ServiceIcon accent;
             final TextView name, tabs;
-            CH(View v, ServiceIcon accent, TextView name, TextView tabs) { super(v); this.accent = accent; this.name = name; this.tabs = tabs; }
+            final android.widget.ImageView art;
+            String artUrl = "";
+            CH(View v, ServiceIcon accent, TextView name, TextView tabs, android.widget.ImageView art) { super(v); this.accent = accent; this.name = name; this.tabs = tabs; this.art = art; }
         }
 
         @NonNull @Override
@@ -212,6 +242,19 @@ public class TvHomeActivity extends TvBase {
             f.setForeground(Ui.focusRing(c, 20));
             f.setFocusable(true);
             f.setClickable(true);
+            // imagem de fundo (backdrop de um título em alta) bem escura, por baixo do símbolo e do nome
+            f.setClipToOutline(true);
+            final float radius = Ui.dp(c, 20);
+            f.setOutlineProvider(new android.view.ViewOutlineProvider() {
+                @Override public void getOutline(View v, android.graphics.Outline o) { o.setRoundRect(0, 0, v.getWidth(), v.getHeight(), radius); }
+            });
+            android.widget.ImageView art = new android.widget.ImageView(c);
+            art.setScaleType(android.widget.ImageView.ScaleType.CENTER_CROP);
+            art.setAlpha(0.30f);
+            f.addView(art, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+            View artShade = new View(c); // esmaece a imagem para baixo, para o texto ler bem
+            artShade.setBackground(new GradientDrawable(GradientDrawable.Orientation.TOP_BOTTOM, new int[]{0x00000000, 0x660B0B0D, 0xE60B0B0D}));
+            f.addView(artShade, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
 
             LinearLayout col = new LinearLayout(c);
             col.setOrientation(LinearLayout.VERTICAL);
@@ -238,7 +281,7 @@ public class TvHomeActivity extends TvBase {
             cl.topMargin = Ui.dp(c, 70); // símbolo e nome na mesma altura em todos os cartões
             f.addView(col, cl);
 
-            CH h = new CH(f, accent, name, tabs);
+            CH h = new CH(f, accent, name, tabs, art);
             // selecionado: cresce suavemente e o fundo da tela ganha a cor do serviço
             f.setOnFocusChangeListener((v, has) -> {
                 v.animate().scaleX(has ? 1.08f : 1f).scaleY(has ? 1.08f : 1f)
@@ -281,6 +324,7 @@ public class TvHomeActivity extends TvBase {
                 });
             }
             h.tabs.setText("Ver catálogo");
+            bindArt(h, s.id);
         }
 
         @Override public int getItemCount() { return Integer.MAX_VALUE; }

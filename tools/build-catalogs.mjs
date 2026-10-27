@@ -9,7 +9,7 @@
 //   data/cine-series.json    séries populares fora do streaming
 //   data/info.json           data da atualização e contagens
 
-import { writeFile, mkdir } from 'node:fs/promises';
+import { writeFile, readFile, mkdir } from 'node:fs/promises';
 
 const API = 'https://apis.justwatch.com/graphql';
 const COUNTRIES = [
@@ -527,9 +527,35 @@ async function main() {
     // 4) Disney+ separado por marca
     await disneyBrands(pk, info, ERRORS);
 
+    await serviceArt();
+
     await saveDescriptions(info);
     await writeFile('data/info.json', JSON.stringify(info, null, 2));
     console.log('Pronto:', JSON.stringify(info.counts));
+}
+
+// Imagem de fundo (backdrop) de títulos em alta de cada serviço, para os cartões da tela inicial: data/service-art.json
+async function serviceArt() {
+    const art = {};
+    const pick = metas => {
+        const ok = (metas || []).filter(m => m.background);
+        ok.sort((a, b) => (a.type === 'series' ? 0 : 1) - (b.type === 'series' ? 0 : 1)); // séries marcantes primeiro
+        const out = [], seen = new Set();
+        for (const m of ok) {
+            if (seen.has(m.background)) continue;
+            seen.add(m.background);
+            out.push({ name: m.name, url: m.background });
+            if (out.length >= 4) break;
+        }
+        return out;
+    };
+    try {
+        for (const svc of ['netflix', 'disney', 'prime', 'hbo', 'appletv', 'paramount', 'globoplay', 'clarovideo']) {
+            art[svc] = pick(JSON.parse(await readFile(`data/${svc}-home.json`, 'utf8')).top10);
+        }
+        art.cinemateca = pick(JSON.parse(await readFile('data/cine-cinemas.json', 'utf8')).metas.slice(0, 12));
+        await writeFile('data/service-art.json', JSON.stringify(art));
+    } catch (e) { console.error('Erro nas imagens de fundo dos cartões:', e.message); }
 }
 
 main().catch(e => { console.error(e); process.exit(1); });

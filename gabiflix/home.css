@@ -617,3 +617,19 @@ html[data-gf-app="android"][data-gf-route="home"][data-gf-view="grid"] #gf-home 
     height: 100%;
     overflow: visible; /* o carrossel vai de borda a borda: não cortar nas margens da página */
 }
+
+/* celular Android: imagem de fundo (backdrop) bem escura e esmaecida nos cartões, misturada com a cor do serviço */
+html[data-gf-app="android"][data-gf-route="home"][data-gf-view="grid"] #gf-home .gf-pager .gf-card { isolation: isolate; }
+html[data-gf-app="android"][data-gf-route="home"][data-gf-view="grid"] #gf-home .gf-pager .gf-card-art {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background-size: cover;
+    background-position: center 30%;
+    opacity: 0;
+    transition: opacity 0.7s ease;
+    -webkit-mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.95) 0%, rgba(0, 0, 0, 0.6) 55%, rgba(0, 0, 0, 0.12) 100%);
+    mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.95) 0%, rgba(0, 0, 0, 0.6) 55%, rgba(0, 0, 0, 0.12) 100%);
+}
+html[data-gf-app="android"][data-gf-route="home"][data-gf-view="grid"] #gf-home .gf-pager .gf-card-art.is-on { opacity: 0.3; }
