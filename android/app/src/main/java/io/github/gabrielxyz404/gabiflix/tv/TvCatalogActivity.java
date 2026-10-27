@@ -201,8 +201,14 @@ public class TvCatalogActivity extends TvBase {
         int[] loc = new int[2];
         f.getLocationOnScreen(loc);
         final int x = loc[0];
-        ((PosterAdapter.Linear) outer.getLayoutManager()).glideToTop(outer, target);
-        outer.post(() -> focusRow(target, x, 0));
+        // a fileira que perde o foco encolhe (banner + sinopse somem) ANTES de rolar: se encolhesse
+        // durante a rolagem, o que está embaixo subiria e a fileira de destino passaria do topo
+        // (título cortado, pôsteres sob as abas). O post abaixo só roda depois do layout.
+        if (curVh instanceof RowsAdapter.RH && target > rowPos) rows.collapse((RowsAdapter.RH) curVh);
+        outer.post(() -> {
+            ((PosterAdapter.Linear) outer.getLayoutManager()).glideToTop(outer, target);
+            focusRow(target, x, 0);
+        });
         return true;
     }
 
@@ -663,6 +669,12 @@ public class TvCatalogActivity extends TvBase {
             ViewGroup.LayoutParams lp = h.list.getLayoutParams();
             int px = Ui.dp(h.list.getContext(), dp);
             if (lp.height != px) { lp.height = px; h.list.setLayoutParams(lp); }
+        }
+
+        /** fileira volta ao tamanho normal já (sem esperar o foco sair) */
+        void collapse(RH h) {
+            h.panel.setVisibility(View.GONE);
+            setListHeight(h, Ui.POSTER_H + 14);
         }
 
         /** o foco entrou ou saiu de um título da fileira: mostra ou esconde a sinopse embaixo */
