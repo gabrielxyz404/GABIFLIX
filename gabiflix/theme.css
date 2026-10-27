@@ -434,3 +434,13 @@ a[href^="https://github.com/stremio/"] { display: none !important; }
 /* aviso "Uma nova versão do GabiFlix está disponível": não aparece mais.
    As novidades entram só quando você escolher, pelo menu ☰ › Atualizar. */
 .updater-banner-container-Bk1mq { display: none !important; }
+
+/* celular Android: desfoque mais leve na barra de baixo e no menu (o vidro continua, pesa menos ao rolar) */
+html[data-gf-app="android"] .vertical-nav-bar-container-UPAkA {
+    -webkit-backdrop-filter: blur(10px) saturate(130%);
+    backdrop-filter: blur(10px) saturate(130%);
+}
+html[data-gf-app="android"] .nav-menu-container-Pl25j {
+    -webkit-backdrop-filter: blur(12px) saturate(130%);
+    backdrop-filter: blur(12px) saturate(130%);
+}

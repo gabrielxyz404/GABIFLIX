@@ -48,7 +48,6 @@ public class PlayerActivity extends Activity {
     private String[] subs = new String[0];
     private String metaType, metaId;
     private boolean playing = false;
-    private final ArrayList<Uri> readySubs = new ArrayList<>();
     private int addedSubs = 0;
     private static final java.util.regex.Pattern PT = java.util.regex.Pattern.compile("portug|brazil|brasil|\\bpt\\b|\\bpor\\b|\\bpob\\b|pt-br|pt_br", java.util.regex.Pattern.CASE_INSENSITIVE);
     private static final int HIDE_DELAY_MS = 3500;
@@ -160,7 +159,7 @@ public class PlayerActivity extends Activity {
                 spinner.setVisibility(View.GONE);
                 playButton.setText("❚❚");
                 if (!resumeDone) resume();
-                if (!playing) { playing = true; attachReadySubs(); selectEmbeddedPortugueseLater(); }
+                if (!playing) { playing = true; ui.postDelayed(this::attachReadySubs, 1500); selectEmbeddedPortugueseLater(); }
                 scheduleHide();
                 break;
             case MediaPlayer.Event.Paused:
@@ -478,6 +477,11 @@ public class PlayerActivity extends Activity {
     // ---------- legendas em português ----------
     // Baixa as legendas (dos addons, ou direto do OpenSubtitles do Stremio) para arquivos .srt
     // no celular e liga no VLC. Arquivo local com extensão é o jeito mais confiável para o VLC.
+    private static final class Cand { Uri uri; long lastMs; }
+    private final ArrayList<Cand> cands = new ArrayList<>();
+    private boolean subsDownloaded = false, subsAttached = false;
+    private int attachTries = 0;
+
     private void loadSubtitlesInBackground() {
         new Thread(() -> {
             ArrayList<String> urls = new ArrayList<>(java.util.Arrays.asList(subs));
@@ -486,48 +490,134 @@ public class PlayerActivity extends Activity {
             if (!dir.exists()) dir.mkdirs();
             java.io.File[] old = dir.listFiles();
             if (old != null) for (java.io.File f : old) f.delete();
-            int n = 0;
-            for (String u : urls) {
-                if (n >= 5) break;
-                try {
-                    byte[] data = httpGet(u);
-                    if (data == null || data.length < 20) continue;
-                    java.io.File f = new java.io.File(dir, (++n) + (looksLikeVtt(data) ? ".vtt" : ".srt"));
-                    java.io.FileOutputStream out = new java.io.FileOutputStream(f);
-                    out.write(data);
-                    out.close();
-                    Uri uri = Uri.fromFile(f);
-                    ui.post(() -> { readySubs.add(uri); attachReadySubs(); });
-                } catch (Exception ignored) {}
-            }
+            // baixa várias ao mesmo tempo; cada uma é convertida para UTF-8 e só fica se for mesmo português
+            java.util.concurrent.ExecutorService pool = java.util.concurrent.Executors.newFixedThreadPool(4);
+            ArrayList<java.util.concurrent.Callable<Cand>> jobs = new ArrayList<>();
+            int idx = 0;
+            for (String u : urls) { final int n = ++idx; jobs.add(() -> fetchSubtitle(u, new java.io.File(dir, n + ".srt"))); }
+            ArrayList<Cand> ok = new ArrayList<>();
+            try {
+                for (java.util.concurrent.Future<Cand> f : pool.invokeAll(jobs, 20, java.util.concurrent.TimeUnit.SECONDS)) {
+                    try { if (!f.isCancelled()) { Cand c = f.get(); if (c != null) ok.add(c); } } catch (Exception ignored) {}
+                }
+            } catch (InterruptedException ignored) {}
+            pool.shutdownNow();
+            ui.post(() -> { cands.addAll(ok); subsDownloaded = true; attachReadySubs(); });
         }).start();
+    }
+
+    /** baixa uma legenda; devolve null se não for uma legenda válida em português */
+    private static Cand fetchSubtitle(String u, java.io.File f) {
+        try {
+            byte[] data = httpGet(u);
+            if (data == null || data.length < 20) return null;
+            if ((data[0] & 0xFF) == 0x1F && (data[1] & 0xFF) == 0x8B) data = gunzip(data);
+            String text = decodeText(data);
+            if (text == null || !text.contains("-->")) return null; // não é legenda (página de erro, arquivo vazio...)
+            text = text.replace("\uFEFF", "");
+            if (!looksPortuguese(text)) return null; // legenda de outro idioma com etiqueta errada
+            java.io.File out = text.startsWith("WEBVTT") ? new java.io.File(f.getParentFile(), f.getName().replace(".srt", ".vtt")) : f;
+            java.io.FileOutputStream os = new java.io.FileOutputStream(out);
+            os.write(text.getBytes(java.nio.charset.StandardCharsets.UTF_8)); // sempre UTF-8: acentos corretos no VLC
+            os.close();
+            Cand c = new Cand();
+            c.uri = Uri.fromFile(out);
+            c.lastMs = lastCueEnd(text);
+            return c;
+        } catch (Exception e) { return null; }
+    }
+
+    private static byte[] gunzip(byte[] d) throws java.io.IOException {
+        java.io.InputStream in = new java.util.zip.GZIPInputStream(new java.io.ByteArrayInputStream(d));
+        java.io.ByteArrayOutputStream buf = new java.io.ByteArrayOutputStream();
+        byte[] b = new byte[16384];
+        int r;
+        while ((r = in.read(b)) > 0) { buf.write(b, 0, r); if (buf.size() > 5_000_000) break; }
+        in.close();
+        return buf.toByteArray();
+    }
+
+    /** texto da legenda: UTF-16 (com BOM), UTF-8, ou (se tiver bytes inválidos) Windows-1252, comum nas legendas antigas */
+    private static String decodeText(byte[] d) {
+        if (d.length >= 2 && (d[0] & 0xFF) == 0xFF && (d[1] & 0xFF) == 0xFE) return new String(d, 2, d.length - 2, java.nio.charset.StandardCharsets.UTF_16LE);
+        if (d.length >= 2 && (d[0] & 0xFF) == 0xFE && (d[1] & 0xFF) == 0xFF) return new String(d, 2, d.length - 2, java.nio.charset.StandardCharsets.UTF_16BE);
+        try {
+            return java.nio.charset.StandardCharsets.UTF_8.newDecoder()
+                    .onMalformedInput(java.nio.charset.CodingErrorAction.REPORT)
+                    .onUnmappableCharacter(java.nio.charset.CodingErrorAction.REPORT)
+                    .decode(java.nio.ByteBuffer.wrap(d)).toString();
+        } catch (java.nio.charset.CharacterCodingException e) {
+            return new String(d, java.nio.charset.Charset.forName("windows-1252"));
+        }
+    }
+
+    private static final java.util.HashSet<String> PT_W = words("não você vocês estou então isso são também muito porque pra obrigado tá nós meu minha ele dela já até bem tudo aqui foi vai tem sim uma");
+    private static final java.util.HashSet<String> EN_W = words("the you and that what this with have are not but your i'm it's don't they there just know");
+    private static final java.util.HashSet<String> ES_W = words("el los las pero usted esto estoy yo muy gracias señor tengo qué cómo hay soy eres nosotros");
+    private static java.util.HashSet<String> words(String s) { return new java.util.HashSet<>(java.util.Arrays.asList(s.split(" "))); }
+
+    /** confere se o texto é mesmo português (conta palavras típicas de português, inglês e espanhol) */
+    private static boolean looksPortuguese(String text) {
+        int pt = 0, en = 0, es = 0;
+        java.util.regex.Matcher m = java.util.regex.Pattern.compile("[\\p{L}']+").matcher(text.length() > 300000 ? text.substring(0, 300000) : text);
+        while (m.find()) {
+            String w = m.group().toLowerCase(Locale.ROOT);
+            if (PT_W.contains(w)) pt++;
+            if (EN_W.contains(w)) en++;
+            if (ES_W.contains(w)) es++;
+        }
+        return pt >= 3 && pt > 2 * Math.max(en, es);
+    }
+
+    private static final java.util.regex.Pattern CUE_END = java.util.regex.Pattern.compile("-->\\s*(?:(\\d+):)?(\\d{1,2}):(\\d\\d)[,.](\\d{3})");
+
+    /** fim da última fala da legenda (ms): serve para ver se ela combina com a duração do filme */
+    private static long lastCueEnd(String text) {
+        long max = 0;
+        java.util.regex.Matcher m = CUE_END.matcher(text);
+        while (m.find()) {
+            long h = m.group(1) == null ? 0 : Long.parseLong(m.group(1));
+            long t = ((h * 60 + Long.parseLong(m.group(2))) * 60 + Long.parseLong(m.group(3))) * 1000 + Long.parseLong(m.group(4));
+            if (t > max) max = t;
+        }
+        return max;
     }
 
     /** legendas que já vinham no arquivo (as que forem adicionadas depois são as baixadas, em português) */
     private final java.util.HashSet<Integer> embeddedSpu = new java.util.HashSet<>();
     private boolean embeddedKnown = false;
 
+    /** liga as legendas baixadas: só as que combinam com a duração do filme, a mais parecida primeiro (essa fica ativa) */
     private void attachReadySubs() {
-        if (player == null || !playing) return;
-        if (!embeddedKnown && addedSubs < readySubs.size()) {
-            embeddedKnown = true;
-            MediaPlayer.TrackDescription[] t = player.getSpuTracks();
-            if (t != null) for (MediaPlayer.TrackDescription d : t) embeddedSpu.add(d.id);
-        }
-        while (addedSubs < readySubs.size()) {
-            Uri u = readySubs.get(addedSubs);
-            try { player.addSlave(0 /* legenda */, u, addedSubs == 0); } catch (Exception ignored) {}
-            addedSubs++;
+        if (player == null || !playing || !subsDownloaded || subsAttached) return;
+        long len = player.getLength();
+        if (len <= 0 && attachTries++ < 12) { ui.postDelayed(this::attachReadySubs, 1000); return; }
+        subsAttached = true;
+        if (cands.isEmpty()) return;
+        MediaPlayer.TrackDescription[] t = player.getSpuTracks();
+        embeddedKnown = true;
+        if (t != null) for (MediaPlayer.TrackDescription d : t) embeddedSpu.add(d.id);
+        ArrayList<Cand> use = new ArrayList<>();
+        if (len > 0) {
+            for (Cand c : cands) if (c.lastMs <= 0 || (c.lastMs >= len * 0.5 && c.lastMs <= len * 1.12)) use.add(c);
+            if (use.isEmpty()) use.addAll(cands);
+            final long L = len;
+            java.util.Collections.sort(use, (a, b) -> Double.compare(
+                    a.lastMs <= 0 ? 9 : Math.abs((double) a.lastMs / L - 0.93), b.lastMs <= 0 ? 9 : Math.abs((double) b.lastMs / L - 0.93)));
+        } else use.addAll(cands);
+        for (int i = 0; i < use.size() && i < 4; i++) {
+            try { player.addSlave(0 /* legenda */, use.get(i).uri, i == 0); addedSubs++; } catch (Exception ignored) {}
         }
     }
 
     private void selectEmbeddedPortugueseLater() {
-        // sem legenda baixada: liga a PT/BR que vier dentro do próprio arquivo, se houver
+        // sem legenda baixada ainda: liga a PT/BR que vier dentro do próprio arquivo; se não houver, desliga (nada em outro idioma)
         ui.postDelayed(() -> {
             if (player == null || addedSubs > 0) return;
             MediaPlayer.TrackDescription[] t = player.getSpuTracks();
             if (t == null) return;
-            for (MediaPlayer.TrackDescription d : t) if (d.id != -1 && isPortuguese(d.name)) { player.setSpuTrack(d.id); break; }
+            for (MediaPlayer.TrackDescription d : t) if (d.id != -1 && isPortuguese(d.name)) { player.setSpuTrack(d.id); return; }
+            player.setSpuTrack(-1);
         }, 2500);
     }
 
@@ -570,8 +660,9 @@ public class PlayerActivity extends Activity {
                 else if (lang.equals("por") || lang.equals("pt") || lang.equals("pt-pt")) pt.add(url);
             }
         } catch (Exception ignored) {}
-        br.addAll(pt);
-        return br;
+        ArrayList<String> out = new ArrayList<>(br.subList(0, Math.min(5, br.size())));
+        out.addAll(pt.subList(0, Math.min(3, pt.size())));
+        return out;
     }
 
     private static boolean isPortuguese(String name) { return name != null && PT.matcher(name).find(); }

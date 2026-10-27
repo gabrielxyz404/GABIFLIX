@@ -66,6 +66,8 @@ public class MainActivity extends Activity {
         s.setJavaScriptCanOpenWindowsAutomatically(false);
         s.setLoadWithOverviewMode(true);
         s.setUseWideViewPort(true);
+        // desenha um pouco além da tela enquanto rola: menos falhas ao deslizar listas longas
+        if (android.os.Build.VERSION.SDK_INT >= 23) s.setOffscreenPreRaster(true);
         // o site reconhece que está dentro do app e liga o VLC como player
         s.setUserAgentString(s.getUserAgentString() + " GabiFlixApp/" + BuildConfigHelper.versionName(this));
         // na TV o controle remoto mexe no site (setas, OK)

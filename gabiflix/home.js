@@ -26,31 +26,6 @@
         return e;
     }
 
-    // celular Android: fundo dos cartões com o poster de um título em alta do serviço (data/service-art.json, renovado todo dia)
-    var artCache = null;
-    function loadArt() {
-        if (!artCache) {
-            artCache = fetch('data/service-art.json?v=' + DATA_VERSION)
-                .then(function (r) { return r.ok ? r.json() : {}; })
-                .catch(function () { return {}; });
-        }
-        return artCache;
-    }
-    function applyArt(grid) {
-        loadArt().then(function (art) {
-            var day = Math.floor(Date.now() / 86400000);
-            Array.prototype.forEach.call(grid.querySelectorAll('.gf-card'), function (card) {
-                var list = (art[card.getAttribute('data-service')] || []).filter(function (a) { return a.poster; }); // poster vertical encaixa no cartão
-                var sp = card.querySelector('.gf-card-art');
-                if (!sp || !list.length) return;
-                var url = list[day % list.length].poster;
-                var img = new Image();
-                img.onload = function () { sp.style.backgroundImage = 'url("' + url + '")'; sp.classList.add('is-on'); };
-                img.src = url;
-            });
-        });
-    }
-
     function renderGrid(root) {
         root.innerHTML = '';
         // celular Android: os botões viram um carrossel, um serviço por tela
@@ -71,7 +46,6 @@
                 b.style.setProperty('--gf-bg0', s.bg[0]);
                 b.style.setProperty('--gf-bg1', s.bg[1]);
             }
-            if (android) b.appendChild(el('span', 'gf-card-art')); // imagem de fundo bem escurecida (preenchida por applyArt)
             b.appendChild(el('span', 'gf-card-name' + (s.grad ? ' gf-grad-text' : ''), s.name));
             if (!android) b.appendChild(el('span', 'gf-card-hint', s.hint || 'Ver catálogo')); // celular Android: só o nome
             b.addEventListener('pointerdown', function () { prefetch(s); }, { passive: true });
@@ -87,7 +61,6 @@
         }
         root.appendChild(grid);
         if (!android) return;
-        applyArt(grid);
 
         // celular Android: as bolinhas embaixo mostram em qual serviço está; tocar numa leva até ele
         var N = SERVICES.length; // cada leva tem N botões (um por serviço)
