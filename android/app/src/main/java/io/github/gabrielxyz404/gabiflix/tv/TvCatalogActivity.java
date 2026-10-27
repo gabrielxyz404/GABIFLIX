@@ -20,7 +20,9 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.List;
 import java.util.Set;
 
@@ -528,6 +530,9 @@ public class TvCatalogActivity extends TvBase {
             final TextView title;
             final RecyclerView list;
             final PosterAdapter adapter;
+            LinearLayout panel;       // sinopse do título selecionado (só aparece na fileira que tem o foco)
+            TextView pInfo, pDesc;
+            int token;                // para ignorar sinopses que chegam depois de o foco já ter mudado
             RH(LinearLayout v, TextView t, RecyclerView l, PosterAdapter a) { super(v); title = t; list = l; adapter = a; }
         }
 
@@ -609,10 +614,66 @@ public class TvCatalogActivity extends TvBase {
             llm.smooth = true; // o pôster selecionado desliza em vez de saltar
             l.setLayoutManager(llm);
             l.setRecycledViewPool(pool);
+            llm.expandPx = Ui.dp(c, PosterAdapter.BANNER_W + 14);
             PosterAdapter a = new PosterAdapter(Ui.POSTER_W, Ui.POSTER_H);
+            a.expandable = true;
             l.setAdapter(a);
             v.addView(l, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, Ui.dp(c, Ui.POSTER_H + 14)));
-            return new RH(v, t, l, a);
+            // sinopse por baixo da fileira
+            LinearLayout panel = new LinearLayout(c);
+            panel.setOrientation(LinearLayout.VERTICAL);
+            panel.setPadding(Ui.dp(c, 30), Ui.dp(c, 4), Ui.dp(c, 30), Ui.dp(c, 12));
+            panel.setVisibility(View.GONE);
+            TextView pInfo = Ui.text(c, "", 14, true, 0xD9FFFFFF);
+            panel.addView(pInfo);
+            TextView pDesc = Ui.text(c, "", 14, false, 0xE6FFFFFF);
+            pDesc.setMaxLines(3);
+            pDesc.setEllipsize(TextUtils.TruncateAt.END);
+            pDesc.setLineSpacing(0, 1.2f);
+            LinearLayout.LayoutParams dl = new LinearLayout.LayoutParams(Ui.dp(c, 620), ViewGroup.LayoutParams.WRAP_CONTENT);
+            dl.topMargin = Ui.dp(c, 4);
+            panel.addView(pDesc, dl);
+            v.addView(panel);
+            RH rh = new RH(v, t, l, a);
+            rh.panel = panel; rh.pInfo = pInfo; rh.pDesc = pDesc;
+            a.onFocusItem = (item, pos, has) -> rowFocus(rh, item, has);
+            return rh;
+        }
+
+        private final Map<String, String> descCache = new HashMap<>();
+
+        /** o foco entrou ou saiu de um título da fileira: mostra ou esconde a sinopse embaixo */
+        void rowFocus(RH h, JSONObject item, boolean has) {
+            if (!has) {
+                // só esconde se o foco saiu mesmo da fileira (e não só passou para o título do lado)
+                h.list.post(() -> { if (!h.list.hasFocus()) h.panel.setVisibility(View.GONE); });
+                return;
+            }
+            final int tok = ++h.token;
+            List<String> parts = new ArrayList<>();
+            parts.add("series".equals(item.optString("type")) ? "Série" : "Filme");
+            if (!item.optString("releaseInfo").isEmpty()) parts.add(item.optString("releaseInfo"));
+            h.pInfo.setText(TextUtils.join("  •  ", parts));
+            String id = item.optString("id");
+            String known = descCache.get(id);
+            h.pDesc.setText(known != null ? known : "");
+            h.panel.setVisibility(View.VISIBLE);
+            if (known != null) return;
+            // espera um instante: passando rápido pelos títulos não baixa nada
+            h.panel.postDelayed(() -> {
+                if (tok != h.token) return;
+                Net.async(() -> {
+                    String d = Stremio.ptDescription(id);
+                    if (d == null || d.isEmpty()) {
+                        try { d = Stremio.meta(item.optString("type"), id).optString("description", ""); } catch (Exception e) { d = ""; }
+                    }
+                    return d;
+                }, (d, e) -> {
+                    if (d == null) return;
+                    descCache.put(id, d);
+                    if (tok == h.token) h.pDesc.setText(d);
+                });
+            }, 250);
         }
 
         @Override
