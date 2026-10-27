@@ -106,7 +106,7 @@
 
     // ---------- desenho ----------
     function build(state) {
-        var meta = state.metaItem && state.metaItem.content && state.metaItem.content.type === 'Ready' ? state.metaItem.content.content : null;
+        var meta = readyMeta(state);
         if (!meta) return null;
         var sel = state.selected || {};
         var isSeries = meta.type === 'series' || (meta.videos && meta.videos.length > 1);
@@ -269,6 +269,24 @@
         box.appendChild(body);
         return box;
     }
+
+    // título do link aberto (#/detail/<tipo>/<id>/...): o motor do app pode ainda ter o título anterior em memória
+    function urlTitleId() {
+        var m = location.hash.match(/^#\/(?:detail|metadetails)\/[^/]+\/([^/?]+)/);
+        if (!m) return null;
+        try { return decodeURIComponent(m[1]); } catch (e) { return m[1]; }
+    }
+    // só devolve o título pronto se for MESMO o do link; senão (ainda a carregar o novo) fica o esqueleto, nunca o banner de outro filme
+    function readyMeta(state) {
+        var meta = state && state.metaItem && state.metaItem.content && state.metaItem.content.type === 'Ready' ? state.metaItem.content.content : null;
+        if (!meta) return null;
+        var want = urlTitleId();
+        if (!want || meta.id === want) { mismatchSince = 0; return meta; }
+        // um addon pode devolver o título com outro código: se for sempre assim, depois de 4 s aceita (não fica no esqueleto para sempre)
+        if (!mismatchSince || mismatchHash !== location.hash) { mismatchSince = Date.now(); mismatchHash = location.hash; }
+        return Date.now() - mismatchSince > 4000 ? meta : null;
+    }
+    var mismatchSince = 0, mismatchHash = '';
 
     function urlVideoId() {
         var m = location.hash.match(/^#\/(?:detail|metadetails)\/[^/]+\/[^/?]+\/([^/?]+)/);
@@ -484,7 +502,7 @@
         Promise.resolve(c.getState('meta_details')).then(function (state) {
             var sel = state && state.selected;
             if (!sel || !sel.metaPath) return;
-            var meta = state.metaItem && state.metaItem.content && state.metaItem.content.content;
+            var meta = readyMeta(state);
             var vid = v || (meta && meta.videos || []).filter(function (x) { return x.id === videoId; })[0];
             sheet = { id: videoId, autoplay: !!autoplay, since: Date.now(), label: vid && vid.season != null ? epLabel(vid) + (realName(vid) ? ' · ' + realName(vid) : '') : '' };
             sheetTab = null; // janela nova: começa na primeira aba
@@ -760,7 +778,7 @@
         Promise.resolve(c.getState('meta_details')).then(function (state) {
             if (!state || !onDetail()) return;
             renderSheet(state);
-            var meta = state.metaItem && state.metaItem.content && state.metaItem.content.type === 'Ready' ? state.metaItem.content.content : null;
+            var meta = readyMeta(state);
             if (!meta) {
                 var r0 = document.getElementById('gf-detail');
                 if (!r0 || r0.parentNode !== content || r0.getAttribute('data-id') !== location.hash) {
