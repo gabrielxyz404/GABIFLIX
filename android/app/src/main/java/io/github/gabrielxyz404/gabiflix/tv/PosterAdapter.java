@@ -234,7 +234,7 @@ class PosterAdapter extends RecyclerView.Adapter<PosterAdapter.H> {
         String lg = m.optString("logo", "");
         if (lg.isEmpty() && imdb) lg = "https://images.metahub.space/logo/medium/" + id + "/img";
         h.bannerTitle.setText(m.optString("name"));
-        Ui.image(h.bannerImg, bg);
+        Ui.imageSized(h.bannerImg, bg, Ui.dp(c, BANNER_W), Ui.dp(c, BANNER_H));
         Ui.logo(h.logoImg, h.bannerTitle, lg);
         // abre devagar o bastante para ver, rápido o bastante para não pesar na TV
         final ViewGroup.LayoutParams lp = h.poster.getLayoutParams();

@@ -122,6 +122,14 @@ final class Ui {
                 .transition(com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions.withCrossFade(200)).into(v);
     }
 
+    /** imagem com tamanho fixo (o do banner já aberto), para o corte central ser feito na proporção certa mesmo que a vista ainda esteja pequena */
+    static void imageSized(ImageView v, String url, int wPx, int hPx) {
+        if (url == null || url.isEmpty()) { v.setImageDrawable(null); return; }
+        Glide.with(v.getContext()).load(url).diskCacheStrategy(DiskCacheStrategy.ALL)
+                .format(DecodeFormat.PREFER_RGB_565).override(wPx, hPx).centerCrop()
+                .transition(com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions.withCrossFade(200)).into(v);
+    }
+
     /** logo do título (imagem); se não houver ou falhar, fica o nome em texto */
     static void logo(ImageView v, TextView fallback, String url) {
         v.setVisibility(View.GONE);
