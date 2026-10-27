@@ -53,7 +53,7 @@ final class Updater {
             if (res == null || url == null) { Toast.makeText(a, "Catálogos atualizados. (Sem acesso às versões agora.)", Toast.LENGTH_LONG).show(); return; }
             if (latest <= mine) { Toast.makeText(a, "Catálogos atualizados. O app já está na versão mais recente.", Toast.LENGTH_LONG).show(); return; }
             new AlertDialog.Builder(a, android.R.style.Theme_DeviceDefault_Dialog_Alert)
-                    .setTitle("Nova versão do GabiFlix")
+                    .setTitle("Nova versão do FramePlay")
                     .setMessage("Versão 1.0." + latest + " disponível (a sua é 1.0." + mine + "). Instalar agora?")
                     .setPositiveButton("Instalar", (d, w) -> download(a, url))
                     .setNegativeButton("Depois", null)
@@ -114,7 +114,7 @@ final class Updater {
 
     private static void install(Activity a, File apk) {
         if (Build.VERSION.SDK_INT >= 26 && !a.getPackageManager().canRequestPackageInstalls()) {
-            Toast.makeText(a, "Permita que o GabiFlix instale apps e carregue em Atualizar de novo.", Toast.LENGTH_LONG).show();
+            Toast.makeText(a, "Permita que o FramePlay instale apps e carregue em Atualizar de novo.", Toast.LENGTH_LONG).show();
             try {
                 a.startActivity(new Intent(android.provider.Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES, Uri.parse("package:" + a.getPackageName())));
                 return;

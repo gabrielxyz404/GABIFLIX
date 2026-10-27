@@ -10,7 +10,7 @@
         var o = document.createElement('div');
         o.className = 'gf-updating';
         o.setAttribute('role', 'status');
-        o.innerHTML = '<div class="gf-updating-box"><span class="gf-updating-spin" aria-hidden="true"></span><span>Atualizando o GabiFlix…</span></div>';
+        o.innerHTML = '<div class="gf-updating-box"><span class="gf-updating-spin" aria-hidden="true"></span><span>Atualizando o FramePlay…</span></div>';
         document.body.appendChild(o);
     }
 

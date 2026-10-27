@@ -69,10 +69,10 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: android
-          name: GabiFlix para Android
+          name: FramePlay para Android
           body: |
             Versão 1.0.${{ github.run_number }}
-            Baixe o GabiFlix.apk abaixo no celular Android e toque nele para instalar.
+            Baixe o GabiFlix.apk abaixo no celular Android e toque nele para instalar o FramePlay.
             <!-- celular:${{ steps.phone.outputs.hash }} -->
           files: out/GabiFlix.apk
           make_latest: true
@@ -80,7 +80,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: tv
-          name: GabiFlix para TV
+          name: FramePlay para TV
           body: |
             Versão 1.0.${{ github.run_number }}
             App da TV (Fire TV). Instale pelo Downloader: gabrielxyz404.github.io/GABIFLIX/tv
