@@ -60,6 +60,7 @@ class PosterAdapter extends RecyclerView.Adapter<PosterAdapter.H> {
         TextView bannerTitle, name;
         ImageView img;
         ValueAnimator anim;
+        Runnable pending;
         boolean expanded;
         H(FrameLayout p, TextView n, View b, View f) { super(p); poster = p; num = n; bar = b; fill = f; }
     }
@@ -202,6 +203,11 @@ class PosterAdapter extends RecyclerView.Adapter<PosterAdapter.H> {
     /** volta o título ao formato de pôster, sem animação */
     private void resetBanner(H h) {
         if (h.anim != null) { h.anim.cancel(); h.anim = null; }
+        if (h.pending != null) { h.poster.removeCallbacks(h.pending); h.pending = null; }
+        if (h.expanded) { // cancela imagens do banner que ainda vinham chegando
+            com.bumptech.glide.Glide.with(h.poster.getContext()).clear(h.bannerImg);
+            com.bumptech.glide.Glide.with(h.poster.getContext()).clear(h.logoImg);
+        }
         h.expanded = false;
         ViewGroup.LayoutParams lp = h.poster.getLayoutParams();
         int base = Ui.dp(h.poster.getContext(), w), baseH = Ui.dp(h.poster.getContext(), this.h);
@@ -234,21 +240,22 @@ class PosterAdapter extends RecyclerView.Adapter<PosterAdapter.H> {
         String lg = m.optString("logo", "");
         if (lg.isEmpty() && imdb) lg = "https://images.metahub.space/logo/medium/" + id + "/img";
         h.bannerTitle.setText(m.optString("name"));
-        Ui.imageSized(h.bannerImg, bg, Ui.dp(c, BANNER_W), Ui.dp(c, BANNER_H));
-        Ui.logo(h.logoImg, h.bannerTitle, lg);
-        // abre devagar o bastante para ver, rápido o bastante para não pesar na TV
-        final ViewGroup.LayoutParams lp = h.poster.getLayoutParams();
-        final int w0 = lp.width, h0 = lp.height, w1 = Ui.dp(c, BANNER_W), h1 = Ui.dp(c, BANNER_H);
-        ValueAnimator a = ValueAnimator.ofFloat(0f, 1f);
-        a.setDuration(130);
-        a.addUpdateListener(v -> {
-            float t = (Float) v.getAnimatedValue();
-            lp.width = w0 + Math.round((w1 - w0) * t);
-            lp.height = h0 + Math.round((h1 - h0) * t);
-            h.poster.setLayoutParams(lp);
-        });
-        h.anim = a;
-        a.start();
+        // abre de uma vez (sem animar o tamanho: animar pesava na TV); as imagens só vêm se o foco ficar parado um instante
+        final String bgUrl = bg, lgUrl = lg;
+        final int wPx = Ui.dp(c, BANNER_W), hPx = Ui.dp(c, BANNER_H);
+        h.pending = () -> {
+            if (!h.expanded) return;
+            Ui.imageSized(h.bannerImg, bgUrl, wPx, hPx);
+            Ui.logo(h.logoImg, h.bannerTitle, lgUrl);
+        };
+        h.logoImg.setVisibility(View.GONE);
+        h.bannerTitle.setVisibility(View.VISIBLE);
+        h.bannerImg.setImageDrawable(null);
+        h.poster.postDelayed(h.pending, 140);
+        ViewGroup.LayoutParams lp = h.poster.getLayoutParams();
+        lp.width = wPx;
+        lp.height = hPx;
+        h.poster.setLayoutParams(lp);
     }
 
     private void bindBar(H holder, JSONObject m) {

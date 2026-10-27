@@ -624,7 +624,8 @@ public class TvCatalogActivity extends TvBase {
             t.setPadding(Ui.dp(c, 30), Ui.dp(c, 12), Ui.dp(c, 30), Ui.dp(c, 2));
             v.addView(t);
             RecyclerView l = PosterAdapter.list(c);
-            l.setPadding(Ui.dp(c, 21), 0, Ui.dp(c, 21), 0);
+            // folga no fim da fileira: o último título tem espaço para abrir em banner sem sair da tela
+            l.setPadding(Ui.dp(c, 21), 0, Ui.dp(c, 21 + PosterAdapter.BANNER_W - Ui.POSTER_W), 0);
             PosterAdapter.Linear llm = new PosterAdapter.Linear(c, RecyclerView.HORIZONTAL);
             llm.smooth = true; // o pôster selecionado desliza em vez de saltar
             l.setLayoutManager(llm);
@@ -643,6 +644,7 @@ public class TvCatalogActivity extends TvBase {
             panel.addView(pInfo);
             TextView pDesc = Ui.text(c, "", 14, false, 0xE6FFFFFF);
             pDesc.setMaxLines(3);
+            pDesc.setMinLines(3); // altura fixa: o texto trocando não refaz a tela toda
             pDesc.setEllipsize(TextUtils.TruncateAt.END);
             pDesc.setLineSpacing(0, 1.2f);
             LinearLayout.LayoutParams dl = new LinearLayout.LayoutParams(Ui.dp(c, 620), ViewGroup.LayoutParams.WRAP_CONTENT);
