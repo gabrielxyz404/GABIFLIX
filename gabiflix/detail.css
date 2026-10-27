@@ -353,6 +353,8 @@
 .gf-src-badge { padding: 0.3rem 0.7rem; border-radius: 0.45rem; font-weight: 800; font-size: 0.85rem; white-space: nowrap; }
 .gf-src-badge.svc { background: #F5C518; color: #000; }
 .gf-src-badge.q { background: #1E9E4A; color: #fff; }
+/* bandeiras dos áudios: fonte TwemojiFlags (@font-face no main.css) para ficarem iguais no Windows/Mac/Android */
+.gf-src-badge.lg { background: rgba(255,255,255,0.14); color: #fff; font-family: TwemojiFlags, "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif; font-size: 1rem; line-height: 1.2; letter-spacing: 0.05em; }
 .gf-cw-card { max-width: 22rem; }
 .gf-cw-remove .gf-sheet-q { color: #ff6b6b; }
 .gf-cw-cancel { align-items: center; }

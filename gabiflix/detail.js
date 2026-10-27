@@ -320,6 +320,82 @@
         if (!addon) addon = 'Fontes';
         return { service: service, cached: cached, quality: quality, rank: rank, addon: addon };
     }
+    // ---- idiomas de áudio (bandeiras): as MESMAS regras de SourceLangs.java na TV ----
+    var LG_L = 'a-z0-9\\u00e0-\\u00ff';
+    var LG_NOSUB = '(?![ ._-]*(?:subs?|subtitles?|legendas?|legendad[oa]s?)(?![' + LG_L + ']))';
+    // palavra inteira (nada de letra/número colado dos lados)
+    function lgWord(alt) { return new RegExp('(?:^|[^' + LG_L + '])(?:' + alt + ')(?![' + LG_L + '])' + LG_NOSUB, 'm'); }
+    // sigla de 3 letras (POR, ENG...): só entre separadores (/ , | . - _ [ ( ), nunca no meio de uma frase
+    function lgCode(alt) { return new RegExp('(?:^|[^' + LG_L + ' ])(?:' + alt + ')(?=$|[^' + LG_L + ' ])' + LG_NOSUB, 'm'); }
+    // strong = palavras fortes (qualquer linha), weak = nomes de países (ignoram a 1ª linha do título), code = siglas
+    function lgRule(flag, strong, weak, code) {
+        return { flag: flag, strong: strong ? lgWord(strong) : null, weak: weak ? lgWord(weak) : null, code: code ? lgCode(code) : null };
+    }
+    var LG_BR = lgRule('🇧🇷', 'pt[-_. ]?br|brazilian|brasileir[oa]|dublad[oa]');
+    var LG_PT = lgRule('🇵🇹', 'pt[-_. ]?pt|portugu[eê]s europeu|european portuguese');
+    var LG_PT_WORD = lgWord('portuguese|portugu[eê]s'), LG_PT_CODE = lgCode('por');
+    var LG_US = lgRule('🇺🇸', 'en[-_. ]?us|us english|american english');
+    var LG_GB = lgRule('🇬🇧', null, 'english|ingl[eê]s', 'eng');
+    var LG_MX = lgRule('🇲🇽', 'latino|latin american');
+    var LG_ES = lgRule('🇪🇸', null, 'spanish|espa[nñ]ol|espanhol|castellano', 'esp|spa');
+    var LG_OTHERS = [
+        lgRule('🇫🇷', null, 'french|fran[cç]ais|franc[eê]s', 'fre|fra|vff|vfq'),
+        lgRule('🇮🇹', null, 'italian|italiano', 'ita'),
+        lgRule('🇩🇪', null, 'german|deutsch|alem[aã]o', 'ger|deu'),
+        lgRule('🇯🇵', null, 'japanese|jap[oó]n[eê]s|japones', 'jap|jpn'),
+        lgRule('🇰🇷', null, 'korean|coreano', 'kor'),
+        lgRule('🇮🇳', null, 'hindi', 'hin'),
+        lgRule('🇷🇺', null, 'russian|russo', 'rus')
+    ];
+    var LG_MULTI = lgWord('multi(?:[ ._-]?(?:audios?|[aá]udios?|lang(?:uages?)?|idiomas?))?');
+    function lgHit(r, all, weak, words) {
+        if (r.strong && r.strong.test(all)) return true;
+        if (r.code && r.code.test(all)) return true;
+        return !!(words && r.weak && r.weak.test(weak));
+    }
+    function lgRegional(cp) { return cp >= 0x1F1E6 && cp <= 0x1F1FF; }
+    // devolve "🇧🇷 🇬🇧 +2", "Multi" ou "" (nada encontrado: não chuta); no máximo 6 bandeiras
+    function sourceLangs(st) {
+        var rawName = String(st.name || ''), rawTitle = String(st.title || ''), rawDesc = String(st.description || '');
+        var n = rawName.toLowerCase();
+        var t = (rawTitle + (rawTitle && rawDesc ? '\n' : '') + rawDesc).toLowerCase();
+        var all = n + '\n' + t;
+        // palavras fracas: sem a 1ª linha do título/descrição quando há mais linhas (é o nome do arquivo/filme)
+        var weak = n;
+        [rawTitle, rawDesc].forEach(function (s) {
+            if (!s) return;
+            var lines = s.toLowerCase().split(/\r?\n/);
+            weak += '\n' + (lines.length > 1 ? lines.slice(1).join('\n') : lines[0]);
+        });
+        var found = [];
+        function add(f) { if (found.indexOf(f) < 0) found.push(f); }
+        // 1) bandeiras que o addon já mandou (pares de indicadores regionais)
+        var raw = Array.from(rawName + '\n' + rawTitle + '\n' + rawDesc);
+        for (var i = 0; i < raw.length - 1; i++) {
+            if (lgRegional(raw[i].codePointAt(0)) && lgRegional(raw[i + 1].codePointAt(0))) { add(raw[i] + raw[i + 1]); i++; }
+        }
+        // 2) palavras e siglas
+        var pt = lgHit(LG_PT, all, weak, false), br = lgHit(LG_BR, all, weak, false);
+        // "portuguese"/"português"/"por" sem qualificador: Brasil (a menos que diga PT-PT)
+        if (!br && !pt && (LG_PT_WORD.test(weak) || LG_PT_CODE.test(all))) br = true;
+        if (br) add(LG_BR.flag);
+        if (pt) add(LG_PT.flag);
+        var us = lgHit(LG_US, all, weak, false);
+        if (us) add(LG_US.flag);
+        if (lgHit(LG_GB, all, weak, !us)) add(LG_GB.flag);   // "US English" não vira GB
+        var mx = lgHit(LG_MX, all, weak, false);
+        if (mx) add(LG_MX.flag);
+        if (lgHit(LG_ES, all, weak, !mx)) add(LG_ES.flag);   // "Español Latino" não vira ES
+        LG_OTHERS.forEach(function (r) { if (lgHit(r, all, weak, true)) add(r.flag); });
+        if (!found.length) return LG_MULTI.test(all) ? 'Multi' : '';
+        // BR primeiro, depois PT, depois o resto na ordem em que apareceu
+        var out = [];
+        [LG_BR.flag, LG_PT.flag].forEach(function (f) { var k = found.indexOf(f); if (k >= 0) { out.push(f); found.splice(k, 1); } });
+        out = out.concat(found);
+        var txt = out.slice(0, 6).join(' ');
+        if (out.length > 6) txt += ' +' + (out.length - 6);
+        return txt;
+    }
     var SVC_NAMES = { RD: 'Real-Debrid', TB: 'TorBox', AD: 'AllDebrid', PM: 'Premiumize', DL: 'Debrid-Link', OC: 'Offcloud', ED: 'EasyDebrid', PKP: 'PikPak' };
     function serviceLabel(code) {
         return code && SVC_NAMES.hasOwnProperty(code) ? SVC_NAMES[code] : 'Direto';
@@ -436,6 +512,8 @@
             b.type = 'button';
             b.appendChild(el('span', 'gf-src-badge svc', serviceLabel(row.p.service)));
             b.appendChild(el('span', 'gf-src-badge q', row.p.quality || '?'));
+            var lg = sourceLangs(row.st);
+            if (lg) b.appendChild(el('span', 'gf-src-badge lg', lg));
             b.addEventListener('click', function () { playStream(row.st); });
             frag.appendChild(b);
         });

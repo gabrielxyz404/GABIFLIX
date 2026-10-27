@@ -123,6 +123,7 @@ final class Stremio {
     static final class Source {
         String addon, name, title, url;
         boolean torrent;
+        String langs; // bandeiras dos áudios (calculado uma vez em SourcePicker.parse)
     }
 
     interface SourcesCb { void update(List<Source> all, boolean finished); }

@@ -43,6 +43,7 @@ final class SourcePicker {
         double sizeGb;
         boolean pt, hdr;
         String file = "";
+        String langs = "";     // bandeiras dos áudios (ou "Multi")
     }
 
     private static final Pattern SVC = Pattern.compile("\\[(RD|TB|AD|PM|DL|OC|ED|PKP)\\s*(\\+|⚡|⬇️|download)?\\]", Pattern.CASE_INSENSITIVE);
@@ -80,6 +81,8 @@ final class SourcePicker {
         it.hdr = low.contains("hdr") || low.contains("dolby vision") || low.contains(" dv ");
         String first = s.title.split("\n")[0].trim();
         it.file = first;
+        if (s.langs == null) s.langs = SourceLangs.detect(s.name, s.title); // uma vez por fonte
+        it.langs = s.langs;
         return it;
     }
 
@@ -215,8 +218,8 @@ final class SourcePicker {
         void set(List<Item> l) { items.clear(); if (l != null) items.addAll(l); notifyDataSetChanged(); }
 
         final class H extends RecyclerView.ViewHolder {
-            final TextView svc, quality, info, file;
-            H(View v, TextView s, TextView q, TextView i, TextView f) { super(v); svc = s; quality = q; info = i; file = f; }
+            final TextView svc, quality, langs, info, file;
+            H(View v, TextView s, TextView q, TextView l, TextView i, TextView f) { super(v); svc = s; quality = q; langs = l; info = i; file = f; }
         }
 
         @NonNull @Override
@@ -245,6 +248,10 @@ final class SourcePicker {
             top.addView(Ui.space(c, 8, 1));
             TextView q = badge(c);
             top.addView(q);
+            top.addView(Ui.space(c, 8, 1));
+            TextView langs = badge(c);
+            langs.setVisibility(View.GONE);
+            top.addView(langs);
             top.addView(Ui.space(c, 12, 1));
             TextView info = Ui.text(c, "", 15, true, Ui.TEXT);
             top.addView(info);
@@ -255,7 +262,7 @@ final class SourcePicker {
             file.setPadding(0, Ui.dp(c, 6), 0, 0);
             row.addView(file);
 
-            H h = new H(row, svc, q, info, file);
+            H h = new H(row, svc, q, langs, info, file);
             row.setOnClickListener(v -> {
                 int p = h.getBindingAdapterPosition();
                 if (p >= 0 && p < items.size()) { d.dismiss(); onPick.pick(items.get(p).src); }
@@ -282,6 +289,13 @@ final class SourcePicker {
             h.quality.setText(it.quality.isEmpty() ? "Qualidade ?" : it.quality);
             h.quality.setTextColor(0xFFFFFFFF);
             h.quality.setBackground(Ui.round(0xFF1E9E4A, Ui.dp(c, 6)));
+            if (it.langs.isEmpty()) h.langs.setVisibility(View.GONE);
+            else {
+                h.langs.setText(it.langs);
+                h.langs.setTextColor(0xFFFFFFFF);
+                h.langs.setBackground(Ui.round(0xFF3A3A42, Ui.dp(c, 6)));
+                h.langs.setVisibility(View.VISIBLE);
+            }
             h.info.setVisibility(View.GONE);
             h.file.setVisibility(View.GONE);
         }
