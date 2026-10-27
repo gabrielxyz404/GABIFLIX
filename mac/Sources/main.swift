@@ -1,4 +1,4 @@
-// GabiFlix para Mac: abre o GabiFlix (site) numa janela própria e toca os vídeos no player
+// FramePlay para Mac: abre o FramePlay (site) numa janela própria e toca os vídeos no player
 // embutido com VLC (PlayerWindow.swift) — como o app Android.
 import Cocoa
 import WebKit
@@ -28,6 +28,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, WKScriptMessageHandler
     var web: WKWebView!
     var player: PlayerWindowController?
     var lastOpen = Date.distantPast
+    var checkingUpdate = false
+    var leftoverTried = false
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         NSApp.appearance = NSAppearance(named: .darkAqua)
@@ -54,7 +56,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, WKScriptMessageHandler
         window = NSWindow(contentRect: NSRect(origin: .zero, size: size),
                           styleMask: [.titled, .closable, .miniaturizable, .resizable, .fullSizeContentView],
                           backing: .buffered, defer: false)
-        window.title = "GabiFlix"
+        window.title = "FramePlay"
         window.titlebarAppearsTransparent = true
         window.titleVisibility = .hidden
         window.backgroundColor = .black
@@ -67,6 +69,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate, WKScriptMessageHandler
         NSApp.activate(ignoringOtherApps: true)
 
         web.load(URLRequest(url: APP_URL))
+
+        // procura versão nova alguns segundos depois de abrir (não no teste automático)
+        if !CommandLine.arguments.contains("--gf-test-play") {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 6) { [weak self] in self?.checkForUpdates(silent: true) }
+        }
 
         // teste automático (só no GitHub): --gf-test-play <link do vídeo> <código IMDb>
         let args = CommandLine.arguments
@@ -95,11 +102,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate, WKScriptMessageHandler
 
         let appItem = NSMenuItem()
         let appMenu = NSMenu()
-        appMenu.addItem(withTitle: "Sobre o GabiFlix", action: #selector(NSApplication.orderFrontStandardAboutPanel(_:)), keyEquivalent: "")
+        appMenu.addItem(withTitle: "Sobre o FramePlay", action: #selector(NSApplication.orderFrontStandardAboutPanel(_:)), keyEquivalent: "")
+        appMenu.addItem(withTitle: "Procurar atualizações…", action: #selector(checkUpdatesMenu), keyEquivalent: "")
         appMenu.addItem(.separator())
-        appMenu.addItem(withTitle: "Ocultar GabiFlix", action: #selector(NSApplication.hide(_:)), keyEquivalent: "h")
+        appMenu.addItem(withTitle: "Ocultar FramePlay", action: #selector(NSApplication.hide(_:)), keyEquivalent: "h")
         appMenu.addItem(.separator())
-        appMenu.addItem(withTitle: "Sair do GabiFlix", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")
+        appMenu.addItem(withTitle: "Sair do FramePlay", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")
         appItem.submenu = appMenu
         main.addItem(appItem)
 
@@ -163,6 +171,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, WKScriptMessageHandler
         }
         player?.close()
         let p = PlayerWindowController(url: url, subtitles: subs, type: type, id: id, startMs: start)
+        p.onProgress = { time, length in AppDelegate.saveLast(time: time, length: length, ended: false, url: link) }
         p.onFinish = { [weak self] time, length, ended in self?.deliverProgress(time: time, length: length, ended: ended, url: link) }
         player = p
         p.showWindow(nil)
@@ -173,10 +182,114 @@ final class AppDelegate: NSObject, NSApplicationDelegate, WKScriptMessageHandler
     func deliverProgress(time: Int64, length: Int64, ended: Bool, url: String) {
         player = nil
         guard time > 0 else { return }
-        let quoted = (try? String(data: JSONSerialization.data(withJSONObject: [url]), encoding: .utf8)) ?? "[\"\"]"
-        let js = "(function(){var u=\(quoted)[0];function go(n){if(window.gfNativeProgress){window.gfNativeProgress(\(time),\(length),\(ended ? "true" : "false"),u);}else if(n<40){setTimeout(function(){go(n+1)},500);}}go(0);})()"
-        web.evaluateJavaScript(js, completionHandler: nil)
+        // guarda antes de entregar: se o app fechar antes do site receber, entrega na próxima abertura
+        AppDelegate.saveLast(time: time, length: length, ended: ended, url: url)
+        sendToSite(time: time, length: length, ended: ended, url: url)
         window.makeKeyAndOrderFront(nil)
+    }
+
+    private func sendToSite(time: Int64, length: Int64, ended: Bool, url: String) {
+        let quoted = (try? String(data: JSONSerialization.data(withJSONObject: [url]), encoding: .utf8)) ?? "[\"\"]"
+        let js = "(function(){var u=\(quoted)[0];function go(n){if(window.gfNativeProgress){window.gfNativeProgress(\(time),\(length),\(ended ? "true" : "false"),u);}else if(n<40){setTimeout(function(){go(n+1)},500);}}if(window.gfNativeProgress){go(0);return true;}go(0);return false;})()"
+        web.evaluateJavaScript(js) { result, error in
+            // entregue na hora: não precisa guardar mais
+            if error == nil, (result as? Bool) == true { AppDelegate.clearLast() }
+        }
+    }
+
+    // última sessão do player (como o "gf-last-session" do Android)
+    static let lastKey = "gf-last-session"
+    static func saveLast(time: Int64, length: Int64, ended: Bool, url: String) {
+        guard time > 0 else { return }
+        let d: [String: Any] = ["time": NSNumber(value: time), "length": NSNumber(value: length), "ended": ended,
+                                "url": url, "at": Date().timeIntervalSince1970]
+        UserDefaults.standard.set(d, forKey: lastKey)
+    }
+    static func clearLast() { UserDefaults.standard.removeObject(forKey: lastKey) }
+
+    /** progresso que sobrou de uma sessão anterior (o app fechou antes de entregar) */
+    func deliverLeftover() {
+        guard player == nil, let d = UserDefaults.standard.dictionary(forKey: AppDelegate.lastKey),
+              let t = (d["time"] as? NSNumber)?.int64Value, t > 0,
+              let url = d["url"] as? String,
+              let at = d["at"] as? Double, Date().timeIntervalSince1970 - at < 12 * 3600 else {
+            AppDelegate.clearLast(); return
+        }
+        let len = (d["length"] as? NSNumber)?.int64Value ?? 0
+        let ended = d["ended"] as? Bool ?? false
+        sendToSite(time: t, length: len, ended: ended, url: url)
+    }
+
+    func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
+        if !leftoverTried {
+            leftoverTried = true
+            deliverLeftover()
+        }
+    }
+
+    // ---------- atualizações ----------
+    static let releaseAPI = URL(string: "https://api.github.com/repos/gabrielxyz404/GABIFLIX/releases/tags/mac")!
+
+    @objc func checkUpdatesMenu() { checkForUpdates(silent: false) }
+
+    func checkForUpdates(silent: Bool) {
+        if checkingUpdate { return }
+        checkingUpdate = true
+        var req = URLRequest(url: AppDelegate.releaseAPI, timeoutInterval: 15)
+        req.setValue("FramePlay", forHTTPHeaderField: "User-Agent")
+        req.setValue("application/vnd.github+json", forHTTPHeaderField: "Accept")
+        URLSession.shared.dataTask(with: req) { [weak self] data, resp, _ in
+            var latest = -1
+            var zip: URL?
+            if let h = resp as? HTTPURLResponse, h.statusCode < 400, let data = data,
+               let json = (try? JSONSerialization.jsonObject(with: data)) as? [String: Any] {
+                let text = "\(json["name"] as? String ?? "") \(json["body"] as? String ?? "")"
+                if let re = try? NSRegularExpression(pattern: "1\\.0\\.(\\d+)"),
+                   let m = re.firstMatch(in: text, range: NSRange(location: 0, length: (text as NSString).length)),
+                   m.numberOfRanges > 1 {
+                    latest = Int((text as NSString).substring(with: m.range(at: 1))) ?? -1
+                }
+                if let assets = json["assets"] as? [[String: Any]] {
+                    for a in assets {
+                        if let n = a["name"] as? String, n.lowercased().hasSuffix(".zip"), (zip == nil || n.lowercased().contains("frameplay")),
+                           let u = a["browser_download_url"] as? String, let url = URL(string: u) { zip = url }
+                    }
+                }
+            }
+            DispatchQueue.main.async {
+                guard let self = self else { return }
+                self.checkingUpdate = false
+                self.showUpdateResult(latest: latest, zip: zip, silent: silent)
+            }
+        }.resume()
+    }
+
+    private func showUpdateResult(latest: Int, zip: URL?, silent: Bool) {
+        let mine = Int(Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "") ?? 0
+        if latest < 0 || zip == nil {
+            if !silent {
+                let a = NSAlert()
+                a.messageText = "Não foi possível procurar atualizações agora"
+                a.informativeText = "Verifique a internet e tente de novo."
+                a.addButton(withTitle: "OK")
+                a.runModal()
+            }
+            return
+        }
+        if latest > mine, let zip = zip {
+            let a = NSAlert()
+            a.messageText = "Nova versão do FramePlay"
+            a.informativeText = "A versão 1.0.\(latest) está disponível (a sua é a 1.0.\(mine)). Baixe, abra o .zip e substitua o FramePlay na pasta Aplicativos."
+            a.addButton(withTitle: "Baixar")
+            a.addButton(withTitle: "Agora não")
+            if a.runModal() == .alertFirstButtonReturn { NSWorkspace.shared.open(zip) }
+        } else if !silent {
+            let a = NSAlert()
+            a.messageText = "Já tens a versão mais recente"
+            a.informativeText = "O FramePlay está atualizado (versão 1.0.\(mine))."
+            a.addButton(withTitle: "OK")
+            a.runModal()
+        }
     }
 
     // ---------- links ----------

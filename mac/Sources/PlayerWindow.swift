@@ -1,5 +1,5 @@
-// Player do GabiFlix para Mac, com o VLC (VLCKit): toca qualquer formato e áudio (MKV, HEVC, Dolby, DTS),
-// liga legendas em português, começa de onde parou e devolve o progresso ao site ao fechar.
+// Player do FramePlay para Mac, com o VLC (VLCKit): toca qualquer formato e áudio (MKV, HEVC, Dolby, DTS),
+// liga só legendas em português (as que combinam com o filme), começa de onde parou e devolve o progresso ao site.
 import Cocoa
 import VLCKit
 
@@ -28,6 +28,8 @@ final class PlayerRootView: NSView {
 
 final class PlayerWindowController: NSWindowController, NSWindowDelegate {
     var onFinish: ((Int64, Int64, Bool) -> Void)?
+    /** progresso periódico (tempo, duração), a cada ~5 s, como o reportSession do Android */
+    var onProgress: ((Int64, Int64) -> Void)?
 
     private let url: URL
     private var subtitleURLs: [URL]
@@ -57,9 +59,14 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
     private var userSeeking = false
     private var lastTime: Int64 = 0
     private var lastLength: Int64 = 0
+    private var lastReport = Date.distantPast
+    private var playingSince = Date.distantFuture
+    private var fillMode = false
 
-    // legendas baixadas (arquivos .srt) e as que já vinham no vídeo
-    private var readySubs: [URL] = []
+    // legendas baixadas (arquivos já em UTF-8) e as que já vinham no vídeo
+    private var cands: [SubCand] = []
+    private var subsDownloaded = false
+    private var subsAttached = false
     private var addedSubs = 0
     private var embeddedSubs = Set<Int>()
     private var embeddedKnown = false
@@ -74,7 +81,7 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
         let screen = NSScreen.main?.visibleFrame ?? NSRect(x: 0, y: 0, width: 1440, height: 900)
         let w = NSWindow(contentRect: screen, styleMask: [.titled, .closable, .miniaturizable, .resizable, .fullSizeContentView],
                          backing: .buffered, defer: false)
-        w.title = "GabiFlix"
+        w.title = "FramePlay"
         w.titlebarAppearsTransparent = true
         w.titleVisibility = .hidden
         w.backgroundColor = .black
@@ -152,9 +159,10 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
         slider.isContinuous = false
         let audio = button("Áudio", #selector(chooseAudio))
         let subs = button("Legendas", #selector(chooseSubtitles))
+        let scale = button("Tela: Ajustar", #selector(toggleScale(_:)))
         let fs = button("Tela cheia", #selector(toggleFullScreen))
 
-        let row = NSStackView(views: [playButton, rw, ff, timeLabel, slider, lengthLabel, audio, subs, fs])
+        let row = NSStackView(views: [playButton, rw, ff, timeLabel, slider, lengthLabel, audio, subs, scale, fs])
         row.orientation = .horizontal
         row.spacing = 12
         row.alignment = .centerY
@@ -239,6 +247,7 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
         let media = VLCMedia(url: url)
         media.addOption(":network-caching=3000")
         media.addOption(":http-reconnect")
+        media.addOption(":sub-language=pob,por,pt")
         player.media = media
         player.play()
         showControls()
@@ -249,7 +258,7 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
     private func log(_ text: String) {
         guard PlayerWindowController.testLog else { return }
         let line = "\(Date().timeIntervalSince1970) \(text)\n"
-        let url = URL(fileURLWithPath: "/tmp/gabiflix-player.log")
+        let url = URL(fileURLWithPath: "/tmp/frameplay-player.log")
         if let h = try? FileHandle(forWritingTo: url) { h.seekToEndOfFile(); h.write(line.data(using: .utf8)!); h.closeFile() }
         else { try? line.write(to: url, atomically: true, encoding: .utf8) }
     }
@@ -258,7 +267,7 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
         let state = player.state
         let t = Int64(player.time.intValue)
         let len = Int64(player.media?.length.intValue ?? 0)
-        log("estado=\(state.rawValue) tempo=\(t) duração=\(len) tocando=\(player.isPlaying) legendas=\(addedSubs)/\(readySubs.count) faixasLeg=\((player.videoSubTitlesNames as? [String]) ?? []) audio=\((player.audioTrackNames as? [String]) ?? [])")
+        log("estado=\(state.rawValue) tempo=\(t) duração=\(len) tocando=\(player.isPlaying) legendas=\(addedSubs)/\(cands.count) faixasLeg=\((player.videoSubTitlesNames as? [String]) ?? []) audio=\((player.audioTrackNames as? [String]) ?? [])")
         if t > 0 { lastTime = t }
         if len > 0 { lastLength = len }
 
@@ -267,20 +276,20 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
             spinner.isHidden = true
             if !startedPlaying {
                 startedPlaying = true
-                attachReadySubs()
-                DispatchQueue.main.asyncAfter(deadline: .now() + 3) { [weak self] in self?.selectEmbeddedPortuguese() }
+                playingSince = Date()
+                DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) { [weak self] in self?.selectEmbeddedPortuguese() }
             }
             if !resumeDone && len > 0 {
                 resumeDone = true
-                if startMs > 30000 && startMs < len - 60000 { player.time = VLCTime(int: Int32(truncatingIfNeeded: startMs)) }
+                let saved = savedPosition()
+                if saved > 30000 && saved < len - 60000 { player.time = VLCTime(int: Int32(truncatingIfNeeded: saved)) }
             }
         case .buffering, .opening:
             if !startedPlaying { spinner.isHidden = false }
-        case .ended, .stopped where startedPlaying && lastLength > 0 && lastTime > lastLength - 8000:
-            ended = true
-            lastTime = lastLength
-            closePlayer()
-            return
+        case .ended:
+            if startedPlaying { endNow(); return }
+        case .stopped:
+            if startedPlaying && lastLength > 0 && lastTime > lastLength - 8000 { endNow(); return }
         case .error:
             spinner.isHidden = true
             message.stringValue = "Não foi possível reproduzir este vídeo.\nVolte e escolha outra fonte."
@@ -289,6 +298,9 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
         default:
             break
         }
+
+        attachReadySubs()
+        reportProgress(force: false)
 
         setTitle(playButton, player.isPlaying ? "❚❚" : "▶")
         if !userSeeking && len > 0 { slider.doubleValue = Double(t) * 1000 / Double(len) }
@@ -306,6 +318,38 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
         }
     }
 
+    private func endNow() {
+        ended = true
+        lastTime = lastLength
+        clearPosition()
+        closePlayer()
+    }
+
+    // ---------- continuar de onde parou / avisar o site ----------
+    private func positionKey() -> String {
+        var h: UInt64 = 5381
+        for b in url.absoluteString.utf8 { h = (h &* 33) &+ UInt64(b) }
+        return "fp-pos-\(h)"
+    }
+    /** aberto pelo site: o ponto certo é o do Stremio; sem código do título, usa o último ponto guardado aqui */
+    private func savedPosition() -> Int64 {
+        if !metaId.isEmpty { return startMs }
+        return Int64(UserDefaults.standard.double(forKey: positionKey()))
+    }
+    private func clearPosition() { if metaId.isEmpty { UserDefaults.standard.removeObject(forKey: positionKey()) } }
+
+    private func reportProgress(force: Bool) {
+        if ended || finished { return }
+        let now = Date()
+        if !force && now.timeIntervalSince(lastReport) < 5 { return }
+        lastReport = now
+        let t = Int64(player.time.intValue)
+        let len = Int64(player.media?.length.intValue ?? 0)
+        if t <= 0 { return }
+        if metaId.isEmpty { UserDefaults.standard.set(Double(t), forKey: positionKey()) }
+        else { onProgress?(t, len) }
+    }
+
     private func showControls() {
         hideAt = Date().addingTimeInterval(2.5)
         if controls.alphaValue < 1 {
@@ -318,7 +362,15 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
     }
 
     @objc private func togglePlay() {
-        if player.isPlaying { player.pause() } else { player.play() }
+        if player.isPlaying { player.pause(); reportProgress(force: true) } else { player.play() }
+        showControls()
+    }
+
+    @objc private func toggleScale(_ sender: NSButton) {
+        fillMode = !fillMode
+        videoView.fillScreen = fillMode
+        sender.attributedTitle = NSAttributedString(string: "  Tela: \(fillMode ? "Preencher" : "Ajustar")  ", attributes: [
+            .foregroundColor: NSColor.white, .font: NSFont.boldSystemFont(ofSize: 13)])
         showControls()
     }
 
@@ -382,42 +434,183 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
     }
     private func isDownloaded(_ id: Int) -> Bool { addedSubs > 0 && embeddedKnown && id != -1 && !embeddedSubs.contains(id) }
 
-    /** baixa as legendas PT/BR (as que vieram do site, ou do OpenSubtitles do Stremio) para arquivos .srt */
+    struct SubCand { let url: URL; let lastMs: Int64 }
+
+    /** baixa as legendas (as do site; se nenhuma servir, as do OpenSubtitles do Stremio): cada uma vira UTF-8
+        e só fica se for legenda de verdade e em português */
     private func loadSubtitles() {
         let given = subtitleURLs
         let type = metaType, id = metaId
         DispatchQueue.global(qos: .userInitiated).async { [weak self] in
-            var urls = given
-            if urls.isEmpty && !type.isEmpty && !id.isEmpty { urls = PlayerWindowController.searchOpenSubtitles(type: type, id: id) }
-            let dir = FileManager.default.temporaryDirectory.appendingPathComponent("gabiflix-legendas", isDirectory: true)
+            let dir = FileManager.default.temporaryDirectory.appendingPathComponent("frameplay-legendas", isDirectory: true)
             try? FileManager.default.removeItem(at: dir)
             try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
-            var n = 0
-            for u in urls {
-                if n >= 5 { break }
-                guard let data = PlayerWindowController.get(u), data.count > 20 else { continue }
-                n += 1
-                let head = String(data: data.prefix(16), encoding: .utf8) ?? ""
-                let file = dir.appendingPathComponent("\(n)" + (head.replacingOccurrences(of: "\u{FEFF}", with: "").hasPrefix("WEBVTT") ? ".vtt" : ".srt"))
-                do { try data.write(to: file) } catch { continue }
-                DispatchQueue.main.async { self?.readySubs.append(file); self?.attachReadySubs() }
+            var ok: [SubCand] = []
+            if !given.isEmpty { ok = PlayerWindowController.fetchAll(given, dir: dir, first: 0) }
+            if ok.isEmpty && !type.isEmpty && !id.isEmpty {
+                let found = PlayerWindowController.searchOpenSubtitles(type: type, id: id)
+                ok = PlayerWindowController.fetchAll(found, dir: dir, first: given.count)
+            }
+            DispatchQueue.main.async {
+                guard let self = self else { return }
+                self.cands = ok
+                self.subsDownloaded = true
+                self.log("legendas válidas: \(ok.count)")
+                self.attachReadySubs()
             }
         }
     }
 
-    private func attachReadySubs() {
-        guard startedPlaying, !finished else { return }
-        if !embeddedKnown && addedSubs < readySubs.count {
-            embeddedKnown = true
-            let ids = (player.videoSubTitlesIndexes as? [NSNumber])?.map { $0.intValue } ?? []
-            embeddedSubs = Set(ids)
+    private static func fetchAll(_ urls: [URL], dir: URL, first: Int) -> [SubCand] {
+        var results = [SubCand?](repeating: nil, count: urls.count)
+        let lock = NSLock()
+        let group = DispatchGroup()
+        for (i, u) in urls.enumerated() {
+            group.enter()
+            DispatchQueue.global(qos: .userInitiated).async {
+                let c = fetchSubtitle(u, dir: dir, n: first + i + 1)
+                lock.lock()
+                results[i] = c
+                lock.unlock()
+                group.leave()
+            }
         }
-        while addedSubs < readySubs.count {
-            _ = player.addPlaybackSlave(readySubs[addedSubs], type: .subtitle, enforce: addedSubs == 0)
+        _ = group.wait(timeout: .now() + 20)
+        lock.lock()
+        let out = results.compactMap { $0 }
+        lock.unlock()
+        return out
+    }
+
+    /** baixa uma legenda; devolve nil se não for uma legenda válida em português */
+    private static func fetchSubtitle(_ u: URL, dir: URL, n: Int) -> SubCand? {
+        guard var data = get(u), data.count >= 20 else { return nil }
+        if data.count > 2 && data[0] == 0x1F && data[1] == 0x8B {
+            guard let d = gunzip(data) else { return nil }
+            data = d
+        }
+        guard var text = decodeText(data) else { return nil }
+        text = text.replacingOccurrences(of: "\u{FEFF}", with: "")
+        var ext = "srt"
+        var last = lastCueEnd(text, pattern: cueEndPattern)
+        if last > 0 {
+            if text.hasPrefix("WEBVTT") { ext = "vtt" }
+        } else {
+            last = lastCueEnd(text, pattern: assEndPattern)
+            if last > 0 && text.contains("Dialogue:") { ext = "ass" } else { return nil } // não é SRT/VTT/ASS (página de erro, arquivo vazio...)
+        }
+        if !looksPortuguese(text) { return nil } // legenda de outro idioma com etiqueta errada
+        let out = dir.appendingPathComponent("\(n).\(ext)")
+        do { try Data(text.utf8).write(to: out) } catch { return nil } // sempre UTF-8: acentos certos no VLC
+        return SubCand(url: out, lastMs: last)
+    }
+
+    private static func gunzip(_ d: Data) -> Data? {
+        let tmp = FileManager.default.temporaryDirectory.appendingPathComponent("fp-\(UUID().uuidString).gz")
+        do { try d.write(to: tmp) } catch { return nil }
+        defer { try? FileManager.default.removeItem(at: tmp) }
+        let p = Process()
+        p.executableURL = URL(fileURLWithPath: "/usr/bin/gunzip")
+        p.arguments = ["-c", tmp.path]
+        let pipe = Pipe()
+        p.standardOutput = pipe
+        p.standardError = FileHandle.nullDevice
+        do { try p.run() } catch { return nil }
+        let out = pipe.fileHandleForReading.readDataToEndOfFile()
+        p.waitUntilExit()
+        if out.isEmpty { return nil }
+        return out.count > 5_000_000 ? Data(out.prefix(5_000_000)) : out
+    }
+
+    /** texto da legenda: UTF-16 (com BOM), UTF-8, ou (se tiver bytes inválidos) Windows-1252, comum nas legendas antigas */
+    private static func decodeText(_ d: Data) -> String? {
+        if d.count >= 2 && d[0] == 0xFF && d[1] == 0xFE { return String(data: d.subdata(in: 2..<d.count), encoding: .utf16LittleEndian) }
+        if d.count >= 2 && d[0] == 0xFE && d[1] == 0xFF { return String(data: d.subdata(in: 2..<d.count), encoding: .utf16BigEndian) }
+        if let s = String(data: d, encoding: .utf8) { return s }
+        if let s = String(data: d, encoding: .windowsCP1252) { return s }
+        return String(data: d, encoding: .isoLatin1)
+    }
+
+    private static func wordSet(_ s: String) -> Set<String> { Set(s.components(separatedBy: " ")) }
+    private static let ptWords = wordSet("não você vocês estou então isso são também muito porque pra obrigado tá nós meu minha ele dela já até bem tudo aqui foi vai tem sim uma")
+    private static let enWords = wordSet("the you and that what this with have are not but your i'm it's don't they there just know")
+    private static let esWords = wordSet("el los las pero usted esto estoy yo muy gracias señor tengo qué cómo hay soy eres nosotros")
+    private static let wordRegex = try? NSRegularExpression(pattern: "[\\p{L}']+")
+
+    /** confere se o texto é mesmo português (conta palavras típicas de português, inglês e espanhol) */
+    private static func looksPortuguese(_ full: String) -> Bool {
+        guard let re = wordRegex else { return false }
+        let text = full.count > 300000 ? String(full.prefix(300000)) : full
+        let ns = text as NSString
+        var pt = 0, en = 0, es = 0
+        for m in re.matches(in: text, range: NSRange(location: 0, length: ns.length)) {
+            let w = ns.substring(with: m.range).lowercased()
+            if ptWords.contains(w) { pt += 1 }
+            if enWords.contains(w) { en += 1 }
+            if esWords.contains(w) { es += 1 }
+        }
+        return pt >= 3 && pt > 2 * max(en, es)
+    }
+
+    // os dois padrões têm 4 grupos: horas (opcional no SRT), minutos, segundos e fração
+    private static let cueEndPattern = "-->\\s*(?:(\\d+):)?(\\d{1,2}):(\\d\\d)[,.](\\d{3})"
+    private static let assEndPattern = "Dialogue:\\s*[^,\\n]*,\\s*\\d+:\\d\\d:\\d\\d[.]\\d+\\s*,\\s*(\\d+):(\\d\\d):(\\d\\d)[.](\\d\\d?)"
+
+    /** fim da última fala da legenda (ms): serve para ver se ela combina com a duração do filme */
+    private static func lastCueEnd(_ text: String, pattern: String) -> Int64 {
+        guard let re = try? NSRegularExpression(pattern: pattern) else { return 0 }
+        let ns = text as NSString
+        var best: Int64 = 0
+        func num(_ m: NSTextCheckingResult, _ i: Int) -> Int64 {
+            let r = m.range(at: i)
+            if r.location == NSNotFound || r.length == 0 { return 0 }
+            return Int64(ns.substring(with: r)) ?? 0
+        }
+        for m in re.matches(in: text, range: NSRange(location: 0, length: ns.length)) {
+            if m.numberOfRanges < 5 { continue }
+            var ms: Int64 = 0
+            let fr = m.range(at: 4)
+            if fr.location != NSNotFound {
+                var f = ns.substring(with: fr)
+                while f.count < 3 { f += "0" } // ASS usa centésimos
+                ms = Int64(String(f.prefix(3))) ?? 0
+            }
+            let t = ((num(m, 1) * 60 + num(m, 2)) * 60 + num(m, 3)) * 1000 + ms
+            if t > best { best = t }
+        }
+        return best
+    }
+
+    /** liga as legendas baixadas: só as que combinam com a duração do filme, a mais parecida primeiro (essa fica ativa) */
+    private func attachReadySubs() {
+        guard startedPlaying, subsDownloaded, !subsAttached, !finished else { return }
+        let len = Int64(player.media?.length.intValue ?? 0)
+        // espera um pouco depois do play, e a duração aparecer (até ~13 s)
+        let since = Date().timeIntervalSince(playingSince)
+        if since < 1.5 { return }
+        if len <= 0 && since < 13 { return }
+        subsAttached = true
+        if cands.isEmpty { return }
+        embeddedKnown = true
+        embeddedSubs = Set(((player.videoSubTitlesIndexes as? [NSNumber]) ?? []).map { $0.intValue })
+        var use: [SubCand] = []
+        if len > 0 {
+            let L = Double(len)
+            for c in cands where c.lastMs <= 0 || (Double(c.lastMs) >= L * 0.5 && Double(c.lastMs) <= L * 1.12) { use.append(c) }
+            if use.isEmpty { use = cands }
+            use.sort { (a: SubCand, b: SubCand) -> Bool in
+                let sa = a.lastMs <= 0 ? 9.0 : abs(Double(a.lastMs) / L - 0.93)
+                let sb = b.lastMs <= 0 ? 9.0 : abs(Double(b.lastMs) / L - 0.93)
+                return sa < sb
+            }
+        } else { use = cands }
+        for (i, c) in use.enumerated() where i < 4 {
+            _ = player.addPlaybackSlave(c.url, type: .subtitle, enforce: i == 0)
             addedSubs += 1
         }
     }
 
+    /** sem legenda baixada: liga a PT/BR que vier dentro do arquivo; se não houver, desliga (nada em outro idioma) */
     private func selectEmbeddedPortuguese() {
         guard !embeddedCheckDone, addedSubs == 0, !finished else { return }
         embeddedCheckDone = true
@@ -425,8 +618,9 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
         let ids = (player.videoSubTitlesIndexes as? [NSNumber])?.map { $0.intValue } ?? []
         for (i, id) in ids.enumerated() where i < names.count && id != -1 && isPortuguese(names[i]) {
             player.currentVideoSubTitleIndex = Int32(id)
-            break
+            return
         }
+        player.currentVideoSubTitleIndex = -1
     }
 
     @objc private func chooseSubtitles(_ sender: NSButton) {
@@ -448,7 +642,7 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
         }
         if menu.items.count <= 1 {
             menu.removeAllItems()
-            menu.addItem(withTitle: readySubs.isEmpty && addedSubs == 0 ? "Procurando legendas em português…" : "Não há legendas em português", action: nil, keyEquivalent: "")
+            menu.addItem(withTitle: !subsDownloaded ? "Procurando legendas em português…" : "Não há legendas em português", action: nil, keyEquivalent: "")
         }
         menu.popUp(positioning: nil, at: NSPoint(x: 0, y: sender.bounds.height + 4), in: sender)
         showControls()
@@ -457,11 +651,11 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
 
     private static func get(_ url: URL) -> Data? {
         var req = URLRequest(url: url, timeoutInterval: 12)
-        req.setValue("GabiFlix", forHTTPHeaderField: "User-Agent")
+        req.setValue("FramePlay", forHTTPHeaderField: "User-Agent")
         let sem = DispatchSemaphore(value: 0)
         var out: Data?
         URLSession.shared.dataTask(with: req) { data, resp, _ in
-            if let h = resp as? HTTPURLResponse, h.statusCode < 400 { out = data }
+            if let h = resp as? HTTPURLResponse, h.statusCode < 400, let d = data { out = d.count > 5_000_000 ? Data(d.prefix(5_000_000)) : d }
             sem.signal()
         }.resume()
         _ = sem.wait(timeout: .now() + 15)
@@ -482,7 +676,7 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
             if ["pob", "pt-br", "ptb"].contains(lang) { br.append(u) }
             else if ["por", "pt", "pt-pt"].contains(lang) { pt.append(u) }
         }
-        return br + pt
+        return Array(br.prefix(5)) + Array(pt.prefix(3))
     }
 
     // ---------- fechar ----------
@@ -503,6 +697,7 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
         let t = Int64(player.time.intValue)
         if t > 0 { lastTime = t }
         if ended { lastTime = lastLength }
+        if !ended && lastTime > 0 && metaId.isEmpty { UserDefaults.standard.set(Double(lastTime), forKey: positionKey()) }
         player.stop()
         player.drawable = nil
         onFinish?(lastTime, lastLength, ended)

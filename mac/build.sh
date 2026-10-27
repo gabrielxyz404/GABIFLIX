@@ -1,9 +1,9 @@
 #!/bin/bash
-# Monta o GabiFlix.app para Mac (Apple Silicon) — roda no GitHub Actions (macOS).
+# Monta o FramePlay.app para Mac (Apple Silicon) — roda no GitHub Actions (macOS).
 set -euo pipefail
 cd "$(dirname "$0")"
-VERSION="${GABIFLIX_VERSION:-1.0.0}"
-BUILD="${GABIFLIX_BUILD:-1}"
+VERSION="${FRAMEPLAY_VERSION:-1.0.0}"
+BUILD="${FRAMEPLAY_BUILD:-1}"
 WORK="$PWD/build"
 rm -rf "$WORK"; mkdir -p "$WORK"
 
@@ -37,16 +37,16 @@ lipo -info "$FW/VLCKit" || true
 swiftc -O -target arm64-apple-macos11.0 \
   -F "$WORK/fw" -framework VLCKit -framework WebKit -framework Cocoa \
   -Xlinker -rpath -Xlinker @executable_path/../Frameworks \
-  Sources/*.swift -o "$WORK/GabiFlix"
+  Sources/*.swift -o "$WORK/FramePlay"
 
 # 3) monta o pacote .app
-APP="$WORK/GabiFlix.app"
+APP="$WORK/FramePlay.app"
 mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Frameworks" "$APP/Contents/Resources"
-cp "$WORK/GabiFlix" "$APP/Contents/MacOS/GabiFlix"
+cp "$WORK/FramePlay" "$APP/Contents/MacOS/FramePlay"
 cp -R "$FW" "$APP/Contents/Frameworks/"
 sed -e "s/__VERSION__/$VERSION/" -e "s/__BUILD__/$BUILD/" Info.plist > "$APP/Contents/Info.plist"
 
-# ícone a partir do ícone do GabiFlix
+# ícone a partir do ícone do FramePlay
 ICON_SRC=../images/icon_512x512.png
 ICONSET="$WORK/AppIcon.iconset"
 mkdir -p "$ICONSET"
@@ -62,6 +62,6 @@ codesign --verify --deep --strict "$APP" && echo "assinatura ok"
 
 # 5) zip para download
 mkdir -p ../out
-rm -f ../out/GabiFlix-Mac.zip
-ditto -c -k --sequesterRsrc --keepParent "$APP" ../out/GabiFlix-Mac.zip
+rm -f ../out/FramePlay-Mac.zip
+ditto -c -k --sequesterRsrc --keepParent "$APP" ../out/FramePlay-Mac.zip
 ls -la ../out

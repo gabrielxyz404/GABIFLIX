@@ -21,28 +21,28 @@ jobs:
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
-      - name: Montar o GabiFlix.app
+      - name: Montar o FramePlay.app
         env:
-          GABIFLIX_VERSION: 1.0.${{ github.run_number }}
-          GABIFLIX_BUILD: ${{ github.run_number }}
+          FRAMEPLAY_VERSION: 1.0.${{ github.run_number }}
+          FRAMEPLAY_BUILD: ${{ github.run_number }}
         run: |
           set -o pipefail
           ./mac/build.sh 2>&1 | tee build.log
       - name: Testar se o app abre
         run: |
-          xattr -cr mac/build/GabiFlix.app
-          open -n mac/build/GabiFlix.app
+          xattr -cr mac/build/FramePlay.app
+          open -n mac/build/FramePlay.app
           sleep 20
-          if pgrep -x GabiFlix >/dev/null; then
-            echo "::notice::GabiFlix abriu e continua aberto depois de 20 s"
+          if pgrep -x FramePlay >/dev/null; then
+            echo "::notice::FramePlay abriu e continua aberto depois de 20 s"
             screencapture -x shot.png || true
           else
-            echo "::error::GabiFlix fechou sozinho"
-            f=$(ls -t ~/Library/Logs/DiagnosticReports/GabiFlix* 2>/dev/null | head -1)
+            echo "::error::FramePlay fechou sozinho"
+            f=$(ls -t ~/Library/Logs/DiagnosticReports/FramePlay* 2>/dev/null | head -1)
             [ -n "$f" ] && head -60 "$f" | while IFS= read -r line; do echo "::error::$line"; done
             exit 1
           fi
-          pkill -x GabiFlix || true
+          pkill -x FramePlay || true
       - name: Testar o player (vídeo com áudio AC3)
         run: |
           V=""; ID=""
@@ -54,18 +54,18 @@ jobs:
             echo "::notice::teste $u -> $code"
             if [ "$code" = "200" ] || [ "$code" = "206" ]; then V=$u; ID=$i; break; fi
           done
-          mac/build/GabiFlix.app/Contents/MacOS/GabiFlix --gf-test-play "$V" "$ID" > app.log 2>&1 &
+          mac/build/FramePlay.app/Contents/MacOS/FramePlay --gf-test-play "$V" "$ID" > app.log 2>&1 &
           sleep 45
           grep -i -E "\[err\]|error|fail|cannot|unable" app.log | head -10 | while IFS= read -r l; do echo "::notice::vlc: $(echo "$l" | cut -c1-400)"; done
           screencapture -x player.png || true
-          [ -f /tmp/gabiflix-player.log ] && { head -3 /tmp/gabiflix-player.log; tail -4 /tmp/gabiflix-player.log; } | while IFS= read -r line; do echo "::notice::$(echo "$line" | cut -c1-600)"; done
-          cp /tmp/gabiflix-player.log player.log 2>/dev/null || true
-          if pgrep -x GabiFlix >/dev/null; then echo "::notice::player abriu e o app continua aberto"; else
+          [ -f /tmp/frameplay-player.log ] && { head -3 /tmp/frameplay-player.log; tail -4 /tmp/frameplay-player.log; } | while IFS= read -r line; do echo "::notice::$(echo "$line" | cut -c1-600)"; done
+          cp /tmp/frameplay-player.log player.log 2>/dev/null || true
+          if pgrep -x FramePlay >/dev/null; then echo "::notice::player abriu e o app continua aberto"; else
             echo "::error::o app fechou ao abrir o player"
-            f=$(ls -t ~/Library/Logs/DiagnosticReports/GabiFlix* 2>/dev/null | head -1)
+            f=$(ls -t ~/Library/Logs/DiagnosticReports/FramePlay* 2>/dev/null | head -1)
             [ -n "$f" ] && head -80 "$f" | while IFS= read -r line; do echo "::error::$line"; done
           fi
-          pkill -x GabiFlix || true
+          pkill -x FramePlay || true
       - name: Guardar as telas do teste
         if: always()
         env:
@@ -74,7 +74,7 @@ jobs:
           mkdir -p /tmp/telas && cp shot.png player.png player.log app.log /tmp/telas/ 2>/dev/null || true
           cd /tmp/telas
           git init -q && git checkout -q -b mac-teste
-          git config user.name "GabiFlix CI"; git config user.email "ci@gabiflix.local"
+          git config user.name "FramePlay CI"; git config user.email "ci@frameplay.local"
           git add -A && git commit -qm "telas do teste do Mac" || true
           git push -q -f "https://x-access-token:${TOKEN}@github.com/${{ github.repository }}.git" mac-teste || echo "::warning::não guardou as telas"
       - uses: actions/upload-artifact@v4
@@ -93,16 +93,16 @@ jobs:
           done
       - uses: actions/upload-artifact@v4
         with:
-          name: GabiFlix-Mac
-          path: out/GabiFlix-Mac.zip
+          name: FramePlay-Mac
+          path: out/FramePlay-Mac.zip
       - name: Publicar para download
         uses: softprops/action-gh-release@v2
         with:
           tag_name: mac
-          name: GabiFlix para Mac
+          name: FramePlay para Mac
           body: |
             Versão 1.0.${{ github.run_number }} — Mac com chip Apple (M1, M2, M3, M4…), macOS 11 ou mais novo.
-            Baixe o GabiFlix-Mac.zip, abra, e arraste o GabiFlix para a pasta Aplicativos.
-            Na primeira vez: clique com o botão direito no GabiFlix › Abrir › Abrir.
-          files: out/GabiFlix-Mac.zip
+            Baixe o FramePlay-Mac.zip, abra, e arraste o FramePlay para a pasta Aplicativos.
+            Na primeira vez: clique com o botão direito no FramePlay › Abrir › Abrir.
+          files: out/FramePlay-Mac.zip
           make_latest: false
