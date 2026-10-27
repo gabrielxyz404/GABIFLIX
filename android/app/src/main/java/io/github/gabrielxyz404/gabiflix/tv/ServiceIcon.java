@@ -9,7 +9,7 @@ import android.view.View;
 
 /**
  * Símbolos desenhados no app (sem imagens), inspirados em cada serviço mas sem copiar os logos:
- * N, castelo, seta curva, maçã (fruta), montanha, globo, farol de carro, claquete e rolo de filme.
+ * N, castelo, anel com play, televisão antiga, tela com mais, montanha, globo, farol de carro e rolo de filme.
  * Também os ícones do topo (pesquisar, atualizar, conta, Mais Tarde).
  */
 class ServiceIcon extends View {
@@ -63,30 +63,29 @@ class ServiceIcon extends View {
                 c.drawRoundRect(new RectF(44, 70, 56, 90), 6, 6, hole);
                 c.drawRect(47, 46, 53, 54, hole);
                 break;
-            case "prime": // seta curvada
+            case "prime": // anel com o botão de play
                 line.setStrokeWidth(9);
-                c.drawArc(new RectF(10, 10, 90, 72), 25, 130, false, line);
-                p.moveTo(84, 44); p.lineTo(94, 66); p.lineTo(70, 66); p.close();
+                c.drawCircle(50, 50, 38, line);
+                p.moveTo(41, 33); p.lineTo(70, 50); p.lineTo(41, 67); p.close();
                 c.drawPath(p, fill);
                 break;
-            case "hbo": // claquete
-                c.drawRoundRect(new RectF(14, 42, 86, 88), 6, 6, fill);
-                p.moveTo(14, 26); p.lineTo(84, 14); p.lineTo(87, 30); p.lineTo(17, 42); p.close();
+            case "hbo": // televisão antiga com antenas
+                p.setFillType(Path.FillType.EVEN_ODD);
+                p.addRoundRect(new RectF(10, 36, 90, 88), 11, 11, Path.Direction.CW);
+                p.addRoundRect(new RectF(19, 45, 81, 79), 6, 6, Path.Direction.CW);
                 c.drawPath(p, fill);
-                line.setStrokeWidth(5);
-                line.setColor(0x99000000);
-                c.drawLine(36, 22, 42, 37, line);
-                c.drawLine(58, 18, 64, 33, line);
-                line.setColor(fill.getColor());
-                break;
-            case "appletv": // maçã (fruta inteira, com folha e cabinho)
-                c.drawCircle(37, 58, 26, fill);
-                c.drawCircle(63, 58, 26, fill);
-                c.drawOval(new RectF(26, 54, 74, 92), fill);
                 line.setStrokeWidth(6);
-                c.drawLine(50, 34, 54, 16, line);
-                p.moveTo(56, 22); p.cubicTo(66, 8, 82, 10, 86, 16); p.cubicTo(78, 28, 64, 30, 56, 22); p.close();
+                c.drawLine(50, 36, 29, 12, line);
+                c.drawLine(50, 36, 71, 12, line);
+                break;
+            case "appletv": // tela com um sinal de mais (Apple TV+) e pé
+                p.setFillType(Path.FillType.EVEN_ODD);
+                p.addRoundRect(new RectF(8, 16, 92, 74), 11, 11, Path.Direction.CW);
+                p.moveTo(46, 30); p.lineTo(54, 30); p.lineTo(54, 41); p.lineTo(65, 41); p.lineTo(65, 49);
+                p.lineTo(54, 49); p.lineTo(54, 60); p.lineTo(46, 60); p.lineTo(46, 49); p.lineTo(35, 49);
+                p.lineTo(35, 41); p.lineTo(46, 41); p.close();
                 c.drawPath(p, fill);
+                c.drawRoundRect(new RectF(32, 81, 68, 88), 3.5f, 3.5f, fill);
                 break;
             case "paramount": // montanha
                 p.moveTo(6, 86); p.lineTo(42, 22); p.lineTo(58, 48); p.lineTo(68, 36); p.lineTo(94, 86); p.close();

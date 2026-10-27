@@ -399,7 +399,19 @@ public class TvCatalogActivity extends TvBase {
     }
 
     private static List<JSONObject> load(Services.Section sec) throws Exception {
-        if (sec.file != null) return Stremio.metas(Stremio.data(sec.file).optJSONArray("metas"));
+        if (sec.file != null) {
+            List<JSONObject> metas = Stremio.metas(Stremio.data(sec.file).optJSONArray("metas"));
+            // abas Filmes/Séries dos serviços: junta o arquivo -extra (até 2000 títulos, como no celular)
+            if (sec.grid && sec.file.matches("(netflix|disney|prime|hbo|appletv|paramount|globoplay|clarovideo)-(movie|series)")) {
+                try {
+                    Set<String> seen = new HashSet<>();
+                    for (JSONObject m : metas) seen.add(m.optString("id"));
+                    for (JSONObject m : Stremio.metas(Stremio.data(sec.file + "-extra").optJSONArray("metas")))
+                        if (seen.add(m.optString("id"))) metas.add(m);
+                } catch (Exception ignored) {} // sem o arquivo extra, fica a lista de sempre
+            }
+            return metas;
+        }
         JSONObject home = Stremio.data(sec.home + "-home");
         return Stremio.metas(home.optJSONArray(sec.key));
     }
