@@ -440,7 +440,13 @@ html[data-gf-app="android"] .vertical-nav-bar-container-UPAkA {
     -webkit-backdrop-filter: blur(10px) saturate(130%);
     backdrop-filter: blur(10px) saturate(130%);
 }
-html[data-gf-app="android"] .nav-menu-container-Pl25j {
+html:is([data-gf-app="android"],[data-gf-app="mac"]) .nav-menu-container-Pl25j {
     -webkit-backdrop-filter: blur(12px) saturate(130%);
     backdrop-filter: blur(12px) saturate(130%);
+}
+
+/* Mac: cápsula de cima com desfoque mais leve (o vidro continua, pesa menos ao rolar); as telas com vidro transparente têm regra própria, mais forte */
+html[data-gf-app="mac"] .horizontal-nav-bar-container-Y_zvK::before {
+    -webkit-backdrop-filter: blur(10px) saturate(130%);
+    backdrop-filter: blur(10px) saturate(130%);
 }

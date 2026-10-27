@@ -17,7 +17,8 @@
     ];
 
     var current = null; // serviço aberto, ou null para a grade
-    var gridIndex = 0; // celular Android: serviço que estava na tela da grade, para voltar a ele
+    var gridIndex = 0; // apps: serviço que estava na tela da grade, para voltar a ele
+    var gridKeyHandler = null; // Mac: tecla ← → Enter na tela dos serviços (um só ouvinte por vez)
 
     function el(tag, cls, text) {
         var e = document.createElement(tag);
@@ -28,8 +29,10 @@
 
     function renderGrid(root) {
         root.innerHTML = '';
-        // celular Android: os botões viram um carrossel, um serviço por tela
-        var android = document.documentElement.getAttribute('data-gf-app') === 'android';
+        // apps (celular Android e Mac): os botões viram um carrossel, um serviço por vez
+        var appKind = document.documentElement.getAttribute('data-gf-app');
+        var android = appKind === 'android' || appKind === 'mac'; // "carrossel de app" (nome antigo da variável)
+        var mac = appKind === 'mac'; // Mac: janela grande, mouse e teclado (setas nas laterais, ← →, Enter)
         var grid = el('div', android ? 'gf-grid gf-pager' : 'gf-grid');
         // cria o botão de um serviço
         function makeCard(s) {
@@ -61,6 +64,7 @@
         }
         root.appendChild(grid);
         if (!android) return;
+        if (gridKeyHandler) { document.removeEventListener('keydown', gridKeyHandler, true); gridKeyHandler = null; }
 
         // celular Android: as bolinhas embaixo mostram em qual serviço está; tocar numa leva até ele
         var N = SERVICES.length; // cada leva tem N botões (um por serviço)
@@ -94,6 +98,11 @@
             requestAnimationFrame(function () { grid.style.scrollSnapType = ''; });
         }
         function showDot(i) {
+            // Mac: só o serviço do meio fica em destaque; os vizinhos que aparecem nas pontas ficam mais apagados
+            if (mac) {
+                var cr = rawIndex();
+                for (var c = 0; c < cards.length; c++) cards[c].classList.toggle('is-center', c === cr);
+            }
             for (var k = 0; k < dots.children.length; k++) {
                 if (k === i) dots.children[k].classList.add('is-on');
                 else dots.children[k].classList.remove('is-on');
@@ -120,6 +129,48 @@
             dots.appendChild(d);
         });
         root.appendChild(dots);
+
+        if (mac) {
+            // setas dos lados: serviço anterior / próximo (depois do último volta ao primeiro)
+            var lastNav = 0;
+            function nav(dir) {
+                var now = Date.now();
+                if (now - lastNav < 180) return; // evita empilhar animações com cliques/rolagens muito rápidos
+                lastNav = now;
+                goTo((indexNow() + dir + N) % N);
+            }
+            [['prev', -1, 'Serviço anterior', 'M15 5l-7 7 7 7'], ['next', 1, 'Próximo serviço', 'M9 5l7 7-7 7']].forEach(function (a) {
+                var btn = el('button', 'gf-pager-arrow is-' + a[0]);
+                btn.type = 'button';
+                btn.setAttribute('aria-label', a[2]);
+                btn.innerHTML = '<svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><path d="' + a[3] + '" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+                btn.addEventListener('click', function () { nav(a[1]); });
+                root.appendChild(btn);
+            });
+            // teclado: ← → trocam de serviço, Enter abre o serviço em destaque
+            gridKeyHandler = function (e) {
+                if (!document.body.contains(grid) || e.metaKey || e.ctrlKey || e.altKey) return;
+                var de = document.documentElement;
+                if (de.getAttribute('data-gf-route') !== 'home' || de.getAttribute('data-gf-view') !== 'grid') return;
+                var t = e.target, tag = t && t.tagName;
+                if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || (t && t.isContentEditable)) return;
+                if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+                    e.preventDefault();
+                    nav(e.key === 'ArrowRight' ? 1 : -1);
+                } else if (e.key === 'Enter' && (tag === 'BODY' || tag === 'HTML' || !t || t === document.body)) {
+                    e.preventDefault();
+                    open(SERVICES[indexNow()].id, true);
+                }
+            };
+            document.addEventListener('keydown', gridKeyHandler, true);
+            // mouse: shift + roda do mouse troca de serviço (o trackpad na horizontal já rola o carrossel sozinho)
+            grid.addEventListener('wheel', function (e) {
+                if (e.shiftKey && Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
+                    e.preventDefault();
+                    nav(e.deltaY > 0 ? 1 : -1);
+                }
+            }, { passive: false });
+        }
 
         // ao rolar, guarda o serviço da tela e atualiza as bolinhas (no máximo uma vez por quadro)
         grid.addEventListener('scroll', function () {
@@ -215,10 +266,10 @@
         } catch (e) { return []; }
     }
 
-    // celular Android: os catálogos dos serviços têm até 2000 títulos (lista de sempre + data/<arquivo>-extra.json); TV, Mac e navegador usam só a lista de sempre
+    // apps (celular Android e Mac): os catálogos dos serviços têm até 2000 títulos (lista de sempre + data/<arquivo>-extra.json); TV e navegador usam só a lista de sempre
     var EXTRA_FILE = /^(netflix|disney|prime|hbo|appletv|paramount|globoplay|clarovideo)-(movie|series)$/;
     function withExtra(file, metas) {
-        if (!metas.length || !EXTRA_FILE.test(file || '') || document.documentElement.getAttribute('data-gf-app') !== 'android') return metas;
+        if (!metas.length || !EXTRA_FILE.test(file || '') || ['android', 'mac'].indexOf(document.documentElement.getAttribute('data-gf-app')) < 0) return metas;
         return getJSON('data/' + file + '-extra.json?v=' + DATA_VERSION).catch(function () { return []; }).then(function (more) {
             var seen = {};
             metas.forEach(function (m) { seen[m.id] = 1; });

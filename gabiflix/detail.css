@@ -382,13 +382,13 @@
 
 /* ---------- celular: a imagem sobe até o topo e a cápsula de cima flutua em vidro por cima dela ---------- */
 /* sem a faixa preta do cabeçalho: a barra sai do fluxo e o conteúdo começa no topo da tela */
-:root[data-gf-app="android"][data-gf-route="detail"] .horizontal-nav-bar-container-Y_zvK {
+:root:is([data-gf-app="android"],[data-gf-app="mac"])[data-gf-route="detail"] .horizontal-nav-bar-container-Y_zvK {
     position: absolute; top: 0; left: 0; right: 0; z-index: 5;
     background: none;
 }
-:root[data-gf-app="android"][data-gf-route="detail"] .nav-content-container-zl9hQ { top: 0; }
+:root:is([data-gf-app="android"],[data-gf-app="mac"])[data-gf-route="detail"] .nav-content-container-zl9hQ { top: 0; }
 /* cápsula mais transparente: dá para ver a imagem por trás */
-:root[data-gf-app="android"][data-gf-route="detail"] .horizontal-nav-bar-container-Y_zvK::before {
+:root:is([data-gf-app="android"],[data-gf-app="mac"])[data-gf-route="detail"] .horizontal-nav-bar-container-Y_zvK::before {
     background:
         linear-gradient(180deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.01) 100%),
         rgba(12, 12, 14, 0.04);
@@ -402,3 +402,13 @@
 :root[data-gf-app="android"][data-gf-route="detail"] .gf-d-hero::after {
     background: linear-gradient(180deg, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0) 24%, rgba(0,0,0,0) 55%, #000 100%);
 }
+
+/* ---------- Mac: imagem grande até o topo (por baixo da cápsula de vidro), com as informações por cima, à esquerda ---------- */
+:root[data-gf-app="mac"][data-gf-route="detail"] .gf-d-hero { margin-top: 0; height: 84vh; }
+:root[data-gf-app="mac"][data-gf-route="detail"] .gf-d-hero::after {
+    background:
+        linear-gradient(90deg, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.45) 38%, rgba(0,0,0,0) 65%),
+        linear-gradient(180deg, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0) 22%, rgba(0,0,0,0) 55%, #000 100%);
+}
+:root[data-gf-app="mac"][data-gf-route="detail"] .gf-d-body { margin-top: -46vh; }
+@media (min-width: 1500px) { :root[data-gf-app="mac"][data-gf-route="detail"] .gf-d-body { margin-top: -50vh; } }

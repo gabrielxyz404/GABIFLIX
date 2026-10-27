@@ -337,8 +337,8 @@
         if (best) return best.st;
         return streams[0];
     }
-    // só no app Android do celular (o Mac e o navegador ficam como antes)
-    function androidApp() { return !!window.gfPlayNative && document.documentElement.getAttribute('data-gf-app') === 'android'; }
+    // nos apps (celular Android e Mac): Assistir abre a janela de fontes e o VLC do app toca; o navegador fica como antes
+    function androidApp() { var k = document.documentElement.getAttribute('data-gf-app'); return !!window.gfPlayNative && (k === 'android' || k === 'mac'); }
     // no app Android usa a escolha inteligente; no resto continua o primeiro da lista
     function firstSource(streams) { return androidApp() ? pickBest(streams) : streams[0]; }
     // nomes das abas, na ordem em que cada addon aparece pela primeira vez (torrents não entram)
