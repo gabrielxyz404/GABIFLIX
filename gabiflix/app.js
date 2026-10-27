@@ -1,3 +1,14 @@
+// Pré-visualização do app do Mac num navegador qualquer: abrir o site com ?gfpreview=mac
+// (fica ligado neste navegador até abrir com ?gfpreview=off).
+(function () {
+    if (/GabiFlixApp\//.test(navigator.userAgent)) return;
+    try {
+        var m = /[?&#]gfpreview=(mac|off)\b/.exec(location.search + location.hash);
+        if (m) { if (m[1] === 'off') localStorage.removeItem('gf-preview'); else localStorage.setItem('gf-preview', m[1]); }
+        if (localStorage.getItem('gf-preview') === 'mac') document.documentElement.setAttribute('data-gf-app', 'mac');
+    } catch (e) {}
+})();
+
 // GabiFlix: ajustes quando o site roda dentro do app Android.
 // Os vídeos tocam no player do próprio Stremio. Versões antigas do GabiFlix ligavam o
 // "reprodutor externo = VLC"; aqui isso é desfeito uma vez, voltando ao player do Stremio.
