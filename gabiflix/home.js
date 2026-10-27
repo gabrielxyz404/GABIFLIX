@@ -26,7 +26,7 @@
         return e;
     }
 
-    // celular Android: fundo dos cartões com o backdrop de um título em alta do serviço (data/service-art.json, renovado todo dia)
+    // celular Android: fundo dos cartões com o poster de um título em alta do serviço (data/service-art.json, renovado todo dia)
     var artCache = null;
     function loadArt() {
         if (!artCache) {
@@ -40,10 +40,10 @@
         loadArt().then(function (art) {
             var day = Math.floor(Date.now() / 86400000);
             Array.prototype.forEach.call(grid.querySelectorAll('.gf-card'), function (card) {
-                var list = art[card.getAttribute('data-service')];
+                var list = (art[card.getAttribute('data-service')] || []).filter(function (a) { return a.poster; }); // poster vertical encaixa no cartão
                 var sp = card.querySelector('.gf-card-art');
-                if (!sp || !list || !list.length) return;
-                var url = list[day % list.length].url;
+                if (!sp || !list.length) return;
+                var url = list[day % list.length].poster;
                 var img = new Image();
                 img.onload = function () { sp.style.backgroundImage = 'url("' + url + '")'; sp.classList.add('is-on'); };
                 img.src = url;

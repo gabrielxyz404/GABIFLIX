@@ -544,7 +544,7 @@ async function serviceArt() {
         for (const m of ok) {
             if (seen.has(m.background)) continue;
             seen.add(m.background);
-            out.push({ name: m.name, url: m.background });
+            out.push({ name: m.name, url: m.background, poster: m.poster ? m.poster.replace('/s332/', '/s592/') : undefined }); // backdrop = TV, poster (vertical) = celular
             if (out.length >= 4) break;
         }
         return out;
