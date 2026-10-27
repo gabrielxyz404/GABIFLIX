@@ -31,7 +31,8 @@
         // celular Android: os botões viram um carrossel, um serviço por tela
         var android = document.documentElement.getAttribute('data-gf-app') === 'android';
         var grid = el('div', android ? 'gf-grid gf-pager' : 'gf-grid');
-        SERVICES.forEach(function (s) {
+        // cria o botão de um serviço
+        function makeCard(s) {
             var b = el('button', 'gf-card' + (s.wide ? ' is-wide' : ''));
             b.type = 'button';
             b.setAttribute('data-service', s.id);
@@ -49,25 +50,48 @@
             b.appendChild(el('span', 'gf-card-hint', s.hint || 'Ver catálogo'));
             b.addEventListener('pointerdown', function () { prefetch(s); }, { passive: true });
             b.addEventListener('click', function () { open(s.id, true); });
-            grid.appendChild(b);
-        });
+            return b;
+        }
+        SERVICES.forEach(function (s) { grid.appendChild(makeCard(s)); });
+        // celular Android: carrossel sem fim. Antes e depois dos serviços entram mais duas levas iguais; a do meio é a original
+        if (android) {
+            var firstCard = grid.firstChild;
+            SERVICES.forEach(function (s) { grid.insertBefore(makeCard(s), firstCard); });
+            SERVICES.forEach(function (s) { grid.appendChild(makeCard(s)); });
+        }
         root.appendChild(grid);
         if (!android) return;
 
         // celular Android: as bolinhas embaixo mostram em qual serviço está; tocar numa leva até ele
-        var cards = grid.children;
+        var N = SERVICES.length; // cada leva tem N botões (um por serviço)
+        var cards = grid.children; // 3 * N botões: leva de antes, leva original, leva de depois
         var dots = el('div', 'gf-dots');
-        var raf = 0;
+        var raf = 0, settleTimer = 0;
+        var hasScrollEnd = 'onscrollend' in window;
 
         // largura de uma tela: distância entre o primeiro e o segundo botão (inclui o espaço entre eles)
         function step() {
             var d = cards.length > 1 ? cards[1].offsetLeft - cards[0].offsetLeft : 0;
             return d > 0 ? d : (grid.clientWidth || 1);
         }
-        // número do serviço que está na tela agora
-        function indexNow() {
+        // posição do botão na tela contando as três levas (0 a 3 * N - 1)
+        function rawIndex() {
             var i = Math.round(grid.scrollLeft / step());
             return Math.max(0, Math.min(cards.length - 1, i));
+        }
+        // número do serviço que está na tela agora (0 a N - 1)
+        function indexNow() {
+            return rawIndex() % N;
+        }
+        // as levas são iguais: se a rolagem saiu da leva do meio, pula de volta para ela sem mudar o que aparece
+        function recenter() {
+            var r = rawIndex();
+            if (r >= N && r < 2 * N) return;
+            var shift = (r < N ? 1 : -1) * N * step();
+            // sem o encaixe durante o pulo, para o navegador não brigar com ele
+            grid.style.scrollSnapType = 'none';
+            grid.scrollLeft = grid.scrollLeft + shift;
+            requestAnimationFrame(function () { grid.style.scrollSnapType = ''; });
         }
         function showDot(i) {
             for (var k = 0; k < dots.children.length; k++) {
@@ -76,7 +100,10 @@
             }
         }
         function goTo(i) {
-            var x = i * step();
+            // vai pelo caminho mais curto: pode ser pela leva de antes, pela do meio ou pela de depois
+            var r = rawIndex(), t = i;
+            [i + N, i + 2 * N].forEach(function (c) { if (Math.abs(c - r) < Math.abs(t - r)) t = c; });
+            var x = t * step();
             // rolagem suave só onde o navegador entende as opções; no resto, pula direto
             if (typeof grid.scrollTo === 'function' && 'scrollBehavior' in document.documentElement.style) {
                 grid.scrollTo({ left: x, behavior: 'smooth' });
@@ -96,18 +123,25 @@
 
         // ao rolar, guarda o serviço da tela e atualiza as bolinhas (no máximo uma vez por quadro)
         grid.addEventListener('scroll', function () {
+            // sem o evento de fim de rolagem, espera 150 ms sem rolar para voltar à leva do meio
+            if (!hasScrollEnd) { clearTimeout(settleTimer); settleTimer = setTimeout(recenter, 150); }
             if (raf) return;
             raf = requestAnimationFrame(function () {
                 raf = 0;
+                // o usuário deu uma volta muito grande de uma vez: não espera a rolagem parar
+                var r = rawIndex();
+                if (r <= 1 || r >= cards.length - 2) recenter();
                 gridIndex = indexNow();
                 showDot(gridIndex);
             });
         }, { passive: true });
+        // quando a rolagem para, volta para a leva do meio (se o navegador avisa o fim da rolagem)
+        if (hasScrollEnd) grid.addEventListener('scrollend', recenter);
 
-        // volta para o serviço em que o usuário estava (ex.: ao fechar um catálogo), sem animação
+        // volta para o serviço em que o usuário estava (ex.: ao fechar um catálogo), sem animação; começa na leva do meio
         requestAnimationFrame(function () {
-            gridIndex = gridIndex >= 0 && gridIndex < cards.length ? gridIndex : 0;
-            grid.scrollLeft = gridIndex * step();
+            gridIndex = gridIndex >= 0 && gridIndex < N ? gridIndex : 0;
+            grid.scrollLeft = (N + gridIndex) * step();
             showDot(gridIndex);
         });
     }
