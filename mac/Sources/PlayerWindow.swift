@@ -75,6 +75,12 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
     /** ajuste manual da legenda (ms; positivo = a legenda aparece mais tarde), lembrado por título */
     private var subDelayMs = 0
     private var delayValueLabel: NSTextField?
+    private var attached: [SubCand] = []
+    private var userPickedSub = false
+    private var embeddedPtId: Int? = nil
+    /** diagnóstico mostrado no topo do menu de legendas */
+    private var diagId = "Procurando legendas…"
+    private var diagRef = ""
 
     init(url: URL, subtitles: [URL], type: String, id: String, startMs: Int64) {
         self.url = url
@@ -443,52 +449,140 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
     struct SubCand {
         let url: URL
         var lastMs: Int64
-        let text: String
+        var text: String
         let ext: String
         let rank: Int
         let hashMatch: Bool
         var fixed = false
         var score = 0.0
+        var aligned = false
+        var alignScore = 0.0
+        var alignScale = 1.0
+        var alignOffsetMs: Int64 = 0
     }
-    struct FoundSub { let url: URL; let hashMatch: Bool }
-    struct VideoHash { let hash: String; let size: Int64 }
+    struct FoundSub { let url: URL; let hashMatch: Bool; let lang: String }
+    /** resposta do addon: legendas PT + candidatas a referência de tempo (outros idiomas, nunca mostradas) */
+    struct SearchResult {
+        var pt: [FoundSub] = []
+        var refs: [FoundSub] = []
+        var sawMatchField = false
+        var refsAssumed = false
+        var total = 0
+        var ok = false
+    }
+    struct VideoHash {
+        var hash: String? = nil
+        var size: Int64 = 0
+        var error = ""
+        var headerName: String? = nil
+        var finalURL: URL? = nil
+    }
+
+    private static func shortReason(_ s: String) -> String { s.count > 48 ? String(s.prefix(48)) : s }
+    private static func langShort(_ l: String) -> String {
+        if l.isEmpty { return "?" }
+        if l == "eng" || l == "en" { return "EN" }
+        return l.uppercased()
+    }
+    private static func signedSecs(_ ms: Int64) -> String {
+        let v = String(format: "%.1f", Double(abs(ms)) / 1000.0).replacingOccurrences(of: ".", with: ",")
+        return (ms > 0 ? "+" : ms < 0 ? "−" : "") + v + " s"
+    }
 
     /** baixa as legendas: hash do arquivo (como o Stremio desktop), busca no OpenSubtitles do Stremio com hash/tamanho/nome
-        (os resultados do hash vêm primeiro) mais as do site; cada uma vira UTF-8 e só fica se for legenda de verdade e em português */
+        (os resultados do hash vêm primeiro) mais as do site; alinha cada uma à legenda de referência (outro idioma, mesmo hash);
+        cada uma vira UTF-8 e só fica se for legenda de verdade e em português */
     private func loadSubtitles() {
         let given = subtitleURLs
         let type = metaType, id = metaId
         let videoURL = url
         DispatchQueue.global(qos: .userInitiated).async { [weak self] in
-            let vh = PlayerWindowController.computeHashTimeboxed(videoURL, seconds: 8)
-            let fname = PlayerWindowController.fileName(of: videoURL)
-            self?.log(vh != nil ? "hash=\(vh!.hash) tamanho=\(vh!.size) arquivo=\(fname ?? "?")" : "hash não calculado; arquivo=\(fname ?? "?")")
-            var merged: [FoundSub] = []
-            var seen = Set<String>()
+            let vh = PlayerWindowController.computeHashTimeboxed(videoURL, seconds: 25)
+            let fname = PlayerWindowController.fileName(of: videoURL, vh)
+            if let h = vh.hash { self?.log("hash=\(h) tamanho=\(vh.size) arquivo=\(fname ?? "?")") }
+            else { self?.log("hash não calculado: \(vh.error); arquivo=\(fname ?? "?")") }
+
+            var sr: SearchResult? = nil
             if !type.isEmpty && !id.isEmpty {
                 let extras = PlayerWindowController.makeExtras(vh, fname)
-                var found: [FoundSub] = []
-                if !extras.isEmpty { found = PlayerWindowController.searchOpenSubtitles(type: type, id: id, extras: extras) }
-                self?.log("busca com extras: \(found.count) em português, \(found.filter { $0.hashMatch }.count) com hash igual")
-                if found.isEmpty {
-                    found = PlayerWindowController.searchOpenSubtitles(type: type, id: id, extras: "")
-                    self?.log("busca simples: \(found.count) em português")
+                if !extras.isEmpty { sr = PlayerWindowController.searchOpenSubtitles(type: type, id: id, extras: extras) }
+                if sr == nil || (sr?.pt.isEmpty ?? true) {
+                    let plain = PlayerWindowController.searchOpenSubtitles(type: type, id: id, extras: "")
+                    if var cur = sr {
+                        cur.pt.append(contentsOf: plain.pt)
+                        if cur.refs.isEmpty { cur.refs = plain.refs; cur.refsAssumed = plain.refsAssumed }
+                        if !cur.ok { cur.ok = plain.ok }
+                        sr = cur
+                    } else { sr = plain }
                 }
-                for f in found where seen.insert(f.url.absoluteString).inserted { merged.append(f) }
             }
-            for u in given where seen.insert(u.absoluteString).inserted { merged.append(FoundSub(url: u, hashMatch: false)) }
+            let hashHits = (sr?.pt.filter { $0.hashMatch }.count ?? 0) + (sr?.refs.filter { $0.hashMatch }.count ?? 0)
+            let idLine: String
+            if vh.hash == nil { idLine = "Vídeo não identificado (sem hash: \(PlayerWindowController.shortReason(vh.error)))" }
+            else if sr == nil || sr?.ok != true { idLine = "Hash calculado, mas a busca de legendas falhou" }
+            else if sr?.sawMatchField != true { idLine = "Hash calculado (o addon não confirma a correspondência)" }
+            else if hashHits > 0 { idLine = "Vídeo identificado ✓" }
+            else { idLine = "Hash calculado, sem correspondência no OpenSubtitles" }
+            let guess: String = (sr?.refsAssumed ?? false) ? " (palpite)" : ""
+            let nTotal = sr?.total ?? 0, nPt = sr?.pt.count ?? 0, nRefs = sr?.refs.count ?? 0
+            self?.log(idLine + "; addon: \(nTotal) itens, PT=\(nPt), referências=\(nRefs)" + guess + ", hash igual=\(hashHits)")
+
+            var merged: [FoundSub] = []
+            var seen = Set<String>()
+            for f in (sr?.pt ?? []) where seen.insert(f.url.absoluteString).inserted { merged.append(f) }
+            for u in given where seen.insert(u.absoluteString).inserted { merged.append(FoundSub(url: u, hashMatch: false, lang: "por")) }
             if merged.count > 14 { merged = Array(merged.prefix(14)) }
             self?.log("candidatas para baixar: \(merged.count) (do site: \(given.count))")
 
             let dir = FileManager.default.temporaryDirectory.appendingPathComponent("frameplay-legendas", isDirectory: true)
             try? FileManager.default.removeItem(at: dir)
             try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
-            let ok = PlayerWindowController.fetchAll(merged, dir: dir)
+
+            // referências de tempo, baixadas ao mesmo tempo que as legendas PT
+            let refList = sr?.refs ?? []
+            var refResults = [[Int64]?](repeating: nil, count: refList.count)
+            let lock = NSLock()
+            let rgroup = DispatchGroup()
+            for (i, r) in refList.enumerated() {
+                rgroup.enter()
+                DispatchQueue.global(qos: .userInitiated).async {
+                    let st = PlayerWindowController.fetchStarts(r.url)
+                    lock.lock()
+                    refResults[i] = st
+                    lock.unlock()
+                    rgroup.leave()
+                }
+            }
+            var ok = PlayerWindowController.fetchAll(merged, dir: dir)
+            _ = rgroup.wait(timeout: .now() + 10)
+            lock.lock()
+            let gotRefs = refResults
+            lock.unlock()
+            var refStarts: [[Int64]] = []
+            var refLang = ""
+            for (i, st) in gotRefs.enumerated() {
+                if let st = st, st.count >= 20 {
+                    refStarts.append(st)
+                    if refLang.isEmpty { refLang = refList[i].lang }
+                }
+            }
+            self?.log("legendas PT válidas: \(ok.count) de \(merged.count); referências baixadas: \(refStarts.count)")
+
+            var lg = "alinhamento com \(refStarts.count) referência(s):"
+            let nAligned = PlayerWindowController.alignAll(&ok, refStarts, &lg)
+            self?.log(lg + "\n  alinhadas: \(nAligned)")
+            let refLine: String
+            if refStarts.isEmpty { refLine = (sr?.refs.isEmpty ?? true) ? "sem referência" : "referência não baixou" }
+            else { refLine = "referência \(PlayerWindowController.langShort(refLang)) ✓" + (nAligned == 0 ? " (nenhuma legenda casou)" : "") }
+
+            let finalOk = ok
+            let finalId = idLine
             DispatchQueue.main.async {
                 guard let self = self else { return }
-                self.cands = ok
+                self.cands = finalOk
+                self.diagId = finalId
+                self.diagRef = refLine
                 self.subsDownloaded = true
-                self.log("legendas válidas: \(ok.count) de \(merged.count)")
                 self.attachReadySubs()
             }
         }
@@ -513,6 +607,50 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
         let out = results.compactMap { $0 }
         lock.unlock()
         return out
+    }
+
+    /** início das falas (ms) de uma legenda de referência; nil se não for legenda */
+    private static func fetchStarts(_ u: URL) -> [Int64]? {
+        guard var data = get(u), data.count >= 20 else { return nil }
+        if data.count > 2 && data[0] == 0x1F && data[1] == 0x8B {
+            guard let d = gunzip(data) else { return nil }
+            data = d
+        }
+        guard let text = decodeText(data), text.contains("-->") else { return nil }
+        return SubtitleAlign.cueStarts(text.replacingOccurrences(of: "\u{FEFF}", with: ""))
+    }
+
+    /** alinha cada legenda PT à melhor das referências (reescrevendo o arquivo); devolve quantas ficaram alinhadas */
+    private static func alignAll(_ all: inout [SubCand], _ refs: [[Int64]], _ lg: inout String) -> Int {
+        var n = 0
+        if refs.isEmpty { return 0 }
+        for i in 0..<all.count {
+            let starts = SubtitleAlign.cueStarts(all[i].text)
+            var best: SubtitleAlign.Fit? = nil
+            for r in refs {
+                let f = SubtitleAlign.align(r, starts)
+                if best == nil || f.score > (best?.score ?? 0) { best = f }
+                if (best?.score ?? 0) >= 0.6 { break } // já está claro: não precisa das outras referências
+            }
+            guard let b = best else { continue }
+            lg += "\n  #\(all[i].rank) alinhamento: nota=\(String(format: "%.2f", b.score)) escala=\(String(format: "%.4f", b.scale)) deslocamento=\(b.offsetMs)ms"
+            if !b.ok { continue }
+            var c = all[i]
+            c.aligned = true
+            c.alignScore = b.score
+            c.alignScale = b.scale
+            c.alignOffsetMs = b.offsetMs
+            if b.scale != 1.0 || abs(b.offsetMs) >= 50 {
+                let t = SubtitleAlign.transform(c.text, b.scale, b.offsetMs)
+                do { try Data(t.utf8).write(to: c.url) } catch { continue }
+                c.text = t
+                let l = lastCueEnd(t, pattern: cueEndPattern)
+                if l > 0 { c.lastMs = l }
+            }
+            all[i] = c
+            n += 1
+        }
+        return n
     }
 
     /** baixa uma legenda; devolve nil se não for uma legenda válida em português */
@@ -614,7 +752,24 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
         return best
     }
 
-    /** liga as legendas baixadas: só as que combinam com a duração do filme, a mais parecida primeiro (essa fica ativa) */
+    /** legenda PT/BR que veio dentro do arquivo (a primeira que não seja "forçada"); nil se não houver */
+    private func findEmbeddedPt() -> Int? {
+        let names = (player.videoSubTitlesNames as? [String]) ?? []
+        let ids = (player.videoSubTitlesIndexes as? [NSNumber])?.map { $0.intValue } ?? []
+        var forced: Int? = nil
+        for (i, id) in ids.enumerated() where i < names.count && id != -1 && isPortuguese(names[i]) {
+            if embeddedKnown && !embeddedSubs.contains(id) { continue }
+            let n = names[i].lowercased()
+            if n.contains("forced") || n.contains("forçad") || n.contains("forcad") {
+                if forced == nil { forced = id }
+                continue
+            }
+            return id
+        }
+        return forced
+    }
+
+    /** liga as legendas baixadas: as alinhadas à referência primeiro; a legenda PT embutida no arquivo (se houver) fica ativa */
     private func attachReadySubs() {
         guard startedPlaying, subsDownloaded, !subsAttached, !finished else { return }
         let len = Int64(player.media?.length.intValue ?? 0)
@@ -623,22 +778,44 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
         if since < 1.5 { return }
         if len <= 0 && since < 13 { return }
         subsAttached = true
-        if cands.isEmpty { return }
         embeddedKnown = true
         embeddedSubs = Set(((player.videoSubTitlesIndexes as? [NSNumber]) ?? []).map { $0.intValue })
-        var lg = "ranking das legendas: "
-        let use = PlayerWindowController.rankCands(cands, len: len, lg: &lg)
+        embeddedPtId = findEmbeddedPt()
+        let embDesc: String = embeddedPtId != nil ? "faixa \(embeddedPtId ?? -1)" : "não há"
+        log("legenda PT embutida: " + embDesc)
+        if cands.isEmpty { return }
+        var lg = "ranking das legendas:"
+        let use = PlayerWindowController.rankAll(cands, len: len, lg: &lg)
         log(lg)
+        let embeddedFirst = embeddedPtId != nil
         for (i, c) in use.enumerated() where i < 6 {
-            _ = player.addPlaybackSlave(c.url, type: .subtitle, enforce: i == 0)
+            _ = player.addPlaybackSlave(c.url, type: .subtitle, enforce: i == 0 && !embeddedFirst)
             addedSubs += 1
-            subLabels.append("Português \(subLabels.count + 1)" + (c.hashMatch ? " (sincronizada)" : "") + (c.fixed ? " (corrigida)" : ""))
+            attached.append(c)
+            subLabels.append("Português \(subLabels.count + 1)" + (c.aligned ? " (sincronizada)" : c.hashMatch ? " (do hash)" : "") + (c.fixed ? " (corrigida)" : ""))
         }
+        if embeddedFirst && !userPickedSub, let id = embeddedPtId { player.currentVideoSubTitleIndex = Int32(id) }
         if let f = use.first {
-            log("escolhida: candidata #\(f.rank) (hash=\(f.hashMatch), corrigida=\(f.fixed), nota=\(String(format: "%.4f", f.score))), \(addedSubs) no menu")
+            let pick: String = embeddedFirst ? "embutida (faixa \(embeddedPtId ?? -1))" : "candidata #\(f.rank)"
+            let sc = String(format: "%.2f", f.alignScore)
+            log("escolhida: " + pick + "; melhor baixada: #\(f.rank) alinhada=\(f.aligned) nota=" + sc + " deslocamento=\(f.alignOffsetMs)ms hash=\(f.hashMatch) corrigida=\(f.fixed); \(addedSubs) no menu")
         }
         applySubDelay()
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) { [weak self] in self?.applySubDelay() }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) { [weak self] in
+            guard let self = self else { return }
+            self.applySubDelay()
+            if embeddedFirst && !self.userPickedSub, let id = self.embeddedPtId { self.player.currentVideoSubTitleIndex = Int32(id) }
+        }
+    }
+
+    /** ordem final: primeiro as alinhadas à referência (maior nota primeiro); depois as demais pela heurística de fim da legenda */
+    private static func rankAll(_ all: [SubCand], len: Int64, lg: inout String) -> [SubCand] {
+        let good = all.filter { $0.aligned }.sorted { (a: SubCand, b: SubCand) -> Bool in
+            if a.alignScore != b.alignScore { return a.alignScore > b.alignScore }
+            return a.rank < b.rank
+        }
+        let rest = all.filter { !$0.aligned }
+        return good + rankCands(rest, len: len, lg: &lg)
     }
 
     // ---------- ranking e correção de taxa de quadros ----------
@@ -669,7 +846,7 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
         + 0,01 se corrigida - 0,02 se casa com o hash. Menor = melhor. Fim fora de 0,5x..1,12x da duração é descartado. */
     private static func rankCands(_ all: [SubCand], len: Int64, lg: inout String) -> [SubCand] {
         var sorted = all.sorted { $0.rank < $1.rank }
-        if len <= 0 { return sorted }
+        if len <= 0 || sorted.isEmpty { return sorted }
         var ref: Int64 = 0
         var why = "sem referência"
         for c in sorted where c.hashMatch && plausible(c.lastMs, len) { ref = c.lastMs; why = "legenda do hash #\(c.rank)"; break }
@@ -695,7 +872,9 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
                 if nl <= 0 || abs(Double(nl) / Double(ref) - 1) > 0.015 { continue }
                 do { try Data(fixed.utf8).write(to: c.url) } catch { continue }
                 lg += "\n  #\(c.rank) corrigida: fim \(c.lastMs)->\(nl)ms (fator \(String(format: "%.4f", f)))"
-                sorted[i] = SubCand(url: c.url, lastMs: nl, text: fixed, ext: c.ext, rank: c.rank, hashMatch: c.hashMatch, fixed: true, score: 0)
+                sorted[i].text = fixed
+                sorted[i].lastMs = nl
+                sorted[i].fixed = true
             }
         }
 
@@ -757,59 +936,92 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
         return result as String
     }
 
-    /** sem legenda baixada: liga a PT/BR que vier dentro do arquivo; se não houver, desliga (nada em outro idioma) */
+    /** liga a PT/BR que vier dentro do arquivo (vem perfeitamente sincronizada); se não houver nada em português, desliga */
     private func selectEmbeddedPortuguese() {
-        guard !embeddedCheckDone, addedSubs == 0, !finished else { return }
+        guard !embeddedCheckDone, !finished else { return }
         embeddedCheckDone = true
-        let names = (player.videoSubTitlesNames as? [String]) ?? []
-        let ids = (player.videoSubTitlesIndexes as? [NSNumber])?.map { $0.intValue } ?? []
-        for (i, id) in ids.enumerated() where i < names.count && id != -1 && isPortuguese(names[i]) {
-            player.currentVideoSubTitleIndex = Int32(id)
+        if let id = findEmbeddedPt() {
+            embeddedPtId = id
+            if !userPickedSub { player.currentVideoSubTitleIndex = Int32(id) }
             return
         }
+        if addedSubs > 0 { return }
         player.currentVideoSubTitleIndex = -1
+    }
+
+    private func greyItem(_ text: String) -> NSMenuItem {
+        let it = NSMenuItem(title: text, action: nil, keyEquivalent: "")
+        it.isEnabled = false
+        it.attributedTitle = NSAttributedString(string: text, attributes: [
+            .foregroundColor: NSColor.secondaryLabelColor, .font: NSFont.systemFont(ofSize: 11)])
+        return it
     }
 
     @objc private func chooseSubtitles(_ sender: NSButton) {
         let names = (player.videoSubTitlesNames as? [String]) ?? []
         let ids = (player.videoSubTitlesIndexes as? [NSNumber])?.map { $0.intValue } ?? []
-        let menu = NSMenu()
+        let current = Int(player.currentVideoSubTitleIndex)
+        var rows: [(String, Int)] = []
+        var chosen: String? = current == -1 ? "desativada" : nil
         var n = 0
         for (i, id) in ids.enumerated() where i < names.count {
-            let title: String
-            if id == -1 { title = "Desativado" }
-            else if isDownloaded(id) { n += 1; title = n <= subLabels.count ? subLabels[n - 1] : "Português \(n)" }
-            else if isPortuguese(names[i]) { title = names[i] }
-            else { continue }
-            let item = NSMenuItem(title: title, action: #selector(pickSubtitle(_:)), keyEquivalent: "")
-            item.target = self
-            item.tag = id
-            item.state = Int(player.currentVideoSubTitleIndex) == id ? .on : .off
-            menu.addItem(item)
+            if id == -1 { rows.append(("Desativado", id)); continue }
+            if isDownloaded(id) {
+                n += 1
+                let title = n <= subLabels.count ? subLabels[n - 1] : "Português \(n)"
+                rows.append((title, id))
+                if id == current && n <= attached.count {
+                    let c = attached[n - 1]
+                    var adj = "sem ajuste"
+                    if c.aligned {
+                        adj = "ajuste \(PlayerWindowController.signedSecs(c.alignOffsetMs))"
+                        if c.alignScale != 1.0 { adj += ", velocidade ×" + String(format: "%.4f", c.alignScale).replacingOccurrences(of: ".", with: ",") }
+                    } else if c.fixed { adj = "velocidade corrigida" }
+                    chosen = "\(title) (\(adj))"
+                }
+            } else if isPortuguese(names[i]) {
+                rows.append(("Embutida: \(names[i])", id))
+                if id == current { chosen = "Embutida: \(names[i])" }
+            }
         }
-        if menu.items.count <= 1 {
-            menu.removeAllItems()
+        let menu = NSMenu()
+        menu.addItem(greyItem(diagId))
+        var second = !subsDownloaded ? "baixando legendas…" : (cands.count == 1 ? "1 legenda PT" : "\(cands.count) legendas PT")
+        if !diagRef.isEmpty { second += " · " + diagRef }
+        menu.addItem(greyItem(second))
+        if let c = chosen { menu.addItem(greyItem("escolhida: " + c + (subDelayMs != 0 ? " · atraso " + PlayerWindowController.signedSecs(Int64(subDelayMs)) : ""))) }
+        menu.addItem(NSMenuItem.separator())
+        if rows.count <= 1 {
             menu.addItem(withTitle: !subsDownloaded ? "Procurando legendas em português…" : "Não há legendas em português", action: nil, keyEquivalent: "")
         } else {
+            for (title, id) in rows {
+                let item = NSMenuItem(title: title, action: #selector(pickSubtitle(_:)), keyEquivalent: "")
+                item.target = self
+                item.tag = id
+                item.state = current == id ? .on : .off
+                menu.addItem(item)
+            }
             menu.addItem(NSMenuItem.separator())
-            let sync = NSMenuItem(title: "Sincronizar legenda (\(delayLabel()))…", action: #selector(showSyncSheet), keyEquivalent: "")
+            let sync = NSMenuItem(title: "Sincronizar legenda… (\(delayLabel()))", action: #selector(showSyncSheet), keyEquivalent: "")
             sync.target = self
             menu.addItem(sync)
         }
         menu.popUp(positioning: nil, at: NSPoint(x: 0, y: sender.bounds.height + 4), in: sender)
         showControls()
     }
-    @objc private func pickSubtitle(_ item: NSMenuItem) { player.currentVideoSubTitleIndex = Int32(item.tag) }
+    @objc private func pickSubtitle(_ item: NSMenuItem) {
+        userPickedSub = true
+        player.currentVideoSubTitleIndex = Int32(item.tag)
+    }
 
     // ---------- ajuste manual do atraso da legenda ----------
+    // VLCKit: currentVideoSubTitleDelay em microssegundos; positivo = a legenda aparece MAIS TARDE
     private func delayKey() -> String { "fp-subdelay-" + (metaId.isEmpty ? positionKey() : metaId) }
 
-    /** VLCKit: atraso em microssegundos; positivo = a legenda aparece mais tarde */
     private func applySubDelay() { player.currentVideoSubTitleDelay = subDelayMs * 1000 }
 
     private func delayLabel() -> String {
-        let v = String(format: "%.1f", Double(abs(subDelayMs)) / 1000.0).replacingOccurrences(of: ".", with: ",")
-        return "Legenda " + (subDelayMs > 0 ? "+" : subDelayMs < 0 ? "−" : "") + v + " s"
+        return "Atraso da legenda: " + (subDelayMs == 0 ? "0,0 s" : PlayerWindowController.signedSecs(Int64(subDelayMs)))
     }
 
     private func changeSubDelay(_ delta: Int, reset: Bool) {
@@ -819,9 +1031,8 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
         delayValueLabel?.stringValue = delayLabel()
         log("atraso da legenda: \(subDelayMs) ms")
     }
-    @objc private func syncMinus() { changeSubDelay(-500, reset: false) }
-    @objc private func syncPlus() { changeSubDelay(500, reset: false) }
-    @objc private func syncReset() { changeSubDelay(0, reset: true) }
+    /** o tag do botão é o passo em ms; 0 = repor */
+    @objc private func syncStep(_ sender: NSButton) { changeSubDelay(sender.tag, reset: sender.tag == 0) }
 
     @objc private func showSyncSheet() {
         guard let w = window else { return }
@@ -829,21 +1040,24 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
         value.font = .boldSystemFont(ofSize: 18)
         value.alignment = .center
         delayValueLabel = value
-        let minus = NSButton(title: "−0,5 s", target: self, action: #selector(syncMinus))
-        let reset = NSButton(title: "Repor", target: self, action: #selector(syncReset))
-        let plus = NSButton(title: "+0,5 s", target: self, action: #selector(syncPlus))
-        for b in [minus, reset, plus] { b.bezelStyle = .rounded }
-        let row = NSStackView(views: [minus, reset, plus])
-        row.orientation = .horizontal
-        row.spacing = 10
-        let stack = NSStackView(views: [value, row])
+        func syncButton(_ title: String, _ step: Int) -> NSButton {
+            let b = NSButton(title: title, target: self, action: #selector(syncStep(_:)))
+            b.bezelStyle = .rounded
+            b.tag = step
+            return b
+        }
+        let cap1 = NSTextField(labelWithString: "A legenda aparece ANTES da fala:")
+        let row1 = NSStackView(views: [syncButton("Atrasar +0,5 s", 500), syncButton("Atrasar +5 s", 5000)])
+        let cap2 = NSTextField(labelWithString: "A legenda aparece DEPOIS da fala:")
+        let row2 = NSStackView(views: [syncButton("Adiantar −0,5 s", -500), syncButton("Adiantar −5 s", -5000)])
+        for r in [row1, row2] { r.orientation = .horizontal; r.spacing = 10 }
+        let stack = NSStackView(views: [value, cap1, row1, cap2, row2, syncButton("Repor", 0)])
         stack.orientation = .vertical
         stack.alignment = .centerX
-        stack.spacing = 10
-        stack.setFrameSize(NSSize(width: 300, height: 70))
+        stack.spacing = 8
+        stack.setFrameSize(NSSize(width: 340, height: 190))
         let alert = NSAlert()
         alert.messageText = "Sincronizar legenda"
-        alert.informativeText = "Legenda atrasada: use −. Legenda adiantada: use +."
         alert.accessoryView = stack
         alert.addButton(withTitle: "Fechar")
         alert.beginSheetModal(for: w) { [weak self] _ in self?.delayValueLabel = nil }
@@ -866,54 +1080,98 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
     // ---------- hash do OpenSubtitles ----------
     private static let chunkSize = 65536
 
-    /** coleta no máximo `need` bytes de uma resposta com Range e cancela o resto (um servidor sem Range mandaria o arquivo inteiro) */
+    private struct RangeResult {
+        var data: Data? = nil
+        var total: Int64 = -1
+        var finalURL: URL? = nil
+        var disposition: String? = nil
+        var error = ""
+    }
+
+    /** coleta no máximo `need` bytes de uma resposta com Range e cancela o resto (um servidor sem Range mandaria o arquivo inteiro);
+        segue os redirecionamentos do debrid mantendo o Range */
     private final class RangeFetcher: NSObject, URLSessionDataDelegate {
         var data = Data()
         var status = 0
         var total: Int64 = -1
+        var finalURL: URL?
+        var disposition: String?
+        var failure = ""
+        var cancelledByUs = false
         let sem = DispatchSemaphore(value: 0)
         let need: Int
         let mustBePartial: Bool
-        init(need: Int, mustBePartial: Bool) { self.need = need; self.mustBePartial = mustBePartial }
+        let range: String
+        init(need: Int, mustBePartial: Bool, range: String) { self.need = need; self.mustBePartial = mustBePartial; self.range = range }
 
+        func urlSession(_ session: URLSession, task: URLSessionTask, willPerformHTTPRedirection response: HTTPURLResponse,
+                        newRequest request: URLRequest, completionHandler: @escaping (URLRequest?) -> Void) {
+            var r = request
+            r.setValue(range, forHTTPHeaderField: "Range")
+            r.setValue("identity", forHTTPHeaderField: "Accept-Encoding")
+            completionHandler(r)
+        }
         func urlSession(_ session: URLSession, dataTask: URLSessionDataTask, didReceive response: URLResponse,
                         completionHandler: @escaping (URLSession.ResponseDisposition) -> Void) {
             if let h = response as? HTTPURLResponse {
                 status = h.statusCode
+                finalURL = h.url
+                disposition = h.value(forHTTPHeaderField: "Content-Disposition")
                 if let cr = h.value(forHTTPHeaderField: "Content-Range"), let slash = cr.lastIndex(of: "/") {
                     total = Int64(cr[cr.index(after: slash)...].trimmingCharacters(in: .whitespaces)) ?? -1
                 }
                 if total < 0 && status == 200 { total = Int64(h.value(forHTTPHeaderField: "Content-Length") ?? "") ?? -1 }
-                if !(status == 206 || (status == 200 && !mustBePartial)) { completionHandler(.cancel); return }
+                if !(status == 206 || (status == 200 && !mustBePartial)) {
+                    failure = status == 200 ? "servidor sem suporte a Range" : "HTTP \(status)"
+                    cancelledByUs = true
+                    completionHandler(.cancel)
+                    return
+                }
             }
             completionHandler(.allow)
         }
         func urlSession(_ session: URLSession, dataTask: URLSessionDataTask, didReceive data: Data) {
             self.data.append(data)
-            if self.data.count >= need { dataTask.cancel() }
+            if self.data.count >= need { cancelledByUs = true; dataTask.cancel() }
         }
-        func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) { sem.signal() }
+        func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
+            if let e = error, !cancelledByUs { failure = e.localizedDescription }
+            sem.signal()
+        }
     }
 
-    private static func getRange(_ url: URL, _ range: String, mustBePartial: Bool) -> (data: Data, total: Int64)? {
-        let fetcher = RangeFetcher(need: chunkSize, mustBePartial: mustBePartial)
+    private static func getRange(_ url: URL, _ range: String, mustBePartial: Bool) -> RangeResult {
+        var res = RangeResult()
+        let fetcher = RangeFetcher(need: chunkSize, mustBePartial: mustBePartial, range: range)
         let cfg = URLSessionConfiguration.ephemeral
-        cfg.timeoutIntervalForRequest = 5
+        cfg.timeoutIntervalForRequest = 12 // o debrid pode demorar para resolver o link
         let session = URLSession(configuration: cfg, delegate: fetcher, delegateQueue: nil)
-        var req = URLRequest(url: url, timeoutInterval: 5)
+        var req = URLRequest(url: url, timeoutInterval: 12)
         req.setValue(range, forHTTPHeaderField: "Range")
         req.setValue("identity", forHTTPHeaderField: "Accept-Encoding")
         req.setValue("FramePlay", forHTTPHeaderField: "User-Agent")
         let task = session.dataTask(with: req)
         task.resume()
-        if fetcher.sem.wait(timeout: .now() + 7) == .timedOut { task.cancel(); session.invalidateAndCancel(); return nil }
+        if fetcher.sem.wait(timeout: .now() + 15) == .timedOut {
+            task.cancel()
+            session.invalidateAndCancel()
+            res.error = "tempo esgotado"
+            return res
+        }
         session.finishTasksAndInvalidate()
-        if !(fetcher.status == 206 || (fetcher.status == 200 && !mustBePartial)) { return nil }
-        return (Data(fetcher.data.prefix(chunkSize)), fetcher.total)
+        if !(fetcher.status == 206 || (fetcher.status == 200 && !mustBePartial)) {
+            res.error = fetcher.failure.isEmpty ? "HTTP \(fetcher.status)" : fetcher.failure
+            return res
+        }
+        res.data = Data(fetcher.data.prefix(chunkSize))
+        res.total = fetcher.total
+        res.finalURL = fetcher.finalURL
+        res.disposition = fetcher.disposition
+        return res
     }
 
     private static func headSize(_ url: URL) -> Int64 {
-        var req = URLRequest(url: url, timeoutInterval: 5)
+        var req = URLRequest(url: url, timeoutInterval: 6)
         req.httpMethod = "HEAD"
         req.setValue("FramePlay", forHTTPHeaderField: "User-Agent")
         let sem = DispatchSemaphore(value: 0)
@@ -922,7 +1180,7 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
             if let h = resp as? HTTPURLResponse, h.statusCode < 400 { size = Int64(h.value(forHTTPHeaderField: "Content-Length") ?? "") ?? -1 }
             sem.signal()
         }.resume()
-        _ = sem.wait(timeout: .now() + 6)
+        _ = sem.wait(timeout: .now() + 7)
         return size
     }
 
@@ -939,21 +1197,51 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
         return s
     }
 
-    /** hash = tamanho + soma das palavras de 64 bits dos primeiros e dos últimos 64 KiB, módulo 2^64 */
-    private static func computeHash(_ url: URL) -> VideoHash? {
-        guard url.scheme == "http" || url.scheme == "https" else { return nil }
-        guard let a = getRange(url, "bytes=0-\(chunkSize - 1)", mustBePartial: false), a.data.count == chunkSize else { return nil }
-        var size = a.total
-        if size < 0 { size = headSize(url) }
-        if size < Int64(chunkSize) { return nil }
-        guard let b = getRange(url, "bytes=\(size - Int64(chunkSize))-\(size - 1)", mustBePartial: true), b.data.count == chunkSize else { return nil }
-        let h = UInt64(size) &+ sum64(a.data) &+ sum64(b.data)
-        return VideoHash(hash: String(format: "%016llx", h), size: size)
+    /** nome do arquivo no Content-Disposition (filename*=UTF-8''... ou filename="...") */
+    private static func dispositionName(_ cd: String?) -> String? {
+        guard let cd = cd else { return nil }
+        let ns = cd as NSString
+        let full = NSRange(location: 0, length: ns.length)
+        if let re = try? NSRegularExpression(pattern: "filename\\*\\s*=\\s*[^']*'[^']*'([^;]+)", options: .caseInsensitive),
+           let m = re.firstMatch(in: cd, range: full), m.numberOfRanges > 1 {
+            let raw = ns.substring(with: m.range(at: 1)).trimmingCharacters(in: .whitespaces)
+            return raw.removingPercentEncoding ?? raw
+        }
+        if let re = try? NSRegularExpression(pattern: "filename\\s*=\\s*\"?([^\";]+)\"?", options: .caseInsensitive),
+           let m = re.firstMatch(in: cd, range: full), m.numberOfRanges > 1 {
+            return ns.substring(with: m.range(at: 1)).trimmingCharacters(in: .whitespaces)
+        }
+        return nil
     }
 
-    private static func computeHashTimeboxed(_ url: URL, seconds: Double) -> VideoHash? {
+    /** hash = tamanho + soma das palavras de 64 bits dos primeiros e dos últimos 64 KiB, módulo 2^64 */
+    private static func computeHash(_ url: URL) -> VideoHash {
+        var v = VideoHash()
+        guard url.scheme == "http" || url.scheme == "https" else { v.error = "link não é http"; return v }
+        let a = getRange(url, "bytes=0-\(chunkSize - 1)", mustBePartial: false)
+        guard let ad = a.data else { v.error = "início do arquivo: \(a.error)"; return v }
+        if ad.count != chunkSize { v.error = "início do arquivo curto (\(ad.count) bytes)"; return v }
+        v.headerName = dispositionName(a.disposition)
+        v.finalURL = a.finalURL
+        var size = a.total
+        if size < 0 { size = headSize(a.finalURL ?? url) }
+        if size < Int64(chunkSize) { v.error = "tamanho do arquivo desconhecido"; return v }
+        let range = "bytes=\(size - Int64(chunkSize))-\(size - 1)"
+        // o link final já está resolvido pelo debrid: usa direto; se falhar, tenta o link original
+        var b = getRange(a.finalURL ?? url, range, mustBePartial: true)
+        if b.data == nil, let fu = a.finalURL, fu != url { b = getRange(url, range, mustBePartial: true) }
+        guard let bd = b.data else { v.error = "fim do arquivo: \(b.error)"; return v }
+        if bd.count != chunkSize { v.error = "fim do arquivo curto (\(bd.count) bytes)"; return v }
+        let h = UInt64(size) &+ sum64(ad) &+ sum64(bd)
+        v.hash = String(format: "%016llx", h)
+        v.size = size
+        return v
+    }
+
+    /** nunca devolve nil: `error` diz o que houve */
+    private static func computeHashTimeboxed(_ url: URL, seconds: Double) -> VideoHash {
         let lock = NSLock()
-        var result: VideoHash?
+        var result: VideoHash? = nil
         let sem = DispatchSemaphore(value: 0)
         DispatchQueue.global(qos: .userInitiated).async {
             let r = computeHash(url)
@@ -962,17 +1250,30 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
             lock.unlock()
             sem.signal()
         }
-        if sem.wait(timeout: .now() + seconds) == .timedOut { return nil }
+        if sem.wait(timeout: .now() + seconds) == .timedOut {
+            var t = VideoHash()
+            t.error = "tempo esgotado (\(Int(seconds)) s)"
+            return t
+        }
         lock.lock()
         defer { lock.unlock() }
-        return result
+        return result ?? VideoHash()
     }
 
-    /** nome do arquivo (último trecho do caminho, decodificado) se parecer um vídeo; senão nil */
-    private static func fileName(of url: URL) -> String? {
-        let name = url.lastPathComponent
-        let exts = ["mkv", "mp4", "avi", "m4v", "mov", "wmv", "ts", "webm", "mpg", "mpeg"]
-        return exts.contains(url.pathExtension.lowercased()) && name.count > url.pathExtension.count + 1 ? name : nil
+    private static let videoExts = ["mkv", "mp4", "avi", "m4v", "mov", "wmv", "ts", "webm", "mpg", "mpeg"]
+    private static func videoLike(_ name: String?) -> String? {
+        guard let n = name, !n.isEmpty else { return nil }
+        let ext = (n as NSString).pathExtension.lowercased()
+        return videoExts.contains(ext) && n.count > ext.count + 1 ? n : nil
+    }
+
+    /** nome do arquivo: último trecho do caminho do link ORIGINAL (decodificado; nos links do Torrentio é o nome real da release),
+        senão o Content-Disposition, senão o último trecho do link final; nil se nenhum parecer um vídeo */
+    private static func fileName(of url: URL, _ vh: VideoHash) -> String? {
+        if let n = videoLike(url.lastPathComponent) { return n }
+        if let n = videoLike(vh.headerName) { return n }
+        if let fu = vh.finalURL, let n = videoLike(fu.lastPathComponent) { return n }
+        return nil
     }
 
     private static func encodeComponent(_ s: String, keep: String = "") -> String {
@@ -980,31 +1281,50 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
     }
 
     /** extras no formato do Stremio (videoHash=...&videoSize=...&filename=...), só com o que temos */
-    private static func makeExtras(_ vh: VideoHash?, _ filename: String?) -> String {
+    private static func makeExtras(_ vh: VideoHash, _ filename: String?) -> String {
         var parts: [String] = []
-        if let v = vh { parts.append("videoHash=\(v.hash)"); parts.append("videoSize=\(v.size)") }
+        if let h = vh.hash { parts.append("videoHash=\(h)"); parts.append("videoSize=\(vh.size)") }
         if let f = filename { parts.append("filename=\(encodeComponent(f))") }
         return parts.joined(separator: "&")
     }
 
-    /** legendas PT/BR do OpenSubtitles do Stremio, na ordem do addon (as que casam com o hash vêm primeiro) */
-    private static func searchOpenSubtitles(type: String, id: String, extras: String) -> [FoundSub] {
+    private static let ptLangs: Set<String> = ["pob", "pt-br", "ptb", "ptbr", "por", "pt", "pt-pt"]
+
+    /** legendas do OpenSubtitles do Stremio: português (na ordem do addon, hash primeiro) e candidatas a referência (outro idioma) */
+    private static func searchOpenSubtitles(type: String, id: String, extras: String) -> SearchResult {
+        var res = SearchResult()
         let path = "https://opensubtitles-v3.strem.io/subtitles/\(encodeComponent(type))/\(encodeComponent(id, keep: ":"))"
             + (extras.isEmpty ? "" : "/" + extras) + ".json"
         guard let api = URL(string: path),
               let data = get(api),
               let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-              let list = json["subtitles"] as? [[String: Any]] else { return [] }
-        var out: [FoundSub] = []
+              let list = json["subtitles"] as? [[String: Any]] else { return res }
+        res.ok = true
+        res.total = list.count
+        var others: [FoundSub] = []
         for s in list {
-            if out.count >= 10 { break }
             let lang = (s["lang"] as? String ?? "").lowercased()
             guard let u = (s["url"] as? String).flatMap(URL.init(string:)) else { continue }
-            if !["pob", "pt-br", "ptb", "ptbr", "por", "pt", "pt-pt"].contains(lang) { continue }
+            if s["m"] != nil { res.sawMatchField = true }
             // o addon marca com m="f" as que casam com o hash do arquivo (m="i" = só o título)
-            out.append(FoundSub(url: u, hashMatch: (s["m"] as? String) == "f"))
+            let hash = (s["m"] as? String) == "f"
+            if ptLangs.contains(lang) { if res.pt.count < 10 { res.pt.append(FoundSub(url: u, hashMatch: hash, lang: lang)) } }
+            else { others.append(FoundSub(url: u, hashMatch: hash, lang: lang)) }
         }
-        return out
+        // referência: de preferência inglês (eng) com hash; até 3
+        for pass in 0..<2 {
+            for f in others where res.refs.count < 3 {
+                let eng = f.lang == "eng" || f.lang == "en"
+                if f.hashMatch && ((pass == 0) == eng) { res.refs.append(f) }
+            }
+        }
+        if res.refs.isEmpty && !res.sawMatchField {
+            // sem o campo "m" não dá para saber quem casa com o hash: usa as primeiras (inglês antes) e o alinhamento confere
+            res.refsAssumed = true
+            for f in others where (f.lang == "eng" || f.lang == "en") && res.refs.count < 2 { res.refs.append(f) }
+            for f in others where res.refs.count < 2 && !res.refs.contains(where: { $0.url == f.url }) { res.refs.append(f) }
+        }
+        return res
     }
 
     // ---------- fechar ----------
@@ -1036,5 +1356,150 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
         let s = max(0, ms) / 1000
         let h = s / 3600, m = (s % 3600) / 60, sec = s % 60
         return h > 0 ? String(format: "%d:%02d:%02d", h, m, sec) : String(format: "%d:%02d", m, sec)
+    }
+}
+
+
+/** Alinhamento de legendas por referência: procura t' = t * escala + deslocamento que põe os INÍCIOS das falas da
+    candidata em cima dos da legenda de referência (outro idioma, mesmo hash). Não usa nome, id nem duração do título. */
+enum SubtitleAlign {
+    static let scales: [Double] = [1.0, 25.0 / 23.976, 23.976 / 25.0, 24.0 / 23.976, 23.976 / 24.0, 25.0 / 24.0, 24.0 / 25.0]
+    static let coarseRange: Int64 = 120000
+    static let coarseBin: Int64 = 250
+    static let tolerance: Int64 = 300
+    static let minScore = 0.35
+    static let scaleMargin = 0.05
+
+    struct Fit {
+        var scale = 1.0
+        var offsetMs: Int64 = 0
+        var score = 0.0
+        var ok: Bool { return score >= SubtitleAlign.minScore }
+    }
+
+    private static let startRegex = try? NSRegularExpression(
+        pattern: "^[ \\t]*(?:(\\d+):)?(\\d{1,2}):(\\d\\d)[,.](\\d{3})[ \\t]*-->", options: [.anchorsMatchLines])
+
+    /** início de cada fala (ms), em ordem crescente (SRT ou VTT); no máximo 6000 */
+    static func cueStarts(_ text: String) -> [Int64] {
+        guard let re = startRegex else { return [] }
+        let ns = text as NSString
+        var out: [Int64] = []
+        for m in re.matches(in: text, range: NSRange(location: 0, length: ns.length)) {
+            if out.count >= 6000 { break }
+            func g(_ i: Int) -> Int64 {
+                let r = m.range(at: i)
+                if r.location == NSNotFound || r.length == 0 { return 0 }
+                return Int64(ns.substring(with: r)) ?? 0
+            }
+            out.append(((g(1) * 60 + g(2)) * 60 + g(3)) * 1000 + g(4))
+        }
+        out.sort()
+        return out
+    }
+
+    private static let tsRegex = try? NSRegularExpression(pattern: "(?:(\\d+):)?(\\d{1,2}):(\\d\\d)([,.])(\\d{3})")
+
+    /** novo tempo = tempo * k + offsetMs em todas as linhas "a --> b" (SRT/VTT); o resto do texto não muda */
+    static func transform(_ text: String, _ k: Double, _ offsetMs: Int64) -> String {
+        let lines = text.components(separatedBy: "\n")
+        var out: [String] = []
+        out.reserveCapacity(lines.count)
+        for ln in lines { out.append(ln.contains("-->") ? transformLine(ln, k, offsetMs) : ln) }
+        return out.joined(separator: "\n")
+    }
+
+    private static func transformLine(_ line: String, _ k: Double, _ offsetMs: Int64) -> String {
+        guard let re = tsRegex else { return line }
+        let ns = line as NSString
+        let result = NSMutableString(string: line)
+        let found = re.matches(in: line, range: NSRange(location: 0, length: ns.length))
+        for m in found.reversed() {
+            func grp(_ i: Int) -> String {
+                let r = m.range(at: i)
+                return r.location == NSNotFound ? "" : ns.substring(with: r)
+            }
+            let h = Int64(grp(1)) ?? 0
+            let mi = Int64(grp(2)) ?? 0
+            let se = Int64(grp(3)) ?? 0
+            let ms = ((h * 60 + mi) * 60 + se) * 1000 + (Int64(grp(5)) ?? 0)
+            let n = max(0, Int64((Double(ms) * k).rounded()) + offsetMs)
+            let rep = String(format: "%02lld:%02lld:%02lld%@%03lld", n / 3600000, (n / 60000) % 60, (n / 1000) % 60, grp(4), n % 1000)
+            result.replaceCharacters(in: m.range, with: rep)
+        }
+        return result as String
+    }
+
+    /** índice do primeiro elemento >= v */
+    private static func lowerBound(_ a: [Int64], _ v: Int64) -> Int {
+        var lo = 0, hi = a.count
+        while lo < hi {
+            let mid = (lo + hi) / 2
+            if a[mid] < v { lo = mid + 1 } else { hi = mid }
+        }
+        return lo
+    }
+
+    private static func countMatches(_ ref: [Int64], _ cand: [Int64], _ scale: Double, _ off: Int64) -> Int {
+        var hits = 0
+        for c in cand {
+            let t = Int64((Double(c) * scale).rounded()) + off
+            let i = lowerBound(ref, t)
+            var hit = false
+            if i < ref.count && ref[i] - t <= tolerance { hit = true }
+            if !hit && i > 0 && t - ref[i - 1] <= tolerance { hit = true }
+            if hit { hits += 1 }
+        }
+        return hits
+    }
+
+    /** melhor deslocamento para uma escala: histograma grosso (-120..+120 s) e depois refino de ±1 s em passos de 50 ms */
+    private static func alignWithScale(_ ref: [Int64], _ cand: [Int64], _ scale: Double) -> Fit {
+        let bins = Int(2 * coarseRange / coarseBin) + 3
+        var hist = [Int](repeating: 0, count: bins)
+        for c in cand {
+            let t = Int64((Double(c) * scale).rounded())
+            var i = lowerBound(ref, t - coarseRange)
+            while i < ref.count && ref[i] <= t + coarseRange {
+                let off = ref[i] - t
+                let b = Int((off + coarseRange) / coarseBin) + 1
+                if b >= 0 && b < bins { hist[b] += 1 }
+                i += 1
+            }
+        }
+        var bestBin = 1, bestVal = -1
+        for b in 1..<(bins - 1) {
+            let v = hist[b - 1] + hist[b] + hist[b + 1] // 750 ms de largura
+            if v > bestVal { bestVal = v; bestBin = b }
+        }
+        let center = Int64(bestBin - 1) * coarseBin - coarseRange + coarseBin / 2
+        var bestCount = -1
+        var bestOffs: [Int64] = []
+        var off = center - 1000
+        while off <= center + 1000 {
+            let cnt = countMatches(ref, cand, scale, off)
+            if cnt > bestCount { bestCount = cnt; bestOffs = [off] }
+            else if cnt == bestCount { bestOffs.append(off) }
+            off += 50
+        }
+        var f = Fit()
+        f.scale = scale
+        f.offsetMs = bestOffs.isEmpty ? 0 : bestOffs[bestOffs.count / 2]
+        let denom = max(1, min(cand.count, ref.count))
+        f.score = Double(max(0, bestCount)) / Double(denom)
+        return f
+    }
+
+    /** melhor transformação (escala x deslocamento) que leva a candidata para cima da referência; score < minScore = não confiável */
+    static func align(_ ref: [Int64], _ cand: [Int64]) -> Fit {
+        if ref.count < 20 || cand.count < 20 { return Fit() }
+        var best = alignWithScale(ref, cand, scales[0])
+        var bestOther: Fit? = nil
+        for i in 1..<scales.count {
+            let f = alignWithScale(ref, cand, scales[i])
+            if bestOther == nil || f.score > (bestOther?.score ?? 0) { bestOther = f }
+        }
+        if let o = bestOther, o.score > best.score + scaleMargin { best = o }
+        return best
     }
 }

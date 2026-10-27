@@ -16,17 +16,18 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
  * Ajuda a achar a legenda certa para o arquivo exato que está tocando:
- * hash do OpenSubtitles (igual ao Stremio desktop), busca com o hash no addon e ranking das candidatas,
- * incluindo a correção de legendas feitas para outra taxa de quadros (23,976 / 24 / 25 fps).
+ * hash do OpenSubtitles (igual ao Stremio desktop), busca com o hash no addon, alinhamento das legendas
+ * em português a uma legenda de referência (outro idioma, do mesmo hash) e ranking das candidatas.
+ * A matemática do alinhamento fica em SubtitleAlign (Java puro).
  */
 final class SubtitleSync {
     private SubtitleSync() {}
@@ -38,38 +39,59 @@ final class SubtitleSync {
     static final class Cand {
         Uri uri;
         java.io.File file;
-        String text;          // texto UTF-8 (para poder reescrever os tempos)
+        String text;          // texto UTF-8 atual (já alinhado), base para os ajustes manuais
         long lastMs;          // fim da última fala
         int rank;             // posição na lista (menor = melhor): resultados da busca com hash vêm primeiro
         boolean hashMatch;    // o addon marcou como "casa com o hash do arquivo"
-        boolean fixed;        // tempos reescalados (taxa de quadros diferente)
+        boolean fixed;        // tempos reescalados pela heurística de taxa de quadros
+        boolean aligned;      // alinhada a uma referência
+        double alignScore;
+        double alignScale = 1.0;
+        long alignOffsetMs;
+        int manualMs;         // ajuste manual atual (ms)
         double score;
     }
 
-    /** resultado da busca no addon */
+    /** um resultado da busca no addon */
     static final class Found {
         final String url;
         final boolean hashMatch;
-        Found(String url, boolean hashMatch) { this.url = url; this.hashMatch = hashMatch; }
+        final String lang;
+        Found(String url, boolean hashMatch, String lang) { this.url = url; this.hashMatch = hashMatch; this.lang = lang; }
+    }
+
+    /** resposta do addon: legendas em português + candidatas a referência de tempo (outros idiomas, nunca mostradas) */
+    static final class SearchResult {
+        final ArrayList<Found> pt = new ArrayList<>();
+        final ArrayList<Found> refs = new ArrayList<>();
+        boolean sawMatchField = false; // o addon mandou o campo "m" em algum item?
+        boolean refsAssumed = false;   // sem campo "m": referências são só um palpite (as primeiras de outro idioma)
+        int total = 0;
+        boolean ok = false;
     }
 
     static final class VideoHash {
-        String hash;
+        String hash;          // null se falhou
         long size;
+        String error;         // motivo da falha (para o diagnóstico)
+        String headerName;    // nome vindo do Content-Disposition
+        String finalUrl;
     }
 
     // ---------- hash do OpenSubtitles ----------
     private static final int CHUNK = 65536;
+    private static final int FIRST_TIMEOUT_MS = 12000; // o debrid pode demorar para resolver o link
 
-    /** calcula o hash com limite de tempo; null se falhar (a busca segue sem ele) */
+    /** calcula o hash com limite de tempo; nunca devolve null (error diz o que houve) */
     static VideoHash computeHashTimeboxed(final String url, long timeoutMs) {
         ExecutorService ex = Executors.newSingleThreadExecutor();
         try {
-            Future<VideoHash> f = ex.submit((java.util.concurrent.Callable<VideoHash>) () -> computeHash(url));
+            Future<VideoHash> f = ex.submit((Callable<VideoHash>) () -> computeHash(url));
             return f.get(timeoutMs, TimeUnit.MILLISECONDS);
         } catch (Exception e) {
-            log("hash: falhou ou demorou demais (" + e.getClass().getSimpleName() + ")");
-            return null;
+            VideoHash v = new VideoHash();
+            v.error = "tempo esgotado (" + (timeoutMs / 1000) + " s)";
+            return v;
         } finally {
             ex.shutdownNow();
         }
@@ -77,23 +99,30 @@ final class SubtitleSync {
 
     /** hash = tamanho + soma das palavras de 64 bits (little-endian) dos primeiros e dos últimos 64 KiB, módulo 2^64 */
     static VideoHash computeHash(String u) {
+        VideoHash v = new VideoHash();
         try {
-            if (u == null || !u.startsWith("http")) return null;
+            if (u == null || !u.startsWith("http")) { v.error = "link não é http"; return v; }
             Chunk a = getRange(u, "bytes=0-" + (CHUNK - 1), false);
-            if (a == null || a.data.length != CHUNK) { log("hash: não leu o início do arquivo"); return null; }
+            if (a.data == null) { v.error = "início do arquivo: " + a.error; return v; }
+            if (a.data.length != CHUNK) { v.error = "início do arquivo curto (" + a.data.length + " bytes)"; return v; }
+            v.headerName = a.dispositionName;
+            v.finalUrl = a.finalUrl;
             long size = a.total;
-            if (size < 0) size = headSize(u);
-            if (size < CHUNK) { log("hash: tamanho desconhecido"); return null; }
-            Chunk b = getRange(u, "bytes=" + (size - CHUNK) + "-" + (size - 1), true);
-            if (b == null || b.data.length != CHUNK) { log("hash: não leu o fim do arquivo (sem suporte a Range?)"); return null; }
+            if (size < 0) size = headSize(a.finalUrl != null ? a.finalUrl : u);
+            if (size < CHUNK) { v.error = "tamanho do arquivo desconhecido"; return v; }
+            String range = "bytes=" + (size - CHUNK) + "-" + (size - 1);
+            // o link final já está resolvido pelo debrid: usa direto; se falhar, tenta o link original
+            Chunk b = getRange(a.finalUrl != null ? a.finalUrl : u, range, true);
+            if (b.data == null && a.finalUrl != null && !a.finalUrl.equals(u)) b = getRange(u, range, true);
+            if (b.data == null) { v.error = "fim do arquivo: " + b.error; return v; }
+            if (b.data.length != CHUNK) { v.error = "fim do arquivo curto (" + b.data.length + " bytes)"; return v; }
             long h = size + sum(a.data) + sum(b.data);
-            VideoHash v = new VideoHash();
             v.hash = String.format(Locale.ROOT, "%016x", h);
             v.size = size;
             return v;
         } catch (Exception e) {
-            log("hash: erro " + e);
-            return null;
+            v.error = "erro " + e.getClass().getSimpleName();
+            return v;
         }
     }
 
@@ -105,49 +134,83 @@ final class SubtitleSync {
     }
 
     private static final class Chunk {
-        byte[] data;
+        byte[] data;          // null = falhou
+        String error = "";
         long total = -1;
-        int code;
+        String finalUrl;
+        String dispositionName;
     }
 
     private static long parseLong(String s) {
         try { return s == null ? -1 : Long.parseLong(s.trim()); } catch (NumberFormatException e) { return -1; }
     }
 
-    private static Chunk getRange(String u, String range, boolean mustBePartial) throws IOException {
-        HttpURLConnection c = (HttpURLConnection) new URL(u).openConnection();
-        c.setConnectTimeout(5000);
-        c.setReadTimeout(5000);
-        c.setInstanceFollowRedirects(true);
-        c.setRequestProperty("User-Agent", "GabiFlix");
-        c.setRequestProperty("Range", range);
-        c.setRequestProperty("Accept-Encoding", "identity");
+    /** nome do arquivo no Content-Disposition (filename*=UTF-8''... ou filename="...") */
+    static String dispositionName(String cd) {
+        if (cd == null) return null;
         try {
-            int code = c.getResponseCode();
-            if (code != 206 && !(code == 200 && !mustBePartial)) return null;
-            Chunk k = new Chunk();
-            k.code = code;
-            String cr = c.getHeaderField("Content-Range"); // "bytes 0-65535/123456"
-            if (cr != null) {
-                int slash = cr.lastIndexOf('/');
-                if (slash >= 0) k.total = parseLong(cr.substring(slash + 1));
+            java.util.regex.Matcher m = Pattern.compile("filename\\*\\s*=\\s*[^']*'[^']*'([^;]+)", Pattern.CASE_INSENSITIVE).matcher(cd);
+            if (m.find()) return java.net.URLDecoder.decode(m.group(1).trim().replace("+", "%2B"), "UTF-8");
+            m = Pattern.compile("filename\\s*=\\s*\"?([^\";]+)\"?", Pattern.CASE_INSENSITIVE).matcher(cd);
+            if (m.find()) return m.group(1).trim();
+        } catch (Exception ignored) {}
+        return null;
+    }
+
+    /** GET com Range seguindo os redirecionamentos na mão (o link do debrid redireciona, e http->https não é seguido sozinho) */
+    private static Chunk getRange(String u, String range, boolean mustBePartial) {
+        Chunk k = new Chunk();
+        String cur = u;
+        try {
+            for (int hop = 0; hop < 6; hop++) {
+                HttpURLConnection c = (HttpURLConnection) new URL(cur).openConnection();
+                c.setConnectTimeout(FIRST_TIMEOUT_MS);
+                c.setReadTimeout(FIRST_TIMEOUT_MS);
+                c.setInstanceFollowRedirects(false);
+                c.setRequestProperty("User-Agent", "GabiFlix");
+                c.setRequestProperty("Range", range);
+                c.setRequestProperty("Accept-Encoding", "identity");
+                try {
+                    int code = c.getResponseCode();
+                    if (code == 301 || code == 302 || code == 303 || code == 307 || code == 308) {
+                        String loc = c.getHeaderField("Location");
+                        if (loc == null) { k.error = "redirecionamento sem destino"; return k; }
+                        cur = new URL(new URL(cur), loc).toString();
+                        continue;
+                    }
+                    if (code != 206 && !(code == 200 && !mustBePartial)) {
+                        k.error = code == 200 ? "servidor sem suporte a Range" : "HTTP " + code;
+                        return k;
+                    }
+                    k.finalUrl = cur;
+                    k.dispositionName = dispositionName(c.getHeaderField("Content-Disposition"));
+                    String cr = c.getHeaderField("Content-Range"); // "bytes 0-65535/123456"
+                    if (cr != null) {
+                        int slash = cr.lastIndexOf('/');
+                        if (slash >= 0) k.total = parseLong(cr.substring(slash + 1));
+                    }
+                    if (k.total < 0 && code == 200) k.total = parseLong(c.getHeaderField("Content-Length"));
+                    InputStream in = c.getInputStream();
+                    byte[] buf = new byte[CHUNK];
+                    int off = 0, r;
+                    while (off < CHUNK && (r = in.read(buf, off, CHUNK - off)) > 0) off += r;
+                    k.data = off == CHUNK ? buf : Arrays.copyOf(buf, off);
+                    return k;
+                } finally { c.disconnect(); }
             }
-            if (k.total < 0 && code == 200) k.total = parseLong(c.getHeaderField("Content-Length"));
-            InputStream in = c.getInputStream();
-            byte[] buf = new byte[CHUNK];
-            int off = 0, r;
-            while (off < CHUNK && (r = in.read(buf, off, CHUNK - off)) > 0) off += r;
-            k.data = off == CHUNK ? buf : Arrays.copyOf(buf, off);
-            return k;
-        } finally { c.disconnect(); }
+            k.error = "redirecionamentos demais";
+        } catch (Exception e) {
+            k.error = e.getClass().getSimpleName() + (e.getMessage() != null ? " " + e.getMessage() : "");
+        }
+        return k;
     }
 
     private static long headSize(String u) {
         try {
             HttpURLConnection c = (HttpURLConnection) new URL(u).openConnection();
             c.setRequestMethod("HEAD");
-            c.setConnectTimeout(5000);
-            c.setReadTimeout(5000);
+            c.setConnectTimeout(6000);
+            c.setReadTimeout(6000);
             c.setInstanceFollowRedirects(true);
             c.setRequestProperty("User-Agent", "GabiFlix");
             try {
@@ -160,19 +223,26 @@ final class SubtitleSync {
     // ---------- busca no addon ----------
     private static final Pattern VIDEO_FILE = Pattern.compile(".+\\.(mkv|mp4|avi|m4v|mov|wmv|ts|webm|mpg|mpeg)$", Pattern.CASE_INSENSITIVE);
 
-    /** nome do arquivo (último trecho do caminho, decodificado) se parecer um vídeo; senão null */
-    static String fileNameOf(String url) {
-        try {
-            String s = Uri.parse(url).getLastPathSegment();
-            if (s != null && VIDEO_FILE.matcher(s).matches()) return s;
-        } catch (Exception ignored) {}
-        return null;
+    private static String videoLike(String s) {
+        return s != null && VIDEO_FILE.matcher(s).matches() ? s : null;
+    }
+
+    /** nome do arquivo: último trecho do caminho do link ORIGINAL (decodificado; nos links do Torrentio é o nome real da release),
+     *  senão o Content-Disposition, senão o último trecho do link final; null se nenhum parecer um vídeo */
+    static String fileNameOf(String url, VideoHash vh) {
+        String n = null;
+        try { n = videoLike(Uri.parse(url).getLastPathSegment()); } catch (Exception ignored) {}
+        if (n == null && vh != null) n = videoLike(vh.headerName);
+        if (n == null && vh != null && vh.finalUrl != null) {
+            try { n = videoLike(Uri.parse(vh.finalUrl).getLastPathSegment()); } catch (Exception ignored) {}
+        }
+        return n;
     }
 
     /** extras no formato do Stremio (videoHash=...&videoSize=...&filename=...), só com o que temos; "" se nada */
     static String extras(VideoHash vh, String filename) {
         StringBuilder sb = new StringBuilder();
-        if (vh != null) sb.append("videoHash=").append(vh.hash).append("&videoSize=").append(vh.size);
+        if (vh != null && vh.hash != null) sb.append("videoHash=").append(vh.hash).append("&videoSize=").append(vh.size);
         if (filename != null) {
             if (sb.length() > 0) sb.append('&');
             sb.append("filename=").append(Uri.encode(filename));
@@ -180,32 +250,90 @@ final class SubtitleSync {
         return sb.toString();
     }
 
-    /** legendas em português do OpenSubtitles do Stremio, na ordem do addon (as que casam com o hash vêm primeiro) */
-    static ArrayList<Found> search(String type, String id, String extras) {
-        ArrayList<Found> out = new ArrayList<>();
+    static boolean isPtLang(String lang) {
+        return lang.equals("pob") || lang.equals("pt-br") || lang.equals("ptb") || lang.equals("ptbr")
+                || lang.equals("por") || lang.equals("pt") || lang.equals("pt-pt");
+    }
+
+    /** legendas do OpenSubtitles do Stremio: português (na ordem do addon, hash primeiro) e candidatas a referência (outro idioma) */
+    static SearchResult search(String type, String id, String extras) {
+        SearchResult res = new SearchResult();
         try {
             String api = "https://opensubtitles-v3.strem.io/subtitles/" + Uri.encode(type) + "/" + Uri.encode(id, ":")
                     + (extras == null || extras.isEmpty() ? "" : "/" + extras) + ".json";
             byte[] data = PlayerActivity.httpGet(api);
-            if (data == null) return out;
+            if (data == null) return res;
             org.json.JSONArray arr = new org.json.JSONObject(new String(data, StandardCharsets.UTF_8)).optJSONArray("subtitles");
-            if (arr == null) return out;
-            for (int i = 0; i < arr.length() && out.size() < 10; i++) {
+            if (arr == null) return res;
+            res.ok = true;
+            res.total = arr.length();
+            ArrayList<Found> others = new ArrayList<>();
+            for (int i = 0; i < arr.length(); i++) {
                 org.json.JSONObject o = arr.optJSONObject(i);
                 if (o == null) continue;
                 String lang = o.optString("lang", "").toLowerCase(Locale.ROOT), url = o.optString("url", "");
                 if (!url.startsWith("http")) continue;
-                boolean pt = lang.equals("pob") || lang.equals("pt-br") || lang.equals("ptb") || lang.equals("ptbr")
-                        || lang.equals("por") || lang.equals("pt") || lang.equals("pt-pt");
-                if (!pt) continue;
+                if (o.has("m")) res.sawMatchField = true;
                 // o addon marca com m="f" as que casam com o hash do arquivo (m="i" = só o título)
-                out.add(new Found(url, "f".equals(o.optString("m", ""))));
+                boolean hash = "f".equals(o.optString("m", ""));
+                if (isPtLang(lang)) { if (res.pt.size() < 10) res.pt.add(new Found(url, hash, lang)); }
+                else others.add(new Found(url, hash, lang));
+            }
+            // referência: de preferência inglês (eng) com hash; até 3
+            for (int pass = 0; pass < 2; pass++) {
+                for (Found f : others) {
+                    if (res.refs.size() >= 3) break;
+                    boolean eng = f.lang.equals("eng") || f.lang.equals("en");
+                    if (f.hashMatch && (pass == 0) == eng) res.refs.add(f);
+                }
+            }
+            if (res.refs.isEmpty() && !res.sawMatchField) {
+                // sem o campo "m" não dá para saber quem casa com o hash: usa as primeiras (inglês antes) e o alinhamento confere
+                res.refsAssumed = true;
+                for (Found f : others) if ((f.lang.equals("eng") || f.lang.equals("en")) && res.refs.size() < 2) res.refs.add(f);
+                for (Found f : others) if (!res.refs.contains(f) && res.refs.size() < 2) res.refs.add(f);
             }
         } catch (Exception ignored) {}
-        return out;
+        return res;
     }
 
-    // ---------- ranking e correção de taxa de quadros ----------
+    // ---------- alinhamento a uma referência ----------
+    /** alinha cada candidata (reescrevendo o arquivo) à melhor das referências; devolve quantas ficaram alinhadas */
+    static int alignAll(List<Cand> all, List<long[]> refs, StringBuilder lg) {
+        int n = 0;
+        if (refs.isEmpty()) return 0;
+        for (Cand c : all) {
+            long[] starts = SubtitleAlign.cueStarts(c.text);
+            SubtitleAlign.Fit best = null;
+            for (long[] r : refs) {
+                SubtitleAlign.Fit f = SubtitleAlign.align(r, starts);
+                if (best == null || f.score > best.score) best = f;
+                if (best.score >= 0.6) break; // já está claro: não precisa das outras referências
+            }
+            if (best == null) continue;
+            lg.append("\n  #").append(c.rank).append(" alinhamento: nota=").append(String.format(Locale.ROOT, "%.2f", best.score))
+                    .append(" escala=").append(String.format(Locale.ROOT, "%.4f", best.scale)).append(" deslocamento=").append(best.offsetMs).append("ms");
+            if (!best.ok()) continue;
+            c.aligned = true;
+            c.alignScore = best.score;
+            c.alignScale = best.scale;
+            c.alignOffsetMs = best.offsetMs;
+            n++;
+            if (best.scale != 1.0 || Math.abs(best.offsetMs) >= 50) {
+                String t = SubtitleAlign.transform(c.text, best.scale, best.offsetMs);
+                try {
+                    FileOutputStream os = new FileOutputStream(c.file);
+                    os.write(t.getBytes(StandardCharsets.UTF_8));
+                    os.close();
+                    c.text = t;
+                    c.lastMs = PlayerActivity.lastCueEnd(t);
+                } catch (IOException e) { c.aligned = false; n--; }
+            }
+        }
+        return n;
+    }
+
+    // ---------- ranking ----------
     /** razões entre taxas de quadros que dá para distinguir pelo fim da legenda (24/23,976 é pequena demais: 0,1%) */
     private static final double[] FPS_FACTORS = {25.0 / 23.976, 23.976 / 25.0, 25.0 / 24.0, 24.0 / 25.0};
 
@@ -223,22 +351,34 @@ final class SubtitleSync {
     }
 
     /**
-     * Heurística: a última fala costuma terminar alguns minutos antes do fim do vídeo (créditos), então não
-     * comparamos com a duração e sim com uma legenda de REFERÊNCIA:
-     *  1) a primeira candidata que o addon marcou como casando com o hash do arquivo (e com duração plausível); ou
-     *  2) se não houver, o maior grupo de candidatas cujo fim da última fala difere menos de 1,5% (mín. 2).
-     * Uma candidata (que não seja de hash) cujo fim é ~4,27% maior/menor que o da referência (25/23,976 ou 23,976/25;
-     * também 25/24 e 24/25) foi feita para outra taxa de quadros: reescalamos todos os tempos pelo fator inverso,
-     * conferimos que agora bate com a referência (1,5%) e marcamos como "corrigida".
-     * Nota: 24 x 23,976 (0,1%) não dá para detectar assim; o ajuste manual cobre esse caso.
-     * Nota de pontuação: nota = ajuste à referência (ou a 0,93 da duração, sem referência) + 0,01 por posição
-     * na lista do addon (hash primeiro) + 0,01 se foi corrigida - 0,02 se casa com o hash. Menor = melhor.
-     * Candidatas com fim fora de 0,5x..1,12x da duração são descartadas (se sobrar alguma).
+     * Ordem final: primeiro as ALINHADAS a uma referência (maior nota primeiro); depois as demais pela heurística antiga,
+     * usada também quando não há referência:
+     * A última fala costuma terminar alguns minutos antes do fim do vídeo (créditos), então não comparamos com a
+     * duração e sim com uma legenda de REFERÊNCIA DE FIM:
+     *  1) a primeira candidata que o addon marcou como casando com o hash (e com duração plausível); ou
+     *  2) o maior grupo de candidatas cujo fim da última fala difere menos de 1,5% (mín. 2).
+     * Uma candidata (que não seja de hash) cujo fim é ~4,27% maior/menor (25/23,976, 23,976/25, 25/24, 24/25)
+     * foi feita para outra taxa de quadros: reescalamos os tempos pelo fator inverso, conferimos que agora bate (1,5%)
+     * e marcamos como "corrigida".
+     * Nota = ajuste à referência (ou a 0,93 da duração) + 0,01 por posição na lista do addon + 0,01 se corrigida
+     * - 0,02 se casa com o hash. Menor = melhor. Fim fora de 0,5x..1,12x da duração é descartado (se sobrar alguma).
      */
     static ArrayList<Cand> rank(List<Cand> all, long len, StringBuilder lg) {
+        ArrayList<Cand> good = new ArrayList<>(), rest = new ArrayList<>();
+        for (Cand c : all) { if (c.aligned) good.add(c); else rest.add(c); }
+        Collections.sort(good, (a, b) -> {
+            int d = Double.compare(b.alignScore, a.alignScore);
+            return d != 0 ? d : Integer.compare(a.rank, b.rank);
+        });
+        ArrayList<Cand> out = new ArrayList<>(good);
+        out.addAll(rankHeuristic(rest, len, lg));
+        return out;
+    }
+
+    private static ArrayList<Cand> rankHeuristic(List<Cand> all, long len, StringBuilder lg) {
         ArrayList<Cand> sorted = new ArrayList<>(all);
         Collections.sort(sorted, (a, b) -> Integer.compare(a.rank, b.rank));
-        if (len <= 0) return sorted;
+        if (len <= 0 || sorted.isEmpty()) return sorted;
 
         long ref = 0;
         String why = "sem referência";
@@ -255,14 +395,14 @@ final class SubtitleSync {
             }
             if (ref > 0) why = "grupo de " + (bestN + 1) + " legendas parecidas";
         }
-        lg.append("referência de fim=").append(ref).append("ms (").append(why).append("), duração=").append(len).append("ms");
+        lg.append("\n  referência de fim=").append(ref).append("ms (").append(why).append("), duração=").append(len).append("ms");
 
         if (ref > 0) {
             for (Cand c : sorted) {
                 if (c.hashMatch || c.lastMs <= 0 || c.text == null || c.file == null) continue;
                 double f = matchFactor((double) c.lastMs / ref);
                 if (f <= 0) continue;
-                String fixed = rescale(c.text, 1.0 / f);
+                String fixed = SubtitleAlign.transform(c.text, 1.0 / f, 0);
                 long nl = PlayerActivity.lastCueEnd(fixed);
                 if (nl <= 0 || Math.abs((double) nl / ref - 1) > 0.015) continue;
                 try {
@@ -294,35 +434,5 @@ final class SubtitleSync {
         }
         Collections.sort(use, (a, b) -> Double.compare(a.score, b.score));
         return use;
-    }
-
-    // ---------- reescalar os tempos de uma legenda (SRT/VTT) ----------
-    private static final Pattern TS = Pattern.compile("(?:(\\d+):)?(\\d{1,2}):(\\d\\d)([,.])(\\d{3})");
-
-    /** multiplica todos os tempos das linhas "a --> b" por k */
-    static String rescale(String text, double k) {
-        String[] lines = text.split("\n", -1);
-        StringBuilder out = new StringBuilder(text.length() + 64);
-        for (int i = 0; i < lines.length; i++) {
-            String ln = lines[i];
-            if (ln.contains("-->")) ln = scaleLine(ln, k);
-            out.append(ln);
-            if (i < lines.length - 1) out.append('\n');
-        }
-        return out.toString();
-    }
-
-    private static String scaleLine(String ln, double k) {
-        Matcher m = TS.matcher(ln);
-        StringBuffer sb = new StringBuffer();
-        while (m.find()) {
-            long h = m.group(1) == null ? 0 : Long.parseLong(m.group(1));
-            long ms = ((h * 60 + Long.parseLong(m.group(2))) * 60 + Long.parseLong(m.group(3))) * 1000 + Long.parseLong(m.group(5));
-            long n = Math.round(ms * k);
-            String rep = String.format(Locale.ROOT, "%02d:%02d:%02d%s%03d", n / 3600000, (n / 60000) % 60, (n / 1000) % 60, m.group(4), n % 1000);
-            m.appendReplacement(sb, Matcher.quoteReplacement(rep));
-        }
-        m.appendTail(sb);
-        return sb.toString();
     }
 }

@@ -481,35 +481,69 @@ public class PlayerActivity extends Activity {
     // Baixa as legendas (dos addons, ou direto do OpenSubtitles do Stremio) para arquivos .srt
     // no celular e liga no VLC. Arquivo local com extensão é o jeito mais confiável para o VLC.
     private final ArrayList<SubtitleSync.Cand> cands = new ArrayList<>();
+    private final ArrayList<SubtitleSync.Cand> attached = new ArrayList<>();
     private final ArrayList<String> subLabels = new ArrayList<>();
-    private boolean subsDownloaded = false, subsAttached = false;
+    private boolean subsDownloaded = false, subsAttached = false, userPickedSub = false;
     private int attachTries = 0;
+    /** diagnóstico mostrado no topo do menu de legendas */
+    private String diagId = "Procurando legendas…", diagRef = "";
+    private static final int NO_TRACK = Integer.MIN_VALUE;
+    private int embeddedPtId = NO_TRACK;
 
     private static void glog(String s) { SubtitleSync.log(s); }
 
+    private static String shortReason(String s) {
+        if (s == null) return "?";
+        return s.length() > 48 ? s.substring(0, 48) : s;
+    }
+
+    private static String langShort(String lang) {
+        if (lang == null || lang.isEmpty()) return "?";
+        if (lang.equals("eng") || lang.equals("en")) return "EN";
+        return lang.toUpperCase(Locale.ROOT);
+    }
+
     private void loadSubtitlesInBackground() {
         new Thread(() -> {
-            // 1) hash do arquivo (como o Stremio desktop), com limite de tempo
-            SubtitleSync.VideoHash vh = SubtitleSync.computeHashTimeboxed(url, 8000);
-            String fname = SubtitleSync.fileNameOf(url);
-            glog(vh != null ? "hash=" + vh.hash + " tamanho=" + vh.size + " arquivo=" + fname : "hash não calculado; arquivo=" + fname);
+            // 1) hash do arquivo (como o Stremio desktop); o link do debrid pode demorar a resolver
+            SubtitleSync.VideoHash vh = SubtitleSync.computeHashTimeboxed(url, 25000);
+            String fname = SubtitleSync.fileNameOf(url, vh);
+            if (vh.hash != null) glog("hash=" + vh.hash + " tamanho=" + vh.size + " arquivo=" + fname);
+            else glog("hash não calculado: " + vh.error + "; arquivo=" + fname);
+
             // 2) busca no addon com os extras (hash/tamanho/nome); os resultados do hash vêm primeiro
-            ArrayList<SubtitleSync.Found> merged = new ArrayList<>();
-            java.util.HashSet<String> seen = new java.util.HashSet<>();
+            SubtitleSync.SearchResult sr = null;
             if (metaId != null && metaType != null) {
                 String extras = SubtitleSync.extras(vh, fname);
-                ArrayList<SubtitleSync.Found> found = new ArrayList<>();
-                if (!extras.isEmpty()) found = SubtitleSync.search(metaType, metaId, extras);
-                int hashHits = 0;
-                for (SubtitleSync.Found f : found) if (f.hashMatch) hashHits++;
-                glog("busca com extras: " + found.size() + " em português, " + hashHits + " com hash igual");
-                if (found.isEmpty()) {
-                    found = SubtitleSync.search(metaType, metaId, "");
-                    glog("busca simples: " + found.size() + " em português");
+                if (!extras.isEmpty()) sr = SubtitleSync.search(metaType, metaId, extras);
+                if (sr == null || sr.pt.isEmpty()) {
+                    SubtitleSync.SearchResult plain = SubtitleSync.search(metaType, metaId, "");
+                    if (sr == null) sr = plain;
+                    else {
+                        sr.pt.addAll(plain.pt);
+                        if (sr.refs.isEmpty()) { sr.refs.addAll(plain.refs); sr.refsAssumed = plain.refsAssumed; }
+                        if (!sr.ok) sr.ok = plain.ok;
+                    }
                 }
-                for (SubtitleSync.Found f : found) if (seen.add(f.url)) merged.add(f);
             }
-            for (String u : subs) if (u != null && u.startsWith("http") && seen.add(u)) merged.add(new SubtitleSync.Found(u, false));
+            int hashHits = 0;
+            if (sr != null) {
+                for (SubtitleSync.Found f : sr.pt) if (f.hashMatch) hashHits++;
+                for (SubtitleSync.Found f : sr.refs) if (f.hashMatch) hashHits++;
+            }
+            String idLine;
+            if (vh.hash == null) idLine = "Vídeo não identificado (sem hash: " + shortReason(vh.error) + ")";
+            else if (sr == null || !sr.ok) idLine = "Hash calculado, mas a busca de legendas falhou";
+            else if (!sr.sawMatchField) idLine = "Hash calculado (o addon não confirma a correspondência)";
+            else if (hashHits > 0) idLine = "Vídeo identificado ✓";
+            else idLine = "Hash calculado, sem correspondência no OpenSubtitles";
+            glog(idLine + (sr != null ? "; addon: " + sr.total + " itens, PT=" + sr.pt.size() + ", referências=" + sr.refs.size()
+                    + (sr.refsAssumed ? " (palpite)" : "") + ", hash igual=" + hashHits : ""));
+
+            ArrayList<SubtitleSync.Found> merged = new ArrayList<>();
+            java.util.HashSet<String> seen = new java.util.HashSet<>();
+            if (sr != null) for (SubtitleSync.Found f : sr.pt) if (seen.add(f.url)) merged.add(f);
+            for (String u : subs) if (u != null && u.startsWith("http") && seen.add(u)) merged.add(new SubtitleSync.Found(u, false, "por"));
             while (merged.size() > 14) merged.remove(merged.size() - 1);
             glog("candidatas para baixar: " + merged.size() + " (do site: " + subs.length + ")");
 
@@ -519,6 +553,14 @@ public class PlayerActivity extends Activity {
             if (old != null) for (java.io.File f : old) f.delete();
             // baixa várias ao mesmo tempo; cada uma é convertida para UTF-8 e só fica se for mesmo português
             java.util.concurrent.ExecutorService pool = java.util.concurrent.Executors.newFixedThreadPool(4);
+            // referências de tempo (outro idioma, nunca mostradas)
+            ArrayList<java.util.concurrent.Future<long[]>> refFut = new ArrayList<>();
+            ArrayList<String> refLangs = new ArrayList<>();
+            if (sr != null) for (SubtitleSync.Found rf : sr.refs) {
+                final String ru = rf.url;
+                refLangs.add(rf.lang);
+                refFut.add(pool.submit((java.util.concurrent.Callable<long[]>) () -> fetchStarts(ru)));
+            }
             ArrayList<java.util.concurrent.Callable<SubtitleSync.Cand>> jobs = new ArrayList<>();
             for (int i = 0; i < merged.size(); i++) {
                 final int n = i;
@@ -531,21 +573,52 @@ public class PlayerActivity extends Activity {
                     try { if (!f.isCancelled()) { SubtitleSync.Cand c = f.get(); if (c != null) ok.add(c); } } catch (Exception ignored) {}
                 }
             } catch (InterruptedException ignored) {}
+            ArrayList<long[]> refStarts = new ArrayList<>();
+            String refLang = "";
+            for (int i = 0; i < refFut.size(); i++) {
+                try {
+                    long[] st = refFut.get(i).get(8, java.util.concurrent.TimeUnit.SECONDS);
+                    if (st != null && st.length >= 20) { refStarts.add(st); if (refLang.isEmpty()) refLang = refLangs.get(i); }
+                } catch (Exception ignored) {}
+            }
             pool.shutdownNow();
-            glog("legendas válidas: " + ok.size() + " de " + merged.size());
-            ui.post(() -> { cands.addAll(ok); subsDownloaded = true; attachReadySubs(); });
+            glog("legendas PT válidas: " + ok.size() + " de " + merged.size() + "; referências baixadas: " + refStarts.size());
+
+            // 3) alinha cada legenda PT à referência (escala x deslocamento)
+            StringBuilder lg = new StringBuilder("alinhamento com " + refStarts.size() + " referência(s):");
+            int nAligned = SubtitleSync.alignAll(ok, refStarts, lg);
+            glog(lg.toString() + "\n  alinhadas: " + nAligned);
+            String refLine;
+            if (refStarts.isEmpty()) refLine = (sr != null && !sr.refs.isEmpty()) ? "referência não baixou" : "sem referência";
+            else refLine = "referência " + langShort(refLang) + " ✓" + (nAligned == 0 ? " (nenhuma legenda casou)" : "");
+
+            final String fIdLine = idLine, fRefLine = refLine;
+            ui.post(() -> { cands.addAll(ok); diagId = fIdLine; diagRef = fRefLine; subsDownloaded = true; attachReadySubs(); });
         }).start();
+    }
+
+    /** texto UTF-8 de uma legenda baixada (null se não for legenda) */
+    private static String fetchText(String u) {
+        try {
+            byte[] data = httpGet(u);
+            if (data == null || data.length < 20) return null;
+            if ((data[0] & 0xFF) == 0x1F && (data[1] & 0xFF) == 0x8B) data = gunzip(data);
+            String text = decodeText(data);
+            if (text == null || !text.contains("-->")) return null; // não é legenda (página de erro, arquivo vazio...)
+            return text.replace("﻿", "");
+        } catch (Exception e) { return null; }
+    }
+
+    private static long[] fetchStarts(String u) {
+        String t = fetchText(u);
+        return t == null ? null : SubtitleAlign.cueStarts(t);
     }
 
     /** baixa uma legenda; devolve null se não for uma legenda válida em português */
     private static SubtitleSync.Cand fetchSubtitle(SubtitleSync.Found fo, int rank, java.io.File f) {
         try {
-            byte[] data = httpGet(fo.url);
-            if (data == null || data.length < 20) return null;
-            if ((data[0] & 0xFF) == 0x1F && (data[1] & 0xFF) == 0x8B) data = gunzip(data);
-            String text = decodeText(data);
-            if (text == null || !text.contains("-->")) return null; // não é legenda (página de erro, arquivo vazio...)
-            text = text.replace("\uFEFF", "");
+            String text = fetchText(fo.url);
+            if (text == null) return null;
             if (!looksPortuguese(text)) return null; // legenda de outro idioma com etiqueta errada
             java.io.File out = text.startsWith("WEBVTT") ? new java.io.File(f.getParentFile(), f.getName().replace(".srt", ".vtt")) : f;
             java.io.FileOutputStream os = new java.io.FileOutputStream(out);
@@ -622,42 +695,68 @@ public class PlayerActivity extends Activity {
     private final java.util.HashSet<Integer> embeddedSpu = new java.util.HashSet<>();
     private boolean embeddedKnown = false;
 
-    /** liga as legendas baixadas: só as que combinam com a duração do filme, a mais parecida primeiro (essa fica ativa) */
+    /** legenda PT/BR que veio dentro do arquivo (a primeira que não seja "forçada"); NO_TRACK se não houver */
+    private int findEmbeddedPt(MediaPlayer.TrackDescription[] t) {
+        if (t == null) return NO_TRACK;
+        int first = NO_TRACK;
+        for (MediaPlayer.TrackDescription d : t) {
+            if (d.id == -1 || !isPortuguese(d.name)) continue;
+            if (embeddedKnown && !embeddedSpu.contains(d.id)) continue;
+            String n = d.name.toLowerCase(Locale.ROOT);
+            if (n.contains("forced") || n.contains("forçad") || n.contains("forcad")) { if (first == NO_TRACK) first = d.id; continue; }
+            return d.id;
+        }
+        return first;
+    }
+
+    /** liga as legendas baixadas: as alinhadas à referência primeiro; a legenda PT embutida no arquivo (se houver) fica ativa */
     private void attachReadySubs() {
         if (player == null || !playing || !subsDownloaded || subsAttached) return;
         long len = player.getLength();
         if (len <= 0 && attachTries++ < 12) { ui.postDelayed(this::attachReadySubs, 1000); return; }
         subsAttached = true;
-        if (cands.isEmpty()) return;
         MediaPlayer.TrackDescription[] t = player.getSpuTracks();
         embeddedKnown = true;
         if (t != null) for (MediaPlayer.TrackDescription d : t) embeddedSpu.add(d.id);
-        StringBuilder lg = new StringBuilder("ranking das legendas: ");
+        embeddedPtId = findEmbeddedPt(t);
+        glog("legenda PT embutida: " + (embeddedPtId == NO_TRACK ? "não há" : "faixa " + embeddedPtId));
+        if (cands.isEmpty()) return;
+        StringBuilder lg = new StringBuilder("ranking das legendas:");
         ArrayList<SubtitleSync.Cand> use = SubtitleSync.rank(cands, len, lg);
         glog(lg.toString());
+        final boolean embeddedFirst = embeddedPtId != NO_TRACK;
         for (int i = 0; i < use.size() && i < 6; i++) {
             SubtitleSync.Cand c = use.get(i);
             try {
-                player.addSlave(0 /* legenda */, c.uri, i == 0);
+                player.addSlave(0 /* legenda */, c.uri, i == 0 && !embeddedFirst);
                 addedSubs++;
-                subLabels.add("Português " + (subLabels.size() + 1) + (c.hashMatch ? " (sincronizada)" : "") + (c.fixed ? " (corrigida)" : ""));
+                attached.add(c);
+                subLabels.add("Português " + (subLabels.size() + 1) + (c.aligned ? " (sincronizada)" : c.hashMatch ? " (do hash)" : "") + (c.fixed ? " (corrigida)" : ""));
             } catch (Exception ignored) {}
         }
+        if (embeddedFirst && !userPickedSub) player.setSpuTrack(embeddedPtId);
         if (!use.isEmpty()) {
             SubtitleSync.Cand f = use.get(0);
-            glog("escolhida: candidata #" + f.rank + " (hash=" + f.hashMatch + ", corrigida=" + f.fixed + ", nota=" + String.format(Locale.ROOT, "%.4f", f.score) + "), " + addedSubs + " no menu");
+            glog("escolhida: " + (embeddedFirst ? "embutida (faixa " + embeddedPtId + ")" : "candidata #" + f.rank)
+                    + "; melhor baixada: #" + f.rank + " alinhada=" + f.aligned + " nota=" + String.format(Locale.ROOT, "%.2f", f.alignScore)
+                    + " deslocamento=" + f.alignOffsetMs + "ms hash=" + f.hashMatch + " corrigida=" + f.fixed + "; " + addedSubs + " no menu");
         }
         applySubDelay();
-        ui.postDelayed(this::applySubDelay, 1500);
+        ui.postDelayed(() -> {
+            applySubDelay();
+            if (embeddedFirst && !userPickedSub && player != null) player.setSpuTrack(embeddedPtId);
+        }, 1500);
     }
 
     private void selectEmbeddedPortugueseLater() {
-        // sem legenda baixada ainda: liga a PT/BR que vier dentro do próprio arquivo; se não houver, desliga (nada em outro idioma)
+        // liga a PT/BR que vier dentro do próprio arquivo (vem perfeitamente sincronizada); se não houver nada em português, desliga
         ui.postDelayed(() -> {
-            if (player == null || addedSubs > 0) return;
+            if (player == null) return;
             MediaPlayer.TrackDescription[] t = player.getSpuTracks();
             if (t == null) return;
-            for (MediaPlayer.TrackDescription d : t) if (d.id != -1 && isPortuguese(d.name)) { player.setSpuTrack(d.id); return; }
+            int id = findEmbeddedPt(t);
+            if (id != NO_TRACK) { embeddedPtId = id; if (!userPickedSub) player.setSpuTrack(id); return; }
+            if (addedSubs > 0) return;
             player.setSpuTrack(-1);
         }, 2500);
     }
@@ -688,6 +787,11 @@ public class PlayerActivity extends Activity {
     private static boolean isPortuguese(String name) { return name != null && PT.matcher(name).find(); }
     private boolean isDownloaded(int id) { return addedSubs > 0 && embeddedKnown && id != -1 && !embeddedSpu.contains(id); }
 
+    private static String signedSecs(long ms) {
+        String v = String.format(Locale.ROOT, "%.1f", Math.abs(ms) / 1000.0).replace('.', ',');
+        return (ms > 0 ? "+" : ms < 0 ? "−" : "") + v + " s";
+    }
+
     private void chooseSubtitles() {
         MediaPlayer.TrackDescription[] all = player.getSpuTracks();
         ArrayList<MediaPlayer.TrackDescription> keep = new ArrayList<>();
@@ -695,50 +799,73 @@ public class PlayerActivity extends Activity {
         if (all != null) for (MediaPlayer.TrackDescription d : all) {
             if (d.id == -1 || isPortuguese(d.name) || isDownloaded(d.id)) keep.add(d);
         }
+        int current = player.getSpuTrack();
+        String chosen = current == -1 ? "desativada" : null;
         String[] names = new String[keep.size()];
         int[] ids = new int[keep.size()];
         for (int i = 0; i < keep.size(); i++) {
             MediaPlayer.TrackDescription d = keep.get(i);
             ids[i] = d.id;
             if (d.id == -1) names[i] = "Desativado";
-            else if (isDownloaded(d.id)) { n++; names[i] = n <= subLabels.size() ? subLabels.get(n - 1) : "Português " + n; }
-            else names[i] = d.name;
+            else if (isDownloaded(d.id)) {
+                n++;
+                names[i] = n <= subLabels.size() ? subLabels.get(n - 1) : "Português " + n;
+                if (d.id == current && n <= attached.size()) {
+                    SubtitleSync.Cand c = attached.get(n - 1);
+                    String adj = c.aligned
+                            ? "ajuste " + signedSecs(c.alignOffsetMs) + (c.alignScale != 1.0 ? ", velocidade ×" + String.format(Locale.ROOT, "%.4f", c.alignScale).replace('.', ',') : "")
+                            : c.fixed ? "velocidade corrigida" : "sem ajuste";
+                    chosen = names[i] + " (" + adj + ")";
+                }
+            } else {
+                names[i] = "Embutida: " + d.name;
+                if (d.id == current) chosen = names[i];
+            }
         }
+        StringBuilder diag = new StringBuilder(diagId);
+        diag.append(" · ").append(!subsDownloaded ? "baixando legendas…" : cands.size() == 1 ? "1 legenda PT" : cands.size() + " legendas PT");
+        if (!diagRef.isEmpty()) diag.append(" · ").append(diagRef);
+        if (chosen != null) diag.append(" · escolhida: ").append(chosen);
+        if (subDelayMs != 0) diag.append(" · atraso ").append(signedSecs(subDelayMs));
+        ui.removeCallbacks(hideControls);
         if (keep.size() <= 1) {
-            ui.removeCallbacks(hideControls);
             new AlertDialog.Builder(this, android.R.style.Theme_DeviceDefault_Dialog_Alert)
-                    .setTitle("Legendas").setMessage("Não há legendas em português para este vídeo.")
+                    .setTitle("Legendas").setMessage("Não há legendas em português para este vídeo.\n\n" + diag)
                     .setPositiveButton("OK", null).show();
             return;
         }
-        int current = player.getSpuTrack(), checked = -1;
+        int checked = -1;
         for (int i = 0; i < ids.length; i++) if (ids[i] == current) checked = i;
-        ui.removeCallbacks(hideControls);
+        LinearLayout head = new LinearLayout(this);
+        head.setOrientation(LinearLayout.VERTICAL);
+        head.setPadding(dp(24), dp(16), dp(24), dp(8));
+        head.addView(text("Legendas", 20, true));
+        TextView dg = text(diag.toString(), 12, false);
+        dg.setTextColor(0xFFA0A0A0);
+        dg.setPadding(0, dp(4), 0, 0);
+        head.addView(dg);
         new AlertDialog.Builder(this, android.R.style.Theme_DeviceDefault_Dialog_Alert)
-                .setTitle("Legendas")
-                .setSingleChoiceItems(names, checked, (d, which) -> { player.setSpuTrack(ids[which]); d.dismiss(); scheduleHide(); })
+                .setCustomTitle(head)
+                .setSingleChoiceItems(names, checked, (d, which) -> { userPickedSub = true; player.setSpuTrack(ids[which]); d.dismiss(); scheduleHide(); })
                 .setNeutralButton("Sincronizar legenda", (d, w) -> showSyncDialog())
                 .setNegativeButton("Cancelar", null)
                 .show();
     }
 
     // ---------- ajuste manual do atraso da legenda ----------
+    // libVLC: setSpuDelay(microssegundos); positivo = a legenda aparece MAIS TARDE (funciona na Fire TV)
     private String delayKey() { return "d:" + (metaId != null ? metaId : String.valueOf(url.hashCode())); }
 
     private int savedSubDelay() {
         try { return getSharedPreferences("sub-delay", MODE_PRIVATE).getInt(delayKey(), 0); } catch (Exception e) { return 0; }
     }
 
-    /** libVLC: atraso em microssegundos; positivo = a legenda aparece mais tarde */
     private void applySubDelay() {
         if (player == null) return;
         try { player.setSpuDelay(subDelayMs * 1000L); } catch (Exception ignored) {}
     }
 
-    private String delayLabel() {
-        String v = String.format(Locale.ROOT, "%.1f", Math.abs(subDelayMs) / 1000.0).replace('.', ',');
-        return "Legenda " + (subDelayMs > 0 ? "+" : subDelayMs < 0 ? "−" : "") + v + " s";
-    }
+    private String delayLabel() { return "Atraso da legenda: " + (subDelayMs == 0 ? "0,0 s" : signedSecs(subDelayMs)); }
 
     private void changeSubDelay(int deltaMs, boolean reset, TextView label) {
         subDelayMs = reset ? 0 : Math.max(-60000, Math.min(60000, subDelayMs + deltaMs));
@@ -748,7 +875,7 @@ public class PlayerActivity extends Activity {
         glog("atraso da legenda: " + subDelayMs + " ms");
     }
 
-    /** botão do diálogo de sincronização: sempre selecionável com o controle remoto, com borda branca no foco */
+    /** botão do diálogo de sincronização: selecionável com o controle remoto, com borda branca no foco */
     private TextView syncButton(String s) {
         TextView t = pill(s);
         t.setFocusable(true);
@@ -761,6 +888,18 @@ public class PlayerActivity extends Activity {
         return t;
     }
 
+    private LinearLayout syncRow(TextView... buttons) {
+        LinearLayout row = new LinearLayout(this);
+        row.setOrientation(LinearLayout.HORIZONTAL);
+        row.setGravity(Gravity.CENTER);
+        for (TextView b : buttons) {
+            LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+            lp.setMargins(dp(6), dp(4), dp(6), dp(4));
+            row.addView(b, lp);
+        }
+        return row;
+    }
+
     private void showSyncDialog() {
         ui.removeCallbacks(hideControls);
         LinearLayout box = new LinearLayout(this);
@@ -769,32 +908,36 @@ public class PlayerActivity extends Activity {
         box.setPadding(dp(24), dp(12), dp(24), dp(8));
         TextView value = text(delayLabel(), 20, true);
         value.setGravity(Gravity.CENTER);
-        TextView hint = text("Legenda atrasada: use −. Legenda adiantada: use +.", 13, false);
-        hint.setGravity(Gravity.CENTER);
-        hint.setPadding(0, dp(6), 0, dp(14));
-        TextView minus = syncButton("−0,5 s"), reset = syncButton("Repor"), plus = syncButton("+0,5 s");
-        minus.setOnClickListener(v -> changeSubDelay(-500, false, value));
+        value.setPadding(0, 0, 0, dp(10));
+        TextView h1 = text("A legenda aparece ANTES da fala:", 14, false);
+        TextView h2 = text("A legenda aparece DEPOIS da fala:", 14, false);
+        h2.setPadding(0, dp(10), 0, 0);
+        TextView later1 = syncButton("Atrasar +0,5 s"), later2 = syncButton("Atrasar +5 s");
+        TextView early1 = syncButton("Adiantar −0,5 s"), early2 = syncButton("Adiantar −5 s");
+        TextView reset = syncButton("Repor");
+        later1.setOnClickListener(v -> changeSubDelay(500, false, value));
+        later2.setOnClickListener(v -> changeSubDelay(5000, false, value));
+        early1.setOnClickListener(v -> changeSubDelay(-500, false, value));
+        early2.setOnClickListener(v -> changeSubDelay(-5000, false, value));
         reset.setOnClickListener(v -> changeSubDelay(0, true, value));
-        plus.setOnClickListener(v -> changeSubDelay(500, false, value));
-        LinearLayout row = new LinearLayout(this);
-        row.setOrientation(LinearLayout.HORIZONTAL);
-        row.setGravity(Gravity.CENTER);
-        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        lp.setMargins(dp(6), 0, dp(6), 0);
-        row.addView(minus, lp);
-        row.addView(reset, new LinearLayout.LayoutParams(lp));
-        row.addView(plus, new LinearLayout.LayoutParams(lp));
+        LinearLayout last = syncRow(reset);
+        last.setPadding(0, dp(14), 0, 0);
         box.addView(value);
-        box.addView(hint);
-        box.addView(row);
+        box.addView(h1);
+        box.addView(syncRow(later1, later2));
+        box.addView(h2);
+        box.addView(syncRow(early1, early2));
+        box.addView(last);
+        android.widget.ScrollView scroll = new android.widget.ScrollView(this);
+        scroll.addView(box);
         AlertDialog dlg = new AlertDialog.Builder(this, android.R.style.Theme_DeviceDefault_Dialog_Alert)
                 .setTitle("Sincronizar legenda")
-                .setView(box)
+                .setView(scroll)
                 .setPositiveButton("Fechar", null)
                 .setOnDismissListener(d -> scheduleHide())
                 .create();
         dlg.show();
-        plus.requestFocus();
+        later1.requestFocus();
     }
 
     private interface TrackSetter { void set(int id); }
