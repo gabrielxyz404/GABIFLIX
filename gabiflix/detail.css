@@ -353,6 +353,9 @@
 .gf-src-badge { padding: 0.3rem 0.7rem; border-radius: 0.45rem; font-weight: 800; font-size: 0.85rem; white-space: nowrap; }
 .gf-src-badge.svc { background: #F5C518; color: #000; }
 .gf-src-badge.q { background: #1E9E4A; color: #fff; }
+/* formato HDR: roxo; Dolby Vision em escuro com texto dourado */
+.gf-src-badge.hdr { background: #6E3FC7; color: #fff; }
+.gf-src-badge.hdr.dv { background: #111114; color: #F5C518; box-shadow: inset 0 0 0 1px rgba(245,197,24,0.45); }
 /* bandeiras dos áudios: fonte TwemojiFlags (@font-face no main.css) para ficarem iguais no Windows/Mac/Android */
 .gf-src-badge.lg { background: rgba(255,255,255,0.14); color: #fff; font-family: TwemojiFlags, "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif; font-size: 1rem; line-height: 1.2; letter-spacing: 0.05em; }
 .gf-cw-card { max-width: 22rem; }

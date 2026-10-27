@@ -44,6 +44,7 @@ final class SourcePicker {
         boolean pt, hdr;
         String file = "";
         String langs = "";     // bandeiras dos áudios (ou "Multi")
+        String hdrFmt = "";    // Dolby Vision, HDR10+… (ou vazio)
     }
 
     private static final Pattern SVC = Pattern.compile("\\[(RD|TB|AD|PM|DL|OC|ED|PKP)\\s*(\\+|⚡|⬇️|download)?\\]", Pattern.CASE_INSENSITIVE);
@@ -83,6 +84,8 @@ final class SourcePicker {
         it.file = first;
         if (s.langs == null) s.langs = SourceLangs.detect(s.name, s.title); // uma vez por fonte
         it.langs = s.langs;
+        if (s.hdrFmt == null) s.hdrFmt = SourceHdr.detect(s.name, s.title); // uma vez por fonte
+        it.hdrFmt = s.hdrFmt;
         return it;
     }
 
@@ -218,8 +221,8 @@ final class SourcePicker {
         void set(List<Item> l) { items.clear(); if (l != null) items.addAll(l); notifyDataSetChanged(); }
 
         final class H extends RecyclerView.ViewHolder {
-            final TextView svc, quality, langs, info, file;
-            H(View v, TextView s, TextView q, TextView l, TextView i, TextView f) { super(v); svc = s; quality = q; langs = l; info = i; file = f; }
+            final TextView svc, quality, hdr, langs, info, file;
+            H(View v, TextView s, TextView q, TextView hd, TextView l, TextView i, TextView f) { super(v); svc = s; quality = q; hdr = hd; langs = l; info = i; file = f; }
         }
 
         @NonNull @Override
@@ -249,6 +252,10 @@ final class SourcePicker {
             TextView q = badge(c);
             top.addView(q);
             top.addView(Ui.space(c, 8, 1));
+            TextView hdr = badge(c);
+            hdr.setVisibility(View.GONE);
+            top.addView(hdr);
+            top.addView(Ui.space(c, 8, 1));
             TextView langs = badge(c);
             langs.setVisibility(View.GONE);
             top.addView(langs);
@@ -262,7 +269,7 @@ final class SourcePicker {
             file.setPadding(0, Ui.dp(c, 6), 0, 0);
             row.addView(file);
 
-            H h = new H(row, svc, q, langs, info, file);
+            H h = new H(row, svc, q, hdr, langs, info, file);
             row.setOnClickListener(v -> {
                 int p = h.getBindingAdapterPosition();
                 if (p >= 0 && p < items.size()) { d.dismiss(); onPick.pick(items.get(p).src); }
@@ -289,6 +296,14 @@ final class SourcePicker {
             h.quality.setText(it.quality.isEmpty() ? "Qualidade ?" : it.quality);
             h.quality.setTextColor(0xFFFFFFFF);
             h.quality.setBackground(Ui.round(0xFF1E9E4A, Ui.dp(c, 6)));
+            if (it.hdrFmt.isEmpty()) h.hdr.setVisibility(View.GONE);
+            else {
+                boolean dv = it.hdrFmt.equals("Dolby Vision");
+                h.hdr.setText(it.hdrFmt);
+                h.hdr.setTextColor(dv ? 0xFFF5C518 : 0xFFFFFFFF);          // Dolby Vision: dourado no escuro; HDR: branco no roxo
+                h.hdr.setBackground(Ui.round(dv ? 0xFF111114 : 0xFF6E3FC7, Ui.dp(c, 6)));
+                h.hdr.setVisibility(View.VISIBLE);
+            }
             if (it.langs.isEmpty()) h.langs.setVisibility(View.GONE);
             else {
                 h.langs.setText(it.langs);

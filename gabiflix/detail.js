@@ -396,6 +396,21 @@
         if (out.length > 6) txt += ' +' + (out.length - 6);
         return txt;
     }
+    // ---- formato HDR: as MESMAS regras de SourceHdr.java na TV (HDRip/HDTV/HDCAM não são HDR) ----
+    function hdrWord(alt) { return new RegExp('(?:^|[^a-z0-9\\u00e0-\\u00ff])(?:' + alt + ')(?![a-z0-9\\u00e0-\\u00ff])', 'm'); }
+    var HDR_DV = hdrWord('dv|dovi|dolby[ ._-]?vision'), HDR_10P = hdrWord('hdr10(?:\\+|[ ._-]?plus)');
+    var HDR_10 = hdrWord('hdr10'), HDR_ANY = hdrWord('hdr'), HDR_HLG = hdrWord('hlg');
+    // devolve "Dolby Vision", "DV + HDR10", "HDR10+", "HDR10", "HDR", "HLG" ou "" (sem selo)
+    function sourceHdr(st) {
+        var all = (String(st.name || '') + '\n' + String(st.title || '') + '\n' + String(st.description || '')).toLowerCase();
+        var dv = HDR_DV.test(all), hdr = '';
+        if (HDR_10P.test(all)) hdr = 'HDR10+';
+        else if (HDR_10.test(all)) hdr = 'HDR10';
+        else if (HDR_ANY.test(all)) hdr = 'HDR';
+        if (dv) return hdr ? 'DV + ' + hdr : 'Dolby Vision';
+        if (hdr) return hdr;
+        return HDR_HLG.test(all) ? 'HLG' : '';
+    }
     var SVC_NAMES = { RD: 'Real-Debrid', TB: 'TorBox', AD: 'AllDebrid', PM: 'Premiumize', DL: 'Debrid-Link', OC: 'Offcloud', ED: 'EasyDebrid', PKP: 'PikPak' };
     function serviceLabel(code) {
         return code && SVC_NAMES.hasOwnProperty(code) ? SVC_NAMES[code] : 'Direto';
@@ -512,6 +527,8 @@
             b.type = 'button';
             b.appendChild(el('span', 'gf-src-badge svc', serviceLabel(row.p.service)));
             b.appendChild(el('span', 'gf-src-badge q', row.p.quality || '?'));
+            var hd = sourceHdr(row.st);
+            if (hd) b.appendChild(el('span', 'gf-src-badge hdr' + (hd === 'Dolby Vision' ? ' dv' : ''), hd));
             var lg = sourceLangs(row.st);
             if (lg) b.appendChild(el('span', 'gf-src-badge lg', lg));
             b.addEventListener('click', function () { playStream(row.st); });
