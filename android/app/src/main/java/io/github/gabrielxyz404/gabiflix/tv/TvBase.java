@@ -61,6 +61,7 @@ public abstract class TvBase extends Activity {
             Toast.makeText(this, "Esta fonte é torrent: só toca com Real-Debrid no addon.", Toast.LENGTH_LONG).show();
             return;
         }
+        Stremio.rememberSource(this, videoId, src);
         getSharedPreferences(PLAY_PREFS, MODE_PRIVATE).edit()
                 .putString("meta", meta.toString()).putString("videoId", videoId).putString("url", src.url).apply();
         Intent i = new Intent(this, PlayerActivity.class);

@@ -347,6 +347,48 @@ final class Stremio {
         put(c, it);
     }
 
+    // ---------- fonte escolhida: o Continuar assistindo abre direto no player ----------
+
+    /** guarda a fonte usada neste vídeo (filme ou episódio), com limite para não crescer sem fim */
+    static void rememberSource(Context c, String videoId, Source s) {
+        if (videoId == null || videoId.isEmpty() || s == null || s.url == null) return;
+        try {
+            SharedPreferences p = c.getSharedPreferences("gf-tv-src", Context.MODE_PRIVATE);
+            JSONObject all = new JSONObject(p.getString("all", "{}"));
+            all.put(videoId, new JSONObject().put("url", s.url).put("addon", s.addon == null ? "" : s.addon)
+                    .put("name", s.name == null ? "" : s.name).put("title", s.title == null ? "" : s.title)
+                    .put("t", System.currentTimeMillis()));
+            while (all.length() > 80) {
+                String oldest = null;
+                long ot = Long.MAX_VALUE;
+                java.util.Iterator<String> it = all.keys();
+                while (it.hasNext()) {
+                    String k = it.next();
+                    long t = all.optJSONObject(k) != null ? all.optJSONObject(k).optLong("t") : 0;
+                    if (t < ot) { ot = t; oldest = k; }
+                }
+                if (oldest == null) break;
+                all.remove(oldest);
+            }
+            p.edit().putString("all", all.toString()).apply();
+        } catch (Exception ignored) {}
+    }
+
+    /** a fonte guardada deste vídeo, ou null */
+    static Source savedSource(Context c, String videoId) {
+        try {
+            JSONObject all = new JSONObject(c.getSharedPreferences("gf-tv-src", Context.MODE_PRIVATE).getString("all", "{}"));
+            JSONObject e = all.optJSONObject(videoId);
+            if (e == null || e.optString("url").isEmpty()) return null;
+            Source s = new Source();
+            s.url = e.optString("url");
+            s.addon = e.optString("addon");
+            s.name = e.optString("name");
+            s.title = e.optString("title");
+            return s;
+        } catch (Exception ex) { return null; }
+    }
+
     static long resumeFor(Context c, String id, String videoId) {
         JSONObject it = library != null ? library.get(id) : null;
         JSONObject st = it != null ? it.optJSONObject("state") : null;

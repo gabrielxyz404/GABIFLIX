@@ -476,6 +476,20 @@ public class TvCatalogActivity extends TvBase {
         resumedOnce = true;
     }
 
+    /** clique num título do Continuar assistindo: se a fonte já foi escolhida antes, abre o player no minuto onde parou */
+    private void openContinue(JSONObject item) {
+        String id = item.optString("_id"), type = item.optString("type");
+        JSONObject st = item.optJSONObject("state");
+        String vid = "movie".equals(type) ? id : (st != null ? st.optString("video_id", "") : "");
+        Stremio.Source src = vid.isEmpty() || "null".equals(vid) ? null : Stremio.savedSource(this, vid);
+        if (src == null) { PosterAdapter.open(this, item); return; } // ainda sem fonte guardada: abre a página como antes
+        try {
+            JSONObject meta = new JSONObject().put("id", id).put("type", type)
+                    .put("name", item.optString("name")).put("poster", item.optString("poster", ""));
+            play(meta, vid, src);
+        } catch (Exception e) { PosterAdapter.open(this, item); }
+    }
+
     private void removeDialog(JSONObject item, Row r) {
         JSONObject st = item.optJSONObject("state");
         String sub = "";
@@ -496,6 +510,7 @@ public class TvCatalogActivity extends TvBase {
                     Context c = getApplicationContext();
                     Net.async(() -> { Stremio.rewind(c, item.optString("_id")); return true; }, (ok, e) -> {});
                 })
+                .action("Abrir a página (escolher outra fonte)", () -> PosterAdapter.open(this, item))
                 .action("Cancelar", null)
                 .show();
     }
@@ -709,6 +724,7 @@ public class TvCatalogActivity extends TvBase {
             h.adapter.numbered = r.numbered;
             h.adapter.progress = r.cont;
             h.adapter.longPress = r.cont ? (item, pos) -> removeDialog(item, r) : null;
+            h.adapter.opener = r.cont ? TvCatalogActivity.this::openContinue : null;
             if (!h.list.hasFocus()) { setListHeight(h, Ui.POSTER_H + 14); h.panel.setVisibility(View.GONE); }
             h.adapter.set(r.metas);
             h.list.scrollToPosition(Math.max(0, Math.min(r.focus, r.metas.size() - 1)));

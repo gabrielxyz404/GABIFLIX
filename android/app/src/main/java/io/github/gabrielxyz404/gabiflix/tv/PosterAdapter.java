@@ -37,6 +37,9 @@ class PosterAdapter extends RecyclerView.Adapter<PosterAdapter.H> {
     boolean numbered, progress;
     boolean expandable;      // fileiras: o título selecionado abre em banner
     FocusItem onFocusItem;
+    /** se definido, o clique chama isto em vez de abrir a página do título */
+    interface Opener { void on(JSONObject item); }
+    Opener opener;
     LongPress longPress;
     private final int w, h;
 
@@ -123,7 +126,8 @@ class PosterAdapter extends RecyclerView.Adapter<PosterAdapter.H> {
         });
         p.setOnClickListener(v -> {
             int pos = holder.getBindingAdapterPosition();
-            if (pos >= 0 && pos < items.size()) open((Activity) c, items.get(pos));
+            if (pos < 0 || pos >= items.size()) return;
+            if (opener != null) opener.on(items.get(pos)); else open((Activity) c, items.get(pos));
         });
         // segurar OK (meio segundo) (ou o botão ☰) num "Continuar assistindo": opção de remover
         p.setLongClickable(false);
