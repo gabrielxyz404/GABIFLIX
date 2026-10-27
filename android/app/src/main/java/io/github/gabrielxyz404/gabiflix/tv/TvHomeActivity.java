@@ -208,6 +208,28 @@ public class TvHomeActivity extends TvBase {
         });
     }
 
+    private static final int ART_H = 124; // 220 dp de largura em 16:9
+
+    /** imagem com a ponta de cima esmaecida (some para a cor do cartão) */
+    static final class FadeImage extends android.widget.ImageView {
+        private final android.graphics.Paint mask = new android.graphics.Paint();
+        FadeImage(Context c) {
+            super(c);
+            mask.setXfermode(new android.graphics.PorterDuffXfermode(android.graphics.PorterDuff.Mode.DST_IN));
+        }
+        @Override protected void onSizeChanged(int w, int h, int ow, int oh) {
+            super.onSizeChanged(w, h, ow, oh);
+            mask.setShader(new android.graphics.LinearGradient(0, 0, 0, h,
+                    new int[]{0x00000000, 0xE6000000, 0xFF000000}, new float[]{0f, 0.45f, 1f}, android.graphics.Shader.TileMode.CLAMP));
+        }
+        @Override protected void onDraw(android.graphics.Canvas cv) {
+            int sc = cv.saveLayer(0, 0, getWidth(), getHeight(), null);
+            super.onDraw(cv);
+            cv.drawRect(0, 0, getWidth(), getHeight(), mask);
+            cv.restoreToCount(sc);
+        }
+    }
+
     private JSONObject artData; // data/service-art.json: backdrops por serviço (renovados todo dia)
 
     /** coloca o backdrop do dia no cartão (a imagem muda de um dia para o outro, entre as 4 do serviço) */
@@ -220,16 +242,16 @@ public class TvHomeActivity extends TvBase {
         if (url.equals(h.artUrl)) return;
         h.artUrl = url;
         Context c = h.itemView.getContext();
-        Ui.imageSized(h.art, url, Ui.dp(c, 220), Ui.dp(c, 340));
+        Ui.imageSized(h.art, url, Ui.dp(c, 220), Ui.dp(c, ART_H));
     }
 
     private final class Cards extends RecyclerView.Adapter<Cards.CH> {
         final class CH extends RecyclerView.ViewHolder {
             final ServiceIcon accent;
             final TextView name, tabs;
-            final android.widget.ImageView art;
+            final FadeImage art;
             String artUrl = "";
-            CH(View v, ServiceIcon accent, TextView name, TextView tabs, android.widget.ImageView art) { super(v); this.accent = accent; this.name = name; this.tabs = tabs; this.art = art; }
+            CH(View v, ServiceIcon accent, TextView name, TextView tabs, FadeImage art) { super(v); this.accent = accent; this.name = name; this.tabs = tabs; this.art = art; }
         }
 
         @NonNull @Override
@@ -248,13 +270,11 @@ public class TvHomeActivity extends TvBase {
             f.setOutlineProvider(new android.view.ViewOutlineProvider() {
                 @Override public void getOutline(View v, android.graphics.Outline o) { o.setRoundRect(0, 0, v.getWidth(), v.getHeight(), radius); }
             });
-            android.widget.ImageView art = new android.widget.ImageView(c);
+            // a imagem 16:9 aparece inteira, na largura do cartão (220 x 124), na parte de baixo e esmaecendo para cima
+            FadeImage art = new FadeImage(c);
             art.setScaleType(android.widget.ImageView.ScaleType.CENTER_CROP);
-            art.setAlpha(0.30f);
-            f.addView(art, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
-            View artShade = new View(c); // esmaece a imagem para baixo, para o texto ler bem
-            artShade.setBackground(new GradientDrawable(GradientDrawable.Orientation.TOP_BOTTOM, new int[]{0x00000000, 0x660B0B0D, 0xE60B0B0D}));
-            f.addView(artShade, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+            art.setAlpha(0.55f);
+            f.addView(art, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, Ui.dp(c, ART_H), Gravity.BOTTOM));
 
             LinearLayout col = new LinearLayout(c);
             col.setOrientation(LinearLayout.VERTICAL);

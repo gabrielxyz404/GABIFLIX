@@ -618,18 +618,22 @@ html[data-gf-app="android"][data-gf-route="home"][data-gf-view="grid"] #gf-home 
     overflow: visible; /* o carrossel vai de borda a borda: não cortar nas margens da página */
 }
 
-/* celular Android: imagem de fundo (backdrop) bem escura e esmaecida nos cartões, misturada com a cor do serviço */
+/* celular Android: o backdrop (a mesma imagem 16:9 dos banners) aparece inteiro, na largura do cartão, na parte de baixo e esmaecendo para cima */
 html[data-gf-app="android"][data-gf-route="home"][data-gf-view="grid"] #gf-home .gf-pager .gf-card { isolation: isolate; }
 html[data-gf-app="android"][data-gf-route="home"][data-gf-view="grid"] #gf-home .gf-pager .gf-card-art {
     position: absolute;
-    inset: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    aspect-ratio: 16 / 9;
     z-index: -1;
     pointer-events: none;
     background-size: cover;
-    background-position: center 30%;
+    background-position: center;
+    filter: brightness(0.75);
     opacity: 0;
     transition: opacity 0.7s ease;
-    -webkit-mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.95) 0%, rgba(0, 0, 0, 0.6) 55%, rgba(0, 0, 0, 0.12) 100%);
-    mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.95) 0%, rgba(0, 0, 0, 0.6) 55%, rgba(0, 0, 0, 0.12) 100%);
+    -webkit-mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.9) 45%, #000 100%);
+    mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.9) 45%, #000 100%);
 }
-html[data-gf-app="android"][data-gf-route="home"][data-gf-view="grid"] #gf-home .gf-pager .gf-card-art.is-on { opacity: 0.3; }
+html[data-gf-app="android"][data-gf-route="home"][data-gf-view="grid"] #gf-home .gf-pager .gf-card-art.is-on { opacity: 0.55; }
