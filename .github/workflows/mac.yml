@@ -102,7 +102,10 @@ jobs:
           name: FramePlay para Mac
           body: |
             Versão 1.0.${{ github.run_number }} — Mac com chip Apple (M1, M2, M3, M4…), macOS 11 ou mais novo.
-            Baixe o FramePlay-Mac.zip, abra, e arraste o FramePlay para a pasta Aplicativos.
-            Na primeira vez: clique com o botão direito no FramePlay › Abrir › Abrir.
+            Instalar (recomendado, sem avisos do macOS): abra o Terminal, cole a linha abaixo e carregue em Enter.
+
+            curl -fL https://github.com/gabrielxyz404/GABIFLIX/releases/download/mac/FramePlay-Mac.zip -o /tmp/FramePlay.zip && rm -rf /Applications/FramePlay.app && ditto -x -k /tmp/FramePlay.zip /Applications && xattr -cr /Applications/FramePlay.app && open /Applications/FramePlay.app
+
+            Para atualizar, repita a mesma linha.
           files: out/FramePlay-Mac.zip
           make_latest: false
