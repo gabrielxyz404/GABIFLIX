@@ -73,7 +73,7 @@
             }
             if (android) b.appendChild(el('span', 'gf-card-art')); // imagem de fundo bem escurecida (preenchida por applyArt)
             b.appendChild(el('span', 'gf-card-name' + (s.grad ? ' gf-grad-text' : ''), s.name));
-            b.appendChild(el('span', 'gf-card-hint', s.hint || 'Ver catálogo'));
+            if (!android) b.appendChild(el('span', 'gf-card-hint', s.hint || 'Ver catálogo')); // celular Android: só o nome
             b.addEventListener('pointerdown', function () { prefetch(s); }, { passive: true });
             b.addEventListener('click', function () { open(s.id, true); });
             return b;

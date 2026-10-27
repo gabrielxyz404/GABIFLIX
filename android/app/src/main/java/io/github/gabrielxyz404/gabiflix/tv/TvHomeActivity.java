@@ -343,7 +343,7 @@ public class TvHomeActivity extends TvBase {
                     h.name.invalidate();
                 });
             }
-            h.tabs.setText("Ver catálogo");
+            h.tabs.setVisibility(View.GONE); // sem o texto "Ver catálogo": só o símbolo e o nome
             bindArt(h, s.id);
         }
 
