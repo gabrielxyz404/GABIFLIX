@@ -31,9 +31,9 @@
         root.innerHTML = '';
         // apps (celular Android e Mac): os botões viram um carrossel, um serviço por vez
         var appKind = document.documentElement.getAttribute('data-gf-app');
-        var android = appKind === 'android' || appKind === 'mac'; // "carrossel de app" (nome antigo da variável)
-        var mac = appKind === 'mac'; // Mac: janela grande, mouse e teclado (setas nas laterais, ← →, Enter)
-        var grid = el('div', android ? 'gf-grid gf-pager' : 'gf-grid');
+        var android = appKind === 'android'; // só o celular tem o carrossel
+        var mac = appKind === 'mac'; // Mac: todos os serviços de uma vez numa grade (mouse e teclado), com o visual dos cartões do celular
+        var grid = el('div', android ? 'gf-grid gf-pager' : (mac ? 'gf-grid gf-mac-grid' : 'gf-grid'));
         // cria o botão de um serviço
         function makeCard(s) {
             var b = el('button', 'gf-card' + (s.wide ? ' is-wide' : ''));
@@ -45,12 +45,12 @@
             b.style.setProperty('--gf-tint1', s.grad ? s.grad[0] : s.color);
             b.style.setProperty('--gf-tint2', s.grad ? s.grad[1] : s.color);
             // celular Android: o cartão ocupa a tela toda, com o degradê de fundo do serviço (a cápsula de baixo e de cima ficam sobre ele)
-            if (android && s.bg) {
+            if ((android || mac) && s.bg) {
                 b.style.setProperty('--gf-bg0', s.bg[0]);
                 b.style.setProperty('--gf-bg1', s.bg[1]);
             }
             b.appendChild(el('span', 'gf-card-name' + (s.grad ? ' gf-grad-text' : ''), s.name));
-            if (!android) b.appendChild(el('span', 'gf-card-hint', s.hint || 'Ver catálogo')); // celular Android: só o nome
+            if (!android && !mac) b.appendChild(el('span', 'gf-card-hint', s.hint || 'Ver catálogo')); // celular Android: só o nome
             b.addEventListener('pointerdown', function () { prefetch(s); }, { passive: true });
             b.addEventListener('click', function () { open(s.id, true); });
             return b;
@@ -63,8 +63,9 @@
             SERVICES.forEach(function (s) { grid.appendChild(makeCard(s)); });
         }
         root.appendChild(grid);
-        if (!android) return;
         if (gridKeyHandler) { document.removeEventListener('keydown', gridKeyHandler, true); gridKeyHandler = null; }
+        if (mac) { setupMacGrid(grid); return; }
+        if (!android) return;
 
         // celular Android: as bolinhas embaixo mostram em qual serviço está; tocar numa leva até ele
         var N = SERVICES.length; // cada leva tem N botões (um por serviço)
@@ -98,11 +99,6 @@
             requestAnimationFrame(function () { grid.style.scrollSnapType = ''; });
         }
         function showDot(i) {
-            // Mac: só o serviço do meio fica em destaque; os vizinhos que aparecem nas pontas ficam mais apagados
-            if (mac) {
-                var cr = rawIndex();
-                for (var c = 0; c < cards.length; c++) cards[c].classList.toggle('is-center', c === cr);
-            }
             for (var k = 0; k < dots.children.length; k++) {
                 if (k === i) dots.children[k].classList.add('is-on');
                 else dots.children[k].classList.remove('is-on');
@@ -130,47 +126,6 @@
         });
         root.appendChild(dots);
 
-        if (mac) {
-            // setas dos lados: serviço anterior / próximo (depois do último volta ao primeiro)
-            var lastNav = 0;
-            function nav(dir) {
-                var now = Date.now();
-                if (now - lastNav < 180) return; // evita empilhar animações com cliques/rolagens muito rápidos
-                lastNav = now;
-                goTo((indexNow() + dir + N) % N);
-            }
-            [['prev', -1, 'Serviço anterior', 'M15 5l-7 7 7 7'], ['next', 1, 'Próximo serviço', 'M9 5l7 7-7 7']].forEach(function (a) {
-                var btn = el('button', 'gf-pager-arrow is-' + a[0]);
-                btn.type = 'button';
-                btn.setAttribute('aria-label', a[2]);
-                btn.innerHTML = '<svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><path d="' + a[3] + '" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
-                btn.addEventListener('click', function () { nav(a[1]); });
-                root.appendChild(btn);
-            });
-            // teclado: ← → trocam de serviço, Enter abre o serviço em destaque
-            gridKeyHandler = function (e) {
-                if (!document.body.contains(grid) || e.metaKey || e.ctrlKey || e.altKey) return;
-                var de = document.documentElement;
-                if (de.getAttribute('data-gf-route') !== 'home' || de.getAttribute('data-gf-view') !== 'grid') return;
-                var t = e.target, tag = t && t.tagName;
-                if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || (t && t.isContentEditable)) return;
-                if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
-                    e.preventDefault();
-                    nav(e.key === 'ArrowRight' ? 1 : -1);
-                } else if (e.key === 'Enter' && (tag === 'BODY' || tag === 'HTML' || !t || t === document.body)) {
-                    e.preventDefault();
-                    open(SERVICES[indexNow()].id, true);
-                }
-            };
-            document.addEventListener('keydown', gridKeyHandler, true);
-            // mouse: shift + roda do mouse troca de serviço (o trackpad na horizontal já rola o carrossel sozinho)
-            grid.addEventListener('wheel', function (e) {
-                if (e.shiftKey && Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
-                    e.preventDefault();
-                    nav(e.deltaY > 0 ? 1 : -1);
-                }
-            }, { passive: false });
-        }
 
         // ao rolar, guarda o serviço da tela e atualiza as bolinhas (no máximo uma vez por quadro)
         grid.addEventListener('scroll', function () {
@@ -194,6 +149,43 @@
             gridIndex = gridIndex >= 0 && gridIndex < N ? gridIndex : 0;
             grid.scrollLeft = (N + gridIndex) * step();
             showDot(gridIndex);
+        });
+    }
+
+    // Mac: grade com todos os serviços; ← → ↑ ↓ movem o foco entre os cartões, Enter abre, e ao voltar o foco fica no serviço de onde veio
+    function setupMacGrid(grid) {
+        var cards = Array.prototype.slice.call(grid.children);
+        function perRow() {
+            var top = cards[0].offsetTop, n = 0;
+            while (n < cards.length && cards[n].offsetTop === top) n++;
+            return Math.max(1, n);
+        }
+        gridKeyHandler = function (e) {
+            if (!document.body.contains(grid) || e.metaKey || e.ctrlKey || e.altKey || e.shiftKey) return;
+            var de = document.documentElement;
+            if (de.getAttribute('data-gf-route') !== 'home' || de.getAttribute('data-gf-view') !== 'grid') return;
+            var t = e.target, tag = t && t.tagName;
+            if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || (t && t.isContentEditable)) return;
+            var cur = cards.indexOf(document.activeElement), n = cards.length, to = -1;
+            if (cur < 0) {
+                if (e.key.indexOf('Arrow') === 0) { e.preventDefault(); cards[Math.max(0, Math.min(n - 1, gridIndex))].focus(); }
+                return;
+            }
+            var w = perRow();
+            if (e.key === 'ArrowRight') to = Math.min(n - 1, cur + 1);
+            else if (e.key === 'ArrowLeft') to = Math.max(0, cur - 1);
+            else if (e.key === 'ArrowDown') to = cur + w < n ? cur + w : cur;
+            else if (e.key === 'ArrowUp') to = cur - w >= 0 ? cur - w : cur;
+            else return;
+            e.preventDefault();
+            cards[to].focus();
+        };
+        document.addEventListener('keydown', gridKeyHandler, true);
+        cards.forEach(function (c, i) { c.addEventListener('focus', function () { gridIndex = i; }); });
+        // volta ao serviço de onde o usuário veio (ou ao primeiro)
+        requestAnimationFrame(function () {
+            var c = cards[gridIndex >= 0 && gridIndex < cards.length ? gridIndex : 0];
+            if (c) { try { c.focus({ preventScroll: true }); c.scrollIntoView({ block: 'nearest' }); } catch (er) {} }
         });
     }
 

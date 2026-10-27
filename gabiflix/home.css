@@ -618,106 +618,50 @@ html:is([data-gf-app="android"],[data-gf-app="mac"])[data-gf-route="home"][data-
     overflow: visible; /* o carrossel vai de borda a borda: não cortar nas margens da página */
 }
 
-/* ---------- Mac: serviços em carrossel centralizado (janela grande, mouse e teclado) ----------
-   Mesmo visual do celular (degradê do serviço, sem imagem de fundo, sem "Ver catálogo", sem fim: depois do último volta ao primeiro),
-   mas o cartão tem largura confortável no meio da tela, com os vizinhos aparecendo nas pontas. */
-html[data-gf-app="mac"][data-gf-route="home"][data-gf-view="grid"] div[class^="board-content-"]:not([class*="container"]) {
-    overflow: hidden !important;
-    overscroll-behavior: none;
-}
+/* ---------- Mac: todos os serviços de uma vez, numa grade (janela grande, mouse e teclado) ----------
+   Cartões com o visual do celular (degradê de cada serviço, nome na cor da marca, sem imagem de fundo e sem "Ver catálogo"). */
 html[data-gf-app="mac"][data-gf-route="home"][data-gf-view="grid"] #gf-home {
+    position: static;
+    height: auto;
+    overflow: visible;
+    justify-content: flex-start;
     box-sizing: border-box;
-    display: flex;
-    flex-direction: column;
+    max-width: 1400px;
+    margin: 0 auto;
+    /* a cápsula de cima flutua em vidro: o conteúdo começa abaixo dela */
+    padding: calc(var(--horizontal-nav-bar-size, 5.5rem) + 1.5rem) 2rem 3rem !important;
 }
-html[data-gf-app="mac"][data-gf-route="home"][data-gf-view="grid"] #gf-home .gf-pager {
-    --gf-cw: min(900px, calc((100vw - var(--vertical-nav-bar-size, 6rem)) * 0.7));
-    display: flex;
-    flex: none;
-    flex-direction: row;
-    gap: 2.4rem;
-    box-sizing: border-box;
-    width: 100%;
-    height: 100%;
+html[data-gf-app="mac"][data-gf-route="home"][data-gf-view="grid"] #gf-home .gf-mac-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 1.4rem;
     margin: 0;
-    /* o espaço dos lados deixa o primeiro cartão no centro; em cima fica a cápsula, embaixo as bolinhas */
-    padding: calc(var(--horizontal-nav-bar-size, 5.5rem) + 0.5rem) calc((100% - var(--gf-cw)) / 2) 4.6rem;
-    overflow-x: auto;
-    overflow-y: hidden;
-    scroll-snap-type: x mandatory;
-    overscroll-behavior-x: contain;
-    scrollbar-width: none;
 }
-html[data-gf-app="mac"][data-gf-route="home"][data-gf-view="grid"] #gf-home .gf-pager::-webkit-scrollbar { display: none; }
-html[data-gf-app="mac"][data-gf-route="home"][data-gf-view="grid"] #gf-home .gf-pager .gf-card,
-html[data-gf-app="mac"][data-gf-route="home"][data-gf-view="grid"] #gf-home .gf-pager .gf-card.is-wide {
-    flex: 0 0 var(--gf-cw);
-    box-sizing: border-box;
-    scroll-snap-align: center;
-    scroll-snap-stop: always;
-    aspect-ratio: auto;
-    height: 100%;
-    max-height: none;
-    min-height: 0;
+html[data-gf-app="mac"][data-gf-route="home"][data-gf-view="grid"] #gf-home .gf-mac-grid .gf-card,
+html[data-gf-app="mac"][data-gf-route="home"][data-gf-view="grid"] #gf-home .gf-mac-grid .gf-card.is-wide {
     grid-column: auto;
-    padding: 2rem;
+    aspect-ratio: 16 / 10;
+    min-height: 0;
+    padding: 1.2rem;
     border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 2rem;
-    opacity: 0.45;
-    transform: scale(0.94);
-    transition: transform 0.25s ease, opacity 0.25s ease, border-color 0.15s ease;
+    border-radius: 1.4rem;
     background:
         radial-gradient(120% 60% at 50% 38%, color-mix(in srgb, var(--gf-tint1, #fff) 22%, transparent) 0%, transparent 70%),
         linear-gradient(180deg, var(--gf-bg0, #000) 0%, var(--gf-bg1, #111) 100%);
+    transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
 }
-/* o serviço do meio fica em destaque */
-html[data-gf-app="mac"][data-gf-route="home"][data-gf-view="grid"] #gf-home .gf-pager .gf-card.is-center {
-    opacity: 1;
-    transform: none;
+html[data-gf-app="mac"][data-gf-route="home"][data-gf-view="grid"] #gf-home .gf-mac-grid .gf-card:hover,
+html[data-gf-app="mac"][data-gf-route="home"][data-gf-view="grid"] #gf-home .gf-mac-grid .gf-card:focus-visible {
+    transform: scale(1.03);
+    border-color: var(--gf-brand, rgba(255, 255, 255, 0.6));
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
 }
-html[data-gf-app="mac"][data-gf-route="home"][data-gf-view="grid"] #gf-home .gf-pager .gf-card.is-center:hover { border-color: var(--gf-brand, rgba(255, 255, 255, 0.6)); }
-html[data-gf-app="mac"][data-gf-route="home"][data-gf-view="grid"] #gf-home .gf-pager .gf-card.is-center:active { transform: scale(0.99); }
-html[data-gf-app="mac"][data-gf-route="home"][data-gf-view="grid"] #gf-home .gf-pager .gf-card-name,
-html[data-gf-app="mac"][data-gf-route="home"][data-gf-view="grid"] #gf-home .gf-pager .gf-card.is-wide .gf-card-name {
-    font-size: clamp(3rem, 5.2vw, 5.2rem);
+html[data-gf-app="mac"][data-gf-route="home"][data-gf-view="grid"] #gf-home .gf-mac-grid .gf-card:focus-visible { outline: 2px solid var(--gf-red); outline-offset: 3px; }
+html[data-gf-app="mac"][data-gf-route="home"][data-gf-view="grid"] #gf-home .gf-mac-grid .gf-card:active { transform: scale(0.99); }
+html[data-gf-app="mac"][data-gf-route="home"][data-gf-view="grid"] #gf-home .gf-mac-grid .gf-card-name,
+html[data-gf-app="mac"][data-gf-route="home"][data-gf-view="grid"] #gf-home .gf-mac-grid .gf-card.is-wide .gf-card-name {
+    font-size: clamp(1.5rem, 11cqw, 2.6rem);
 }
-html[data-gf-app="mac"][data-gf-route="home"][data-gf-view="grid"] #gf-home .gf-dots {
-    display: flex;
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: 1.6rem;
-    z-index: 2;
-    justify-content: center;
-    gap: 0.55rem;
-    margin: 0;
-}
-/* setas dos lados */
-html[data-gf-app="mac"][data-gf-route="home"][data-gf-view="grid"] #gf-home .gf-pager-arrow {
-    position: absolute;
-    top: 50%;
-    z-index: 3;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 3.4rem;
-    height: 3.4rem;
-    margin-top: -1.7rem;
-    padding: 0;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 50%;
-    background: rgba(20, 20, 22, 0.5);
-    color: #fff;
-    cursor: pointer;
-    -webkit-backdrop-filter: blur(6px);
-    backdrop-filter: blur(6px);
-    transition: background-color 0.15s ease, border-color 0.15s ease;
-}
-html[data-gf-app="mac"][data-gf-route="home"][data-gf-view="grid"] #gf-home .gf-pager-arrow.is-prev { left: 1.5rem; }
-html[data-gf-app="mac"][data-gf-route="home"][data-gf-view="grid"] #gf-home .gf-pager-arrow.is-next { right: 1.5rem; }
-html[data-gf-app="mac"][data-gf-route="home"][data-gf-view="grid"] #gf-home .gf-pager-arrow:hover { background: rgba(255, 255, 255, 0.2); border-color: rgba(255, 255, 255, 0.55); }
-html[data-gf-app="mac"][data-gf-route="home"][data-gf-view="grid"] #gf-home .gf-pager-arrow:focus-visible { outline: 2px solid var(--gf-red); outline-offset: 2px; }
 @media (prefers-reduced-motion: reduce) {
-    html[data-gf-app="mac"][data-gf-route="home"][data-gf-view="grid"] #gf-home .gf-pager .gf-card,
-    html[data-gf-app="mac"][data-gf-route="home"][data-gf-view="grid"] #gf-home .gf-pager-arrow { transition: none; }
+    html[data-gf-app="mac"][data-gf-route="home"][data-gf-view="grid"] #gf-home .gf-mac-grid .gf-card { transition: none; }
 }
