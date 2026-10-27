@@ -682,7 +682,7 @@ public class TvCatalogActivity extends TvBase {
             parts.add("series".equals(item.optString("type")) ? "Série" : "Filme");
             if (!item.optString("releaseInfo").isEmpty()) parts.add(item.optString("releaseInfo"));
             h.pInfo.setText(TextUtils.join("  •  ", parts));
-            String id = item.optString("id");
+            String id = item.has("_id") ? item.optString("_id") : item.optString("id"); // Continuar assistindo usa _id
             String known = descCache.get(id);
             h.pDesc.setText(known != null ? known : "");
             h.panel.setVisibility(View.VISIBLE);

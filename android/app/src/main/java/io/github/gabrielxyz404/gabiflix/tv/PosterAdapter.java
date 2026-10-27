@@ -233,7 +233,7 @@ class PosterAdapter extends RecyclerView.Adapter<PosterAdapter.H> {
         h.bar.setVisibility(View.GONE);
         h.fill.setVisibility(View.GONE);
         h.banner.setVisibility(View.VISIBLE);
-        String id = m.optString("id");
+        String id = m.has("_id") ? m.optString("_id") : m.optString("id"); // itens do Continuar assistindo usam _id
         boolean imdb = id.startsWith("tt");
         String bg = m.optString("background", "");
         if (bg.isEmpty() && imdb) bg = "https://images.metahub.space/background/medium/" + id + "/img";
