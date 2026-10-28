@@ -688,3 +688,12 @@ html[data-gf-app="mac"][data-gf-route="home"][data-gf-view="grid"] #gf-home .gf-
 @media (prefers-reduced-motion: reduce) {
     html[data-gf-app="mac"][data-gf-route="home"][data-gf-view="grid"] #gf-home .gf-mac-grid .gf-card { transition: none; }
 }
+
+/* Mac: a borda de foco dos pôsteres (2px + 2px de recuo) passa do topo e de baixo da fila sem ser cortada.
+   O espaço vai em padding, compensado por margin negativo: a posição dos títulos e das filas não muda. */
+html[data-gf-app="mac"] #gf-home .gf-row-track {
+    padding-top: 0.4rem;
+    padding-bottom: calc(0.2rem + 0.4rem);
+    margin-top: -0.4rem;
+    margin-bottom: -0.4rem;
+}
