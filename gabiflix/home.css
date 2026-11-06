@@ -697,3 +697,21 @@ html[data-gf-app="mac"] #gf-home .gf-row-track {
     margin-top: -0.4rem;
     margin-bottom: -0.4rem;
 }
+
+/* ---------- Mac: polimento visual (alinhamentos) ---------- */
+/* o texto das abas começa na mesma linha do título, da fileira e do banner (a aba tem 0,8rem de recuo interno) */
+/* a linha de baixo das abas vai da margem do título até a margem direita (e não até a borda da janela) */
+html[data-gf-app="mac"] #gf-home .gf-tabs {
+    padding-left: calc(1rem - 0.8rem);
+    border-bottom: 0;
+    background: linear-gradient(var(--gf-line), var(--gf-line)) no-repeat 1rem 100% / calc(100% - 2rem) 1px;
+}
+/* ao rolar, a fileira encaixa o 1º item na margem de 1rem (e não na borda da área de rolagem, 1rem para fora) */
+html[data-gf-app="mac"] #gf-home .gf-row-track { scroll-padding-inline: 1rem; }
+/* as fileiras vão até a borda da janela (e não até 1rem antes dela): a área da página não corta o último pôster */
+html[data-gf-app="mac"] #gf-home,
+html[data-gf-app="mac"] #gf-home .gf-svc,
+html[data-gf-app="mac"] #gf-home .gf-tab-body,
+html[data-gf-app="mac"] #gf-home .gf-row { overflow: visible; }
+/* a borda de foco do Top 10 não é cortada pelo item (o número fica por trás da capa, como antes) */
+html[data-gf-app="mac"] #gf-home .gf-top10-item { overflow: visible; }

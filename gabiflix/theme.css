@@ -450,3 +450,8 @@ html[data-gf-app="mac"] .horizontal-nav-bar-container-Y_zvK::before {
     -webkit-backdrop-filter: blur(10px) saturate(130%);
     backdrop-filter: blur(10px) saturate(130%);
 }
+
+/* ---------- Mac: polimento visual (barra da esquerda) ---------- */
+/* o nome da tela ativa (Pesquisar, Mais Tarde, Calendário, Configurações) cortava com "..." numa caixa de 67px: a caixa fica mais larga, centrada na barra */
+html[data-gf-app="mac"] .vertical-nav-bar-container-UPAkA .nav-tab-button-container-dYhs0 { width: 5.7rem; }
+html[data-gf-app="mac"] .vertical-nav-bar-container-UPAkA [class*="label-"] { font-size: 0.72rem; letter-spacing: 0; padding: 0 0.15rem; overflow: visible; text-overflow: clip; }
