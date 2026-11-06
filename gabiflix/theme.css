@@ -455,3 +455,25 @@ html[data-gf-app="mac"] .horizontal-nav-bar-container-Y_zvK::before {
 /* o nome da tela ativa (Pesquisar, Mais Tarde, Calendário, Configurações) cortava com "..." numa caixa de 67px: a caixa fica mais larga, centrada na barra */
 html[data-gf-app="mac"] .vertical-nav-bar-container-UPAkA .nav-tab-button-container-dYhs0 { width: 5.7rem; }
 html[data-gf-app="mac"] .vertical-nav-bar-container-UPAkA [class*="label-"] { font-size: 0.72rem; letter-spacing: 0; padding: 0 0.15rem; overflow: visible; text-overflow: clip; }
+
+/* Mac: campo de busca visível (pílula de vidro discreta, centrada na cápsula) */
+html[data-gf-app="mac"][data-gf-route="search"] .search-bar-container-asfq1 {
+    box-sizing: border-box;
+    width: min(32rem, 45vw);
+    height: 2.6rem;
+    padding: 0 0.9rem;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.08);
+    transition: border-color 0.15s ease;
+}
+html[data-gf-app="mac"][data-gf-route="search"] .search-bar-container-asfq1:focus-within { border-color: rgba(255, 255, 255, 0.3); }
+html[data-gf-app="mac"][data-gf-route="search"] .search-bar-container-asfq1 .search-input-IQ0ZW {
+    height: 100%;
+    min-width: 0;
+    font-size: 1rem;
+    font-weight: 500;
+    padding: 0 0.2rem;
+}
+html[data-gf-app="mac"][data-gf-route="search"] .search-bar-container-asfq1 .search-input-IQ0ZW::placeholder { color: rgba(255, 255, 255, 0.45); opacity: 1; }
+html[data-gf-app="mac"][data-gf-route="search"] .search-bar-container-asfq1 .search-input-IQ0ZW::-moz-placeholder { color: rgba(255, 255, 255, 0.45); opacity: 1; }
