@@ -1182,6 +1182,9 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
                                       context: nil, characters: "", charactersIgnoringModifiers: "", isARepeat: false, keyCode: UInt16(n))
             if let ev = ev { _ = handleKey(ev) }
         case "show": showControls()
+        case "showforce": controls.alphaValue = 1; topBar.alphaValue = 1; hideAt = Date().addingTimeInterval(30)
+        case "dump":
+            log("dump: controls alpha=\(controls.alphaValue) hidden=\(controls.isHidden) frame=\(controls.frame) topBar alpha=\(topBar.alphaValue) tocando=\(player.isPlaying) hideEm=\(hideAt.timeIntervalSinceNow) ordem=\(root.subviews.map { NSStringFromClass(type(of: $0)).split(separator: ".").last.map(String.init) ?? "" }) videoLayer=\(String(describing: videoView.layer))")
         case "fs": toggleFullScreen()
         case "resize":
             let n2 = w.count > 2 ? Int(w[2]) ?? 0 : 0

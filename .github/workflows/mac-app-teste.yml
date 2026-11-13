@@ -144,7 +144,8 @@ jobs:
           cmd "delay 2500"
           cmd "state"
           sleep 3; shot 09-atraso-2500
-          echo "show" > /tmp/gf-cmd; sleep 1; shot 11-controles; sleep 2
+          echo "show" > /tmp/gf-cmd; sleep 1; cmd "dump"; shot 11-controles
+          cmd "showforce"; sleep 1; cmd "dump"; shot 11b-controles-forcados
           cmd "layout"
           cmd "sync"; cmd "hold 2 0"; sleep 3; cmd "state"
           cmd "hold 1 2"; sleep 3; cmd "state"
