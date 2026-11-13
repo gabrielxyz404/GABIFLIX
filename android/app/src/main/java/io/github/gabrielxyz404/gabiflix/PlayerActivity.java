@@ -107,6 +107,12 @@ public class PlayerActivity extends Activity {
         ui.postDelayed(this::fixSubtitleSurface, 400);
     }
 
+    private static void collectSurfaces(View v, ArrayList<android.view.SurfaceView> out, String ind) {
+        glog("escala: árvore " + ind + v.getClass().getSimpleName() + " " + v.getWidth() + "x" + v.getHeight() + " em (" + v.getLeft() + "," + v.getTop() + ")");
+        if (v instanceof android.view.SurfaceView) out.add((android.view.SurfaceView) v);
+        if (v instanceof ViewGroup) { ViewGroup g = (ViewGroup) v; for (int i = 0; i < g.getChildCount(); i++) collectSurfaces(g.getChildAt(i), out, ind + " "); }
+    }
+
     /** a superfície das legendas do VLC herda o tamanho/posição do vídeo; aqui ela volta a cobrir exatamente a área visível */
     private void fixSubtitleSurface() {
         if (videoLayout == null) return;
@@ -117,9 +123,10 @@ public class PlayerActivity extends Activity {
                 f.setAccessible(true);
                 sub = (android.view.SurfaceView) f.get(videoLayout);
             } catch (Throwable ignored) {}
-            if (sub == null) for (int i = videoLayout.getChildCount() - 1; i >= 0 && sub == null; i--) {
-                View c = videoLayout.getChildAt(i);
-                if (c instanceof android.view.SurfaceView) sub = (android.view.SurfaceView) c;
+            if (sub == null) {
+                ArrayList<android.view.SurfaceView> found = new ArrayList<>();
+                collectSurfaces(videoLayout, found, "");
+                if (!found.isEmpty()) sub = found.get(found.size() - 1);
             }
             if (sub == null) { glog("escala: sem superfície de legendas"); return; }
             final android.view.SurfaceView sv = sub;
