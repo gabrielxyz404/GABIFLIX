@@ -720,3 +720,14 @@ html[data-gf-app="mac"] #gf-home .gf-top10-item { overflow: visible; }
 
 /* Mac: foco da barra na cor do serviço (sem contorno branco); o banner do destaque tem largura máxima e fica à esquerda, na coluna do título */
 html[data-gf-app="mac"] #gf-home .gf-hero { max-width: 1360px; }
+
+/* ---------- Mac: a cápsula de cima da tela inicial é vidro fosco e escuro (as barras coloridas por baixo ficam bem borradas e escurecidas) ---------- */
+:root[data-gf-app="mac"][data-gf-route="home"][data-gf-view="catalog"] .horizontal-nav-bar-container-Y_zvK::before,
+:root[data-gf-app="mac"][data-gf-route="home"][data-gf-view="grid"] .horizontal-nav-bar-container-Y_zvK::before {
+    background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.06) 0%, rgba(255, 255, 255, 0.02) 100%),
+        rgba(8, 8, 10, 0.64);
+    -webkit-backdrop-filter: blur(40px) saturate(140%);
+    backdrop-filter: blur(40px) saturate(140%);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.16), 0 6px 18px rgba(0, 0, 0, 0.28);
+}
