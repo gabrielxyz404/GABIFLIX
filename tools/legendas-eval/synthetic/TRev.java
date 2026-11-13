@@ -94,6 +94,29 @@ public class TRev {
             check("mesma legenda em 25 fps é corrigida", all.get(1).fixed || all.get(1).aligned);
             check("legenda com outro conteúdo e fim parecido a 25 fps NÃO é reescrita pela heurística do fim", !all.get(2).fixed);
         }
+        // ---- 4b. deriva pequena de escala (0,9998) ----
+        {
+            int bad = 0, tot = 0; double worst = 0;
+            for (int seed = 0; seed < 12; seed++) {
+                Random rr = new Random(100 + seed);
+                R = rr;
+                long[] tr = base(1500, end);
+                long[] ref = SubtitleAlign.alignStarts(srt(tr, 0, 1, 250, 0.1, new String[]{"I don't know."}));
+                double k = 1 - 0.00012 * (1 + seed % 4);       // 0,9999 .. 0,9995
+                long[] pt = SubtitleAlign.alignStarts(srt(tr, 80 + seed * 40, k, 250, 0.08, PT));
+                SubtitleAlign.Fit f = SubtitleAlign.align(ref, pt);
+                tot++;
+                // erro na última fala: a transformação tem de levar a PT para perto do tempo certo (tr[last]), não 1 s ao lado
+                long lastPt = pt[pt.length - 1];
+                double err = Math.abs(f.map(lastPt) - lastPt / k * 1.0 + (80 + seed * 40) / k * 0) ;
+                long expect = Math.round((lastPt - (80 + seed * 40)) / k);
+                err = Math.abs(f.map(lastPt) - expect);
+                worst = Math.max(worst, err);
+                if (!f.ok() || err > 400) bad++;
+            }
+            System.out.println("deriva de escala: pior erro na última fala " + Math.round(worst) + " ms");
+            check("deriva pequena de escala (0,9995-0,9999) corrigida até o fim (< 0,4 s) em 12 sorteios", bad == 0);
+        }
         // ---- 5. SubtitleText ----
         {
             String body = "1\r\n00:00:01,000 --> 00:00:02,000\r\nNão sei você.\r\n\r\n2\r\n00:00:03,5 --> 00:00:04,50\r\nIsso é tudo, então vai.\r\n\r\n3\r\n00:01:03,000 --> 00:01:04,000\r\nOk\r\n\r\n";

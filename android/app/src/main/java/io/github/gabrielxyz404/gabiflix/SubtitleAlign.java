@@ -629,6 +629,30 @@ final class SubtitleAlign {
         return gain >= 0.15;
     }
 
+    /** com nota >= isto (e aceito) a escala já está boa: não procura deriva pequena */
+    static final double POLISH_SKIP = 0.92;
+
+    /**
+     * deriva pequena de escala (±0,4%, passo 0,01%): a busca das razões de fps e a escala livre (passo 0,05%) podem parar num
+     * máximo local com a legenda 1-3 s fora no fim do filme. Aqui cada escala vizinha ganha o seu melhor deslocamento (barato) e o melhor é refinado.
+     */
+    static Fit polish(long[] ref, long[] cand, Fit best) {
+        Fit top = best;
+        double s0 = best.scale;
+        for (int k = -40; k <= 40; k++) {
+            if (k == 0) continue;
+            double s = s0 + k * 0.0001;
+            if (s < FREE_MIN || s > FREE_MAX) continue;
+            Fit f = alignWithScale(ref, cand, s);
+            if (f.score > top.score) top = f;
+        }
+        if (top == best) return best;
+        Fit r = refine(ref, cand, top);
+        r = r.score >= top.score ? r : top;
+        r.freeScale = !isFixedScale(r.scale);
+        return r;
+    }
+
     /** melhor transformação (escala x deslocamento, ou por partes) que leva a candidata para cima da referência */
     static Fit align(long[] ref, long[] cand) {
         Fit none = new Fit();
@@ -647,6 +671,10 @@ final class SubtitleAlign {
             free = freeScale(ref, cand);
             halves(ref, cand, free);
             if (free.score > best.score + SCALE_MARGIN && (free.singleOk() || !best.singleOk())) best = free;
+        }
+        if (best.cuts == null && !(best.singleOk() && best.score >= POLISH_SKIP)) {
+            Fit pol = polish(ref, cand, best);
+            if (pol.score > best.score + 0.015) { halves(ref, cand, pol); best = pol; }
         }
         if (!(best.singleOk() && best.score >= 0.75)) {
             ArrayList<Double> sc = new ArrayList<>();
