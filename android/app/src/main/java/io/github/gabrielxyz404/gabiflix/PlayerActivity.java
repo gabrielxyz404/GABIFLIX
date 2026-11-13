@@ -98,7 +98,9 @@ public class PlayerActivity extends Activity {
         getSharedPreferences(LAST_PREFS, MODE_PRIVATE).edit().clear().apply();
         if (url == null) { finish(); return; }
         subDelayMs = 0; // o atraso guardado só entra quando a legenda ativa é conhecida (syncDelayToTrack)
-        loadSubtitlesInBackground();
+        testSrt = getIntent().getStringExtra("gfAudioSrt");
+        if (testSrt != null) { srcSize = getIntent().getLongExtra("gfAudioSize", 0); injectTestSubtitle(testSrt, getIntent().getLongExtra("gfAudioShift", 0)); }
+        else loadSubtitlesInBackground();
 
         tv = MainActivity.isTv(this);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
@@ -180,7 +182,11 @@ public class PlayerActivity extends Activity {
                 spinner.setVisibility(View.GONE);
                 playButton.setText("❚❚");
                 if (!resumeDone) resume();
-                if (!playing) { playing = true; ui.postDelayed(this::attachReadySubs, 1500); selectEmbeddedPortugueseLater(); }
+                if (!playing) {
+                    playing = true; playingSince = SystemClock.uptimeMillis();
+                    ui.postDelayed(this::attachReadySubs, 1500); selectEmbeddedPortugueseLater();
+                    if (getIntent().getBooleanExtra("gfAudioProbe", false)) probeAudioCapture();
+                }
                 scheduleHide();
                 break;
             case MediaPlayer.Event.Paused:
@@ -189,6 +195,8 @@ public class PlayerActivity extends Activity {
                 break;
             case MediaPlayer.Event.Buffering:
                 spinner.setVisibility(event.getBuffering() < 100f ? View.VISIBLE : View.GONE);
+                if (event.getBuffering() < 100f) { bufferEvents++; mainBuffering = true; glog("BUFFERING " + (int) event.getBuffering() + "% em " + player.getTime() + " ms"); }
+                else mainBuffering = false;
                 break;
             case MediaPlayer.Event.LengthChanged:
                 lengthLabel.setText(format(player.getLength()));
@@ -530,6 +538,7 @@ public class PlayerActivity extends Activity {
             String fname = SubtitleSync.fileNameOf(url, vh);
             srcHash = vh.hash;
             srcName = fname;
+            srcSize = vh.size;
             if (vh.hash != null) glog("hash=" + vh.hash + " tamanho=" + vh.size + " arquivo=" + fname);
             else glog("hash não calculado: " + vh.error + "; arquivo=" + fname);
 
@@ -782,6 +791,7 @@ public class PlayerActivity extends Activity {
         }, 1500);
         // a legenda baixada escolhida por addSlave pode demorar a ficar ativa: confere de novo
         ui.postDelayed(() -> { if (player != null) syncDelayToTrack(player.getSpuTrack()); }, 4000);
+        ui.postDelayed(this::maybeAutoAudio, 2500);
     }
 
     private void selectEmbeddedPortugueseLater() {
@@ -861,6 +871,7 @@ public class PlayerActivity extends Activity {
         diag.append("\nHash: ").append(diagHash);
         diag.append(" · Referência: ").append(diagRef.isEmpty() ? "…" : diagRef);
         if (!diagEmb.isEmpty()) diag.append("\n").append(diagEmb);
+        if (!audioDiag.isEmpty()) diag.append("\n").append(audioDiag);
         if (chosen != null) diag.append("\nEscolhida: ").append(chosen);
         diag.append("\nAtraso manual: ").append(subDelayMs == 0 ? "0,0 s" : signedSecs(subDelayMs));
         ui.removeCallbacks(hideControls);
@@ -1079,6 +1090,16 @@ public class PlayerActivity extends Activity {
             help.setGravity(Gravity.CENTER);
             help.setTextColor(0xFFA0A0A0);
             box.addView(help);
+            final TextView ab = syncButton(audioButtonLabel());
+            audioBtn = ab;
+            ab.setOnClickListener(v -> startAudio(fa, true));
+            LinearLayout abRow = syncRow(ab);
+            abRow.setPadding(0, dp(8), 0, 0);
+            box.addView(abRow);
+            TextView ahelp = text("Ouve o áudio do filme em alguns trechos e acerta a legenda sozinho (lê alguns MB da rede).", 12, false);
+            ahelp.setGravity(Gravity.CENTER);
+            ahelp.setTextColor(0xFFA0A0A0);
+            box.addView(ahelp);
         } else {
             TextView warn = text("Sincronizar pela fala: ative uma legenda baixada (a embutida não permite). Use os botões abaixo.", 13, false);
             warn.setGravity(Gravity.CENTER);
@@ -1112,9 +1133,10 @@ public class PlayerActivity extends Activity {
                 .setTitle("Sincronizar legenda")
                 .setView(scroll)
                 .setPositiveButton("Fechar", null)
-                .setOnDismissListener(d -> scheduleHide())
+                .setOnDismissListener(d -> { audioBtn = null; scheduleHide(); })
                 .create();
         dlg.show();
+        syncDlg = dlg;
         (speech != null ? speech : p1).requestFocus();
     }
 
@@ -1191,6 +1213,207 @@ public class PlayerActivity extends Activity {
         final int fsel = sel;
         lv.requestFocus();
         lv.post(() -> lv.setSelectionFromTop(fsel, Math.max(0, lv.getHeight() / 2 - dp(24))));
+    }
+
+    // ---------- acertar a legenda pelo áudio (fase 3) ----------
+    private volatile long playingSince = 0;
+    private volatile boolean mainBuffering = false;
+    private int bufferEvents = 0;
+    private volatile long srcSize = 0;
+    private AudioSyncRunner audioRunner;
+    private String audioDiag = "";
+    private String audioProgress = "";
+    private TextView audioBtn;
+    private AlertDialog syncDlg;
+    private String testSrt;
+    private int audioSeq = 0;
+
+    private String audioButtonLabel() {
+        boolean run = audioRunner != null && audioRunner.running();
+        return run ? (audioProgress.isEmpty() ? "A ouvir o áudio…" : audioProgress) : "Acertar pelo áudio";
+    }
+
+    /** legenda baixada, ainda sem acerto pelo texto: tenta o áudio sozinho (se a leitura estimada for pequena) */
+    private void maybeAutoAudio() {
+        if (player == null || audioRunner != null) return;
+        boolean test = testSrt != null;
+        if (!test && embeddedPtId != NO_TRACK) { audioDiag = "áudio: não precisou (PT embutida no arquivo)"; return; }
+        if (attached.isEmpty()) return;
+        SubtitleSync.Cand c = attached.get(0);
+        if (c.aligned || c.refSelf) { audioDiag = "áudio: não precisou (legenda já alinhada pelo texto)"; return; }
+        if (test && getIntent().getBooleanExtra("gfAudioManual", false)) {
+            ui.postDelayed(() -> { showSyncDialog(); if (audioBtn != null) audioBtn.performClick(); }, 3000);
+            return;
+        }
+        startAudio(c, false);
+        if (test && getIntent().getBooleanExtra("gfAudioDialog", false)) ui.postDelayed(this::showSyncDialog, 8000);
+    }
+
+    private void startAudio(final SubtitleSync.Cand c, final boolean manual) {
+        if (player == null || c == null || c.text == null) return;
+        if (audioRunner != null && audioRunner.running()) { notice("Já está ouvindo o áudio…"); return; }
+        long len = player.getLength();
+        if (len <= 0) { notice("O vídeo ainda não carregou"); return; }
+        audioDiag = "áudio: a ouvir…";
+        audioProgress = "A ouvir o áudio…";
+        AudioSyncRunner rn;
+        try {
+            rn = new AudioSyncRunner(this, url, len, srcSize, -1, c.text, new AudioSyncRunner.Host() {
+                @Override public boolean mainBusy() { return mainBuffering; }
+                @Override public boolean playbackStable() { return playingSince > 0 && SystemClock.uptimeMillis() - playingSince >= 10000; }
+                @Override public void progress(String s) { ui.post(() -> { audioProgress = s; if (audioBtn != null) audioBtn.setText(s); if (manual) notice(s); }); }
+                @Override public void done(AudioSyncRunner.Outcome o) { ui.post(() -> onAudioDone(c, o, manual)); }
+            }, testSrt != null);
+        } catch (Throwable t) { audioDiag = "áudio: erro ao preparar (" + t.getClass().getSimpleName() + ")"; return; }
+        rn.debugTag = testSrt != null ? "t" : "";
+        audioRunner = rn;
+        if (audioBtn != null) audioBtn.setText(audioButtonLabel());
+        rn.start(manual);
+    }
+
+    private void onAudioDone(SubtitleSync.Cand c, AudioSyncRunner.Outcome o, boolean manual) {
+        audioRunner = null;
+        AudioAlign.Result r = o.result;
+        StringBuilder d = new StringBuilder(o.note.isEmpty() ? "áudio: sem resultado" : o.note);
+        if (!o.note.startsWith("áudio")) d.insert(0, "áudio: ");
+        if (o.windows > 0) d.append(String.format(Locale.ROOT, " · %d janelas em %.0f s, %s", o.windows, o.tookMs / 1000.0,
+                o.readBytes > 0 ? (o.readBytes / 1048576) + " MB lidos" : "~" + Math.max(0, o.estBytes / 1048576) + " MB"));
+        audioDiag = d.toString();
+        glog("AUDIO_RESULT accepted=" + (r != null && r.accepted) + " offset=" + (r != null ? r.offsetMs : 0) + " scale=" + (r != null ? r.scale : 0)
+                + " pieced=" + (r != null && r.pieced) + " agree=" + (r != null ? r.agree : 0) + " used=" + (r != null ? r.used : 0)
+                + " windows=" + o.windows + " tookMs=" + o.tookMs + " readBytes=" + o.readBytes + " estBytes=" + o.estBytes
+                + " mode=" + o.mode + " skipped=" + o.skipped + " bufferEvents=" + bufferEvents + " note=" + o.note);
+        if (audioBtn != null) audioBtn.setText(audioButtonLabel());
+        if (r != null && r.accepted && r.fit != null && player != null) {
+            try { applyAudio(c, r); } catch (Throwable t) { audioDiag = "áudio: erro ao aplicar (" + t.getClass().getSimpleName() + ")"; glog("AUDIO erro ao aplicar: " + t); }
+        } else if (manual || testSrt != null) {
+            notice(o.skipped ? "Vídeo pesado: toque em \"Acertar pelo áudio\" para ouvir" : "Não deu para acertar pelo áudio" + (r != null ? " (" + r.why + ")" : ""));
+        }
+        if (testSrt != null && getIntent().getBooleanExtra("gfAudioDialog", false)) {
+            ui.postDelayed(() -> { if (syncDlg != null && syncDlg.isShowing()) syncDlg.dismiss(); chooseSubtitles(); }, 2500);
+        }
+    }
+
+    /** reescreve a legenda ativa com a correção achada pelo áudio, liga a nova faixa e zera o atraso manual da combinação */
+    private void applyAudio(SubtitleSync.Cand c, AudioAlign.Result r) {
+        SubtitleAlign.Fit f = r.fit;
+        if (!f.changes()) {
+            c.alignNote = "áudio: já sincronizada";
+            notice("A legenda já está sincronizada");
+            return;
+        }
+        String nt = f.apply(c.text);
+        java.io.File dir = new java.io.File(getCacheDir(), "legendas");
+        dir.mkdirs();
+        java.io.File out = new java.io.File(dir, "audio_" + (++audioSeq) + ".srt");
+        try (java.io.FileOutputStream os = new java.io.FileOutputStream(out)) { os.write(nt.getBytes(java.nio.charset.StandardCharsets.UTF_8)); }
+        catch (java.io.IOException e) { audioDiag = "áudio: não gravou a legenda"; return; }
+        SubtitleSync.Cand n = new SubtitleSync.Cand();
+        n.uri = Uri.fromFile(out);
+        n.url = (c.url != null ? c.url : "cand" + c.rank) + "#audio" + audioSeq;
+        n.file = out;
+        n.text = nt;
+        n.lastMs = lastCueEnd(nt);
+        n.rank = c.rank;
+        n.hashMatch = c.hashMatch;
+        n.rel = c.rel;
+        n.aligned = true;
+        n.pieced = r.pieced;
+        n.alignNote = r.summary();
+        n.alignScore = r.score;
+        n.alignScale = r.scale;
+        n.alignOffsetMs = r.offsetMs;
+        // zera o atraso manual guardado da combinação antiga
+        try {
+            String ok = delayKeyFor(player.getSpuTrack(), player.getSpuTracks());
+            if (ok != null) getSharedPreferences(DELAY_PREFS, MODE_PRIVATE).edit().remove(ok).apply();
+        } catch (Exception ignored) {}
+        final java.util.HashSet<Integer> before = new java.util.HashSet<>();
+        MediaPlayer.TrackDescription[] t0 = player.getSpuTracks();
+        if (t0 != null) for (MediaPlayer.TrackDescription d : t0) before.add(d.id);
+        player.addSlave(0, n.uri, true);
+        addedSubs++;
+        attached.add(n);
+        subLabels.add("Português " + (subLabels.size() + 1) + " (pelo áudio)");
+        userPickedSub = true;
+        glog("AUDIO_APPLIED " + r.summary() + " -> " + out.getName() + " primeira fala antes=" + firstStart(c.text) + " depois=" + firstStart(nt));
+        pickNewTrack(before, 0);
+        notice("Legenda acertada pelo áudio: " + (r.pieced ? "por partes" : signedSecs(r.offsetMs)));
+    }
+
+    private static long firstStart(String text) {
+        long[] st = SubtitleAlign.cueStarts(text);
+        return st.length == 0 ? -1 : st[0];
+    }
+
+    /** a faixa nova demora a aparecer na lista do VLC: acha a que não existia e liga */
+    private void pickNewTrack(final java.util.HashSet<Integer> before, final int tries) {
+        ui.postDelayed(() -> {
+            if (player == null) return;
+            MediaPlayer.TrackDescription[] t = player.getSpuTracks();
+            if (t != null) for (MediaPlayer.TrackDescription d : t) {
+                if (d.id != -1 && !before.contains(d.id)) {
+                    player.setSpuTrack(d.id);
+                    lastSyncKey = "\0";
+                    subDelayMs = 0;
+                    syncDelayToTrack(d.id);
+                    applySubDelay();
+                    glog("AUDIO nova faixa ligada: " + d.id);
+                    return;
+                }
+            }
+            if (tries < 25) pickNewTrack(before, tries + 1);
+            else glog("AUDIO a faixa nova não apareceu");
+        }, 400);
+    }
+
+    /** só nos testes automáticos: legenda de teste (baixada de um servidor local) com um atraso injetado, como se fosse a legenda baixada */
+    private void injectTestSubtitle(final String srtUrl, final long shiftMs) {
+        new Thread(() -> {
+            String t;
+            try {
+                t = srtUrl.startsWith("http") ? fetchText(srtUrl)
+                        : new String(android.util.Base64.decode(srtUrl, android.util.Base64.DEFAULT), java.nio.charset.StandardCharsets.UTF_8);
+            } catch (Exception e) { t = null; }
+            if (t == null) { glog("TESTE: não obteve a legenda de teste"); return; }
+            String sh = shiftMs == 0 ? t : SubtitleAlign.transform(t, 1.0, shiftMs);
+            java.io.File dir = new java.io.File(getCacheDir(), "legendas");
+            dir.mkdirs();
+            java.io.File f = new java.io.File(dir, "1.srt");
+            try (java.io.FileOutputStream os = new java.io.FileOutputStream(f)) { os.write(sh.getBytes(java.nio.charset.StandardCharsets.UTF_8)); }
+            catch (java.io.IOException e) { return; }
+            SubtitleSync.Cand c = new SubtitleSync.Cand();
+            c.uri = Uri.fromFile(f);
+            c.url = "teste#shift" + shiftMs;
+            c.file = f;
+            c.text = sh;
+            c.lastMs = lastCueEnd(sh);
+            c.rank = 0;
+            glog("TESTE: legenda injetada com atraso de " + shiftMs + " ms (primeira fala em " + firstStart(sh) + ")");
+            ui.post(() -> { cands.add(c); diagId = "teste"; diagRef = "nenhuma"; diagHash = "não"; subsDownloaded = true; attachReadySubs(); });
+        }).start();
+    }
+
+    /** só nos testes: tenta cada modo de captura num trecho de 10 s e registra no logcat */
+    private void probeAudioCapture() {
+        final java.io.File dir = new java.io.File(getCacheDir(), "audiosync");
+        new Thread(() -> {
+            try { Thread.sleep(4000); } catch (InterruptedException ignored) {}
+            for (String md : AudioCapture.MODES) {
+                AudioCapture.Out o = AudioCapture.capture(this, url, 60000, 10000, dir, "probe-" + md, md, -1, null, 60000, true);
+                String extra = "";
+                if (o.ok()) {
+                    byte[] v = AudioAlign.vad(o.pcm.x, o.pcm.rate);
+                    double rms = 0;
+                    for (float x : o.pcm.x) rms += x * x;
+                    rms = Math.sqrt(rms / o.pcm.x.length);
+                    int sp = 0;
+                    for (byte b : v) sp += b;
+                    extra = String.format(Locale.ROOT, " rate=%d rms=%.4f fala=%.0f%% nota=%s", o.pcm.rate, rms, sp * 100.0 / Math.max(1, v.length), o.pcm.note);
+                }
+                glog("PROBE mode=" + md + " ok=" + o.ok() + " err=" + o.err + " tookMs=" + o.tookMs + " fileBytes=" + o.fileBytes + " pcmSec=" + o.pcmSec + " readBytes=" + o.readBytes + extra);
+            }
+        }).start();
     }
 
     private interface TrackSetter { void set(int id); }
@@ -1316,6 +1539,7 @@ public class PlayerActivity extends Activity {
     @Override
     protected void onDestroy() {
         ui.removeCallbacksAndMessages(null);
+        if (audioRunner != null) { audioRunner.cancel(); audioRunner = null; }
         if (player != null) {
             savePosition(true);
             player.stop();
