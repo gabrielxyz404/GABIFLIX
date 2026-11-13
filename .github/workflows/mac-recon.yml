@@ -1,0 +1,34 @@
+name: Mac recon (temporário)
+on:
+  push:
+    branches: [mac-paridade]
+    paths: [.github/workflows/mac-recon.yml]
+permissions:
+  contents: read
+jobs:
+  recon:
+    runs-on: macos-14
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Ambiente
+        run: |
+          sw_vers; swift --version; xcodebuild -version || true
+          which ffmpeg ffprobe java python3 || true
+          system_profiler SPDisplaysDataType | head -20 || true
+          java -version 2>&1 | head -2 || true
+      - name: Cabeçalhos do VLCKit
+        run: |
+          set -e
+          VER=$(curl -fsSL https://cdn.cocoapods.org/all_pods_versions_5_f_4.txt | grep '^VLCKit/' | tr '/' '\n' | grep -E '^3\.[0-9]+\.[0-9]+$' | sort -V | tail -1)
+          echo "VLCKit $VER"
+          SPEC=$(curl -fsSL "https://cdn.cocoapods.org/Specs/5/f/4/VLCKit/$VER/VLCKit.podspec.json")
+          SRC=$(echo "$SPEC" | python3 -c 'import json,sys; print(json.load(sys.stdin)["source"]["http"])')
+          mkdir -p /tmp/v; curl -fsSL "$SRC" -o /tmp/v/a.archive
+          mkdir -p /tmp/v/x
+          case "$SRC" in *.zip) unzip -q /tmp/v/a.archive -d /tmp/v/x ;; *) tar -xf /tmp/v/a.archive -C /tmp/v/x ;; esac
+          H=$(find /tmp/v/x -name VLCMediaPlayer.h | head -1)
+          echo "$H"
+          grep -n -i -E "aspect|crop|scaleFactor|fullscreen|Delay|subtitle|videoSub|audioTrack|currentVideo" "$H" | head -80
+          echo ---- VLCVideoView
+          grep -n -i -E "fillScreen|backColor" $(find /tmp/v/x -name VLCVideoView.h | head -1) || true
