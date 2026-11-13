@@ -4,7 +4,7 @@ set -x
 PKG=io.github.gabrielxyz404.gabiflix
 mkdir -p shots
 adb install -r android/app/build/outputs/apk/release/app-release.apk
-for st in 300000 60000; do
+for st in 300000 60000 505500; do
 adb shell am force-stop $PKG; sleep 2; adb logcat -c
 adb shell am start -n $PKG/.tv.TvHomeActivity --es gfTestUrl "http://10.0.2.2:8000/sweep.mkv" --ez gfAudioProbe true --el gfProbeStart $st
 for i in $(seq 1 90); do sleep 5; adb logcat -d -s GabiFlixPlayer:I | grep -q "PROBE fim" && break; done

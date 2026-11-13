@@ -32,7 +32,7 @@ final class AudioAlign {
     /** sustentação por janela: destaque (z) da nota no deslocamento global frente às notas dela nos outros deslocamentos, e nota mínima */
     static final double Z_MIN = 2.0, MIN_WIN_SCORE = 0.15;
     /** por partes: cada lado precisa de pico próprio claro e de z maior */
-    static final double PIECE_RATIO = 1.5, PIECE_Z = 2.5;
+    static final double PIECE_RATIO = 1.5, PIECE_Z = 3.0;
 
     // ---------- WAV ----------
     static final class Pcm {
@@ -369,6 +369,7 @@ final class AudioAlign {
         String why = "";
         SubtitleAlign.Fit fit;
         double score, second, ratio, stouffer;
+        boolean replicated;
         int agree, used;
         long[] ownOff;
         double[] ownScore;
@@ -489,7 +490,12 @@ final class AudioAlign {
             log.append(String.format(Locale.ROOT, "  janela %d (%s, fala %.0f%%): nota no global %.2f (z=%.1f), melhor sozinha %+d ms\n", i, clockMs(ws.get(i).startMs), ws.get(i).frac * 100, r.ownScore[i], zs[i], r.ownOff[i]));
 
         boolean peak = fine / ws.size() >= MIN_MEAN_SCORE && r.ratio >= MIN_RATIO;
+        boolean replicated = false;
         if (peak && agree >= MIN_AGREE) {
+            replicated = replicates(ws, sp, kb, ob, log);
+            r.replicated = replicated;
+        }
+        if (peak && agree >= MIN_AGREE && replicated) {
             r.accepted = true;
             SubtitleAlign.Fit f = new SubtitleAlign.Fit();
             f.scale = kb;
@@ -503,8 +509,42 @@ final class AudioAlign {
         if (pr != null) return pr;
         if (fine / ws.size() < MIN_MEAN_SCORE) r.why = String.format(Locale.ROOT, "correlação fraca (%.2f por janela)", fine / ws.size());
         else if (r.ratio < MIN_RATIO) r.why = String.format(Locale.ROOT, "pico ambíguo (razão %.2f)", r.ratio);
-        else r.why = "só " + agree + " de " + ws.size() + " janelas concordam";
+        else if (agree < MIN_AGREE) r.why = "só " + agree + " de " + ws.size() + " janelas concordam";
+        else r.why = "as duas metades das janelas não repetem o mesmo resultado";
         return r;
+    }
+
+    /**
+     * Réplica independente: as janelas pares e as ímpares (em ordem de tempo), cada grupo sozinho, têm de achar o mesmo
+     * deslocamento (+-REPL_TOL_MS) e a mesma escala. Quem escolhe o melhor de ~48 mil hipóteses sempre acha "picos";
+     * repetir o mesmo pico em dados disjuntos é o que separa acerto de coincidência.
+     */
+    static final long REPL_TOL_MS = 400;
+
+    static boolean replicates(ArrayList<Win> ws, Spans sp, double kb, long ob, StringBuilder log) {
+        ArrayList<Win> a = new ArrayList<>(), b = new ArrayList<>();
+        for (int i = 0; i < ws.size(); i++) (i % 2 == 0 ? a : b).add(ws.get(i));
+        if (a.size() < 2 || b.size() < 2) return false;
+        boolean okA = halfAgrees(a, sp, kb, ob), okB = halfAgrees(b, sp, kb, ob);
+        log.append("  réplica: pares " + (okA ? "repetem" : "NÃO repetem") + ", ímpares " + (okB ? "repetem" : "NÃO repetem") + "\n");
+        return okA && okB;
+    }
+
+    private static boolean halfAgrees(ArrayList<Win> h, Spans sp, double kb, long ob) {
+        double best = -1e9;
+        double bk = 1;
+        long bo = 0;
+        for (double k : SubtitleAlign.SCALES) {
+            double[] r = bestOffset(h, sp, k);
+            if (r[1] > best) { best = r[1]; bk = k; bo = (long) r[0]; }
+        }
+        // equivalente à solução global em todos os centros de janela da metade
+        for (Win w : h) {
+            long tc = w.startMs + (long) w.n * FRAME_MS / 2;
+            double sub = (tc - ob) / kb;
+            if (Math.abs(bk * sub + bo - tc) > REPL_TOL_MS) return false;
+        }
+        return best / h.size() >= MIN_MEAN_SCORE * 0.8;
     }
 
     private static String clockMs(long ms) {
@@ -517,7 +557,7 @@ final class AudioAlign {
         int n = ws.size();
         Result bestR = null;
         double bestScore = -1;
-        for (int cut = 2; cut <= n - 2; cut++) {
+        for (int cut = 3; cut <= n - 3; cut++) {
             ArrayList<Win> a = new ArrayList<>(ws.subList(0, cut)), b = new ArrayList<>(ws.subList(cut, n));
             double[] oa = bestOffset(a, sp, k), ob = bestOffset(b, sp, k);
             if (Math.abs(oa[0] - ob[0]) < 1000) continue;
@@ -526,7 +566,7 @@ final class AudioAlign {
             double mA = oa[1] / a.size(), mB = ob[1] / b.size();
             log.append(String.format(Locale.ROOT, "  corte após janela %d: %+d ms (%d/%d, %.2f) | %+d ms (%d/%d, %.2f)\n", cut - 1, (long) oa[0], agA, a.size(), mA, (long) ob[0], agB, b.size(), mB));
             if (mA < MIN_MEAN_SCORE || mB < MIN_MEAN_SCORE) continue;
-            if (agA < Math.max(2, a.size() - 1) || agB < Math.max(2, b.size() - 1)) continue;
+            if (agA < a.size() || agB < b.size()) continue;
             if (agA + agB < MIN_AGREE) continue;
             if (!sideConvincing(a, sp, k, (long) oa[0]) || !sideConvincing(b, sp, k, (long) ob[0])) continue;
             // razão de cada lado contra o outro deslocamento: o grupo A tem de preferir oa a ob e vice-versa
@@ -582,11 +622,9 @@ final class AudioAlign {
         return c;
     }
 
-    /** um lado do corte: com 3+ janelas, pico claro (razão); com 2, as duas bem destacadas e fortes */
+    /** um lado do corte (3+ janelas): pico claro frente ao melhor deslocamento fora de +-EXCLUDE_MS */
     private static boolean sideConvincing(ArrayList<Win> g, Spans sp, double k, long off) {
-        if (g.size() >= 3) return groupRatio(g, sp, k, off) >= PIECE_RATIO;
-        for (Win w : g) if (winScore(w, sp, k, off) < 0.3) return false;
-        return groupRatio(g, sp, k, off) >= 1.2;
+        return g.size() >= 3 && groupRatio(g, sp, k, off) >= PIECE_RATIO;
     }
 
     /** razão entre o pico do grupo (no deslocamento `off`) e o melhor deslocamento fora de +-EXCLUDE_MS dele (mesma escala) */

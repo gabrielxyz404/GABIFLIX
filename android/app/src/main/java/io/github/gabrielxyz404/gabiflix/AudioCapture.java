@@ -38,6 +38,8 @@ final class AudioCapture {
         long readBytes = -1;
         String err = "";
         boolean ended;
+        /** amostras {ms desde o play, bytes do arquivo, tempo do player} a cada ~25 ms (diagnóstico de tempo) */
+        ArrayList<long[]> samples = new ArrayList<>();
         boolean ok() { return pcm != null && pcm.x != null && pcm.x.length > 0 && err.isEmpty(); }
     }
 
@@ -120,6 +122,7 @@ final class AudioCapture {
                 if (cancel != null && cancel.get()) { out.err = "cancelado"; break; }
                 if (done.await(25, TimeUnit.MILLISECONDS)) { finished = true; break; }
                 long sz = f.length();
+                try { if (out.samples.size() < 4000) out.samples.add(new long[]{System.currentTimeMillis() - t0, sz, mp.getTime()}); } catch (Throwable ignored) {}
                 if (sz != lastSize) { lastSize = sz; lastGrow = System.currentTimeMillis(); }
                 if (expect > 0 && sz >= expect + 4096) { finished = true; break; }
                 // começou a escrever e parou de crescer há 6 s: acabou (stop-time sem evento)

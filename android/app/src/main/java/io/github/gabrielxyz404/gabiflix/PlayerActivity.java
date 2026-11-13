@@ -1401,7 +1401,7 @@ public class PlayerActivity extends Activity {
         final boolean sweep = url.contains("sweep");
         new Thread(() -> {
             try { Thread.sleep(4000); } catch (InterruptedException ignored) {}
-            String[][] cases = sweep ? new String[][]{{"wav", "std"}, {"wav", "fast"}, {"wav", "seek"}, {"wav", "paused"}, {"wav", "runtime"}, {"raw", "std"}, {"afile", "std"}}
+            String[][] cases = sweep ? new String[][]{{"wav", "std"}, {"wav", "fast"}, {"wav", "runtime"}, {"wav", "paused"}, {"raw", "fast"}, {"afile", "fast"}}
                     : new String[][]{{"wav", "std"}, {"raw", "std"}, {"afile", "std"}};
             for (String[] c : cases) {
                 AudioCapture.Out o = AudioCapture.capture(this, url, st, 15000, dir, "probe-" + c[0] + "-" + c[1], c[0], -1, null, 90000, false, c[1]);
@@ -1415,7 +1415,13 @@ public class PlayerActivity extends Activity {
                         extra = String.format(Locale.ROOT, " rate=%d fala=%.0f%%", o.pcm.rate, sp * 100.0 / Math.max(1, v.length));
                     }
                 }
-                glog("PROBE mode=" + c[0] + " var=" + c[1] + " ok=" + o.ok() + " err=" + o.err + " tookMs=" + o.tookMs + " fileBytes=" + o.fileBytes + " pcmSec=" + o.pcmSec + " readBytes=" + o.readBytes + extra);
+                StringBuilder sm = new StringBuilder();
+                int shown = 0;
+                for (int q = 0; q < o.samples.size() && shown < 8; q++) {
+                    long[] a = o.samples.get(q);
+                    if (a[1] > 0 && (shown == 0 || q % 8 == 0)) { sm.append(" [t=" + a[0] + " bytes=" + a[1] + " mpTime=" + a[2] + "]"); shown++; }
+                }
+                glog("PROBE mode=" + c[0] + " var=" + c[1] + " amostras=" + sm + " ok=" + o.ok() + " err=" + o.err + " tookMs=" + o.tookMs + " fileBytes=" + o.fileBytes + " pcmSec=" + o.pcmSec + " readBytes=" + o.readBytes + extra);
             }
             glog("PROBE fim");
         }).start();

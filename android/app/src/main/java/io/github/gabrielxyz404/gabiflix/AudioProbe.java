@@ -2,7 +2,7 @@ package io.github.gabrielxyz404.gabiflix;
 
 import java.util.Locale;
 
-/** Só nos testes: decodifica o vídeo "varredura" (um bipe por segundo, frequência = 400 + 100 * (segundo mod 28)) para saber de que instante do vídeo vem cada trecho capturado. */
+/** Só nos testes: decodifica o vídeo "varredura" (um bipe por segundo, frequência = 400 + 50 * (segundo mod 60)) para saber de que instante do vídeo vem cada trecho capturado. */
 final class AudioProbe {
     private AudioProbe() {}
 
@@ -34,12 +34,12 @@ final class AudioProbe {
                 int cross = 0;
                 for (int k = a + 1; k < b; k++) if ((x[k - 1] < 0) != (x[k] < 0)) cross++;
                 double f = b > a ? cross / 2.0 / ((b - a) / (double) rate) : 0;
-                int idx = (int) Math.round((f - 400) / 100.0);
+                int idx = (int) Math.round((f - 400) / 50.0);
                 double tf = i * 0.01;
-                if (idx >= 0 && idx < 28) {
+                if (idx >= 0 && idx < 60) {
                     // segundo absoluto: o que tem resto idx (mod 28) mais perto de (início pedido + tf)
                     double guess = startMs / 1000.0 + tf;
-                    long s = Math.round((guess - idx) / 28.0) * 28 + idx;
+                    long s = Math.round((guess - idx) / 60.0) * 60 + idx;
                     double delta = s - guess;
                     if (count == 0) { first = idx; firstDelta = delta; }
                     lastDelta = delta;
