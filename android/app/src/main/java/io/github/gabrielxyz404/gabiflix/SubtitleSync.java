@@ -53,6 +53,11 @@ final class SubtitleSync {
         long alignOffsetMs;
         int manualMs;         // ajuste manual atual (ms)
         double score;
+        String rel = "";      // nome da release da legenda (arquivo + release + grupo + formato, do addon)
+        int group = -1;       // grupo de consenso (legendas PT com os mesmos tempos); -1 = não calculado
+        int groupSize;
+        boolean consensus;    // escolhida por consenso (não alinhada: não há referência de tempo)
+        boolean pieced;       // ajuste por partes (cortes)
     }
 
     /** um resultado da busca no addon */
@@ -60,6 +65,7 @@ final class SubtitleSync {
         final String url;
         final boolean hashMatch;
         final String lang;
+        String rel = "";
         Found(String url, boolean hashMatch, String lang) { this.url = url; this.hashMatch = hashMatch; this.lang = lang; }
     }
 
@@ -279,8 +285,10 @@ final class SubtitleSync {
                 if (o.has("m")) res.sawMatchField = true;
                 // o addon marca com m="f" as que casam com o hash do arquivo (m="i" = só o título)
                 boolean hash = "f".equals(o.optString("m", ""));
-                if (isPtLang(lang)) { if (res.pt.size() < 10) res.pt.add(new Found(url, hash, lang)); }
-                else others.add(new Found(url, hash, lang));
+                Found fo = new Found(url, hash, lang);
+                fo.rel = (o.optString("subtitleFileName", "") + " " + o.optString("movieReleaseName", "") + " " + o.optString("releaseGroup", "") + " " + o.optString("releaseFormat", "")).trim();
+                if (isPtLang(lang)) { if (res.pt.size() < 10) res.pt.add(fo); }
+                else others.add(fo);
             }
             // referência: de preferência inglês (eng) com hash; até 3
             for (int pass = 0; pass < 2; pass++) {
@@ -304,8 +312,12 @@ final class SubtitleSync {
     /** resultado do alinhamento: quantas ficaram alinhadas e que tipo de referência foi usada */
     static final class AlignReport {
         int aligned;
-        /** "outro idioma", "PT do hash" ou "nenhuma" */
+        /** "outro idioma", "PT do hash", "consenso" (sem referência de tempo: só escolhe) ou "nenhuma" */
         String refKind = "nenhuma";
+        int pieced;       // quantas foram ajustadas por partes (cortes)
+        int freeScaled;   // quantas precisaram de escala fora das razões fixas de fps
+        int consensusMax; // tamanho do maior grupo de PT parecidas (modo consenso)
+        int ptCount;
     }
 
     private static String f2(double v) { return String.format(Locale.ROOT, "%.2f", v).replace('.', ','); }
@@ -326,8 +338,7 @@ final class SubtitleSync {
                 if (st.length >= 20) self = c;
             }
             if (self == null) {
-                for (Cand c : all) c.alignNote = "sem referência — use Sincronizar pela fala";
-                lg.append("\n  sem referência (nem outro idioma, nem PT do hash): ranking antigo");
+                consensus(all, rep, lg);
                 return rep;
             }
             use.add(SubtitleAlign.cueStarts(self.text));
@@ -363,8 +374,18 @@ final class SubtitleSync {
             c.alignOffsetMs = best.offsetMs;
             rep.aligned++;
             c.alignNote = "ajuste auto " + signedSecs(best.offsetMs) + (best.scale != 1.0 ? ", ×" + String.format(Locale.ROOT, "%.4f", best.scale).replace('.', ',') : "");
-            if (best.scale != 1.0 || Math.abs(best.offsetMs) >= 50) {
-                String t = SubtitleAlign.transform(c.text, best.scale, best.offsetMs);
+            if (best.piecewise()) {
+                int cuts = best.cuts.length;
+                StringBuilder sb = new StringBuilder("ajuste por partes: " + cuts + (cuts == 1 ? " corte" : " cortes") + " (");
+                for (int q = 0; q < best.offs.length; q++) sb.append(q > 0 ? "; " : "").append(signedSecs(best.offs[q]));
+                c.alignNote = sb.append(")").append(best.scale != 1.0 ? ", ×" + String.format(Locale.ROOT, "%.4f", best.scale).replace('.', ',') : "").toString();
+                c.pieced = true;
+                rep.pieced++;
+                lg.append(" PARTES ").append(cuts).append(" cortes");
+            }
+            if (best.freeScale) { rep.freeScaled++; lg.append(" escala-livre"); }
+            if (best.changes()) {
+                String t = best.apply(c.text);
                 try {
                     FileOutputStream os = new FileOutputStream(c.file);
                     os.write(t.getBytes(StandardCharsets.UTF_8));
@@ -412,7 +433,10 @@ final class SubtitleSync {
      * Nota = ajuste à referência (ou a 0,93 da duração) + 0,01 por posição na lista do addon + 0,01 se corrigida
      * - 0,02 se casa com o hash. Menor = melhor. Fim fora de 0,5x..1,12x da duração é descartado (se sobrar alguma).
      */
-    static ArrayList<Cand> rank(List<Cand> all, long len, StringBuilder lg) {
+    static ArrayList<Cand> rank(List<Cand> all, long len, StringBuilder lg) { return rank(all, len, null, lg); }
+
+    /** videoName = nome do arquivo de vídeo (para comparar com a release de cada legenda no consenso); pode ser null */
+    static ArrayList<Cand> rank(List<Cand> all, long len, String videoName, StringBuilder lg) {
         ArrayList<Cand> good = new ArrayList<>(), rest = new ArrayList<>();
         for (Cand c : all) { if (c.aligned || c.refSelf) good.add(c); else rest.add(c); }
         Collections.sort(good, (a, b) -> {
@@ -421,7 +445,90 @@ final class SubtitleSync {
             return d != 0 ? d : Integer.compare(a.rank, b.rank);
         });
         ArrayList<Cand> out = new ArrayList<>(good);
+        if (good.isEmpty()) {
+            ArrayList<Cand> cons = consensusPick(rest, len, videoName, lg);
+            out.addAll(cons);
+            rest.removeAll(cons);
+        }
         out.addAll(rankHeuristic(rest, len, lg));
+        return out;
+    }
+
+    // ---------- consenso (sem nenhuma referência de tempo) ----------
+    /**
+     * Sem referência de outro idioma nem PT do hash não dá para alinhar nada. Mas dá para ESCOLHER: as legendas PT que têm os mesmos
+     * tempos entre si (concordância >= 50% sem ajuste nenhum) formam grupos, e o maior grupo costuma ser a versão mais comum do filme.
+     * Aqui só se marcam os grupos; a escolha (com hash, nome da release e duração) é feita em rank(), que conhece a duração do vídeo.
+     */
+    private static void consensus(List<Cand> all, AlignReport rep, StringBuilder lg) {
+        ArrayList<Cand> use = new ArrayList<>();
+        ArrayList<long[]> st = new ArrayList<>();
+        for (Cand c : all) {
+            c.group = -1;
+            long[] s = SubtitleAlign.cueStarts(c.text);
+            if (s.length >= 20) { use.add(c); st.add(s); }
+        }
+        rep.ptCount = all.size();
+        if (use.size() < 2) {
+            for (Cand c : all) c.alignNote = "sem referência — use Sincronizar pela fala";
+            lg.append("\n  sem referência (nem outro idioma, nem PT do hash) e menos de 2 PT para comparar: ranking antigo");
+            return;
+        }
+        int[] comp = SubtitleAlign.consensusGroups(st);
+        int ng = 0;
+        for (int g : comp) ng = Math.max(ng, g + 1);
+        int[] size = new int[ng];
+        for (int g : comp) size[g]++;
+        for (int i = 0; i < use.size(); i++) { use.get(i).group = comp[i]; use.get(i).groupSize = size[comp[i]]; }
+        for (int g : size) rep.consensusMax = Math.max(rep.consensusMax, g);
+        rep.refKind = "consenso";
+        for (Cand c : all) c.alignNote = c.group < 0 ? "sem referência — use Sincronizar pela fala"
+                : c.groupSize >= 2 ? "consenso: faz parte de um grupo de " + c.groupSize + " PT iguais (sem alinhar)" : "consenso: sem PT parecida";
+        lg.append("\n  sem referência: consenso entre ").append(use.size()).append(" PT, grupos ").append(java.util.Arrays.toString(size));
+    }
+
+    /** o grupo de consenso escolhido (hash, nome da release, duração), com os membros em ordem de preferência; vazio se não houver grupo de >= 2 */
+    private static ArrayList<Cand> consensusPick(List<Cand> rest, long len, String videoName, StringBuilder lg) {
+        ArrayList<Cand> out = new ArrayList<>();
+        boolean any = false;
+        for (Cand c : rest) if (c.group >= 0 && c.groupSize >= 2) any = true;
+        if (!any) return out;
+        int n = rest.size();
+        int[] comp = new int[n];
+        boolean[] hash = new boolean[n];
+        double[] name = new double[n];
+        long[] last = new long[n];
+        int next = 0;
+        for (Cand c : rest) next = Math.max(next, c.group + 1);
+        for (int i = 0; i < n; i++) {
+            Cand c = rest.get(i);
+            comp[i] = c.group >= 0 ? c.group : next++;
+            hash[i] = c.hashMatch;
+            name[i] = SubtitleAlign.nameSimilarity(videoName, c.rel);
+            last[i] = c.lastMs;
+        }
+        StringBuilder why = new StringBuilder();
+        int g = SubtitleAlign.pickGroup(comp, hash, name, last, len, why);
+        lg.append(why);
+        if (g < 0) return out;
+        ArrayList<Integer> idx = new ArrayList<>();
+        for (int i = 0; i < n; i++) if (comp[i] == g) idx.add(i);
+        if (idx.size() < 2) return out;
+        final double[] nm = name;
+        final List<Cand> rr = rest;
+        Collections.sort(idx, (a, b) -> {
+            Cand ca = rr.get(a), cb = rr.get(b);
+            if (ca.hashMatch != cb.hashMatch) return ca.hashMatch ? -1 : 1;
+            int d = Double.compare(nm[b], nm[a]);
+            return d != 0 ? d : Integer.compare(ca.rank, cb.rank);
+        });
+        for (int k = 0; k < idx.size(); k++) {
+            Cand c = rest.get(idx.get(k));
+            c.consensus = true;
+            c.alignNote = "escolhida por consenso: grupo de " + idx.size() + " PT iguais (escolhe, não alinha)";
+            out.add(c);
+        }
+        lg.append("\n  consenso escolheu o grupo ").append(g).append(" (").append(idx.size()).append(" PT), primeira #").append(out.get(0).rank);
         return out;
     }
 

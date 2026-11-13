@@ -504,9 +504,11 @@ public class PlayerActivity extends Activity {
     private boolean subsDownloaded = false, subsAttached = false, userPickedSub = false;
     private int attachTries = 0;
     /** diagnóstico mostrado no topo do menu de legendas */
-    private String diagId = "Procurando legendas…", diagRef = "", diagHash = "…";
+    private String diagId = "Procurando legendas…", diagRef = "", diagHash = "…", diagEmb = "";
     private static final int NO_TRACK = Integer.MIN_VALUE;
     private int embeddedPtId = NO_TRACK;
+    /** a referência de tempo é confiável (outro idioma que casa com o hash, ou PT que casa com o hash) */
+    private volatile boolean refTrusted = false;
 
     private static void glog(String s) { SubtitleSync.log(s); }
 
@@ -611,10 +613,14 @@ public class PlayerActivity extends Activity {
             int nAligned = ar.aligned;
             glog(lg.toString() + "\n  alinhadas: " + nAligned);
             String refLine;
-            if (ar.refKind.equals("outro idioma")) refLine = "outro idioma (" + langShort(refLang) + ")" + (nAligned == 0 ? ", nenhuma legenda casou" : "");
+            if (ar.refKind.equals("outro idioma")) refLine = "outro idioma (" + langShort(refLang) + ")" + (sr != null && sr.refsAssumed ? ", palpite" : ", do hash") + (nAligned == 0 ? ", nenhuma legenda casou" : "");
             else if (ar.refKind.equals("PT do hash")) refLine = "PT do hash";
+            else if (ar.refKind.equals("consenso")) refLine = "nenhuma de tempo; consenso entre " + ar.ptCount + " PT (maior grupo: " + ar.consensusMax + ") escolhe a legenda certa, não alinha";
             else refLine = (sr != null && !sr.refs.isEmpty()) ? "nenhuma (a referência não baixou)" : "nenhuma";
 
+            if (ar.pieced > 0) refLine += "; " + ar.pieced + " por partes (cortes)";
+            if (ar.freeScaled > 0) refLine += "; " + ar.freeScaled + " com escala livre";
+            refTrusted = (ar.refKind.equals("outro idioma") && sr != null && !sr.refsAssumed) || ar.refKind.equals("PT do hash");
             final String fIdLine = idLine, fRefLine = refLine;
             ui.post(() -> { cands.addAll(ok); diagId = fIdLine; diagRef = fRefLine; diagHash = hashLine; subsDownloaded = true; attachReadySubs(); });
         }).start();
@@ -655,6 +661,7 @@ public class PlayerActivity extends Activity {
             c.lastMs = lastCueEnd(text);
             c.rank = rank;
             c.hashMatch = fo.hashMatch;
+            c.rel = fo.rel;
             return c;
         } catch (Exception e) { return null; }
     }
@@ -744,9 +751,11 @@ public class PlayerActivity extends Activity {
         if (t != null) for (MediaPlayer.TrackDescription d : t) embeddedSpu.add(d.id);
         embeddedPtId = findEmbeddedPt(t);
         glog("legenda PT embutida: " + (embeddedPtId == NO_TRACK ? "não há" : "faixa " + embeddedPtId));
+        diagEmb = embeddedPtId == NO_TRACK ? "" : refTrusted ? "PT embutida mantida (há referência confiável do hash; o texto embutido não é lido)"
+                : "PT embutida mantida, sem validação (sem referência de tempo confiável)";
         if (cands.isEmpty()) return;
         StringBuilder lg = new StringBuilder("ranking das legendas:");
-        ArrayList<SubtitleSync.Cand> use = SubtitleSync.rank(cands, len, lg);
+        ArrayList<SubtitleSync.Cand> use = SubtitleSync.rank(cands, len, srcName, lg);
         glog(lg.toString());
         final boolean embeddedFirst = embeddedPtId != NO_TRACK;
         for (int i = 0; i < use.size() && i < 6; i++) {
@@ -755,7 +764,7 @@ public class PlayerActivity extends Activity {
                 player.addSlave(0 /* legenda */, c.uri, i == 0 && !embeddedFirst);
                 addedSubs++;
                 attached.add(c);
-                subLabels.add("Português " + (subLabels.size() + 1) + (c.aligned ? " (sincronizada)" : c.hashMatch ? " (do hash)" : "") + (c.fixed ? " (corrigida)" : ""));
+                subLabels.add("Português " + (subLabels.size() + 1) + (c.aligned ? (c.pieced ? " (sincronizada por partes)" : " (sincronizada)") : c.consensus ? " (consenso)" : c.hashMatch ? " (do hash)" : "") + (c.fixed ? " (corrigida)" : ""));
             } catch (Exception ignored) {}
         }
         if (embeddedFirst && !userPickedSub) player.setSpuTrack(embeddedPtId);
@@ -851,6 +860,7 @@ public class PlayerActivity extends Activity {
         diag.append(" · ").append(!subsDownloaded ? "baixando legendas…" : cands.size() == 1 ? "1 legenda PT" : cands.size() + " legendas PT");
         diag.append("\nHash: ").append(diagHash);
         diag.append(" · Referência: ").append(diagRef.isEmpty() ? "…" : diagRef);
+        if (!diagEmb.isEmpty()) diag.append("\n").append(diagEmb);
         if (chosen != null) diag.append("\nEscolhida: ").append(chosen);
         diag.append("\nAtraso manual: ").append(subDelayMs == 0 ? "0,0 s" : signedSecs(subDelayMs));
         ui.removeCallbacks(hideControls);

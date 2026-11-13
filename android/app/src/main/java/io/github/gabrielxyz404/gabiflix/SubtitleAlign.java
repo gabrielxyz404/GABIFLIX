@@ -355,7 +355,7 @@ final class SubtitleAlign {
     static final double SEG_MIN_SCORE = 0.5;
     static final double PIECE_MIN_SCORE = 0.55;
     /** o ajuste por partes só vence se a nota subir tanto em relação ao melhor ajuste único */
-    static final double PIECE_GAIN = 0.12;
+    static final double PIECE_GAIN = 0.08;
     static final int CUT_PENALTY = 10;
     static final long MIN_CUT_DELTA_MS = 1000;
     private static final int PIECE_WINDOW = 40, PIECE_STRIDE = 20, PIECE_MAX_OFFSETS = 16;
