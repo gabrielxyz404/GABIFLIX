@@ -30,9 +30,10 @@ sleep 25
 snap 0-inicio
 for i in 1 2 3; do
   xy=$(tela_xy)
-  if [ -z "$xy" ]; then
-    adb shell input tap 600 300; sleep 1; xy=$(tela_xy)
-  fi
+  for t in 1 2 3; do
+    [ -n "$xy" ] && break
+    adb shell input tap 600 300; xy=$(tela_xy)
+  done
   echo "tela_xy=$xy"
   snap $i-controles-antes
   set -- $xy

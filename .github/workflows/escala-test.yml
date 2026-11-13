@@ -43,11 +43,11 @@ jobs:
           def ts(s): return "%02d:%02d:%02d,000"%(s//3600,s//60%60,s%60)
           out=[]
           for i in range(30):
-              a=i*10; out.append("%d\n%s --> %s\nLegenda de teste %d: linha de cima\nlinha de baixo, tem de ficar inteira\n"%(i+1,ts(a),ts(a+9),i+1))
+              a=i*10; out.append("%d\n%s --> %s\nVocê não sabe o que ela fez para nós, mas eu também estou aqui (%d)\ne isso é uma linha de baixo que tem de ficar inteira, com você\n"%(i+1,ts(a),ts(a+9),i+1))
           open("teste.srt","w").write("\n".join(out))
           PY
           ffmpeg -loglevel error -f lavfi -i testsrc2=size=1280x720:rate=24 -f lavfi -i sine=frequency=440:sample_rate=48000 -t 300 -c:v libx264 -preset veryfast -pix_fmt yuv420p -c:a aac teste.mkv
-          ffmpeg -loglevel error -i teste.mkv -i teste.srt -map 0 -map 1 -c copy -c:s srt -disposition:s:0 default emb.mkv
+          ffmpeg -loglevel error -i teste.mkv -i teste.srt -map 0 -map 1 -c copy -c:s srt -metadata:s:s:0 language=por -disposition:s:0 default emb.mkv
           nohup npx --yes http-server -p 8000 -s /tmp/video >/dev/null 2>&1 &
           sleep 8; curl -sI http://127.0.0.1:8000/teste.mkv | head -1
       - name: KVM
