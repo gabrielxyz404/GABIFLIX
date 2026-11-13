@@ -672,9 +672,13 @@ final class SubtitleAlign {
             halves(ref, cand, free);
             if (free.score > best.score + SCALE_MARGIN && (free.singleOk() || !best.singleOk())) best = free;
         }
-        if (best.cuts == null && !(best.singleOk() && best.score >= POLISH_SKIP)) {
+        // só REFINA um ajuste que já seria aceito (não cria aceitações novas: mais graus de liberdade = mais acaso) e só se o refinado continuar aceito
+        if (best.cuts == null && best.singleOk() && best.score >= MIN_SCORE && best.score < POLISH_SKIP) {
             Fit pol = polish(ref, cand, best);
-            if (pol.score > best.score + 0.015) { halves(ref, cand, pol); best = pol; }
+            if (pol != best) {
+                halves(ref, cand, pol);
+                if (pol.singleOk() && pol.score > best.score + 0.03) best = pol;
+            }
         }
         if (!(best.singleOk() && best.score >= 0.75)) {
             ArrayList<Double> sc = new ArrayList<>();
