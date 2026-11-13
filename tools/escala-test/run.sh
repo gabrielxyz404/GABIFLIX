@@ -26,22 +26,26 @@ else
   echo "sem root: usa TvHomeActivity + legenda embutida"
   adb shell am start -n $PKG/.tv.TvHomeActivity --es gfTestUrl "http://10.0.2.2:8000/emb.mkv"
 fi
-sleep 25
+sleep 24
+adb shell input keyevent KEYCODE_MEDIA_PAUSE
+sleep 2
 snap 0-inicio
 for i in 1 2 3; do
   xy=$(tela_xy)
-  for t in 1 2 3; do
+  for t in 1 2; do
     [ -n "$xy" ] && break
-    adb shell input tap 600 300; xy=$(tela_xy)
+    adb shell input tap 1200 300; sleep 1; xy=$(tela_xy)
   done
   echo "tela_xy=$xy"
-  snap $i-controles-antes
   set -- $xy
-  adb shell input tap $1 $2
+  [ -n "$1" ] && adb shell input tap $1 $2
   sleep 1
-  snap $i-controles-depois-$3
-  sleep 8
+  snap $i-controles-$3
+  adb shell input tap 1200 300   # esconde os controles
+  sleep 1
   snap $i-modo
+  adb shell input tap 1200 300   # mostra de novo
+  sleep 1
 done
 adb logcat -d | grep -iE "vlc|PlayerActivity|gabiflix|AndroidRuntime" | tail -80 > shots/$P-log.txt
 exit 0
