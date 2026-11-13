@@ -16,6 +16,11 @@ import java.util.regex.Pattern;
  * uma fala da referência. Funciona para qualquer título (não usa nome, id nem duração).
  * O resultado só é aceito com nota >= 0,5 e se cada METADE das falas também casar (>= 0,35): se só uma parte
  * do filme bate, é outra versão/corte e o alinhamento é rejeitado em vez de piorar a legenda.
+ *
+ * Fase 2: (1) a escala é refinada por regressão robusta sobre os pares casados e há uma busca livre de 0,95 a 1,05;
+ * (2) quando a transformação única falha, procura-se um modelo de 2 ou 3 trechos (mesma escala, deslocamento próprio),
+ * por programação dinâmica, que corrige legendas de versões com cortes; (3) sem nenhuma referência, o consenso entre as
+ * próprias legendas PT escolhe (não alinha) o grupo mais provável.
  */
 final class SubtitleAlign {
     private SubtitleAlign() {}
@@ -47,6 +52,8 @@ final class SubtitleAlign {
         double[] segScores = null;
         int[] segCues = null;
         boolean pieceOk = false;
+        /** fração do intervalo de tempo da referência que a legenda (já transformada) cobre; < 0,75 = legenda parcial (ex.: só o CD1) */
+        double coverage = 1.0;
         /** a escala veio da busca livre/regressão (não é uma das razões fixas de fps) */
         boolean freeScale = false;
         boolean halvesOk() { return scoreFirstHalf >= MIN_HALF_SCORE && scoreSecondHalf >= MIN_HALF_SCORE; }
@@ -311,14 +318,14 @@ final class SubtitleAlign {
     }
 
     private static boolean isFixedScale(double s) {
-        for (double fx : SCALES) if (Math.abs(s - fx) < 1e-9) return true;
+        for (double fx : SCALES) if (Math.abs(s - fx) < 3e-4) return true;
         return false;
     }
 
     /** varre escalas de 0,95 a 1,05 (passo 0,0005) com uma amostra das falas e histograma de deslocamentos; refina o melhor por regressão */
     static Fit freeScale(long[] ref, long[] cand) {
         int n = cand.length;
-        int step = Math.max(1, n / 400);
+        int step = Math.max(1, n / 250);
         long t0 = cand[n / 2];
         final long range = COARSE_RANGE_MS;
         final long bin = 500;
@@ -546,6 +553,15 @@ final class SubtitleAlign {
         }
     }
 
+    /** contra o ajuste de jitter (traduções com falas cortadas diferente): corte pequeno (< 2,5 s) só vale com trechos quase perfeitos e ganho grande */
+    static boolean pieceConvincing(Fit pw, double gain) {
+        long minDelta = Long.MAX_VALUE;
+        for (int q = 1; q < pw.offs.length; q++) minDelta = Math.min(minDelta, Math.abs(pw.offs[q] - pw.offs[q - 1]));
+        if (minDelta >= 2500) return true;
+        for (double sc : pw.segScores) if (sc < 0.85) return false;
+        return gain >= 0.15;
+    }
+
     /** melhor transformação (escala x deslocamento, ou por partes) que leva a candidata para cima da referência */
     static Fit align(long[] ref, long[] cand) {
         Fit none = new Fit();
@@ -574,19 +590,28 @@ final class SubtitleAlign {
             double[] arr = new double[Math.min(4, sc.size())];
             for (int i = 0; i < arr.length; i++) arr[i] = sc.get(i);
             Fit pw = piecewise(ref, cand, arr, best);
-            if (pw != null && pw.pieceOk && pw.score >= best.score + PIECE_GAIN) best = pw;
+            if (pw != null && pw.pieceOk && pw.score >= best.score + PIECE_GAIN && pieceConvincing(pw, pw.score - best.score)) best = pw;
         }
+        long lo = Math.max(ref[0], best.map(cand[0])), hi = Math.min(ref[ref.length - 1], best.map(cand[cand.length - 1]));
+        best.coverage = Math.max(0, hi - lo) / (double) Math.max(1, ref[ref.length - 1] - ref[0]);
         return best;
     }
 
     // ---------- consenso entre legendas (sem referência de tempo) ----------
-    /** concordância mínima (sem nenhum ajuste) para duas legendas contarem como "do mesmo tempo" */
-    static final double RAW_AGREE = 0.5;
+    /** concordância mínima (sem nenhum ajuste, tolerância de 500 ms: traduções diferentes cortam as falas de modo diferente) para duas legendas contarem como "do mesmo tempo" */
+    static final double RAW_AGREE = 0.4;
+    static final long RAW_TOL_MS = 500;
 
-    /** fração das falas que cai a <= 300 ms de uma fala da outra legenda, sem ajuste nenhum */
+    static int matchesTol(long[] ref, long[] cand, long off, long tol) {
+        int hits = 0;
+        for (long c : cand) if (near(ref, c + off, tol)) hits++;
+        return hits;
+    }
+
+    /** fração das falas que cai a <= 500 ms de uma fala da outra legenda, sem ajuste nenhum */
     static double rawAgreement(long[] a, long[] b) {
         if (a == null || b == null || a.length < 20 || b.length < 20) return 0;
-        return countMatches(b, a, 1.0, 0) / (double) Math.min(a.length, b.length);
+        return matchesTol(b, a, 0, RAW_TOL_MS) / (double) Math.min(a.length, b.length);
     }
 
     /** componentes conexas por concordância bruta: ids 0.. na ordem do primeiro membro; legendas com poucas falas ficam sozinhas */

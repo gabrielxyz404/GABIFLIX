@@ -58,6 +58,7 @@ final class SubtitleSync {
         int groupSize;
         boolean consensus;    // escolhida por consenso (não alinhada: não há referência de tempo)
         boolean pieced;       // ajuste por partes (cortes)
+        boolean partial;      // cobre só parte do vídeo (ex.: só o CD1 do filme): vai depois das completas
     }
 
     /** um resultado da busca no addon */
@@ -370,6 +371,7 @@ final class SubtitleSync {
             }
             c.aligned = true;
             c.alignScore = best.score;
+            c.partial = best.coverage < 0.75;
             c.alignScale = best.scale;
             c.alignOffsetMs = best.offsetMs;
             rep.aligned++;
@@ -384,6 +386,7 @@ final class SubtitleSync {
                 lg.append(" PARTES ").append(cuts).append(" cortes");
             }
             if (best.freeScale) { rep.freeScaled++; lg.append(" escala-livre"); }
+            if (c.partial) { c.alignNote += " (parcial: cobre " + Math.round(best.coverage * 100) + "% do tempo da referência)"; lg.append(" PARCIAL ").append(String.format(Locale.ROOT, "%.2f", best.coverage)); }
             if (best.changes()) {
                 String t = best.apply(c.text);
                 try {
@@ -441,6 +444,7 @@ final class SubtitleSync {
         for (Cand c : all) { if (c.aligned || c.refSelf) good.add(c); else rest.add(c); }
         Collections.sort(good, (a, b) -> {
             if (a.refSelf != b.refSelf) return a.refSelf ? -1 : 1; // a PT do hash usada como referência vem primeiro
+            if (a.partial != b.partial) return a.partial ? 1 : -1;  // as que cobrem só parte do vídeo (CD1/CD2) vão depois
             int d = Double.compare(b.alignScore, a.alignScore);
             return d != 0 ? d : Integer.compare(a.rank, b.rank);
         });
