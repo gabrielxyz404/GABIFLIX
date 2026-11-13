@@ -105,6 +105,7 @@ public class PlayerActivity extends Activity {
         } catch (Throwable t) { glog("escala: " + t); }
         fixSubtitleSurface();
         ui.postDelayed(this::fixSubtitleSurface, 400);
+        try { StringBuilder sb = new StringBuilder(); for (java.lang.reflect.Method m : MediaPlayer.class.getMethods()) sb.append(m.getName()).append(' '); glog("escala: métodos " + sb); } catch (Throwable ignored) {}
     }
 
     private static void collectSurfaces(View v, ArrayList<android.view.SurfaceView> out, String ind) {
