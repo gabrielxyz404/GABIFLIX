@@ -38,6 +38,7 @@ final class SubtitleSync {
     /** uma legenda baixada */
     static final class Cand {
         Uri uri;
+        String url;           // endereço de onde veio (identifica a legenda para guardar o atraso)
         java.io.File file;
         String text;          // texto UTF-8 atual (já alinhado), base para os ajustes manuais
         long lastMs;          // fim da última fala
@@ -45,6 +46,8 @@ final class SubtitleSync {
         boolean hashMatch;    // o addon marcou como "casa com o hash do arquivo"
         boolean fixed;        // tempos reescalados pela heurística de taxa de quadros
         boolean aligned;      // alinhada a uma referência
+        boolean refSelf;      // é a legenda PT do hash usada como referência das outras (já está certa, não é reescrita)
+        String alignNote = "";// resultado do ajuste automático para o diagnóstico (ex.: "rejeitado: versão diferente")
         double alignScore;
         double alignScale = 1.0;
         long alignOffsetMs;
@@ -298,27 +301,68 @@ final class SubtitleSync {
     }
 
     // ---------- alinhamento a uma referência ----------
-    /** alinha cada candidata (reescrevendo o arquivo) à melhor das referências; devolve quantas ficaram alinhadas */
-    static int alignAll(List<Cand> all, List<long[]> refs, StringBuilder lg) {
-        int n = 0;
-        if (refs.isEmpty()) return 0;
+    /** resultado do alinhamento: quantas ficaram alinhadas e que tipo de referência foi usada */
+    static final class AlignReport {
+        int aligned;
+        /** "outro idioma", "PT do hash" ou "nenhuma" */
+        String refKind = "nenhuma";
+    }
+
+    private static String f2(double v) { return String.format(Locale.ROOT, "%.2f", v).replace('.', ','); }
+
+    /**
+     * Alinha cada candidata (reescrevendo o arquivo) à melhor das referências; só reescreve se a nota global for boa E as duas
+     * metades baterem (senão é outra versão/corte do filme). Sem referência de outro idioma, a melhor PT que casa com o hash
+     * (a de menor posição) serve de referência para as outras PT. Sem nenhuma, não inventa nada.
+     */
+    static AlignReport alignAll(List<Cand> all, List<long[]> refs, StringBuilder lg) {
+        AlignReport rep = new AlignReport();
+        ArrayList<long[]> use = new ArrayList<>(refs);
+        Cand self = null;
+        if (!use.isEmpty()) rep.refKind = "outro idioma";
+        else {
+            for (Cand c : all) if (c.hashMatch && c.text != null && (self == null || c.rank < self.rank)) {
+                long[] st = SubtitleAlign.cueStarts(c.text);
+                if (st.length >= 20) self = c;
+            }
+            if (self == null) {
+                for (Cand c : all) c.alignNote = "sem referência — use Sincronizar pela fala";
+                lg.append("\n  sem referência (nem outro idioma, nem PT do hash): ranking antigo");
+                return rep;
+            }
+            use.add(SubtitleAlign.cueStarts(self.text));
+            self.refSelf = true;
+            self.alignNote = "é a referência (PT do hash)";
+            rep.refKind = "PT do hash";
+            lg.append("\n  referência = PT do hash #").append(self.rank);
+        }
         for (Cand c : all) {
+            if (c == self) continue;
             long[] starts = SubtitleAlign.cueStarts(c.text);
             SubtitleAlign.Fit best = null;
-            for (long[] r : refs) {
+            for (long[] r : use) {
                 SubtitleAlign.Fit f = SubtitleAlign.align(r, starts);
-                if (best == null || f.score > best.score) best = f;
-                if (best.score >= 0.6) break; // já está claro: não precisa das outras referências
+                // prefere uma referência que valide por inteiro; entre iguais, a de maior nota
+                if (best == null || (f.ok() && !best.ok()) || (f.ok() == best.ok() && f.score > best.score)) best = f;
+                if (best.ok() && best.score >= 0.6) break; // já está claro: não precisa das outras referências
             }
             if (best == null) continue;
-            lg.append("\n  #").append(c.rank).append(" alinhamento: nota=").append(String.format(Locale.ROOT, "%.2f", best.score))
-                    .append(" escala=").append(String.format(Locale.ROOT, "%.4f", best.scale)).append(" deslocamento=").append(best.offsetMs).append("ms");
-            if (!best.ok()) continue;
+            String nums = "nota=" + String.format(Locale.ROOT, "%.2f", best.score) + " metades=" + String.format(Locale.ROOT, "%.2f/%.2f", best.scoreFirstHalf, best.scoreSecondHalf)
+                    + " escala=" + String.format(Locale.ROOT, "%.4f", best.scale) + " deslocamento=" + best.offsetMs + "ms";
+            lg.append("\n  #").append(c.rank).append(" alinhamento: ").append(nums);
+            if (!best.ok()) {
+                c.alignNote = best.differentVersion()
+                        ? "rejeitado: versão diferente (corte) — nota " + f2(best.score) + ", metades " + f2(best.scoreFirstHalf) + "/" + f2(best.scoreSecondHalf)
+                        : "sem casamento com a referência (nota " + f2(best.score) + ")";
+                lg.append(" -> ").append(best.differentVersion() ? "REJEITADO: corte/versão diferente" : "não casa");
+                continue;
+            }
             c.aligned = true;
             c.alignScore = best.score;
             c.alignScale = best.scale;
             c.alignOffsetMs = best.offsetMs;
-            n++;
+            rep.aligned++;
+            c.alignNote = "ajuste auto " + signedSecs(best.offsetMs) + (best.scale != 1.0 ? ", ×" + String.format(Locale.ROOT, "%.4f", best.scale).replace('.', ',') : "");
             if (best.scale != 1.0 || Math.abs(best.offsetMs) >= 50) {
                 String t = SubtitleAlign.transform(c.text, best.scale, best.offsetMs);
                 try {
@@ -327,10 +371,15 @@ final class SubtitleSync {
                     os.close();
                     c.text = t;
                     c.lastMs = PlayerActivity.lastCueEnd(t);
-                } catch (IOException e) { c.aligned = false; n--; }
+                } catch (IOException e) { c.aligned = false; c.alignNote = "falhou ao gravar o ajuste"; rep.aligned--; }
             }
         }
-        return n;
+        return rep;
+    }
+
+    static String signedSecs(long ms) {
+        String v = String.format(Locale.ROOT, "%.1f", Math.abs(ms) / 1000.0).replace('.', ',');
+        return (ms > 0 ? "+" : ms < 0 ? "−" : "") + v + " s";
     }
 
     // ---------- ranking ----------
@@ -365,8 +414,9 @@ final class SubtitleSync {
      */
     static ArrayList<Cand> rank(List<Cand> all, long len, StringBuilder lg) {
         ArrayList<Cand> good = new ArrayList<>(), rest = new ArrayList<>();
-        for (Cand c : all) { if (c.aligned) good.add(c); else rest.add(c); }
+        for (Cand c : all) { if (c.aligned || c.refSelf) good.add(c); else rest.add(c); }
         Collections.sort(good, (a, b) -> {
+            if (a.refSelf != b.refSelf) return a.refSelf ? -1 : 1; // a PT do hash usada como referência vem primeiro
             int d = Double.compare(b.alignScore, a.alignScore);
             return d != 0 ? d : Integer.compare(a.rank, b.rank);
         });

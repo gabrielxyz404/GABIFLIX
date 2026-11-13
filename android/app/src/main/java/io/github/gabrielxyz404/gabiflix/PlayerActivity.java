@@ -10,6 +10,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.SystemClock;
 import android.util.TypedValue;
 import android.view.GestureDetector;
 import android.view.Gravity;
@@ -51,8 +52,15 @@ public class PlayerActivity extends Activity {
     private int addedSubs = 0;
     private static final java.util.regex.Pattern PT = java.util.regex.Pattern.compile("portug|brazil|brasil|\\bpt\\b|\\bpor\\b|\\bpob\\b|pt-br|pt_br", java.util.regex.Pattern.CASE_INSENSITIVE);
     private static final int HIDE_DELAY_MS = 3500;
-    /** ajuste manual da legenda (ms; positivo = a legenda aparece mais tarde), lembrado por título */
+    /** ajuste manual da legenda ATIVA (ms; positivo = a legenda aparece mais tarde), lembrado por vídeo + fonte + legenda */
     private int subDelayMs = 0;
+    private static final int MAX_DELAY_MS = 600000;
+    /** identificação da fonte (hash do OpenSubtitles ou nome do arquivo), preenchida pela thread de legendas */
+    private volatile String srcHash, srcName;
+    /** última combinação vídeo+fonte+legenda para a qual o atraso foi carregado; "\0" = ainda nenhuma */
+    private String lastSyncKey = "\0", announcedKey = "";
+    private TextView noticeLabel;
+    private final Runnable hideNotice = () -> { if (noticeLabel != null) noticeLabel.setVisibility(View.GONE); };
 
     private LibVLC libVLC;
     private MediaPlayer player;
@@ -89,7 +97,7 @@ public class PlayerActivity extends Activity {
         startMs = getIntent().getLongExtra(EXTRA_START, 0);
         getSharedPreferences(LAST_PREFS, MODE_PRIVATE).edit().clear().apply();
         if (url == null) { finish(); return; }
-        subDelayMs = savedSubDelay();
+        subDelayMs = 0; // o atraso guardado só entra quando a legenda ativa é conhecida (syncDelayToTrack)
         loadSubtitlesInBackground();
 
         tv = MainActivity.isTv(this);
@@ -118,6 +126,16 @@ public class PlayerActivity extends Activity {
 
         controls = buildControls();
         root.addView(controls, match());
+        noticeLabel = text("", 14, false);
+        noticeLabel.setVisibility(View.GONE);
+        noticeLabel.setPadding(dp(16), dp(8), dp(16), dp(8));
+        GradientDrawable nb = new GradientDrawable();
+        nb.setColor(0x99141416);
+        nb.setCornerRadius(dp(18));
+        noticeLabel.setBackground(nb);
+        FrameLayout.LayoutParams nlp = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.TOP | Gravity.CENTER_HORIZONTAL);
+        nlp.topMargin = dp(28);
+        root.addView(noticeLabel, nlp);
         setContentView(root);
         if (tv) root.requestFocus();
 
@@ -486,7 +504,7 @@ public class PlayerActivity extends Activity {
     private boolean subsDownloaded = false, subsAttached = false, userPickedSub = false;
     private int attachTries = 0;
     /** diagnóstico mostrado no topo do menu de legendas */
-    private String diagId = "Procurando legendas…", diagRef = "";
+    private String diagId = "Procurando legendas…", diagRef = "", diagHash = "…";
     private static final int NO_TRACK = Integer.MIN_VALUE;
     private int embeddedPtId = NO_TRACK;
 
@@ -508,6 +526,8 @@ public class PlayerActivity extends Activity {
             // 1) hash do arquivo (como o Stremio desktop); o link do debrid pode demorar a resolver
             SubtitleSync.VideoHash vh = SubtitleSync.computeHashTimeboxed(url, 25000);
             String fname = SubtitleSync.fileNameOf(url, vh);
+            srcHash = vh.hash;
+            srcName = fname;
             if (vh.hash != null) glog("hash=" + vh.hash + " tamanho=" + vh.size + " arquivo=" + fname);
             else glog("hash não calculado: " + vh.error + "; arquivo=" + fname);
 
@@ -531,6 +551,7 @@ public class PlayerActivity extends Activity {
                 for (SubtitleSync.Found f : sr.pt) if (f.hashMatch) hashHits++;
                 for (SubtitleSync.Found f : sr.refs) if (f.hashMatch) hashHits++;
             }
+            final String hashLine = hashHits > 0 ? "sim" : vh.hash != null ? "calculado, sem casamento" : "não";
             String idLine;
             if (vh.hash == null) idLine = "Vídeo não identificado (sem hash: " + shortReason(vh.error) + ")";
             else if (sr == null || !sr.ok) idLine = "Hash calculado, mas a busca de legendas falhou";
@@ -586,14 +607,16 @@ public class PlayerActivity extends Activity {
 
             // 3) alinha cada legenda PT à referência (escala x deslocamento)
             StringBuilder lg = new StringBuilder("alinhamento com " + refStarts.size() + " referência(s):");
-            int nAligned = SubtitleSync.alignAll(ok, refStarts, lg);
+            SubtitleSync.AlignReport ar = SubtitleSync.alignAll(ok, refStarts, lg);
+            int nAligned = ar.aligned;
             glog(lg.toString() + "\n  alinhadas: " + nAligned);
             String refLine;
-            if (refStarts.isEmpty()) refLine = (sr != null && !sr.refs.isEmpty()) ? "referência não baixou" : "sem referência";
-            else refLine = "referência " + langShort(refLang) + " ✓" + (nAligned == 0 ? " (nenhuma legenda casou)" : "");
+            if (ar.refKind.equals("outro idioma")) refLine = "outro idioma (" + langShort(refLang) + ")" + (nAligned == 0 ? ", nenhuma legenda casou" : "");
+            else if (ar.refKind.equals("PT do hash")) refLine = "PT do hash";
+            else refLine = (sr != null && !sr.refs.isEmpty()) ? "nenhuma (a referência não baixou)" : "nenhuma";
 
             final String fIdLine = idLine, fRefLine = refLine;
-            ui.post(() -> { cands.addAll(ok); diagId = fIdLine; diagRef = fRefLine; subsDownloaded = true; attachReadySubs(); });
+            ui.post(() -> { cands.addAll(ok); diagId = fIdLine; diagRef = fRefLine; diagHash = hashLine; subsDownloaded = true; attachReadySubs(); });
         }).start();
     }
 
@@ -626,6 +649,7 @@ public class PlayerActivity extends Activity {
             os.close();
             SubtitleSync.Cand c = new SubtitleSync.Cand();
             c.uri = Uri.fromFile(out);
+            c.url = fo.url;
             c.file = out;
             c.text = text;
             c.lastMs = lastCueEnd(text);
@@ -741,11 +765,14 @@ public class PlayerActivity extends Activity {
                     + "; melhor baixada: #" + f.rank + " alinhada=" + f.aligned + " nota=" + String.format(Locale.ROOT, "%.2f", f.alignScore)
                     + " deslocamento=" + f.alignOffsetMs + "ms hash=" + f.hashMatch + " corrigida=" + f.fixed + "; " + addedSubs + " no menu");
         }
-        applySubDelay();
+        syncDelayToTrack(embeddedFirst && !userPickedSub ? embeddedPtId : player.getSpuTrack());
         ui.postDelayed(() -> {
-            applySubDelay();
-            if (embeddedFirst && !userPickedSub && player != null) player.setSpuTrack(embeddedPtId);
+            if (player == null) return;
+            if (embeddedFirst && !userPickedSub) player.setSpuTrack(embeddedPtId);
+            syncDelayToTrack(player.getSpuTrack());
         }, 1500);
+        // a legenda baixada escolhida por addSlave pode demorar a ficar ativa: confere de novo
+        ui.postDelayed(() -> { if (player != null) syncDelayToTrack(player.getSpuTrack()); }, 4000);
     }
 
     private void selectEmbeddedPortugueseLater() {
@@ -755,7 +782,7 @@ public class PlayerActivity extends Activity {
             MediaPlayer.TrackDescription[] t = player.getSpuTracks();
             if (t == null) return;
             int id = findEmbeddedPt(t);
-            if (id != NO_TRACK) { embeddedPtId = id; if (!userPickedSub) player.setSpuTrack(id); return; }
+            if (id != NO_TRACK) { embeddedPtId = id; if (!userPickedSub) { player.setSpuTrack(id); syncDelayToTrack(id); } return; }
             if (addedSubs > 0) return;
             player.setSpuTrack(-1);
         }, 2500);
@@ -812,9 +839,7 @@ public class PlayerActivity extends Activity {
                 names[i] = n <= subLabels.size() ? subLabels.get(n - 1) : "Português " + n;
                 if (d.id == current && n <= attached.size()) {
                     SubtitleSync.Cand c = attached.get(n - 1);
-                    String adj = c.aligned
-                            ? "ajuste " + signedSecs(c.alignOffsetMs) + (c.alignScale != 1.0 ? ", velocidade ×" + String.format(Locale.ROOT, "%.4f", c.alignScale).replace('.', ',') : "")
-                            : c.fixed ? "velocidade corrigida" : "sem ajuste";
+                    String adj = !c.alignNote.isEmpty() ? c.alignNote : c.fixed ? "velocidade corrigida" : "sem ajuste auto";
                     chosen = names[i] + " (" + adj + ")";
                 }
             } else {
@@ -824,9 +849,10 @@ public class PlayerActivity extends Activity {
         }
         StringBuilder diag = new StringBuilder(diagId);
         diag.append(" · ").append(!subsDownloaded ? "baixando legendas…" : cands.size() == 1 ? "1 legenda PT" : cands.size() + " legendas PT");
-        if (!diagRef.isEmpty()) diag.append(" · ").append(diagRef);
-        if (chosen != null) diag.append(" · escolhida: ").append(chosen);
-        if (subDelayMs != 0) diag.append(" · atraso ").append(signedSecs(subDelayMs));
+        diag.append("\nHash: ").append(diagHash);
+        diag.append(" · Referência: ").append(diagRef.isEmpty() ? "…" : diagRef);
+        if (chosen != null) diag.append("\nEscolhida: ").append(chosen);
+        diag.append("\nAtraso manual: ").append(subDelayMs == 0 ? "0,0 s" : signedSecs(subDelayMs));
         ui.removeCallbacks(hideControls);
         if (keep.size() <= 1) {
             new AlertDialog.Builder(this, android.R.style.Theme_DeviceDefault_Dialog_Alert)
@@ -846,7 +872,7 @@ public class PlayerActivity extends Activity {
         head.addView(dg);
         new AlertDialog.Builder(this, android.R.style.Theme_DeviceDefault_Dialog_Alert)
                 .setCustomTitle(head)
-                .setSingleChoiceItems(names, checked, (d, which) -> { userPickedSub = true; player.setSpuTrack(ids[which]); d.dismiss(); scheduleHide(); })
+                .setSingleChoiceItems(names, checked, (d, which) -> { userPickedSub = true; player.setSpuTrack(ids[which]); syncDelayToTrack(ids[which]); d.dismiss(); scheduleHide(); })
                 .setNeutralButton("Sincronizar legenda", (d, w) -> showSyncDialog())
                 .setNegativeButton("Cancelar", null)
                 .show();
@@ -854,10 +880,71 @@ public class PlayerActivity extends Activity {
 
     // ---------- ajuste manual do atraso da legenda ----------
     // libVLC: setSpuDelay(microssegundos); positivo = a legenda aparece MAIS TARDE (funciona na Fire TV)
-    private String delayKey() { return "d:" + (metaId != null ? metaId : String.valueOf(url.hashCode())); }
+    // O atraso é guardado por VÍDEO + FONTE (hash/nome do arquivo) + LEGENDA (url da baixada ou "emb:" + nome da faixa):
+    // só volta a ser aplicado quando a mesma fonte E a mesma legenda estão ativas ("sub-delay-3"; o antigo "sub-delay-2", por título, não é mais lido).
+    private static final String DELAY_PREFS = "sub-delay-3";
 
-    private int savedSubDelay() {
-        try { return getSharedPreferences("sub-delay-2", MODE_PRIVATE).getInt(delayKey(), 0); } catch (Exception e) { return 0; }
+    private String sourceId() {
+        String h = srcHash;
+        if (h != null) return "h:" + h;
+        String n = srcName != null ? srcName : SubtitleSync.fileNameOf(url, null);
+        if (n != null) return "f:" + n;
+        String u = url;
+        int q = u.indexOf('?');
+        if (q >= 0) u = u.substring(0, q);
+        return "u:" + Integer.toHexString(u.hashCode());
+    }
+
+    /** legenda baixada que corresponde à faixa do VLC (as baixadas são as faixas novas, na ordem em que foram adicionadas); null se for embutida/desativada */
+    private SubtitleSync.Cand candForTrack(int trackId, MediaPlayer.TrackDescription[] tracks) {
+        if (trackId == -1 || tracks == null) return null;
+        int n = 0;
+        for (MediaPlayer.TrackDescription d : tracks) {
+            if (d.id == -1 || !isDownloaded(d.id)) continue;
+            if (d.id == trackId) return n < attached.size() ? attached.get(n) : null;
+            n++;
+        }
+        return null;
+    }
+
+    /** chave do atraso para a faixa; null se não há legenda ativa */
+    private String delayKeyFor(int trackId, MediaPlayer.TrackDescription[] tracks) {
+        if (trackId == -1 || tracks == null) return null;
+        String sub = null;
+        SubtitleSync.Cand c = candForTrack(trackId, tracks);
+        if (c != null) sub = c.url != null ? c.url : "cand" + c.rank;
+        else for (MediaPlayer.TrackDescription d : tracks) if (d.id == trackId) sub = "emb:" + d.name;
+        if (sub == null) return null;
+        return "d3:" + (metaId != null ? metaId : "u") + "|" + sourceId() + "|" + sub;
+    }
+
+    private int savedDelay(String key) {
+        if (key == null) return 0;
+        try { return getSharedPreferences(DELAY_PREFS, MODE_PRIVATE).getInt(key, 0); } catch (Exception e) { return 0; }
+    }
+
+    /** a legenda ativa mudou (ou ficou conhecida): carrega o atraso guardado dela (ou 0) e aplica */
+    private void syncDelayToTrack(int trackId) {
+        if (player == null) return;
+        String k = delayKeyFor(trackId, player.getSpuTracks());
+        String tag = k == null ? "" : k;
+        if (tag.equals(lastSyncKey)) return;
+        lastSyncKey = tag;
+        subDelayMs = Math.max(-MAX_DELAY_MS, Math.min(MAX_DELAY_MS, savedDelay(k)));
+        applySubDelay();
+        glog("atraso da legenda ativa (" + (k == null ? "nenhuma" : k) + "): " + subDelayMs + " ms");
+        if (subDelayMs != 0 && !tag.equals(announcedKey)) {
+            announcedKey = tag;
+            notice("Legenda: atraso guardado " + signedSecs(subDelayMs));
+        }
+    }
+
+    private void notice(String s) {
+        if (noticeLabel == null) return;
+        noticeLabel.setText(s);
+        noticeLabel.setVisibility(View.VISIBLE);
+        ui.removeCallbacks(hideNotice);
+        ui.postDelayed(hideNotice, 3000);
     }
 
     private void applySubDelay() {
@@ -867,12 +954,21 @@ public class PlayerActivity extends Activity {
 
     private String delayLabel() { return "Atraso da legenda: " + (subDelayMs == 0 ? "0,0 s" : signedSecs(subDelayMs)); }
 
-    private void changeSubDelay(int deltaMs, boolean reset, TextView label) {
-        subDelayMs = reset ? 0 : Math.max(-60000, Math.min(60000, subDelayMs + deltaMs));
-        try { getSharedPreferences("sub-delay-2", MODE_PRIVATE).edit().putInt(delayKey(), subDelayMs).apply(); } catch (Exception ignored) {}
+    /** define o atraso da legenda ativa (limite ±600 s), guarda por fonte+legenda, aplica e atualiza o texto */
+    private void setSubDelay(int ms, TextView label) {
+        subDelayMs = Math.max(-MAX_DELAY_MS, Math.min(MAX_DELAY_MS, ms));
+        String k = player == null ? null : delayKeyFor(player.getSpuTrack(), player.getSpuTracks());
+        if (k != null) {
+            lastSyncKey = k;
+            try { getSharedPreferences(DELAY_PREFS, MODE_PRIVATE).edit().putInt(k, subDelayMs).apply(); } catch (Exception ignored) {}
+        }
         applySubDelay();
-        label.setText(delayLabel());
-        glog("atraso da legenda: " + subDelayMs + " ms");
+        if (label != null) label.setText(delayLabel());
+        glog("atraso da legenda: " + subDelayMs + " ms (" + (k == null ? "sem legenda ativa, não guardado" : k) + ")");
+    }
+
+    private void changeSubDelay(int deltaMs, boolean reset, TextView label) {
+        setSubDelay(reset ? 0 : subDelayMs + deltaMs, label);
     }
 
     /** botão do diálogo de sincronização: selecionável com o controle remoto, com borda branca no foco */
@@ -900,6 +996,57 @@ public class PlayerActivity extends Activity {
         return row;
     }
 
+    /** botão de passo: toque = um passo; segurar (toque longo, ou OK mantido no controle) repete a cada ~150 ms e acelera */
+    private TextView stepButton(String label, final int deltaMs, final TextView value) {
+        final TextView b = syncButton(label);
+        b.setPadding(dp(12), dp(9), dp(12), dp(9));
+        b.setOnClickListener(v -> changeSubDelay(deltaMs, false, value));
+        final long[] since = {0, 0}; // [início do segurar, último passo do controle]
+        final boolean[] held = {false};
+        final Runnable[] tick = new Runnable[1];
+        tick[0] = () -> {
+            held[0] = true;
+            stepHeld(deltaMs, since[0], value);
+            ui.postDelayed(tick[0], 150);
+        };
+        b.setOnTouchListener((v, e) -> {
+            switch (e.getActionMasked()) {
+                case MotionEvent.ACTION_DOWN:
+                    held[0] = false;
+                    since[0] = SystemClock.uptimeMillis();
+                    ui.postDelayed(tick[0], 400);
+                    return false;
+                case MotionEvent.ACTION_UP:
+                case MotionEvent.ACTION_CANCEL:
+                    ui.removeCallbacks(tick[0]);
+                    if (held[0]) { held[0] = false; v.setPressed(false); return true; } // já repetiu: não conta como clique
+                    return false;
+                default:
+                    return false;
+            }
+        });
+        b.setOnKeyListener((v, keyCode, ev) -> {
+            if (keyCode != android.view.KeyEvent.KEYCODE_DPAD_CENTER && keyCode != android.view.KeyEvent.KEYCODE_ENTER) return false;
+            if (ev.getAction() == android.view.KeyEvent.ACTION_DOWN) {
+                if (ev.getRepeatCount() == 0) { held[0] = false; return false; } // primeiro toque: clique normal
+                long now = SystemClock.uptimeMillis();
+                if (!held[0]) { held[0] = true; since[0] = now; since[1] = 0; }
+                if (now - since[1] >= 150) { since[1] = now; stepHeld(deltaMs, since[0], value); }
+                return true;
+            }
+            if (ev.getAction() == android.view.KeyEvent.ACTION_UP && held[0]) { held[0] = false; v.setPressed(false); return true; }
+            return false;
+        });
+        return b;
+    }
+
+    /** um passo de quem está segurando o botão: quanto mais tempo, maior o salto */
+    private void stepHeld(int deltaMs, long since, TextView value) {
+        long el = SystemClock.uptimeMillis() - since;
+        int mult = el < 1500 ? 1 : el < 3000 ? 3 : el < 5000 ? 10 : 30;
+        changeSubDelay(deltaMs * mult, false, value);
+    }
+
     private void showSyncDialog() {
         ui.removeCallbacks(hideControls);
         LinearLayout box = new LinearLayout(this);
@@ -908,26 +1055,47 @@ public class PlayerActivity extends Activity {
         box.setPadding(dp(24), dp(12), dp(24), dp(8));
         TextView value = text(delayLabel(), 20, true);
         value.setGravity(Gravity.CENTER);
-        value.setPadding(0, 0, 0, dp(10));
-        TextView h1 = text("A legenda aparece ANTES da fala:", 14, false);
-        TextView h2 = text("A legenda aparece DEPOIS da fala:", 14, false);
-        h2.setPadding(0, dp(10), 0, 0);
-        TextView later1 = syncButton("Atrasar +0,5 s"), later2 = syncButton("Atrasar +5 s");
-        TextView early1 = syncButton("Adiantar −0,5 s"), early2 = syncButton("Adiantar −5 s");
-        TextView reset = syncButton("Repor");
-        later1.setOnClickListener(v -> changeSubDelay(500, false, value));
-        later2.setOnClickListener(v -> changeSubDelay(5000, false, value));
-        early1.setOnClickListener(v -> changeSubDelay(-500, false, value));
-        early2.setOnClickListener(v -> changeSubDelay(-5000, false, value));
-        reset.setOnClickListener(v -> changeSubDelay(0, true, value));
-        LinearLayout last = syncRow(reset);
-        last.setPadding(0, dp(14), 0, 0);
+        value.setPadding(0, dp(12), 0, dp(10));
+
+        // principal: acertar pela fala (só com legenda baixada ativa: a embutida não tem texto acessível)
+        SubtitleSync.Cand active = player == null ? null : candForTrack(player.getSpuTrack(), player.getSpuTracks());
+        TextView speech = null;
+        if (active != null && active.text != null) {
+            speech = syncButton("Sincronizar pela fala");
+            final SubtitleSync.Cand fa = active;
+            speech.setOnClickListener(v -> showSpeechPicker(fa, value));
+            box.addView(syncRow(speech));
+            TextView help = text("Pause numa fala, escolha-a na lista e a legenda acerta sozinha.", 13, false);
+            help.setGravity(Gravity.CENTER);
+            help.setTextColor(0xFFA0A0A0);
+            box.addView(help);
+        } else {
+            TextView warn = text("Sincronizar pela fala: ative uma legenda baixada (a embutida não permite). Use os botões abaixo.", 13, false);
+            warn.setGravity(Gravity.CENTER);
+            warn.setTextColor(0xFFFFC857);
+            box.addView(warn);
+        }
         box.addView(value);
+
+        TextView h1 = text("Legenda DEPOIS da fala (adiantar):", 14, false);
+        TextView h2 = text("Legenda ANTES da fala (atrasar):", 14, false);
+        h2.setPadding(0, dp(10), 0, 0);
+        TextView m30 = stepButton("−30 s", -30000, value), m5 = stepButton("−5 s", -5000, value), m1 = stepButton("−1 s", -1000, value);
+        TextView p1 = stepButton("+1 s", 1000, value), p5 = stepButton("+5 s", 5000, value), p30 = stepButton("+30 s", 30000, value);
+        TextView m05 = stepButton("−0,5 s", -500, value), p05 = stepButton("+0,5 s", 500, value);
+        TextView reset = syncButton("Repor");
+        reset.setOnClickListener(v -> changeSubDelay(0, true, value));
+        TextView hold = text("Segure o botão para repetir (acelera).", 12, false);
+        hold.setTextColor(0xFFA0A0A0);
+        hold.setGravity(Gravity.CENTER);
+        LinearLayout last = syncRow(m05, p05, reset);
+        last.setPadding(0, dp(10), 0, 0);
         box.addView(h1);
-        box.addView(syncRow(later1, later2));
+        box.addView(syncRow(m30, m5, m1));
         box.addView(h2);
-        box.addView(syncRow(early1, early2));
+        box.addView(syncRow(p1, p5, p30));
         box.addView(last);
+        box.addView(hold);
         android.widget.ScrollView scroll = new android.widget.ScrollView(this);
         scroll.addView(box);
         AlertDialog dlg = new AlertDialog.Builder(this, android.R.style.Theme_DeviceDefault_Dialog_Alert)
@@ -937,7 +1105,82 @@ public class PlayerActivity extends Activity {
                 .setOnDismissListener(d -> scheduleHide())
                 .create();
         dlg.show();
-        later1.requestFocus();
+        (speech != null ? speech : p1).requestFocus();
+    }
+
+    private static String clock(long ms) {
+        long s = Math.max(0, ms) / 1000, h = s / 3600, m = (s % 3600) / 60, sec = s % 60;
+        return h > 0 ? String.format(Locale.ROOT, "%d:%02d:%02d", h, m, sec) : String.format(Locale.ROOT, "%02d:%02d", m, sec);
+    }
+
+    /**
+     * "Sincronizar pela fala": pausa, lista as falas da legenda ativa em volta do momento (±180 s no tempo da legenda) e,
+     * ao escolher a que estava sendo dita, o atraso passa a ser (tempo atual do vídeo − início dessa fala).
+     */
+    private void showSpeechPicker(SubtitleSync.Cand active, TextView value) {
+        if (player == null) return;
+        final boolean wasPlaying = player.isPlaying();
+        player.pause();
+        final long now = player.getTime();
+        final long center = now - subDelayMs; // onde estamos no tempo da legenda
+        ArrayList<SubtitleAlign.Cue> all = SubtitleAlign.cues(active.text);
+        final ArrayList<SubtitleAlign.Cue> list = new ArrayList<>();
+        int sel = 0;
+        long bestD = Long.MAX_VALUE;
+        for (SubtitleAlign.Cue c : all) {
+            long d = Math.abs(c.startMs - center);
+            if (d > 180000) continue;
+            if (d < bestD) { bestD = d; sel = list.size(); }
+            list.add(c);
+        }
+        if (list.isEmpty()) {
+            new AlertDialog.Builder(this, android.R.style.Theme_DeviceDefault_Dialog_Alert)
+                    .setTitle("Sincronizar pela fala")
+                    .setMessage("Esta legenda não tem falas perto deste momento (±3 min). Use os botões de ajuste.")
+                    .setPositiveButton("OK", null)
+                    .setOnDismissListener(d -> { if (wasPlaying && player != null) player.play(); })
+                    .show();
+            return;
+        }
+        String[] labels = new String[list.size()];
+        for (int i = 0; i < labels.length; i++) labels[i] = clock(list.get(i).startMs) + "  " + list.get(i).text;
+        android.widget.ArrayAdapter<String> adapter = new android.widget.ArrayAdapter<String>(this, android.R.layout.simple_list_item_single_choice, labels) {
+            @Override public View getView(int position, View convertView, ViewGroup parent) {
+                View v = super.getView(position, convertView, parent);
+                if (v instanceof TextView) {
+                    TextView t = (TextView) v;
+                    t.setSingleLine(true);
+                    t.setEllipsize(android.text.TextUtils.TruncateAt.END);
+                    t.setTextSize(TypedValue.COMPLEX_UNIT_SP, 15);
+                }
+                return v;
+            }
+        };
+        LinearLayout head = new LinearLayout(this);
+        head.setOrientation(LinearLayout.VERTICAL);
+        head.setPadding(dp(24), dp(16), dp(24), dp(8));
+        head.addView(text("Qual fala estava sendo dita?", 20, true));
+        TextView help = text("Pause numa fala, escolha-a na lista e a legenda acerta sozinha.", 13, false);
+        help.setTextColor(0xFFA0A0A0);
+        help.setPadding(0, dp(4), 0, 0);
+        head.addView(help);
+        AlertDialog dlg = new AlertDialog.Builder(this, android.R.style.Theme_DeviceDefault_Dialog_Alert)
+                .setCustomTitle(head)
+                .setSingleChoiceItems(adapter, sel, (d, which) -> {
+                    long start = list.get(which).startMs;
+                    int nd = (int) Math.max(-MAX_DELAY_MS, Math.min(MAX_DELAY_MS, now - start));
+                    setSubDelay(nd, value);
+                    notice("Atraso da legenda: " + signedSecs(nd));
+                    d.dismiss();
+                })
+                .setNegativeButton("Cancelar", null)
+                .setOnDismissListener(d -> { if (wasPlaying && player != null) player.play(); }) // escolher, Cancelar ou Voltar: retoma
+                .create();
+        dlg.show();
+        final android.widget.ListView lv = dlg.getListView();
+        final int fsel = sel;
+        lv.requestFocus();
+        lv.post(() -> lv.setSelectionFromTop(fsel, Math.max(0, lv.getHeight() / 2 - dp(24))));
     }
 
     private interface TrackSetter { void set(int id); }

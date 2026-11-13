@@ -2,6 +2,7 @@ package io.github.gabrielxyz404.gabiflix;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -13,17 +14,25 @@ import java.util.regex.Pattern;
  * este vídeo. Comparamos os INÍCIOS das falas da legenda candidata com os da referência e procuramos a
  * transformação  t' = t * escala + deslocamento  que faz a maior parte das falas cair a menos de 300 ms de
  * uma fala da referência. Funciona para qualquer título (não usa nome, id nem duração).
+ * O resultado só é aceito com nota >= 0,5 e se cada METADE das falas também casar (>= 0,35): se só uma parte
+ * do filme bate, é outra versão/corte e o alinhamento é rejeitado em vez de piorar a legenda.
  */
 final class SubtitleAlign {
     private SubtitleAlign() {}
 
     /** razões entre taxas de quadros mais comuns (a primeira, 1, é "sem mudança de velocidade") */
     static final double[] SCALES = {1.0, 25.0 / 23.976, 23.976 / 25.0, 24.0 / 23.976, 23.976 / 24.0, 25.0 / 24.0, 24.0 / 25.0};
-    static final long COARSE_RANGE_MS = 120000;
+    static final long COARSE_RANGE_MS = 300000;
     static final long COARSE_BIN_MS = 250;
     static final long TOLERANCE_MS = 300;
     /** pontuação mínima (fração das falas que cai em cima de uma fala da referência) para aceitar o alinhamento */
-    static final double MIN_SCORE = 0.35;
+    static final double MIN_SCORE = 0.5;
+    /** nota mínima para a exceção de metades consistentes (ver Fit.ok) */
+    static final double LOW_SCORE = 0.4;
+    /** abaixo disto nem parece a mesma legenda (outro filme/episódio); entre isto e MIN_SCORE = "versão diferente" */
+    static final double WEAK_SCORE = 0.35;
+    /** cada metade das falas precisa de pelo menos esta nota com a transformação encontrada */
+    static final double MIN_HALF_SCORE = 0.35;
     /** uma escala diferente de 1 só vence se for melhor que a escala 1 por esta margem */
     static final double SCALE_MARGIN = 0.05;
 
@@ -31,11 +40,52 @@ final class SubtitleAlign {
         double scale = 1.0;
         long offsetMs = 0;
         double score = 0;
-        boolean ok() { return score >= MIN_SCORE; }
+        double scoreFirstHalf = 0, scoreSecondHalf = 0;
+        boolean halvesOk() { return scoreFirstHalf >= MIN_HALF_SCORE && scoreSecondHalf >= MIN_HALF_SCORE; }
+        /**
+         * aceito: nota global >= 0,5 E as duas metades batem. Exceção: nota entre 0,4 e 0,5 (tradução com tempos
+         * bem diferentes da referência) só se as duas metades derem notas parecidas (um corte/versão diferente
+         * deixa uma metade muito pior que a outra)
+         */
+        boolean ok() {
+            if (!halvesOk()) return false;
+            if (score >= MIN_SCORE) return true;
+            return score >= LOW_SCORE && Math.abs(scoreFirstHalf - scoreSecondHalf) <= 0.15;
+        }
+        /** bateu em parte (nota global >= WEAK_SCORE) mas foi rejeitado: outra versão/corte do filme */
+        boolean differentVersion() { return !ok() && score >= WEAK_SCORE; }
+    }
+
+    /** uma fala da legenda (início em ms e texto numa linha) */
+    static final class Cue {
+        final long startMs;
+        final String text;
+        Cue(long startMs, String text) { this.startMs = startMs; this.text = text; }
     }
 
     private static final Pattern START = Pattern.compile(
-            "^[ \\t]*(?:(\\d+):)?(\\d{1,2}):(\\d\\d)[,.](\\d{3})[ \\t]*-->", Pattern.MULTILINE);
+            "^[ \\t]*(?:(\\d+):)?(\\d{1,2}):(\\d\\d)[,.](\\d{3})[ \\t]*-->[^\\n]*", Pattern.MULTILINE);
+    private static final Pattern TAGS = Pattern.compile("<[^>]*>|\\{\\\\[^}]*\\}");
+
+    /** falas (início + texto sem marcas, numa linha) em ordem de tempo (SRT ou VTT); no máximo 6000 */
+    static ArrayList<Cue> cues(String text) {
+        ArrayList<Cue> out = new ArrayList<>();
+        Matcher m = START.matcher(text);
+        while (m.find() && out.size() < 6000) {
+            long h = m.group(1) == null ? 0 : Long.parseLong(m.group(1));
+            long start = ((h * 60 + Long.parseLong(m.group(2))) * 60 + Long.parseLong(m.group(3))) * 1000 + Long.parseLong(m.group(4));
+            int a = m.end();
+            int b = text.indexOf("\n\n", a);
+            int b2 = text.indexOf("\r\n\r\n", a);
+            if (b < 0 || (b2 >= 0 && b2 < b)) b = b2;
+            if (b < 0) b = Math.min(text.length(), a + 400);
+            String body = text.substring(a, Math.min(b, a + 400));
+            body = TAGS.matcher(body).replaceAll("").replaceAll("\\s+", " ").trim();
+            out.add(new Cue(start, body));
+        }
+        Collections.sort(out, (x, y) -> Long.compare(x.startMs, y.startMs));
+        return out;
+    }
 
     /** início de cada fala (ms), em ordem crescente (SRT ou VTT); no máximo 6000 falas */
     static long[] cueStarts(String text) {
@@ -106,7 +156,7 @@ final class SubtitleAlign {
         return hits;
     }
 
-    /** melhor deslocamento para uma escala: histograma grosso (-120..+120 s) e depois refino de ±1 s em passos de 50 ms */
+    /** melhor deslocamento para uma escala: histograma grosso (-300..+300 s) e depois refino de ±1 s em passos de 50 ms */
     private static Fit alignWithScale(long[] ref, long[] cand, double scale) {
         int bins = (int) (2 * COARSE_RANGE_MS / COARSE_BIN_MS) + 3;
         int[] hist = new int[bins];
@@ -141,7 +191,22 @@ final class SubtitleAlign {
         return f;
     }
 
-    /** melhor transformação (escala x deslocamento) que leva a candidata para cima da referência; score < MIN_SCORE = não confiável */
+    /** nota de um trecho da candidata [from,to): acertos / min(falas do trecho, falas da referência na mesma janela de tempo) */
+    private static double rangeScore(long[] ref, long[] cand, int from, int to, double scale, long off) {
+        if (to - from < 5) return 0;
+        long t0 = Math.round(cand[from] * scale) + off - TOLERANCE_MS, t1 = Math.round(cand[to - 1] * scale) + off + TOLERANCE_MS;
+        int refCount = lowerBound(ref, t1 + 1) - lowerBound(ref, t0);
+        int hits = 0;
+        for (int k = from; k < to; k++) {
+            long t = Math.round(cand[k] * scale) + off;
+            int i = lowerBound(ref, t);
+            if ((i < ref.length && ref[i] - t <= TOLERANCE_MS) || (i > 0 && t - ref[i - 1] <= TOLERANCE_MS)) hits++;
+        }
+        int denom = Math.max(1, Math.min(to - from, refCount));
+        return hits / (double) denom;
+    }
+
+    /** melhor transformação (escala x deslocamento) que leva a candidata para cima da referência; ok() só se a nota global E as duas metades passam */
     static Fit align(long[] ref, long[] cand) {
         Fit none = new Fit();
         if (ref == null || cand == null || ref.length < 20 || cand.length < 20) return none;
@@ -152,6 +217,9 @@ final class SubtitleAlign {
             if (bestOther == null || f.score > bestOther.score) bestOther = f;
         }
         if (bestOther != null && bestOther.score > best.score + SCALE_MARGIN) best = bestOther;
+        int mid = cand.length / 2;
+        best.scoreFirstHalf = rangeScore(ref, cand, 0, mid, best.scale, best.offsetMs);
+        best.scoreSecondHalf = rangeScore(ref, cand, mid, cand.length, best.scale, best.offsetMs);
         return best;
     }
 }
