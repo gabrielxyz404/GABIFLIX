@@ -692,7 +692,7 @@ enum SubtitleAlign {
         f.segCues = [Int](repeating: 0, count: S)
         var ok = f.score >= PIECE_MIN_SCORE
         for q in 0..<S {
-            f.segCues[q] = segs[q][1] - segs[q][0]
+            f.segCues![q] = segs[q][1] - segs[q][0]
             f.segScores![q] = rangeScore(ref, cand, segs[q][0], segs[q][1], f)
             if f.segCues![q] < MIN_SEG_CUES || f.segScores![q] < SEG_MIN_SCORE { ok = false }
         }
