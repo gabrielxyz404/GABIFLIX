@@ -149,7 +149,8 @@ jobs:
           cmd "sync"; cmd "hold 2 0"; sleep 3; cmd "state"
           cmd "hold 1 2"; sleep 3; cmd "state"
           cmd "close"
-          cmd "resize 700 460"; cmd "layout"; echo "show" > /tmp/gf-cmd; sleep 1; shot 12-janela-pequena; sleep 2
+          cmd "resize 700 460"; cmd "layout"
+          cmd "resize 820 460"; cmd "layout"; echo "show" > /tmp/gf-cmd; sleep 1; shot 12-janela-pequena; sleep 2
           cmd "resize 1000 700"; cmd "show"; cmd "layout"
           cmd "fs"; sleep 4; echo "show" > /tmp/gf-cmd; sleep 1; shot 13-tela-cheia; sleep 2; cmd "layout"
           cmd "fs"; sleep 3
