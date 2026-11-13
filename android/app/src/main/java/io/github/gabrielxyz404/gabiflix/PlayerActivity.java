@@ -77,8 +77,10 @@ public class PlayerActivity extends Activity {
     private long lastSaved = 0;
     private int scaleIndex = 0;
     // 0 = Ajustar (barras pretas), 1 = Preencher (corta o excesso, sem distorcer), 2 = Esticar (distorce até encher a tela).
-    // O VLC fica sempre em SURFACE_BEST_FIT: assim a superfície (e a das legendas) tem sempre o tamanho da tela e a legenda
-    // fica visível em baixo; Preencher/Esticar são feitos dentro do próprio VLC (zoom / proporção).
+    // O VLC fica sempre em SURFACE_BEST_FIT: assim a superfície das legendas continua dentro da tela e a legenda fica
+    // inteira e centrada em baixo nos 3 modos. (SURFACE_FILL/FIT_SCREEN do VLC desenham a legenda no fundo de um vídeo
+    // maior que a tela, e ela sai da área visível.) Esticar = proporção do VLC igual à da tela; Preencher = zoom na
+    // TextureView do vídeo (o VLC é sempre ligado por TextureView, ver attachViews).
     private static final String[] SCALE_NAMES = {"Ajustar", "Preencher", "Esticar"};
     private int lastScaleW = -1, lastScaleH = -1;
 
@@ -89,61 +91,39 @@ public class PlayerActivity extends Activity {
         if (w <= 0 || h <= 0) return;
         try {
             player.setVideoScale(MediaPlayer.ScaleType.SURFACE_BEST_FIT);
-            if (scaleIndex == 2) {
-                player.setScale(0f);
-                player.setAspectRatio(w + ":" + h);
-            } else if (scaleIndex == 1) {
-                // Preencher = corta o excesso: o VLC usa FIT_SCREEN (superfície maior que a tela) e a superfície das
-                // legendas é trazida de volta para o tamanho da tela (senão a legenda fica fora da área visível)
-                player.setAspectRatio(null);
-                player.setScale(0f);
-                player.setVideoScale(MediaPlayer.ScaleType.SURFACE_FIT_SCREEN);
-            } else {
-                player.setAspectRatio(null);
-                player.setScale(0f);
-            }
+            player.setScale(0f);
+            player.setAspectRatio(scaleIndex == 2 ? w + ":" + h : null);
         } catch (Throwable t) { glog("escala: " + t); }
-        fixSubtitleSurface();
-        ui.postDelayed(this::fixSubtitleSurface, 400);
-        try { StringBuilder sb = new StringBuilder(); for (java.lang.reflect.Method m : MediaPlayer.class.getMethods()) sb.append(m.getName()).append(' '); glog("escala: métodos " + sb); } catch (Throwable ignored) {}
+        zoomVideo();
+        ui.postDelayed(this::zoomVideo, 300);
+        ui.postDelayed(this::zoomVideo, 1000);
     }
 
-    private static void collectSurfaces(View v, ArrayList<android.view.SurfaceView> out, String ind) {
-        glog("escala: árvore " + ind + v.getClass().getSimpleName() + " " + v.getWidth() + "x" + v.getHeight() + " em (" + v.getLeft() + "," + v.getTop() + ")");
-        if (v instanceof android.view.SurfaceView) out.add((android.view.SurfaceView) v);
-        if (v instanceof ViewGroup) { ViewGroup g = (ViewGroup) v; for (int i = 0; i < g.getChildCount(); i++) collectSurfaces(g.getChildAt(i), out, ind + " "); }
+    private android.view.TextureView findTexture(View v) {
+        if (v instanceof android.view.TextureView) return (android.view.TextureView) v;
+        if (v instanceof ViewGroup) {
+            ViewGroup g = (ViewGroup) v;
+            for (int i = 0; i < g.getChildCount(); i++) { android.view.TextureView t = findTexture(g.getChildAt(i)); if (t != null) return t; }
+        }
+        return null;
     }
 
-    /** a superfície das legendas do VLC herda o tamanho/posição do vídeo; aqui ela volta a cobrir exatamente a área visível */
-    private void fixSubtitleSurface() {
-        if (videoLayout == null) return;
+    /** Preencher: amplia a imagem (centrada) até cobrir a tela inteira; nos outros modos volta a 1 */
+    private void zoomVideo() {
         try {
-            android.view.SurfaceView sub = null;
-            try {
-                java.lang.reflect.Field f = videoLayout.getClass().getDeclaredField("mSubtitlesSurface");
-                f.setAccessible(true);
-                sub = (android.view.SurfaceView) f.get(videoLayout);
-            } catch (Throwable ignored) {}
-            if (sub == null) {
-                ArrayList<android.view.SurfaceView> found = new ArrayList<>();
-                collectSurfaces(videoLayout, found, "");
-                if (!found.isEmpty()) sub = found.get(found.size() - 1);
+            android.view.TextureView tex = findTexture(videoLayout);
+            if (tex == null) return;
+            if (tex.getTag() == null) {
+                tex.setTag("zoom");
+                tex.addOnLayoutChangeListener((v, l, t, r, b, ol, ot, or, ob) -> { if (r - l != or - ol || b - t != ob - ot) ui.post(this::zoomVideo); });
             }
-            if (sub == null) { glog("escala: sem superfície de legendas"); return; }
-            final android.view.SurfaceView sv = sub;
-            ViewGroup.LayoutParams lp = sv.getLayoutParams();
-            int w = videoLayout.getWidth(), h = videoLayout.getHeight();
-            glog("escala: legendas " + sv.getWidth() + "x" + sv.getHeight() + " em (" + sv.getLeft() + "," + sv.getTop() + "), tela " + w + "x" + h);
-            if (lp != null && (lp.width != ViewGroup.LayoutParams.MATCH_PARENT || lp.height != ViewGroup.LayoutParams.MATCH_PARENT)) {
-                lp.width = ViewGroup.LayoutParams.MATCH_PARENT;
-                lp.height = ViewGroup.LayoutParams.MATCH_PARENT;
-                if (lp instanceof FrameLayout.LayoutParams) ((FrameLayout.LayoutParams) lp).gravity = Gravity.CENTER;
-                sv.setLayoutParams(lp);
-            }
+            float f = 1f;
+            int tw = tex.getWidth(), th = tex.getHeight(), w = videoLayout.getWidth(), h = videoLayout.getHeight();
+            if (scaleIndex == 1 && tw > 0 && th > 0 && w > 0 && h > 0) f = Math.max((float) w / tw, (float) h / th);
+            tex.setPivotX(tw / 2f); tex.setPivotY(th / 2f);
+            tex.setScaleX(f); tex.setScaleY(f);
         } catch (Throwable t) { glog("escala: " + t); }
     }
-
-
 
     private final Handler ui = new Handler(Looper.getMainLooper());
     private final Runnable hideControls = () -> setControlsVisible(false);
@@ -221,9 +201,9 @@ public class PlayerActivity extends Activity {
         options.add("--sub-text-scale=90");
         libVLC = new LibVLC(this, options);
         player = new MediaPlayer(libVLC);
-        // na TV (Fire TV) o vídeo vai por TextureView: com SurfaceView a imagem ficava preta (só som)
+        // o vídeo vai sempre por TextureView (também permite o zoom do modo Preencher). Na TV (Fire TV), com SurfaceView a imagem ficava preta (só som)
         // quando os controles sumiam, porque o Fire TV passa o vídeo para outra camada da tela
-        player.attachViews(videoLayout, null, true, tv);
+        player.attachViews(videoLayout, null, true, true);
         player.setEventListener(this::onPlayerEvent);
         // rotação / mudança de tamanho da tela: refaz o zoom do modo Preencher e a proporção do Esticar
         videoLayout.addOnLayoutChangeListener((v, l, t, r, b, ol, ot, or, ob) -> {
