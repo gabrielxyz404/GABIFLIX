@@ -1166,6 +1166,7 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
         let w = line.split(separator: " ").map(String.init)
         guard let cmd = w.first else { return }
         let n = w.count > 1 ? Int(w[1]) ?? 0 : 0
+        if w.count > 1 && w[0] == "key" { _ = n }
         log("comando de teste: \(line)")
         switch cmd {
         case "scale": setScaleMode(n)
@@ -1175,6 +1176,10 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
             if let c = candForTrack(Int(player.currentVideoSubTitleIndex)) { showSpeechPicker(c) }
         case "delay": setSubDelay(n)
         case "close": closePanels()
+        case "snap":
+            // foto do quadro do vídeo feita pelo próprio VLC (a captura de tela do runner não pega o vídeo)
+            let path = "/tmp/telas/snap-\(w.count > 1 ? w[1] : "x").png"
+            player.saveVideoSnapshot(at: path, withWidth: 0, andHeight: 0)
         case "key":
             let ev = NSEvent.keyEvent(with: .keyDown, location: .zero, modifierFlags: [], timestamp: 0, windowNumber: window?.windowNumber ?? 0,
                                       context: nil, characters: "", charactersIgnoringModifiers: "", isARepeat: false, keyCode: UInt16(n))

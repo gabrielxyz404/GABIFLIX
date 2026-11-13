@@ -103,9 +103,10 @@ jobs:
           $APP --gf-test-play http://127.0.0.1:8765/teste.mp4 - --gf-test-sub http://127.0.0.1:8765/leg.srt > /tmp/telas/app1.log 2>&1 &
           sleep 30
           cmd "state"
-          sleep 4; shot 01-ajustar
-          cmd "scale 1"; sleep 2; shot 02-preencher
-          cmd "scale 2"; sleep 2; shot 03-esticar
+          cmd "key 49"; sleep 1; cmd "key 49"
+          sleep 2; shot 01-ajustar; cmd "snap ajustar"
+          cmd "scale 1"; sleep 2; shot 02-preencher; cmd "snap preencher"
+          cmd "scale 2"; sleep 2; shot 03-esticar; cmd "snap esticar"
           cmd "scale 0"
           cmd "sync"; sleep 1; shot 04-painel-sync
           cmd "key 124"; cmd "key 36"; cmd "key 36"; cmd "key 36"; shot 05-painel-apos-enter
