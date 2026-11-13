@@ -1401,7 +1401,7 @@ public class PlayerActivity extends Activity {
         final boolean sweep = url.contains("sweep");
         new Thread(() -> {
             try { Thread.sleep(4000); } catch (InterruptedException ignored) {}
-            String[][] cases = sweep ? new String[][]{{"wav", "std"}, {"wav", "fast"}, {"wav", "runtime"}, {"wav", "paused"}, {"raw", "fast"}, {"afile", "fast"}}
+            String[][] cases = sweep ? new String[][]{{"afile", "std"}, {"afile", "seek"}, {"afile", "fast"}}
                     : new String[][]{{"wav", "std"}, {"raw", "std"}, {"afile", "std"}};
             for (String[] c : cases) {
                 AudioCapture.Out o = AudioCapture.capture(this, url, st, 15000, dir, "probe-" + c[0] + "-" + c[1], c[0], -1, null, 90000, false, c[1]);
