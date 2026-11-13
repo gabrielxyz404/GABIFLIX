@@ -1,0 +1,515 @@
+2026-11-13 22:29:48.690 FramePlay[2211:9898] creating player instance using shared library
+2026-11-13 22:29:48.691 FramePlay[2211:9898] [ERR] option marq-color does not exist
+2026-11-13 22:29:48.691 FramePlay[2211:9898] [ERR] option marq-opacity does not exist
+2026-11-13 22:29:48.691 FramePlay[2211:9898] [ERR] option marq-position does not exist
+2026-11-13 22:29:48.691 FramePlay[2211:9898] [ERR] option marq-refresh does not exist
+2026-11-13 22:29:48.691 FramePlay[2211:9898] [ERR] option marq-size does not exist
+2026-11-13 22:29:48.691 FramePlay[2211:9898] [ERR] option marq-timeout does not exist
+2026-11-13 22:29:48.691 FramePlay[2211:9898] [ERR] option marq-x does not exist
+2026-11-13 22:29:48.691 FramePlay[2211:9898] [ERR] option marq-y does not exist
+2026-11-13 22:29:48.691 FramePlay[2211:9898] [DBG] creating audio output
+2026-11-13 22:29:48.691 FramePlay[2211:9898] [DBG] looking for audio output module matching "any": 8 candidates
+2026-11-13 22:29:48.691 FramePlay[2211:9898] [DBG] Rebuild device list
+2026-11-13 22:29:48.691 FramePlay[2211:9898] [DBG] found 3 audio device(s)
+2026-11-13 22:29:48.692 FramePlay[2211:9898] [DBG] DevID: 80 DevName: Apple Virtual Sound Device
+2026-11-13 22:29:48.692 FramePlay[2211:9898] [DBG] this 'Apple Virtual Sound Device' is INPUT only. skipping...
+2026-11-13 22:29:48.692 FramePlay[2211:9898] [DBG] DevID: 85 DevName: Apple Virtual Sound Device
+2026-11-13 22:29:48.694 FramePlay[2211:9898] [DBG] DevID: 50 DevName: Null Audio Device
+2026-11-13 22:29:48.694 FramePlay[2211:9898] [DBG] using audio output module "auhal"
+2026-11-13 22:29:48.695 FramePlay[2211:9898] [DBG] keeping audio output
+2026-11-13 22:29:48.729 FramePlay[2211:9898] [DBG] Creating an input for 'Big_Buck_Bunny_360_10s_1MB.mkv'
+2026-11-13 22:29:48.729 FramePlay[2211:9898] [DBG] selected sub language[0] pt
+2026-11-13 22:29:48.729 FramePlay[2211:9898] [DBG] selected sub language[1] pt
+2026-11-13 22:29:48.729 FramePlay[2211:9898] [DBG] reusing audio output
+2026-11-13 22:29:48.729 FramePlay[2211:9898] [DBG] keeping audio output
+2026-11-13 22:29:48.729 FramePlay[2211:10368] [DBG] using timeshift granularity of 50 MiB
+2026-11-13 22:29:48.730 FramePlay[2211:10368] [DBG] using default timeshift path
+2026-11-13 22:29:48.730 FramePlay[2211:10368] [DBG] `https://test-videos.co.uk/vids/bigbuckbunny/mkv/360/Big_Buck_Bunny_360_10s_1MB.mkv' gives access `https' demux `any' path `test-videos.co.uk/vids/bigbuckbunny/mkv/360/Big_Buck_Bunny_360_10s_1MB.mkv'
+2026-11-13 22:29:48.730 FramePlay[2211:10368] [DBG] creating demux: access='https' demux='any' location='test-videos.co.uk/vids/bigbuckbunny/mkv/360/Big_Buck_Bunny_360_10s_1MB.mkv' file='(null)'
+2026-11-13 22:29:48.730 FramePlay[2211:10368] [DBG] looking for access_demux module matching "https": 8 candidates
+2026-11-13 22:29:48.730 FramePlay[2211:10368] [DBG] no access_demux modules matched
+2026-11-13 22:29:48.730 FramePlay[2211:10368] [DBG] creating access: https://test-videos.co.uk/vids/bigbuckbunny/mkv/360/Big_Buck_Bunny_360_10s_1MB.mkv
+2026-11-13 22:29:48.730 FramePlay[2211:10368] [DBG] looking for access module matching "https": 44 candidates
+2026-11-13 22:29:48.730 FramePlay[2211:10368] [DBG] looking for keystore module matching "any": 6 candidates
+2026-11-13 22:29:48.730 FramePlay[2211:10368] [DBG] using keystore module "keychain"
+2026-11-13 22:29:48.751 FramePlay[2211:10368] [WARN] lookup failed (-25300: 'O item especificado não pôde ser encontrado nas chaves.')
+2026-11-13 22:29:48.752 FramePlay[2211:10368] [DBG] looking for tls client module matching "any": 2 candidates
+2026-11-13 22:29:48.752 FramePlay[2211:10368] [DBG] open st client
+2026-11-13 22:29:48.752 FramePlay[2211:10368] [DBG] using tls client module "securetransport"
+2026-11-13 22:29:48.755 FramePlay[2211:10368] [DBG] resolving test-videos.co.uk ...
+2026-11-13 22:29:48.758 FramePlay[2211:10368] [WARN] Ignoring ALPN request due to lack of support in the backend. Proxy behavior potentially undefined.
+2026-11-13 22:29:48.758 FramePlay[2211:10368] [DBG] open TLS session for test-videos.co.uk
+2026-11-13 22:29:48.781 FramePlay[2211:10368] [DBG] handshake is blocked, try again later
+2026-11-13 22:29:48.802 FramePlay[2211:10368] [DBG] SSLHandshake returned errSSLServerAuthCompleted, continuing handshake
+2026-11-13 22:29:48.804 FramePlay[2211:10368] [DBG] handshake is blocked, try again later
+2026-11-13 22:29:48.850 FramePlay[2211:10368] [DBG] cerfificate verification successful, result is 4
+2026-11-13 22:29:48.850 FramePlay[2211:10368] [DBG] handshake completed successfully
+2026-11-13 22:29:48.850 FramePlay[2211:10368] [DBG] outgoing request:
+GET /vids/bigbuckbunny/mkv/360/Big_Buck_Bunny_360_10s_1MB.mkv HTTP/1.1
+Host: test-videos.co.uk
+Accept: */*
+Accept-Language: en_US
+User-Agent: VLC/3.0.23 LibVLC/3.0.23
+Range: bytes=0-
+
+
+2026-11-13 22:29:48.940 FramePlay[2211:10368] [DBG] incoming response:
+HTTP/1.1 206 Partial Content
+Date: Fri, 13 Nov 2026 22:29:49 GMT
+Content-Type: video/x-matroska
+Content-Length: 957162
+Connection: keep-alive
+Age: 7
+etag: "6abe65a3-e9aea"
+last-modified: Thu, 01 Oct 2026 13:52:35 GMT
+Server: cloudflare
+content-range: bytes 0-957161/957162
+Cache-Control: max-age=14400
+cf-cache-status: HIT
+Nel: {"report_to":"cf-nel","success_fraction":0.0,"max_age":604800}
+Report-To: {"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=rwERDMNo1dyNCeqnjoguui72RzvhoFp3JmlWsvpNOfqrBQyV2a1AsmNL1qKR%2BIbkDCxdYroJMIT2tGsqaVmoJdgz8q7gmxp7E8r38phokt%2BP5a61RAEDqW21jQkC1HSnw78HUw%3D%3D"}]}
+CF-RAY: a5a137a859729881-SJC
+alt-svc: h3=":443"; ma=86400
+
+
+2026-11-13 22:29:48.940 FramePlay[2211:10368] [DBG] removing module "keychain"
+2026-11-13 22:29:48.940 FramePlay[2211:10368] [DBG] using access module "access"
+2026-11-13 22:29:48.940 FramePlay[2211:10368] [DBG] looking for stream_filter module matching "prefetch,cache_block": 50 candidates
+2026-11-13 22:29:48.940 FramePlay[2211:10368] [DBG] using 957162 bytes buffer, 957162 bytes read
+2026-11-13 22:29:48.940 FramePlay[2211:10368] [DBG] using stream_filter module "prefetch"
+2026-11-13 22:29:48.940 FramePlay[2211:10368] [DBG] looking for stream_filter module matching "any": 50 candidates
+2026-11-13 22:29:48.940 FramePlay[2211:10368] [DBG] no stream_filter modules matched
+2026-11-13 22:29:48.940 FramePlay[2211:10368] [DBG] looking for stream_directory module matching "any": 2 candidates
+2026-11-13 22:29:48.940 FramePlay[2211:10368] [DBG] no stream_directory modules matched
+2026-11-13 22:29:48.940 FramePlay[2211:10368] [DBG] attachment of directory-extractor failed for https://test-videos.co.uk/vids/bigbuckbunny/mkv/360/Big_Buck_Bunny_360_10s_1MB.mkv
+2026-11-13 22:29:48.940 FramePlay[2211:10368] [DBG] looking for stream_filter module matching "record": 50 candidates
+2026-11-13 22:29:48.940 FramePlay[2211:10368] [DBG] using stream_filter module "record"
+2026-11-13 22:29:48.940 FramePlay[2211:10368] [DBG] creating demux: access='https' demux='any' location='test-videos.co.uk/vids/bigbuckbunny/mkv/360/Big_Buck_Bunny_360_10s_1MB.mkv' file='(null)'
+2026-11-13 22:29:48.940 FramePlay[2211:10368] [DBG] looking for demux module matching "any": 94 candidates
+2026-11-13 22:29:48.942 FramePlay[2211:10368] [DBG] dumping root Box "root"
+2026-11-13 22:29:48.942 FramePlay[2211:10368] [DBG] |   + ftyp size 32 offset 0
+2026-11-13 22:29:48.942 FramePlay[2211:10368] [DBG] |   + moov size 3858 offset 32
+2026-11-13 22:29:48.942 FramePlay[2211:10368] [DBG] |   |   + mvhd size 108 offset 40
+2026-11-13 22:29:48.942 FramePlay[2211:10368] [DBG] |   |   + trak size 3348 offset 148
+2026-11-13 22:29:48.942 FramePlay[2211:10368] [DBG] |   |   |   + tkhd size 92 offset 156
+2026-11-13 22:29:48.942 FramePlay[2211:10368] [DBG] |   |   |   + edts size 36 offset 248
+2026-11-13 22:29:48.942 FramePlay[2211:10368] [DBG] |   |   |   |   + elst size 28 offset 256
+2026-11-13 22:29:48.942 FramePlay[2211:10368] [DBG] |   |   |   + mdia size 3212 offset 284
+2026-11-13 22:29:48.942 FramePlay[2211:10368] [DBG] |   |   |   |   + mdhd size 32 offset 292
+2026-11-13 22:29:48.942 FramePlay[2211:10368] [DBG] |   |   |   |   + hdlr size 45 offset 324
+2026-11-13 22:29:48.942 FramePlay[2211:10368] [DBG] |   |   |   |   + minf size 3127 offset 369
+2026-11-13 22:29:48.943 FramePlay[2211:10368] [DBG] |   |   |   |   |   + vmhd size 20 offset 377
+2026-11-13 22:29:48.943 FramePlay[2211:10368] [DBG] |   |   |   |   |   + dinf size 36 offset 397
+2026-11-13 22:29:48.943 FramePlay[2211:10368] [DBG] |   |   |   |   |   |   + dref size 28 offset 405
+2026-11-13 22:29:48.943 FramePlay[2211:10368] [DBG] |   |   |   |   |   |   |   + url  size 12 offset 421
+2026-11-13 22:29:48.943 FramePlay[2211:10368] [DBG] |   |   |   |   |   + stbl size 3063 offset 433
+2026-11-13 22:29:48.943 FramePlay[2211:10368] [DBG] |   |   |   |   |   |   + stsd size 171 offset 441
+2026-11-13 22:29:48.943 FramePlay[2211:10368] [DBG] |   |   |   |   |   |   |   + avc1 size 155 offset 457
+2026-11-13 22:29:48.943 FramePlay[2211:10368] [DBG] |   |   |   |   |   |   |   |   + avcC size 53 offset 543
+2026-11-13 22:29:48.943 FramePlay[2211:10368] [DBG] |   |   |   |   |   |   |   |   + pasp size 16 offset 596
+2026-11-13 22:29:48.943 FramePlay[2211:10368] [DBG] |   |   |   |   |   |   + stts size 24 offset 612
+2026-11-13 22:29:48.943 FramePlay[2211:10368] [DBG] |   |   |   |   |   |   + stss size 24 offset 636
+2026-11-13 22:29:48.943 FramePlay[2211:10368] [DBG] |   |   |   |   |   |   + ctts size 1568 offset 660
+2026-11-13 22:29:48.943 FramePlay[2211:10368] [DBG] |   |   |   |   |   |   + stsc size 28 offset 2228
+2026-11-13 22:29:48.943 FramePlay[2211:10368] [DBG] |   |   |   |   |   |   + stsz size 1220 offset 2256
+2026-11-13 22:29:48.943 FramePlay[2211:10368] [DBG] |   |   |   |   |   |   + stco size 20 offset 3476
+2026-11-13 22:29:48.943 FramePlay[2211:10368] [DBG] |   |   + udta size 394 offset 3496
+2026-11-13 22:29:48.943 FramePlay[2211:10368] [DBG] |   |   |   + meta size 386 offset 3504
+2026-11-13 22:29:48.943 FramePlay[2211:10368] [DBG] |   |   |   |   + hdlr size 33 offset 3516
+2026-11-13 22:29:48.943 FramePlay[2211:10368] [DBG] |   |   |   |   + ilst size 341 offset 3549
+2026-11-13 22:29:48.943 FramePlay[2211:10368] [DBG] |   |   |   |   |   + cnam size 57 offset 3557
+2026-11-13 22:29:48.943 FramePlay[2211:10368] [DBG] |   |   |   |   |   |   + data size 49 offset 3565
+2026-11-13 22:29:48.943 FramePlay[2211:10368] [DBG] |   |   |   |   |   + cART size 76 offset 3614
+2026-11-13 22:29:48.943 FramePlay[2211:10368] [DBG] |   |   |   |   |   |   + data size 68 offset 3622
+2026-11-13 22:29:48.943 FramePlay[2211:10368] [DBG] |   |   |   |   |   + cwrt size 41 offset 3690
+2026-11-13 22:29:48.943 FramePlay[2211:10368] [DBG] |   |   |   |   |   |   + data size 33 offset 3698
+2026-11-13 22:29:48.943 FramePlay[2211:10368] [DBG] |   |   |   |   |   + ctoo size 37 offset 3731
+2026-11-13 22:29:48.943 FramePlay[2211:10368] [DBG] |   |   |   |   |   |   + data size 29 offset 3739
+2026-11-13 22:29:48.943 FramePlay[2211:10368] [DBG] |   |   |   |   |   + ccmt size 89 offset 3768
+2026-11-13 22:29:48.943 FramePlay[2211:10368] [DBG] |   |   |   |   |   |   + data size 81 offset 3776
+2026-11-13 22:29:48.944 FramePlay[2211:10368] [DBG] |   |   |   |   |   + cgen size 33 offset 3857
+2026-11-13 22:29:48.944 FramePlay[2211:10368] [DBG] |   |   |   |   |   |   + data size 25 offset 3865
+2026-11-13 22:29:48.944 FramePlay[2211:10368] [DBG] |   + free size 8 offset 3890
+2026-11-13 22:29:48.944 FramePlay[2211:10368] [DBG] |   + mdat size 953264 offset 3898
+2026-11-13 22:29:48.944 FramePlay[2211:10368] [DBG] ISO Media (isom) version 512.
+2026-11-13 22:29:48.944 FramePlay[2211:10368] [DBG] found 1 tracks
+2026-11-13 22:29:48.944 FramePlay[2211:10375] [DBG] resolving test-videos.co.uk ...
+2026-11-13 22:29:48.947 FramePlay[2211:10375] [WARN] Ignoring ALPN request due to lack of support in the backend. Proxy behavior potentially undefined.
+2026-11-13 22:29:48.948 FramePlay[2211:10375] [DBG] open TLS session for test-videos.co.uk
+2026-11-13 22:29:48.978 FramePlay[2211:10368] [WARN] elst box found
+2026-11-13 22:29:48.978 FramePlay[2211:10368] [DBG]    - [0] duration=10000ms media time=66ms) rate=1.0
+2026-11-13 22:29:48.978 FramePlay[2211:10368] [DBG] track[Id 0x1] read 1 chunk
+2026-11-13 22:29:48.978 FramePlay[2211:10368] [WARN] STTS table of 1 entries
+2026-11-13 22:29:48.978 FramePlay[2211:10368] [WARN] CTTS table of 194 entries
+2026-11-13 22:29:48.978 FramePlay[2211:10368] [DBG] track[Id 0x1] read 300 samples length:10s
+2026-11-13 22:29:48.978 FramePlay[2211:10368] [DBG] selecting program id=0
+2026-11-13 22:29:48.978 FramePlay[2211:10368] [DBG] adding track[Id 0x1] video (enable) language undef
+2026-11-13 22:29:48.978 FramePlay[2211:10368] [DBG] using demux module "mp4"
+2026-11-13 22:29:48.978 FramePlay[2211:10368] [DBG] looking for video decoder module matching "any": 26 candidates
+2026-11-13 22:29:48.979 FramePlay[2211:10368] [DBG] new SPS parsed: 0
+2026-11-13 22:29:48.979 FramePlay[2211:10368] [DBG] new PPS parsed: 0
+2026-11-13 22:29:48.979 FramePlay[2211:10368] [WARN] forcing CVPX format: 420v
+2026-11-13 22:29:49.035 FramePlay[2211:10368] [INF] Using Video Toolbox to decode 'h264'
+2026-11-13 22:29:49.035 FramePlay[2211:10368] [DBG] using video decoder module "videotoolbox"
+2026-11-13 22:29:49.035 FramePlay[2211:10368] [DBG] looking for meta reader module matching "any": 2 candidates
+2026-11-13 22:29:49.035 FramePlay[2211:10368] [DBG] no meta reader modules matched
+2026-11-13 22:29:49.035 FramePlay[2211:10368] [DBG] `https://test-videos.co.uk/vids/bigbuckbunny/mkv/360/Big_Buck_Bunny_360_10s_1MB.mkv' successfully opened
+2026-11-13 22:29:49.035 FramePlay[2211:10368] [DBG] elst (0) gives 0ms (movie)-> 66ms (track)
+2026-11-13 22:29:49.035 FramePlay[2211:10368] [DBG] track[Id 0x1] using Sync Sample Box (stss)
+2026-11-13 22:29:49.035 FramePlay[2211:10368] [DBG] stss gives 2 --> 0 (sample number)
+2026-11-13 22:29:49.141 FramePlay[2211:10375] [DBG] handshake is blocked, try again later
+2026-11-13 22:29:49.266 FramePlay[2211:10375] [DBG] SSLHandshake returned errSSLServerAuthCompleted, continuing handshake
+2026-11-13 22:29:49.267 FramePlay[2211:10375] [DBG] handshake is blocked, try again later
+2026-11-13 22:29:49.272 FramePlay[2211:10375] [DBG] cerfificate verification successful, result is 4
+2026-11-13 22:29:49.273 FramePlay[2211:10375] [DBG] handshake completed successfully
+2026-11-13 22:29:49.273 FramePlay[2211:10375] [DBG] outgoing request:
+GET /vids/bigbuckbunny/mkv/360/Big_Buck_Bunny_360_10s_1MB.mkv HTTP/1.1
+Host: test-videos.co.uk
+Accept: */*
+Accept-Language: en_US
+User-Agent: VLC/3.0.23 LibVLC/3.0.23
+If-Match: "6abe65a3-e9aea"
+Range: bytes=957162-
+
+
+2026-11-13 22:29:49.287 FramePlay[2211:10375] [DBG] incoming response:
+HTTP/1.1 416 Range Not Satisfiable
+Date: Fri, 13 Nov 2026 22:29:49 GMT
+Content-Length: 0
+Connection: keep-alive
+Age: 7
+etag: "6abe65a3-e9aea"
+last-modified: Thu, 01 Oct 2026 13:52:35 GMT
+Server: cloudflare
+content-range: bytes */957162
+Cache-Control: max-age=14400
+cf-cache-status: HIT
+Nel: {"report_to":"cf-nel","success_fraction":0.0,"max_age":604800}
+Report-To: {"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=Nb9qxO4vtY9d0YA3bqb54BZutopX3Tw5hnzv6fy3egql3YBbTPgQ3wyMTreOwZqugChwNi%2BK%2BWjz2ftrMbMt5hVabmF%2FUkChrxwD45loSyaXJxVOjBdKi1AZkSICQxDNL7OW3g%3D%3D"}]}
+CF-RAY: a5a137aacb64f64e-SJC
+alt-svc: h3=":443"; ma=86400
+
+
+2026-11-13 22:29:49.287 FramePlay[2211:10375] [DBG] connection failed
+2026-11-13 22:29:49.287 FramePlay[2211:10375] [DBG] shutdown TLS session
+2026-11-13 22:29:49.287 FramePlay[2211:10375] [DBG] close TLS session
+2026-11-13 22:29:49.288 FramePlay[2211:10375] [DBG] resolving test-videos.co.uk ...
+2026-11-13 22:29:49.290 FramePlay[2211:10375] [WARN] Ignoring ALPN request due to lack of support in the backend. Proxy behavior potentially undefined.
+2026-11-13 22:29:49.290 FramePlay[2211:10375] [DBG] open TLS session for test-videos.co.uk
+2026-11-13 22:29:49.302 FramePlay[2211:10375] [DBG] handshake is blocked, try again later
+2026-11-13 22:29:49.310 FramePlay[2211:10375] [DBG] SSLHandshake returned errSSLServerAuthCompleted, continuing handshake
+2026-11-13 22:29:49.311 FramePlay[2211:10375] [DBG] handshake is blocked, try again later
+2026-11-13 22:29:49.319 FramePlay[2211:10375] [DBG] cerfificate verification successful, result is 4
+2026-11-13 22:29:49.319 FramePlay[2211:10375] [DBG] handshake completed successfully
+2026-11-13 22:29:49.319 FramePlay[2211:10375] [DBG] outgoing request:
+GET /vids/bigbuckbunny/mkv/360/Big_Buck_Bunny_360_10s_1MB.mkv HTTP/1.1
+Host: test-videos.co.uk
+Accept: */*
+Accept-Language: en_US
+User-Agent: VLC/3.0.23 LibVLC/3.0.23
+If-Match: "6abe65a3-e9aea"
+Range: bytes=6121-
+
+
+2026-11-13 22:29:49.342 FramePlay[2211:10375] [DBG] incoming response:
+HTTP/1.1 206 Partial Content
+Date: Fri, 13 Nov 2026 22:29:49 GMT
+Content-Type: video/x-matroska
+Content-Length: 951041
+Connection: keep-alive
+Age: 7
+etag: "6abe65a3-e9aea"
+last-modified: Thu, 01 Oct 2026 13:52:35 GMT
+Server: cloudflare
+content-range: bytes 6121-957161/957162
+Cache-Control: max-age=14400
+cf-cache-status: HIT
+Nel: {"report_to":"cf-nel","success_fraction":0.0,"max_age":604800}
+Report-To: {"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=EIRTKTPomQG%2FoxbAsDpMke9dh%2FyLJOq1roq2LAPqGgdQOxsarOyz1iC3Gu5Y0GMkBTqgp5k8mlKhqd6IES1Gl7eh%2Fx5n3usCqXfzR6Qcc7HbxcQ6NdTC5cukPfHnMqlWigXiAg%3D%3D"}]}
+CF-RAY: a5a137ab0d1fdcfe-SJC
+alt-svc: h3=":443"; ma=86400
+
+
+2026-11-13 22:29:49.343 FramePlay[2211:10375] [DBG] shutdown TLS session
+2026-11-13 22:29:49.343 FramePlay[2211:10375] [DBG] close TLS session
+2026-11-13 22:29:49.345 FramePlay[2211:10368] [DBG] Buffering 0%
+2026-11-13 22:29:49.364 FramePlay[2211:10375] [DBG] end of stream
+2026-11-13 22:29:49.364 FramePlay[2211:10368] [DBG] Buffering 8%
+2026-11-13 22:29:49.364 FramePlay[2211:10368] [DBG] EOF reached
+2026-11-13 22:29:49.364 FramePlay[2211:10368] [DBG] Stream buffering done (250 ms in 18 ms)
+IOServiceMatchingfailed for: AppleM2ScalerParavirtDriver
+2026-11-13 22:29:49.605 FramePlay[2211:10391] [INF] vt cvpx chroma: 420v
+2026-11-13 22:29:49.606 FramePlay[2211:10391] [DBG] looking for text renderer module matching "freetype": 6 candidates
+2026-11-13 22:29:49.714 FramePlay[2211:10391] [DBG] using text renderer module "freetype"
+2026-11-13 22:29:49.714 FramePlay[2211:10391] [DBG] looking for video converter module matching "any": 32 candidates
+2026-11-13 22:29:49.715 FramePlay[2211:10391] [DBG] 32x32 (32x32) chroma: YUVA -> 16x16 (16x16) chroma: RGBA with scaling using Bicubic (good quality)
+2026-11-13 22:29:49.715 FramePlay[2211:10391] [DBG] using video converter module "swscale"
+2026-11-13 22:29:49.715 FramePlay[2211:10391] [DBG] looking for video converter module matching "any": 32 candidates
+2026-11-13 22:29:49.715 FramePlay[2211:10391] [DBG] YUVP to YUVA converter
+2026-11-13 22:29:49.715 FramePlay[2211:10391] [DBG] using video converter module "yuvp"
+2026-11-13 22:29:49.715 FramePlay[2211:10391] [DBG] Deinterlacing available
+2026-11-13 22:29:49.715 FramePlay[2211:10391] [DBG] deinterlace -1, mode auto, is_needed 0
+2026-11-13 22:29:49.715 FramePlay[2211:10391] [DBG] looking for vout window module matching "any": 0 candidates
+2026-11-13 22:29:49.715 FramePlay[2211:10391] [DBG] no vout window modules
+2026-11-13 22:29:49.715 FramePlay[2211:10407] [DBG] Opening vout display wrapper
+2026-11-13 22:29:49.715 FramePlay[2211:10407] [DBG] looking for vout display module matching "any": 14 candidates
+2026-11-13 22:29:49.715 FramePlay[2211:10407] [ERR] Failure to create CGL context!
+2026-11-13 22:29:49.715 FramePlay[2211:10407] [ERR] Failure to create CGL context!
+2026-11-13 22:29:49.720 FramePlay[2211:10407] [ERR] Initialization of open gl view failed
+2026-11-13 22:29:49.720 FramePlay[2211:10407] [ERR] Initialization of open gl view failed
+2026-11-13 22:29:49.720 FramePlay[2211:10407] [DBG] no vout display modules matched
+2026-11-13 22:29:49.720 FramePlay[2211:10391] [ERR] video output creation failed
+2026-11-13 22:29:49.720 FramePlay[2211:10391] [DBG] removing module "freetype"
+2026-11-13 22:29:49.720 FramePlay[2211:10391] [DBG] removing module "yuvp"
+2026-11-13 22:29:49.720 FramePlay[2211:10391] [DBG] removing module "swscale"
+2026-11-13 22:29:49.720 FramePlay[2211:10391] [ERR] failed to create video output
+2026-11-13 22:29:49.721 FramePlay[2211:10378] [WARN] Reloading the decoder module
+2026-11-13 22:29:49.721 FramePlay[2211:10378] [DBG] removing module "videotoolbox"
+2026-11-13 22:29:49.732 FramePlay[2211:10378] [DBG] looking for video decoder module matching "any": 26 candidates
+2026-11-13 22:29:49.732 FramePlay[2211:10378] [DBG] new SPS parsed: 0
+2026-11-13 22:29:49.732 FramePlay[2211:10378] [DBG] new PPS parsed: 0
+2026-11-13 22:29:49.732 FramePlay[2211:10378] [WARN] forcing CVPX format: 420v
+2026-11-13 22:29:49.736 FramePlay[2211:10378] [INF] Using Video Toolbox to decode 'h264'
+2026-11-13 22:29:49.736 FramePlay[2211:10378] [DBG] using video decoder module "videotoolbox"
+2026-11-13 22:29:49.756 FramePlay[2211:10408] [INF] vt cvpx chroma: 420v
+2026-11-13 22:29:49.756 FramePlay[2211:10408] [DBG] looking for text renderer module matching "freetype": 6 candidates
+2026-11-13 22:29:49.761 FramePlay[2211:10408] [DBG] using text renderer module "freetype"
+2026-11-13 22:29:49.761 FramePlay[2211:10408] [DBG] looking for video converter module matching "any": 32 candidates
+2026-11-13 22:29:49.761 FramePlay[2211:10408] [DBG] 32x32 (32x32) chroma: YUVA -> 16x16 (16x16) chroma: RGBA with scaling using Bicubic (good quality)
+2026-11-13 22:29:49.761 FramePlay[2211:10408] [DBG] using video converter module "swscale"
+2026-11-13 22:29:49.761 FramePlay[2211:10408] [DBG] looking for video converter module matching "any": 32 candidates
+2026-11-13 22:29:49.761 FramePlay[2211:10408] [DBG] YUVP to YUVA converter
+2026-11-13 22:29:49.761 FramePlay[2211:10408] [DBG] using video converter module "yuvp"
+2026-11-13 22:29:49.761 FramePlay[2211:10408] [DBG] Deinterlacing available
+2026-11-13 22:29:49.761 FramePlay[2211:10408] [DBG] deinterlace -1, mode auto, is_needed 0
+2026-11-13 22:29:49.761 FramePlay[2211:10408] [DBG] looking for vout window module matching "any": 0 candidates
+2026-11-13 22:29:49.761 FramePlay[2211:10408] [DBG] no vout window modules
+2026-11-13 22:29:49.761 FramePlay[2211:10409] [DBG] Opening vout display wrapper
+2026-11-13 22:29:49.761 FramePlay[2211:10409] [DBG] looking for vout display module matching "any": 14 candidates
+2026-11-13 22:29:49.761 FramePlay[2211:10409] [ERR] Failure to create CGL context!
+2026-11-13 22:29:49.761 FramePlay[2211:10409] [ERR] Failure to create CGL context!
+2026-11-13 22:29:49.762 FramePlay[2211:10409] [ERR] Initialization of open gl view failed
+2026-11-13 22:29:49.762 FramePlay[2211:10409] [ERR] Initialization of open gl view failed
+2026-11-13 22:29:49.762 FramePlay[2211:10409] [DBG] no vout display modules matched
+2026-11-13 22:29:49.762 FramePlay[2211:10408] [ERR] video output creation failed
+2026-11-13 22:29:49.762 FramePlay[2211:10408] [DBG] removing module "freetype"
+2026-11-13 22:29:49.762 FramePlay[2211:10408] [DBG] removing module "yuvp"
+2026-11-13 22:29:49.762 FramePlay[2211:10408] [DBG] removing module "swscale"
+2026-11-13 22:29:49.762 FramePlay[2211:10408] [ERR] failed to create video output
+2026-11-13 22:29:49.763 FramePlay[2211:10378] [WARN] Reloading the decoder module
+2026-11-13 22:29:49.763 FramePlay[2211:10378] [DBG] removing module "videotoolbox"
+2026-11-13 22:29:49.773 FramePlay[2211:10378] [DBG] looking for video decoder module matching "any": 26 candidates
+2026-11-13 22:29:49.773 FramePlay[2211:10378] [DBG] new SPS parsed: 0
+2026-11-13 22:29:49.773 FramePlay[2211:10378] [DBG] new PPS parsed: 0
+2026-11-13 22:29:49.773 FramePlay[2211:10378] [WARN] forcing CVPX format: 420v
+2026-11-13 22:29:49.777 FramePlay[2211:10378] [INF] Using Video Toolbox to decode 'h264'
+2026-11-13 22:29:49.777 FramePlay[2211:10378] [DBG] using video decoder module "videotoolbox"
+2026-11-13 22:29:49.777 FramePlay[2211:10368] [ERR] buffer deadlock prevented
+2026-11-13 22:29:49.777 FramePlay[2211:10368] [DBG] Decoder wait done in 412 ms
+2026-11-13 22:29:49.777 FramePlay[2211:10368] [DBG] pausing at EOF (pause after each)
+2026-11-13 22:29:49.777 FramePlay[2211:10375] [DBG] pausing
+2026-11-13 22:29:49.777 FramePlay[2211:10378] [DBG] toggling resume
+2026-11-13 22:29:50.820 FramePlay[2211:10368] [DBG] loading spu-es slave: file:///var/folders/2s/vty41l455yv698g4xkgfv7z00000gn/T/frameplay-legendas/1.srt (forced: 1)
+2026-11-13 22:29:50.820 FramePlay[2211:10368] [DBG] `file:///var/folders/2s/vty41l455yv698g4xkgfv7z00000gn/T/frameplay-legendas/1.srt' gives access `file' demux `subtitle' path `/var/folders/2s/vty41l455yv698g4xkgfv7z00000gn/T/frameplay-legendas/1.srt'
+2026-11-13 22:29:50.820 FramePlay[2211:10368] [DBG] creating demux: access='file' demux='subtitle' location='/var/folders/2s/vty41l455yv698g4xkgfv7z00000gn/T/frameplay-legendas/1.srt' file='/var/folders/2s/vty41l455yv698g4xkgfv7z00000gn/T/frameplay-legendas/1.srt'
+2026-11-13 22:29:50.820 FramePlay[2211:10368] [DBG] looking for access_demux module matching "file": 8 candidates
+2026-11-13 22:29:50.820 FramePlay[2211:10368] [DBG] no access_demux modules matched
+2026-11-13 22:29:50.820 FramePlay[2211:10368] [DBG] creating access: file:///var/folders/2s/vty41l455yv698g4xkgfv7z00000gn/T/frameplay-legendas/1.srt
+2026-11-13 22:29:50.820 FramePlay[2211:10368] [DBG]  (path: /var/folders/2s/vty41l455yv698g4xkgfv7z00000gn/T/frameplay-legendas/1.srt)
+2026-11-13 22:29:50.820 FramePlay[2211:10368] [DBG] looking for access module matching "file": 44 candidates
+2026-11-13 22:29:50.820 FramePlay[2211:10368] [DBG] using access module "filesystem"
+2026-11-13 22:29:50.820 FramePlay[2211:10368] [DBG] looking for stream_filter module matching "prefetch,cache_read": 50 candidates
+2026-11-13 22:29:50.820 FramePlay[2211:10368] [DBG] Using stream method for AStream*
+2026-11-13 22:29:50.820 FramePlay[2211:10368] [DBG] starting pre-buffering
+2026-11-13 22:29:50.820 FramePlay[2211:10368] [DBG] received first data after 0 ms
+2026-11-13 22:29:50.820 FramePlay[2211:10368] [DBG] pre-buffering done 1024 bytes in 0s - 6802 KiB/s
+2026-11-13 22:29:50.820 FramePlay[2211:10368] [DBG] using stream_filter module "cache_read"
+2026-11-13 22:29:50.820 FramePlay[2211:10368] [DBG] looking for stream_filter module matching "any": 50 candidates
+2026-11-13 22:29:50.820 FramePlay[2211:10368] [DBG] no stream_filter modules matched
+2026-11-13 22:29:50.820 FramePlay[2211:10368] [DBG] looking for stream_directory module matching "any": 2 candidates
+2026-11-13 22:29:50.820 FramePlay[2211:10368] [DBG] no stream_directory modules matched
+2026-11-13 22:29:50.820 FramePlay[2211:10368] [DBG] attachment of directory-extractor failed for file:///var/folders/2s/vty41l455yv698g4xkgfv7z00000gn/T/frameplay-legendas/1.srt
+2026-11-13 22:29:50.820 FramePlay[2211:10368] [DBG] looking for stream_filter module matching "record": 50 candidates
+2026-11-13 22:29:50.820 FramePlay[2211:10368] [DBG] using stream_filter module "record"
+2026-11-13 22:29:50.820 FramePlay[2211:10368] [DBG] creating demux: access='file' demux='subtitle' location='/var/folders/2s/vty41l455yv698g4xkgfv7z00000gn/T/frameplay-legendas/1.srt' file='/var/folders/2s/vty41l455yv698g4xkgfv7z00000gn/T/frameplay-legendas/1.srt'
+2026-11-13 22:29:50.820 FramePlay[2211:10368] [DBG] looking for demux module matching "subtitle": 94 candidates
+2026-11-13 22:29:50.820 FramePlay[2211:10368] [DBG] this doesn't seem to be a vobsub file
+2026-11-13 22:29:50.820 FramePlay[2211:10368] [DBG] this doesn't seem to be a vobsub file
+2026-11-13 22:29:50.820 FramePlay[2211:10368] [DBG] Movie fps: 30.000000
+2026-11-13 22:29:50.821 FramePlay[2211:10368] [DBG] autodetecting subtitle format
+2026-11-13 22:29:50.821 FramePlay[2211:10368] [DBG] detected SubRIP format
+2026-11-13 22:29:50.821 FramePlay[2211:10368] [DBG] loading all subtitles...
+2026-11-13 22:29:50.823 FramePlay[2211:10368] [DBG] loaded 1706 subtitles
+2026-11-13 22:29:50.823 FramePlay[2211:10368] [DBG] using demux module "subtitle"
+2026-11-13 22:29:50.823 FramePlay[2211:10368] [DBG] looking for spu decoder module matching "any": 40 candidates
+2026-11-13 22:29:50.823 FramePlay[2211:10368] [DBG] using ffmpeg Lavc58.134.100
+2026-11-13 22:29:50.823 FramePlay[2211:10368] [ERR] option quiet does not exist
+2026-11-13 22:29:50.823 FramePlay[2211:10368] [DBG] CPU flags: 0x00000068
+2026-11-13 22:29:50.824 FramePlay[2211:10368] [WARN] refusing to decode non validated subtitle codec
+2026-11-13 22:29:50.824 FramePlay[2211:10368] [DBG] using ffmpeg Lavc58.134.100
+2026-11-13 22:29:50.824 FramePlay[2211:10368] [ERR] option quiet does not exist
+2026-11-13 22:29:50.824 FramePlay[2211:10368] [DBG] CPU flags: 0x00000068
+2026-11-13 22:29:50.824 FramePlay[2211:10368] [WARN] refusing to decode non validated subtitle codec
+2026-11-13 22:29:50.824 FramePlay[2211:10368] [DBG] trying default character encoding: CP1252
+2026-11-13 22:29:50.824 FramePlay[2211:10368] [DBG] using automatic UTF-8 detection
+2026-11-13 22:29:50.832 FramePlay[2211:10368] [DBG] using spu decoder module "subsdec"
+2026-11-13 22:29:50.832 FramePlay[2211:10368] [DBG] loading spu-es slave: file:///var/folders/2s/vty41l455yv698g4xkgfv7z00000gn/T/frameplay-legendas/4.srt (forced: 0)
+2026-11-13 22:29:50.832 FramePlay[2211:10368] [DBG] `file:///var/folders/2s/vty41l455yv698g4xkgfv7z00000gn/T/frameplay-legendas/4.srt' gives access `file' demux `subtitle' path `/var/folders/2s/vty41l455yv698g4xkgfv7z00000gn/T/frameplay-legendas/4.srt'
+2026-11-13 22:29:50.832 FramePlay[2211:10368] [DBG] creating demux: access='file' demux='subtitle' location='/var/folders/2s/vty41l455yv698g4xkgfv7z00000gn/T/frameplay-legendas/4.srt' file='/var/folders/2s/vty41l455yv698g4xkgfv7z00000gn/T/frameplay-legendas/4.srt'
+2026-11-13 22:29:50.832 FramePlay[2211:10368] [DBG] looking for access_demux module matching "file": 8 candidates
+2026-11-13 22:29:50.832 FramePlay[2211:10368] [DBG] no access_demux modules matched
+2026-11-13 22:29:50.832 FramePlay[2211:10368] [DBG] creating access: file:///var/folders/2s/vty41l455yv698g4xkgfv7z00000gn/T/frameplay-legendas/4.srt
+2026-11-13 22:29:50.832 FramePlay[2211:10368] [DBG]  (path: /var/folders/2s/vty41l455yv698g4xkgfv7z00000gn/T/frameplay-legendas/4.srt)
+2026-11-13 22:29:50.832 FramePlay[2211:10368] [DBG] looking for access module matching "file": 44 candidates
+2026-11-13 22:29:50.832 FramePlay[2211:10368] [DBG] using access module "filesystem"
+2026-11-13 22:29:50.832 FramePlay[2211:10368] [DBG] looking for stream_filter module matching "prefetch,cache_read": 50 candidates
+2026-11-13 22:29:50.832 FramePlay[2211:10368] [DBG] Using stream method for AStream*
+2026-11-13 22:29:50.832 FramePlay[2211:10368] [DBG] starting pre-buffering
+2026-11-13 22:29:50.832 FramePlay[2211:10368] [DBG] received first data after 0 ms
+2026-11-13 22:29:50.832 FramePlay[2211:10368] [DBG] pre-buffering done 1024 bytes in 0s - 19607 KiB/s
+2026-11-13 22:29:50.832 FramePlay[2211:10368] [DBG] using stream_filter module "cache_read"
+2026-11-13 22:29:50.832 FramePlay[2211:10368] [DBG] looking for stream_filter module matching "any": 50 candidates
+2026-11-13 22:29:50.832 FramePlay[2211:10368] [DBG] no stream_filter modules matched
+2026-11-13 22:29:50.832 FramePlay[2211:10368] [DBG] looking for stream_directory module matching "any": 2 candidates
+2026-11-13 22:29:50.832 FramePlay[2211:10368] [DBG] no stream_directory modules matched
+2026-11-13 22:29:50.832 FramePlay[2211:10368] [DBG] attachment of directory-extractor failed for file:///var/folders/2s/vty41l455yv698g4xkgfv7z00000gn/T/frameplay-legendas/4.srt
+2026-11-13 22:29:50.832 FramePlay[2211:10368] [DBG] looking for stream_filter module matching "record": 50 candidates
+2026-11-13 22:29:50.832 FramePlay[2211:10368] [DBG] using stream_filter module "record"
+2026-11-13 22:29:50.832 FramePlay[2211:10368] [DBG] creating demux: access='file' demux='subtitle' location='/var/folders/2s/vty41l455yv698g4xkgfv7z00000gn/T/frameplay-legendas/4.srt' file='/var/folders/2s/vty41l455yv698g4xkgfv7z00000gn/T/frameplay-legendas/4.srt'
+2026-11-13 22:29:50.832 FramePlay[2211:10368] [DBG] looking for demux module matching "subtitle": 94 candidates
+2026-11-13 22:29:50.832 FramePlay[2211:10368] [DBG] this doesn't seem to be a vobsub file
+2026-11-13 22:29:50.832 FramePlay[2211:10368] [DBG] this doesn't seem to be a vobsub file
+2026-11-13 22:29:50.832 FramePlay[2211:10368] [DBG] Movie fps: 30.000000
+2026-11-13 22:29:50.832 FramePlay[2211:10368] [DBG] autodetecting subtitle format
+2026-11-13 22:29:50.832 FramePlay[2211:10368] [DBG] detected SubRIP format
+2026-11-13 22:29:50.832 FramePlay[2211:10368] [DBG] loading all subtitles...
+2026-11-13 22:29:50.834 FramePlay[2211:10368] [DBG] loaded 893 subtitles
+2026-11-13 22:29:50.834 FramePlay[2211:10368] [DBG] using demux module "subtitle"
+2026-11-13 22:29:50.834 FramePlay[2211:10368] [DBG] loading spu-es slave: file:///var/folders/2s/vty41l455yv698g4xkgfv7z00000gn/T/frameplay-legendas/6.srt (forced: 0)
+2026-11-13 22:29:50.834 FramePlay[2211:10368] [DBG] `file:///var/folders/2s/vty41l455yv698g4xkgfv7z00000gn/T/frameplay-legendas/6.srt' gives access `file' demux `subtitle' path `/var/folders/2s/vty41l455yv698g4xkgfv7z00000gn/T/frameplay-legendas/6.srt'
+2026-11-13 22:29:50.834 FramePlay[2211:10368] [DBG] creating demux: access='file' demux='subtitle' location='/var/folders/2s/vty41l455yv698g4xkgfv7z00000gn/T/frameplay-legendas/6.srt' file='/var/folders/2s/vty41l455yv698g4xkgfv7z00000gn/T/frameplay-legendas/6.srt'
+2026-11-13 22:29:50.834 FramePlay[2211:10368] [DBG] looking for access_demux module matching "file": 8 candidates
+2026-11-13 22:29:50.834 FramePlay[2211:10368] [DBG] no access_demux modules matched
+2026-11-13 22:29:50.834 FramePlay[2211:10368] [DBG] creating access: file:///var/folders/2s/vty41l455yv698g4xkgfv7z00000gn/T/frameplay-legendas/6.srt
+2026-11-13 22:29:50.834 FramePlay[2211:10368] [DBG]  (path: /var/folders/2s/vty41l455yv698g4xkgfv7z00000gn/T/frameplay-legendas/6.srt)
+2026-11-13 22:29:50.834 FramePlay[2211:10368] [DBG] looking for access module matching "file": 44 candidates
+2026-11-13 22:29:50.834 FramePlay[2211:10368] [DBG] using access module "filesystem"
+2026-11-13 22:29:50.834 FramePlay[2211:10368] [DBG] looking for stream_filter module matching "prefetch,cache_read": 50 candidates
+2026-11-13 22:29:50.834 FramePlay[2211:10368] [DBG] Using stream method for AStream*
+2026-11-13 22:29:50.835 FramePlay[2211:10368] [DBG] starting pre-buffering
+2026-11-13 22:29:50.835 FramePlay[2211:10368] [DBG] received first data after 0 ms
+2026-11-13 22:29:50.835 FramePlay[2211:10368] [DBG] pre-buffering done 1024 bytes in 0s - 10752 KiB/s
+2026-11-13 22:29:50.835 FramePlay[2211:10368] [DBG] using stream_filter module "cache_read"
+2026-11-13 22:29:50.835 FramePlay[2211:10368] [DBG] looking for stream_filter module matching "any": 50 candidates
+2026-11-13 22:29:50.835 FramePlay[2211:10368] [DBG] no stream_filter modules matched
+2026-11-13 22:29:50.835 FramePlay[2211:10368] [DBG] looking for stream_directory module matching "any": 2 candidates
+2026-11-13 22:29:50.835 FramePlay[2211:10368] [DBG] no stream_directory modules matched
+2026-11-13 22:29:50.835 FramePlay[2211:10368] [DBG] attachment of directory-extractor failed for file:///var/folders/2s/vty41l455yv698g4xkgfv7z00000gn/T/frameplay-legendas/6.srt
+2026-11-13 22:29:50.835 FramePlay[2211:10368] [DBG] looking for stream_filter module matching "record": 50 candidates
+2026-11-13 22:29:50.835 FramePlay[2211:10368] [DBG] using stream_filter module "record"
+2026-11-13 22:29:50.835 FramePlay[2211:10368] [DBG] creating demux: access='file' demux='subtitle' location='/var/folders/2s/vty41l455yv698g4xkgfv7z00000gn/T/frameplay-legendas/6.srt' file='/var/folders/2s/vty41l455yv698g4xkgfv7z00000gn/T/frameplay-legendas/6.srt'
+2026-11-13 22:29:50.835 FramePlay[2211:10368] [DBG] looking for demux module matching "subtitle": 94 candidates
+2026-11-13 22:29:50.835 FramePlay[2211:10368] [DBG] this doesn't seem to be a vobsub file
+2026-11-13 22:29:50.835 FramePlay[2211:10368] [DBG] this doesn't seem to be a vobsub file
+2026-11-13 22:29:50.835 FramePlay[2211:10368] [DBG] Movie fps: 30.000000
+2026-11-13 22:29:50.835 FramePlay[2211:10368] [DBG] autodetecting subtitle format
+2026-11-13 22:29:50.835 FramePlay[2211:10368] [DBG] detected SubRIP format
+2026-11-13 22:29:50.835 FramePlay[2211:10368] [DBG] loading all subtitles...
+2026-11-13 22:29:50.836 FramePlay[2211:10368] [DBG] loaded 844 subtitles
+2026-11-13 22:29:50.836 FramePlay[2211:10368] [DBG] using demux module "subtitle"
+2026-11-13 22:29:50.836 FramePlay[2211:10368] [DBG] loading spu-es slave: file:///var/folders/2s/vty41l455yv698g4xkgfv7z00000gn/T/frameplay-legendas/2.srt (forced: 0)
+2026-11-13 22:29:50.836 FramePlay[2211:10368] [DBG] `file:///var/folders/2s/vty41l455yv698g4xkgfv7z00000gn/T/frameplay-legendas/2.srt' gives access `file' demux `subtitle' path `/var/folders/2s/vty41l455yv698g4xkgfv7z00000gn/T/frameplay-legendas/2.srt'
+2026-11-13 22:29:50.836 FramePlay[2211:10368] [DBG] creating demux: access='file' demux='subtitle' location='/var/folders/2s/vty41l455yv698g4xkgfv7z00000gn/T/frameplay-legendas/2.srt' file='/var/folders/2s/vty41l455yv698g4xkgfv7z00000gn/T/frameplay-legendas/2.srt'
+2026-11-13 22:29:50.836 FramePlay[2211:10368] [DBG] looking for access_demux module matching "file": 8 candidates
+2026-11-13 22:29:50.836 FramePlay[2211:10368] [DBG] no access_demux modules matched
+2026-11-13 22:29:50.836 FramePlay[2211:10368] [DBG] creating access: file:///var/folders/2s/vty41l455yv698g4xkgfv7z00000gn/T/frameplay-legendas/2.srt
+2026-11-13 22:29:50.836 FramePlay[2211:10368] [DBG]  (path: /var/folders/2s/vty41l455yv698g4xkgfv7z00000gn/T/frameplay-legendas/2.srt)
+2026-11-13 22:29:50.836 FramePlay[2211:10368] [DBG] looking for access module matching "file": 44 candidates
+2026-11-13 22:29:50.836 FramePlay[2211:10368] [DBG] using access module "filesystem"
+2026-11-13 22:29:50.836 FramePlay[2211:10368] [DBG] looking for stream_filter module matching "prefetch,cache_read": 50 candidates
+2026-11-13 22:29:50.836 FramePlay[2211:10368] [DBG] Using stream method for AStream*
+2026-11-13 22:29:50.836 FramePlay[2211:10368] [DBG] starting pre-buffering
+2026-11-13 22:29:50.837 FramePlay[2211:10368] [DBG] received first data after 0 ms
+2026-11-13 22:29:50.837 FramePlay[2211:10368] [DBG] pre-buffering done 1024 bytes in 0s - 8620 KiB/s
+2026-11-13 22:29:50.837 FramePlay[2211:10368] [DBG] using stream_filter module "cache_read"
+2026-11-13 22:29:50.837 FramePlay[2211:10368] [DBG] looking for stream_filter module matching "any": 50 candidates
+2026-11-13 22:29:50.837 FramePlay[2211:10368] [DBG] no stream_filter modules matched
+2026-11-13 22:29:50.837 FramePlay[2211:10368] [DBG] looking for stream_directory module matching "any": 2 candidates
+2026-11-13 22:29:50.837 FramePlay[2211:10368] [DBG] no stream_directory modules matched
+2026-11-13 22:29:50.837 FramePlay[2211:10368] [DBG] attachment of directory-extractor failed for file:///var/folders/2s/vty41l455yv698g4xkgfv7z00000gn/T/frameplay-legendas/2.srt
+2026-11-13 22:29:50.837 FramePlay[2211:10368] [DBG] looking for stream_filter module matching "record": 50 candidates
+2026-11-13 22:29:50.837 FramePlay[2211:10368] [DBG] using stream_filter module "record"
+2026-11-13 22:29:50.837 FramePlay[2211:10368] [DBG] creating demux: access='file' demux='subtitle' location='/var/folders/2s/vty41l455yv698g4xkgfv7z00000gn/T/frameplay-legendas/2.srt' file='/var/folders/2s/vty41l455yv698g4xkgfv7z00000gn/T/frameplay-legendas/2.srt'
+2026-11-13 22:29:50.837 FramePlay[2211:10368] [DBG] looking for demux module matching "subtitle": 94 candidates
+2026-11-13 22:29:50.837 FramePlay[2211:10368] [DBG] this doesn't seem to be a vobsub file
+2026-11-13 22:29:50.837 FramePlay[2211:10368] [DBG] this doesn't seem to be a vobsub file
+2026-11-13 22:29:50.837 FramePlay[2211:10368] [DBG] Movie fps: 30.000000
+2026-11-13 22:29:50.837 FramePlay[2211:10368] [DBG] autodetecting subtitle format
+2026-11-13 22:29:50.837 FramePlay[2211:10368] [DBG] detected SubRIP format
+2026-11-13 22:29:50.837 FramePlay[2211:10368] [DBG] loading all subtitles...
+2026-11-13 22:29:50.838 FramePlay[2211:10368] [DBG] loaded 903 subtitles
+2026-11-13 22:29:50.838 FramePlay[2211:10368] [DBG] using demux module "subtitle"
+2026-11-13 22:29:50.838 FramePlay[2211:10368] [DBG] loading spu-es slave: file:///var/folders/2s/vty41l455yv698g4xkgfv7z00000gn/T/frameplay-legendas/3.srt (forced: 0)
+2026-11-13 22:29:50.838 FramePlay[2211:10368] [DBG] `file:///var/folders/2s/vty41l455yv698g4xkgfv7z00000gn/T/frameplay-legendas/3.srt' gives access `file' demux `subtitle' path `/var/folders/2s/vty41l455yv698g4xkgfv7z00000gn/T/frameplay-legendas/3.srt'
+2026-11-13 22:29:50.838 FramePlay[2211:10368] [DBG] creating demux: access='file' demux='subtitle' location='/var/folders/2s/vty41l455yv698g4xkgfv7z00000gn/T/frameplay-legendas/3.srt' file='/var/folders/2s/vty41l455yv698g4xkgfv7z00000gn/T/frameplay-legendas/3.srt'
+2026-11-13 22:29:50.838 FramePlay[2211:10368] [DBG] looking for access_demux module matching "file": 8 candidates
+2026-11-13 22:29:50.838 FramePlay[2211:10368] [DBG] no access_demux modules matched
+2026-11-13 22:29:50.838 FramePlay[2211:10368] [DBG] creating access: file:///var/folders/2s/vty41l455yv698g4xkgfv7z00000gn/T/frameplay-legendas/3.srt
+2026-11-13 22:29:50.838 FramePlay[2211:10368] [DBG]  (path: /var/folders/2s/vty41l455yv698g4xkgfv7z00000gn/T/frameplay-legendas/3.srt)
+2026-11-13 22:29:50.838 FramePlay[2211:10368] [DBG] looking for access module matching "file": 44 candidates
+2026-11-13 22:29:50.839 FramePlay[2211:10368] [DBG] using access module "filesystem"
+2026-11-13 22:29:50.839 FramePlay[2211:10368] [DBG] looking for stream_filter module matching "prefetch,cache_read": 50 candidates
+2026-11-13 22:29:50.839 FramePlay[2211:10368] [DBG] Using stream method for AStream*
+2026-11-13 22:29:50.839 FramePlay[2211:10368] [DBG] starting pre-buffering
+2026-11-13 22:29:50.839 FramePlay[2211:10368] [DBG] received first data after 0 ms
+2026-11-13 22:29:50.839 FramePlay[2211:10368] [DBG] pre-buffering done 1024 bytes in 0s - 6578 KiB/s
+2026-11-13 22:29:50.839 FramePlay[2211:10368] [DBG] using stream_filter module "cache_read"
+2026-11-13 22:29:50.839 FramePlay[2211:10368] [DBG] looking for stream_filter module matching "any": 50 candidates
+2026-11-13 22:29:50.839 FramePlay[2211:10368] [DBG] no stream_filter modules matched
+2026-11-13 22:29:50.839 FramePlay[2211:10368] [DBG] looking for stream_directory module matching "any": 2 candidates
+2026-11-13 22:29:50.839 FramePlay[2211:10368] [DBG] no stream_directory modules matched
+2026-11-13 22:29:50.839 FramePlay[2211:10368] [DBG] attachment of directory-extractor failed for file:///var/folders/2s/vty41l455yv698g4xkgfv7z00000gn/T/frameplay-legendas/3.srt
+2026-11-13 22:29:50.839 FramePlay[2211:10368] [DBG] looking for stream_filter module matching "record": 50 candidates
+2026-11-13 22:29:50.839 FramePlay[2211:10368] [DBG] using stream_filter module "record"
+2026-11-13 22:29:50.839 FramePlay[2211:10368] [DBG] creating demux: access='file' demux='subtitle' location='/var/folders/2s/vty41l455yv698g4xkgfv7z00000gn/T/frameplay-legendas/3.srt' file='/var/folders/2s/vty41l455yv698g4xkgfv7z00000gn/T/frameplay-legendas/3.srt'
+2026-11-13 22:29:50.839 FramePlay[2211:10368] [DBG] looking for demux module matching "subtitle": 94 candidates
+2026-11-13 22:29:50.839 FramePlay[2211:10368] [DBG] this doesn't seem to be a vobsub file
+2026-11-13 22:29:50.839 FramePlay[2211:10368] [DBG] this doesn't seem to be a vobsub file
+2026-11-13 22:29:50.839 FramePlay[2211:10368] [DBG] Movie fps: 30.000000
+2026-11-13 22:29:50.840 FramePlay[2211:10368] [DBG] autodetecting subtitle format
+2026-11-13 22:29:50.840 FramePlay[2211:10368] [DBG] detected SubRIP format
+2026-11-13 22:29:50.840 FramePlay[2211:10368] [DBG] loading all subtitles...
+2026-11-13 22:29:50.843 FramePlay[2211:10368] [DBG] loaded 1706 subtitles
+2026-11-13 22:29:50.843 FramePlay[2211:10368] [DBG] using demux module "subtitle"
+2026-11-13 22:29:50.843 FramePlay[2211:10368] [DBG] loading spu-es slave: file:///var/folders/2s/vty41l455yv698g4xkgfv7z00000gn/T/frameplay-legendas/5.srt (forced: 0)
+2026-11-13 22:29:50.843 FramePlay[2211:10368] [DBG] `file:///var/folders/2s/vty41l455yv698g4xkgfv7z00000gn/T/frameplay-legendas/5.srt' gives access `file' demux `subtitle' path `/var/folders/2s/vty41l455yv698g4xkgfv7z00000gn/T/frameplay-legendas/5.srt'
+2026-11-13 22:29:50.843 FramePlay[2211:10368] [DBG] creating demux: access='file' demux='subtitle' location='/var/folders/2s/vty41l455yv698g4xkgfv7z00000gn/T/frameplay-legendas/5.srt' file='/var/folders/2s/vty41l455yv698g4xkgfv7z00000gn/T/frameplay-legendas/5.srt'
+2026-11-13 22:29:50.843 FramePlay[2211:10368] [DBG] looking for access_demux module matching "file": 8 candidates
+2026-11-13 22:29:50.844 FramePlay[2211:10368] [DBG] no access_demux modules matched
+2026-11-13 22:29:50.844 FramePlay[2211:10368] [DBG] creating access: file:///var/folders/2s/vty41l455yv698g4xkgfv7z00000gn/T/frameplay-legendas/5.srt
+2026-11-13 22:29:50.844 FramePlay[2211:10368] [DBG]  (path: /var/folders/2s/vty41l455yv698g4xkgfv7z00000gn/T/frameplay-legendas/5.srt)
+2026-11-13 22:29:50.844 FramePlay[2211:10368] [DBG] looking for access module matching "file": 44 candidates
+2026-11-13 22:29:50.844 FramePlay[2211:10368] [DBG] using access module "filesystem"
+2026-11-13 22:29:50.844 FramePlay[2211:10368] [DBG] looking for stream_filter module matching "prefetch,cache_read": 50 candidates
+2026-11-13 22:29:50.844 FramePlay[2211:10368] [DBG] Using stream method for AStream*
+2026-11-13 22:29:50.844 FramePlay[2211:10368] [DBG] starting pre-buffering
+2026-11-13 22:29:50.844 FramePlay[2211:10368] [DBG] received first data after 0 ms
+2026-11-13 22:29:50.844 FramePlay[2211:10368] [DBG] pre-buffering done 1024 bytes in 0s - 28571 KiB/s
+2026-11-13 22:29:50.844 FramePlay[2211:10368] [DBG] using stream_filter module "cache_read"
+2026-11-13 22:29:50.844 FramePlay[2211:10368] [DBG] looking for stream_filter module matching "any": 50 candidates
+2026-11-13 22:29:50.844 FramePlay[2211:10368] [DBG] no stream_filter modules matched
+2026-11-13 22:29:50.844 FramePlay[2211:10368] [DBG] looking for stream_directory module matching "any": 2 candidates
+2026-11-13 22:29:50.844 FramePlay[2211:10368] [DBG] no stream_directory modules matched
+2026-11-13 22:29:50.844 FramePlay[2211:10368] [DBG] attachment of directory-extractor failed for file:///var/folders/2s/vty41l455yv698g4xkgfv7z00000gn/T/frameplay-legendas/5.srt
+2026-11-13 22:29:50.844 FramePlay[2211:10368] [DBG] looking for stream_filter module matching "record": 50 candidates
+2026-11-13 22:29:50.844 FramePlay[2211:10368] [DBG] using stream_filter module "record"
+2026-11-13 22:29:50.844 FramePlay[2211:10368] [DBG] creating demux: access='file' demux='subtitle' location='/var/folders/2s/vty41l455yv698g4xkgfv7z00000gn/T/frameplay-legendas/5.srt' file='/var/folders/2s/vty41l455yv698g4xkgfv7z00000gn/T/frameplay-legendas/5.srt'
+2026-11-13 22:29:50.844 FramePlay[2211:10368] [DBG] looking for demux module matching "subtitle": 94 candidates
+2026-11-13 22:29:50.844 FramePlay[2211:10368] [DBG] this doesn't seem to be a vobsub file
+2026-11-13 22:29:50.844 FramePlay[2211:10368] [DBG] this doesn't seem to be a vobsub file
+2026-11-13 22:29:50.844 FramePlay[2211:10368] [DBG] Movie fps: 30.000000
+2026-11-13 22:29:50.844 FramePlay[2211:10368] [DBG] autodetecting subtitle format
+2026-11-13 22:29:50.844 FramePlay[2211:10368] [DBG] detected SubRIP format
+2026-11-13 22:29:50.844 FramePlay[2211:10368] [DBG] loading all subtitles...
+2026-11-13 22:29:50.846 FramePlay[2211:10368] [DBG] loaded 1581 subtitles
+2026-11-13 22:29:50.846 FramePlay[2211:10368] [DBG] using demux module "subtitle"
