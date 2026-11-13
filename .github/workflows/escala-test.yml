@@ -64,7 +64,7 @@ jobs:
           profile: pixel_4
           disable-animations: true
           emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
-          script: bash tools/escala-test/run.sh ${{ github.event.inputs.rotulo || 'antes' }} tel
+          script: bash tools/escala-test/run.sh ${{ github.event.inputs.rotulo || 'depois' }} tel
       - name: Emulador de TV
         if: matrix.perfil == 'tv'
         uses: reactivecircus/android-emulator-runner@v2
@@ -75,11 +75,11 @@ jobs:
           profile: tv_1080p
           disable-animations: true
           emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
-          script: bash tools/escala-test/run.sh ${{ github.event.inputs.rotulo || 'antes' }} tv
+          script: bash tools/escala-test/run.sh ${{ github.event.inputs.rotulo || 'depois' }} tv
       - name: Publicar as fotos
         if: always()
         run: |
           cd shots || exit 0
           git init -q -b x && git add -A
           git -c user.name=ci -c user.email=ci@x commit -qm fotos
-          git push -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" x:escala-teste-${{ github.event.inputs.rotulo || 'antes' }}-${{ matrix.perfil }}
+          git push -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" x:escala-teste-${{ github.event.inputs.rotulo || 'depois' }}-${{ matrix.perfil }}

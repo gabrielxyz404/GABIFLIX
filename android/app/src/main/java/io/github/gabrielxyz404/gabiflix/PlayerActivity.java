@@ -76,12 +76,37 @@ public class PlayerActivity extends Activity {
     private boolean ended = false;
     private long lastSaved = 0;
     private int scaleIndex = 0;
-    private static final MediaPlayer.ScaleType[] SCALES = {
-            MediaPlayer.ScaleType.SURFACE_BEST_FIT,
-            MediaPlayer.ScaleType.SURFACE_FILL,
-            MediaPlayer.ScaleType.SURFACE_FIT_SCREEN
-    };
+    // 0 = Ajustar (barras pretas), 1 = Preencher (corta o excesso, sem distorcer), 2 = Esticar (distorce até encher a tela).
+    // O VLC fica sempre em SURFACE_BEST_FIT: assim a superfície (e a das legendas) tem sempre o tamanho da tela e a legenda
+    // fica visível em baixo; Preencher/Esticar são feitos dentro do próprio VLC (zoom / proporção).
     private static final String[] SCALE_NAMES = {"Ajustar", "Preencher", "Esticar"};
+    private int lastScaleW = -1, lastScaleH = -1;
+
+    private void applyScale() {
+        if (player == null || videoLayout == null) return;
+        int w = videoLayout.getWidth(), h = videoLayout.getHeight();
+        lastScaleW = w; lastScaleH = h;
+        if (w <= 0 || h <= 0) return;
+        try {
+            player.setVideoScale(MediaPlayer.ScaleType.SURFACE_BEST_FIT);
+            if (scaleIndex == 2) {
+                player.setScale(0f);
+                player.setAspectRatio(w + ":" + h);
+            } else if (scaleIndex == 1) {
+                player.setAspectRatio(null);
+                org.videolan.libvlc.interfaces.IMedia.VideoTrack vt = player.getCurrentVideoTrack();
+                if (vt != null && vt.width > 0 && vt.height > 0) {
+                    double vw = vt.width * (vt.sarNum > 0 && vt.sarDen > 0 ? (double) vt.sarNum / vt.sarDen : 1.0), vh = vt.height;
+                    player.setScale((float) Math.max(w / vw, h / vh));
+                } else player.setScale(0f);
+            } else {
+                player.setAspectRatio(null);
+                player.setScale(0f);
+            }
+        } catch (Throwable t) { glog("escala: " + t); }
+    }
+
+
 
     private final Handler ui = new Handler(Looper.getMainLooper());
     private final Runnable hideControls = () -> setControlsVisible(false);
@@ -163,6 +188,10 @@ public class PlayerActivity extends Activity {
         // quando os controles sumiam, porque o Fire TV passa o vídeo para outra camada da tela
         player.attachViews(videoLayout, null, true, tv);
         player.setEventListener(this::onPlayerEvent);
+        // rotação / mudança de tamanho da tela: refaz o zoom do modo Preencher e a proporção do Esticar
+        videoLayout.addOnLayoutChangeListener((v, l, t, r, b, ol, ot, or, ob) -> {
+            if (scaleIndex != 0 && (v.getWidth() != lastScaleW || v.getHeight() != lastScaleH)) ui.post(this::applyScale);
+        });
 
         Media media = new Media(libVLC, Uri.parse(url));
         media.setHWDecoderEnabled(true, false);
@@ -182,6 +211,9 @@ public class PlayerActivity extends Activity {
                 if (!resumeDone) resume();
                 if (!playing) { playing = true; ui.postDelayed(this::attachReadySubs, 1500); selectEmbeddedPortugueseLater(); }
                 scheduleHide();
+                break;
+            case MediaPlayer.Event.Vout:
+                if (scaleIndex != 0) ui.post(this::applyScale);
                 break;
             case MediaPlayer.Event.Paused:
                 playButton.setText("▶");
@@ -342,8 +374,8 @@ public class PlayerActivity extends Activity {
         TextView scale = pill("Tela: " + SCALE_NAMES[0]);
         makeRemoteFriendly(scale, 0);
         scale.setOnClickListener(v -> {
-            scaleIndex = (scaleIndex + 1) % SCALES.length;
-            player.setVideoScale(SCALES[scaleIndex]);
+            scaleIndex = (scaleIndex + 1) % SCALE_NAMES.length;
+            applyScale();
             scale.setText("Tela: " + SCALE_NAMES[scaleIndex]);
             scheduleHide();
         });
