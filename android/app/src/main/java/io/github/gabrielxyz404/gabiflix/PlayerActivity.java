@@ -80,7 +80,7 @@ public class PlayerActivity extends Activity {
     // O VLC fica sempre em SURFACE_BEST_FIT: assim a superfície das legendas continua dentro da tela e a legenda fica
     // inteira e centrada em baixo nos 3 modos. (SURFACE_FILL/FIT_SCREEN do VLC desenham a legenda no fundo de um vídeo
     // maior que a tela, e ela sai da área visível.) Esticar = proporção do VLC igual à da tela; Preencher = zoom na
-    // TextureView do vídeo (o VLC é sempre ligado por TextureView, ver attachViews).
+    // vista do vídeo (TextureView na TV, SurfaceView no celular; ambas aceitam escala).
     private static final String[] SCALE_NAMES = {"Ajustar", "Preencher", "Esticar"};
     private int lastScaleW = -1, lastScaleH = -1;
 
@@ -99,19 +99,23 @@ public class PlayerActivity extends Activity {
         ui.postDelayed(this::zoomVideo, 1000);
     }
 
-    private android.view.TextureView findTexture(View v) {
-        if (v instanceof android.view.TextureView) return (android.view.TextureView) v;
-        if (v instanceof ViewGroup) {
-            ViewGroup g = (ViewGroup) v;
-            for (int i = 0; i < g.getChildCount(); i++) { android.view.TextureView t = findTexture(g.getChildAt(i)); if (t != null) return t; }
-        }
-        return null;
+    /** a vista do vídeo: a TextureView (TV) ou, no celular, a primeira SurfaceView (a segunda é a das legendas) */
+    private View findVideoView(View v) {
+        ArrayList<View> found = new ArrayList<>();
+        collectVideoViews(v, found);
+        for (View c : found) if (c instanceof android.view.TextureView) return c;
+        return found.isEmpty() ? null : found.get(0);
+    }
+
+    private static void collectVideoViews(View v, ArrayList<View> out) {
+        if (v instanceof android.view.TextureView || v instanceof android.view.SurfaceView) out.add(v);
+        if (v instanceof ViewGroup) { ViewGroup g = (ViewGroup) v; for (int i = 0; i < g.getChildCount(); i++) collectVideoViews(g.getChildAt(i), out); }
     }
 
     /** Preencher: amplia a imagem (centrada) até cobrir a tela inteira; nos outros modos volta a 1 */
     private void zoomVideo() {
         try {
-            android.view.TextureView tex = findTexture(videoLayout);
+            View tex = findVideoView(videoLayout);
             if (tex == null) return;
             if (tex.getTag() == null) {
                 tex.setTag("zoom");
@@ -201,9 +205,9 @@ public class PlayerActivity extends Activity {
         options.add("--sub-text-scale=90");
         libVLC = new LibVLC(this, options);
         player = new MediaPlayer(libVLC);
-        // o vídeo vai sempre por TextureView (também permite o zoom do modo Preencher). Na TV (Fire TV), com SurfaceView a imagem ficava preta (só som)
+        // na TV (Fire TV) o vídeo vai por TextureView: com SurfaceView a imagem ficava preta (só som)
         // quando os controles sumiam, porque o Fire TV passa o vídeo para outra camada da tela
-        player.attachViews(videoLayout, null, true, true);
+        player.attachViews(videoLayout, null, true, tv);
         player.setEventListener(this::onPlayerEvent);
         // rotação / mudança de tamanho da tela: refaz o zoom do modo Preencher e a proporção do Esticar
         videoLayout.addOnLayoutChangeListener((v, l, t, r, b, ol, ot, or, ob) -> {
