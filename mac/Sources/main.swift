@@ -82,10 +82,20 @@ final class AppDelegate: NSObject, NSApplicationDelegate, WKScriptMessageHandler
             PlayerWindowController.testLog = true
             VLCLibrary.shared().debugLogging = true
             VLCLibrary.shared().debugLoggingLevel = 3
+            // --gf-test-sub <link de uma legenda SRT>: legenda do "site" (sem busca no addon quando o código IMDb é "-")
+            var subs: [URL] = []
+            if let k = args.firstIndex(of: "--gf-test-sub"), k + 1 < args.count, let su = URL(string: args[k + 1]) { subs.append(su) }
             DispatchQueue.main.asyncAfter(deadline: .now() + 6) {
-                let p = PlayerWindowController(url: u, subtitles: [], type: "movie", id: id, startMs: 0)
+                let p = id == "-" ? PlayerWindowController(url: u, subtitles: subs, type: "", id: "", startMs: 0)
+                                  : PlayerWindowController(url: u, subtitles: subs, type: "movie", id: id, startMs: 0)
                 self.player = p
                 p.showWindow(nil)
+                // comandos de teste: o script escreve uma linha em /tmp/gf-cmd (scale N | sync | speech | delay MS | close)
+                Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { [weak p] _ in
+                    guard let p = p, let c = try? String(contentsOfFile: "/tmp/gf-cmd", encoding: .utf8) else { return }
+                    try? FileManager.default.removeItem(atPath: "/tmp/gf-cmd")
+                    for line in c.split(separator: "\n") { p.testCommand(String(line)) }
+                }
             }
         }
     }
