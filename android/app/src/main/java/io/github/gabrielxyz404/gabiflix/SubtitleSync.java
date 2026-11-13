@@ -59,6 +59,8 @@ final class SubtitleSync {
         boolean consensus;    // escolhida por consenso (não alinhada: não há referência de tempo)
         boolean pieced;       // ajuste por partes (cortes)
         boolean partial;      // cobre só parte do vídeo (ex.: só o CD1 do filme): vai depois das completas
+        boolean sparse;       // tem muito menos falas que a referência (forçada / só falas estrangeiras / incompleta): nunca é a primeira
+        String sig = "raw";   // assinatura da reescrita automática (escala/deslocamento/partes): o atraso manual guardado só vale para a MESMA reescrita
     }
 
     /** um resultado da busca no addon */
@@ -277,7 +279,7 @@ final class SubtitleSync {
             if (arr == null) return res;
             res.ok = true;
             res.total = arr.length();
-            ArrayList<Found> others = new ArrayList<>();
+            ArrayList<Found> others = new ArrayList<>(), ptAll = new ArrayList<>();
             for (int i = 0; i < arr.length(); i++) {
                 org.json.JSONObject o = arr.optJSONObject(i);
                 if (o == null) continue;
@@ -288,9 +290,11 @@ final class SubtitleSync {
                 boolean hash = "f".equals(o.optString("m", ""));
                 Found fo = new Found(url, hash, lang);
                 fo.rel = (o.optString("subtitleFileName", "") + " " + o.optString("movieReleaseName", "") + " " + o.optString("releaseGroup", "") + " " + o.optString("releaseFormat", "")).trim();
-                if (isPtLang(lang)) { if (res.pt.size() < 10) res.pt.add(fo); }
+                if (isPtLang(lang)) ptAll.add(fo);
                 else others.add(fo);
             }
+            // as que casam com o hash vêm primeiro (mantém a ordem do addon dentro de cada grupo) antes de cortar em 10
+            for (int pass = 0; pass < 2; pass++) for (Found f : ptAll) if (f.hashMatch == (pass == 0) && res.pt.size() < 10) res.pt.add(f);
             // referência: de preferência inglês (eng) com hash; até 3
             for (int pass = 0; pass < 2; pass++) {
                 for (Found f : others) {
@@ -330,19 +334,23 @@ final class SubtitleSync {
      */
     static AlignReport alignAll(List<Cand> all, List<long[]> refs, StringBuilder lg) {
         AlignReport rep = new AlignReport();
+        markSparse(all, lg);
         ArrayList<long[]> use = new ArrayList<>(refs);
         Cand self = null;
         if (!use.isEmpty()) rep.refKind = "outro idioma";
         else {
+            // a PT do hash que serve de referência: a de menor posição entre as COMPLETAS (uma forçada tem poucas falas e não serve)
+            int maxCues = 0;
+            for (Cand c : all) if (c.hashMatch && c.text != null) maxCues = Math.max(maxCues, SubtitleAlign.alignStarts(c.text).length);
             for (Cand c : all) if (c.hashMatch && c.text != null && (self == null || c.rank < self.rank)) {
-                long[] st = SubtitleAlign.cueStarts(c.text);
-                if (st.length >= 20) self = c;
+                long[] st = SubtitleAlign.alignStarts(c.text);
+                if (st.length >= 20 && st.length >= 0.6 * maxCues) self = c;
             }
             if (self == null) {
                 consensus(all, rep, lg);
                 return rep;
             }
-            use.add(SubtitleAlign.cueStarts(self.text));
+            use.add(SubtitleAlign.alignStarts(self.text));
             self.refSelf = true;
             self.alignNote = "é a referência (PT do hash)";
             rep.refKind = "PT do hash";
@@ -350,26 +358,49 @@ final class SubtitleSync {
         }
         for (Cand c : all) {
             if (c == self) continue;
-            long[] starts = SubtitleAlign.cueStarts(c.text);
+            long[] starts = SubtitleAlign.alignStarts(c.text);
             SubtitleAlign.Fit best = null;
+            ArrayList<SubtitleAlign.Fit> oks = new ArrayList<>();
             for (long[] r : use) {
                 SubtitleAlign.Fit f = SubtitleAlign.align(r, starts);
                 // prefere uma referência que valide por inteiro; entre iguais, a de maior nota
                 if (best == null || (f.ok() && !best.ok()) || (f.ok() == best.ok() && f.score > best.score)) best = f;
-                if (best.ok() && best.score >= 0.6) break; // já está claro: não precisa das outras referências
+                if (f.ok()) oks.add(f);
+                // com 2 referências que validam E concordam, está confirmado: não precisa das outras
+                if (oks.size() >= 2 && SubtitleAlign.agreement(oks.get(0), oks.get(oks.size() - 1), starts, 600) >= 0.95) break;
             }
             if (best == null) continue;
+            if (oks.size() >= 2) {
+                // referências do mesmo vídeo têm de dar a MESMA transformação; se discordam, algo está errado (outra versão, referência errada): não alinha
+                SubtitleAlign.Fit pick = null;
+                int bestVotes = 0;
+                for (SubtitleAlign.Fit a : oks) {
+                    int votes = 0;
+                    for (SubtitleAlign.Fit b : oks) if (SubtitleAlign.agreement(a, b, starts, 600) >= 0.95) votes++;
+                    if (votes > bestVotes || (votes == bestVotes && pick != null && a.score > pick.score)) { bestVotes = votes; pick = a; }
+                }
+                if (bestVotes < 2) {
+                    lg.append("\n  #").append(c.rank).append(" REFERÊNCIAS DISCORDAM (").append(oks.size()).append(" validam com transformações diferentes): não alinha");
+                    c.alignNote = "não alinhada: as referências de tempo discordam entre si";
+                    continue;
+                }
+                best = pick;
+            }
             String nums = "nota=" + String.format(Locale.ROOT, "%.2f", best.score) + " metades=" + String.format(Locale.ROOT, "%.2f/%.2f", best.scoreFirstHalf, best.scoreSecondHalf)
                     + " escala=" + String.format(Locale.ROOT, "%.4f", best.scale) + " deslocamento=" + best.offsetMs + "ms";
             lg.append("\n  #").append(c.rank).append(" alinhamento: ").append(nums);
             if (!best.ok()) {
-                c.alignNote = best.differentVersion()
+                if (best.sparse) c.sparse = true;
+                c.alignNote = best.sparse ? "rejeitada: tem só " + Math.round(best.cueRatio * 100) + "% das falas da referência (forçada ou incompleta)"
+                        : best.sparseRef ? "sem validação: a referência tem poucas falas"
+                        : best.differentVersion()
                         ? "rejeitado: versão diferente (corte) — nota " + f2(best.score) + ", metades " + f2(best.scoreFirstHalf) + "/" + f2(best.scoreSecondHalf)
                         : "sem casamento com a referência (nota " + f2(best.score) + ")";
                 lg.append(" -> ").append(best.differentVersion() ? "REJEITADO: corte/versão diferente" : "não casa");
                 continue;
             }
             c.aligned = true;
+            c.sig = sigOf(best);
             c.alignScore = best.score;
             c.partial = best.coverage < 0.75;
             c.alignScale = best.scale;
@@ -394,11 +425,36 @@ final class SubtitleSync {
                     os.write(t.getBytes(StandardCharsets.UTF_8));
                     os.close();
                     c.text = t;
-                    c.lastMs = PlayerActivity.lastCueEnd(t);
+                    c.lastMs = SubtitleText.lastCueEnd(t);
                 } catch (IOException e) { c.aligned = false; c.alignNote = "falhou ao gravar o ajuste"; rep.aligned--; }
             }
         }
         return rep;
+    }
+
+    /** assinatura curta da reescrita (escala, deslocamento, cortes) */
+    static String sigOf(SubtitleAlign.Fit f) {
+        StringBuilder sb = new StringBuilder("a").append(String.format(Locale.ROOT, "%.4f", f.scale)).append('/').append(Math.round(f.offsetMs / 100.0));
+        if (f.cuts != null) for (int i = 0; i < f.cuts.length; i++) sb.append('/').append(f.cuts[i] / 1000).append(':').append(Math.round(f.offs[i + 1] / 100.0));
+        return sb.toString();
+    }
+
+    /** legenda "forçada"/incompleta: tem muito menos falas que a mediana das candidatas (só com 3 ou mais) */
+    private static void markSparse(List<Cand> all, StringBuilder lg) {
+        ArrayList<Integer> n = new ArrayList<>();
+        int[] cnt = new int[all.size()];
+        for (int i = 0; i < all.size(); i++) {
+            Cand c = all.get(i);
+            cnt[i] = c.text == null ? 0 : SubtitleAlign.alignStarts(c.text).length;
+            if (cnt[i] >= 20) n.add(cnt[i]);
+        }
+        if (n.size() < 3) return;
+        Collections.sort(n);
+        int med = n.get(n.size() / 2);
+        for (int i = 0; i < all.size(); i++) if (cnt[i] < 0.4 * med) {
+            all.get(i).sparse = true;
+            lg.append("\n  #").append(all.get(i).rank).append(" parece forçada/incompleta: ").append(cnt[i]).append(" falas (mediana ").append(med).append(")");
+        }
     }
 
     static String signedSecs(long ms) {
@@ -455,7 +511,11 @@ final class SubtitleSync {
             rest.removeAll(cons);
         }
         out.addAll(rankHeuristic(rest, len, lg));
-        return out;
+        // forçadas/incompletas nunca vão na frente das outras (ficam no menu, no fim)
+        ArrayList<Cand> full = new ArrayList<>(), thin = new ArrayList<>();
+        for (Cand c : out) (c.sparse && !c.refSelf ? thin : full).add(c);
+        full.addAll(thin);
+        return full;
     }
 
     // ---------- consenso (sem nenhuma referência de tempo) ----------
@@ -469,8 +529,8 @@ final class SubtitleSync {
         ArrayList<long[]> st = new ArrayList<>();
         for (Cand c : all) {
             c.group = -1;
-            long[] s = SubtitleAlign.cueStarts(c.text);
-            if (s.length >= 20) { use.add(c); st.add(s); }
+            long[] s = SubtitleAlign.alignStarts(c.text);
+            if (s.length >= 20 && !c.sparse) { use.add(c); st.add(s); }
         }
         rep.ptCount = all.size();
         if (use.size() < 2) {
@@ -542,9 +602,10 @@ final class SubtitleSync {
         if (len <= 0 || sorted.isEmpty()) return sorted;
 
         long ref = 0;
+        Cand refCand = null;
         String why = "sem referência";
         for (Cand c : sorted) {
-            if (c.hashMatch && plausible(c.lastMs, len)) { ref = c.lastMs; why = "legenda do hash #" + c.rank; break; }
+            if (c.hashMatch && plausible(c.lastMs, len)) { ref = c.lastMs; refCand = c; why = "legenda do hash #" + c.rank; break; }
         }
         if (ref == 0) {
             int bestN = 0;
@@ -552,7 +613,7 @@ final class SubtitleSync {
                 if (!plausible(a.lastMs, len)) continue;
                 int n = 0;
                 for (Cand b : sorted) if (b != a && b.lastMs > 0 && Math.abs((double) b.lastMs / a.lastMs - 1) <= 0.015) n++;
-                if (n > bestN) { bestN = n; ref = a.lastMs; }
+                if (n > bestN) { bestN = n; ref = a.lastMs; refCand = a; }
             }
             if (ref > 0) why = "grupo de " + (bestN + 1) + " legendas parecidas";
         }
@@ -564,8 +625,16 @@ final class SubtitleSync {
                 double f = matchFactor((double) c.lastMs / ref);
                 if (f <= 0) continue;
                 String fixed = SubtitleAlign.transform(c.text, 1.0 / f, 0);
-                long nl = PlayerActivity.lastCueEnd(fixed);
+                long nl = SubtitleText.lastCueEnd(fixed);
                 if (nl <= 0 || Math.abs((double) nl / ref - 1) > 0.015) continue;
+                // só o fim bate? Confirma pelas falas: depois da correção os inícios têm de concordar com os da legenda de referência
+                // (um corte maior/menor do filme também tem o fim ~4% diferente e NÃO deve ser esticado)
+                if (refCand == null || refCand.text == null) continue;
+                long[] rs = SubtitleAlign.alignStarts(refCand.text), ns = SubtitleAlign.alignStarts(fixed);
+                if (SubtitleAlign.rawAgreement(ns, rs) < 0.4 || !SubtitleAlign.sameTiming(ns, rs)) {
+                    lg.append("\n  #").append(c.rank).append(" não corrigida: o fim sugere fator ").append(String.format(Locale.ROOT, "%.4f", f)).append(" mas as falas não confirmam");
+                    continue;
+                }
                 try {
                     FileOutputStream os = new FileOutputStream(c.file);
                     os.write(fixed.getBytes(StandardCharsets.UTF_8));
@@ -576,6 +645,7 @@ final class SubtitleSync {
                 c.text = fixed;
                 c.lastMs = nl;
                 c.fixed = true;
+                c.sig = "fps" + String.format(Locale.ROOT, "%.4f", f);
             }
         }
 

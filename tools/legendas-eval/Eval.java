@@ -171,6 +171,8 @@ public class Eval {
         int[] hist = new int[6];
         String[] hl = {"<0,20", "0,20-0,35", "0,35-0,50", "0,50-0,70", "0,70-0,90", ">=0,90"};
         int sparseAcc = 0, sparseAny = 0;
+        int[] rh = new int[7]; String[] rl = {"<0,30", "0,30-0,45", "0,45-0,60", "0,60-0,80", "0,80-1,20", "1,20-2", ">2"};
+        StringBuilder exLow = new StringBuilder();
         StringBuilder exSparse = new StringBuilder(), exRej = new StringBuilder();
         PrintWriter cw = new PrintWriter(casesOut.toFile());
         Map<Integer, Integer> cutsHist = new TreeMap<>();
@@ -182,6 +184,10 @@ public class Eval {
                 cw.println(p.id + "\t" + f.ok() + "\t" + f2(f.score) + "\t" + String.format(Locale.ROOT, "%.4f", f.scale) + "\t" + f.offsetMs + "\t" + (f.piecewise() ? f.cuts.length : 0) + "\t" + f2(f.coverage) + "\t" + f2(r));
                 if (f.ok() && (bestOk == null || f.score > bestOk.f.score)) bestOk = p;
                 if (bestAny == null || f.score > bestAny.f.score) bestAny = p;
+                if ((f.ok() || f.score >= 0.5) && f.coverage >= 0.75) {
+                    rh[r < 0.3 ? 0 : r < 0.45 ? 1 : r < 0.6 ? 2 : r < 0.8 ? 3 : r < 1.2 ? 4 : r < 2 ? 5 : 6]++;
+                    if (r < 0.6 && exLow.length() < 1800) exLow.append("- ").append(p.id).append(": ").append(f.ok() ? "aceita" : "rejeitada").append(" nota ").append(f2(f.score)).append(", razão de falas ").append(f2(r)).append(" (PT ").append(p.pt.starts.length).append(" x EN ").append(p.en.starts.length).append(", ").append(p.pt.name).append(")\n");
+                }
                 if (f.ok() && r < 0.5 && f.coverage >= 0.75) { sparseAcc++; if (exSparse.length() < 1800) exSparse.append("- ").append(p.id).append(": aceita com nota ").append(f2(f.score)).append(" mas só tem ").append(Math.round(r * 100)).append("% das falas da referência (PT ").append(p.pt.starts.length).append(" x EN ").append(p.en.starts.length).append(", ").append(p.pt.name).append(")\n"); }
             }
             double sc = bestOk != null ? bestOk.f.score : bestAny.f.score;
@@ -203,6 +209,10 @@ public class Eval {
         StringBuilder hs = new StringBuilder();
         for (int i = 0; i < 6; i++) hs.append(hl[i]).append(": ").append(hist[i]).append(i < 5 ? " | " : "");
         out.println("Melhor nota por PT: " + hs);
+        StringBuilder rs = new StringBuilder();
+        for (int i = 0; i < 7; i++) rs.append(rl[i]).append(": ").append(rh[i]).append(i < 6 ? " | " : "");
+        out.println("Razão de falas PT/EN na janela coberta (pares com nota >= 0,5 ou aceitos): " + rs);
+        if (exLow.length() > 0) out.print("Razão baixa (< 0,60):\n" + exLow);
         out.println("Aceitas COM MENOS DE 50% das falas da referência na mesma janela (forçadas/esparsas): **" + sparseAcc + "** pares.");
         if (exSparse.length() > 0) out.print(exSparse);
         if (exRej.length() > 0) out.print("Rejeitadas com nota >= 0,20 (exemplos):\n" + exRej);
@@ -325,5 +335,54 @@ public class Eval {
         out.println();
         stat("distorcoes_testes", nTest); stat("distorcoes_certas", nRight); stat("distorcoes_ERRADAS", nWrong); stat("distorcoes_nao_alinhadas", nRej);
         pool.shutdown();
+        consensusReport(titles, out);
+    }
+
+    // ---------- 6. consenso (sem referência de tempo) ----------
+    static long lastOf(Sub s) { return Variant.lastEnd(s.text); }
+
+    static void consensusReport(List<Title> titles, PrintStream out) {
+        int tests = 0, oldRight = 0, newRight = 0, applied = 0, appliedRight = 0, appliedOld = 0, groupsMixed = 0, groupsAll = 0;
+        StringBuilder ex = new StringBuilder();
+        for (Title t : titles) {
+            List<Sub> P = t.pt.stream().filter(s -> s.ptOk && s.starts != null && s.starts.length >= 20).collect(Collectors.toList());
+            if (P.size() < 3) continue;
+            List<long[]> st = new ArrayList<>();
+            for (Sub p : P) st.add(p.starts);
+            int[] comp = SubtitleAlign.consensusGroups(st);
+            int ng = 0; for (int c : comp) ng = Math.max(ng, c + 1);
+            int[] sizes = new int[ng]; for (int c : comp) sizes[c]++;
+            for (Sub e : t.en) {
+                if (e.starts == null || e.starts.length < 20) continue;
+                boolean[] truth = new boolean[P.size()]; boolean any = false;
+                for (int i = 0; i < P.size(); i++) { truth[i] = SubtitleAlign.matchesTol(e.starts, P.get(i).starts, 0, 300) / (double) Math.min(e.starts.length, P.get(i).starts.length) >= 0.45; any |= truth[i]; }
+                if (!any) continue;
+                boolean[] hash = new boolean[P.size()]; double[] nm = new double[P.size()]; long[] last = new long[P.size()];
+                for (int i = 0; i < P.size(); i++) { nm[i] = SubtitleAlign.nameSimilarity(e.name, P.get(i).name); last[i] = lastOf(P.get(i)); }
+                long len = Math.round(lastOf(e) / 0.95);
+                int oldPick = -1; { long ref = 0; int bn = -1;
+                    for (int i = 0; i < P.size(); i++) { if (last[i] < len * 0.6 || last[i] > len * 1.05) continue; int n = 0; for (int j = 0; j < P.size(); j++) if (j != i && Math.abs((double) last[j] / last[i] - 1) <= 0.015) n++; if (n > bn) { bn = n; ref = last[i]; } }
+                    double bs = 1e9; for (int i = 0; i < P.size(); i++) { if (last[i] < len * 0.5 || last[i] > len * 1.12) continue; double sc = Math.min(0.3, Math.max(0, (ref > 0 ? Math.abs((double) last[i] / ref - 1) : 0.3) - 0.005)) + 0.01 * i; if (sc < bs) { bs = sc; oldPick = i; } } }
+                int g = SubtitleAlign.pickGroup(comp, hash, nm, last, len, null);
+                int newPick = oldPick; boolean app = false;
+                if (g >= 0 && sizes[g] >= 2) { app = true; double bs = -1; for (int i = 0; i < P.size(); i++) if (comp[i] == g) { double sc = nm[i] - 0.001 * i; if (bs < -0.5 || sc > bs) { bs = sc; newPick = i; } } }
+                tests++;
+                if (oldPick >= 0 && truth[oldPick]) oldRight++;
+                if (newPick >= 0 && truth[newPick]) newRight++;
+                if (app) { applied++; if (truth[newPick]) appliedRight++; if (oldPick >= 0 && truth[oldPick]) appliedOld++; }
+            }
+            // pureza: dois PT no mesmo grupo mas que NÃO batem entre si (>=45% a 300 ms) são um grupo misto
+            for (int i = 0; i < P.size(); i++) for (int j = i + 1; j < P.size(); j++) if (comp[i] == comp[j]) {
+                groupsAll++;
+                double a = SubtitleAlign.matchesTol(P.get(j).starts, P.get(i).starts, 0, 300) / (double) Math.min(P.get(i).starts.length, P.get(j).starts.length);
+                if (a < 0.45) { groupsMixed++; if (ex.length() < 800) ex.append("- ").append(t.label).append(": PT").append(P.get(i).idx).append(" e PT").append(P.get(j).idx).append(" no mesmo grupo com só ").append(f2(a)).append(" de coincidência a 0,3 s\n"); }
+            }
+        }
+        out.println("### 6. Consenso (sem referência de tempo: escolhe, não alinha)");
+        out.println("Simulação: o vídeo tem o tempo de uma EN; certa = PT que bate com ela sem ajuste (>= 45% a 300 ms). Testes: " + tests + " | regra do fim da legenda: " + oldRight + " certas | consenso+regra: " + newRight
+                + " | o consenso entrou em " + applied + ": acertou " + appliedRight + " (regra antiga acertaria " + appliedOld + "). Pares no mesmo grupo que não batem de verdade: " + groupsMixed + " de " + groupsAll + ".");
+        out.print(ex);
+        out.println();
+        stat("consenso_testes", tests); stat("consenso_certas_regra_fim", oldRight); stat("consenso_certas_consenso", newRight); stat("consenso_entrou/acertou", applied + "/" + appliedRight); stat("grupos_mistos", groupsMixed + "/" + groupsAll);
     }
 }

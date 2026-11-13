@@ -579,7 +579,8 @@ public class PlayerActivity extends Activity {
             // referências de tempo (outro idioma, nunca mostradas)
             ArrayList<java.util.concurrent.Future<long[]>> refFut = new ArrayList<>();
             ArrayList<String> refLangs = new ArrayList<>();
-            if (sr != null) for (SubtitleSync.Found rf : sr.refs) {
+            // referência "de palpite" (o addon não diz quem casa com o hash): outra versão do filme daria um tempo errado com cara de certo; na dúvida não usa
+            if (sr != null && !sr.refsAssumed) for (SubtitleSync.Found rf : sr.refs) {
                 final String ru = rf.url;
                 refLangs.add(rf.lang);
                 refFut.add(pool.submit((java.util.concurrent.Callable<long[]>) () -> fetchStarts(ru)));
@@ -616,7 +617,8 @@ public class PlayerActivity extends Activity {
             if (ar.refKind.equals("outro idioma")) refLine = "outro idioma (" + langShort(refLang) + ")" + (sr != null && sr.refsAssumed ? ", palpite" : ", do hash") + (nAligned == 0 ? ", nenhuma legenda casou" : "");
             else if (ar.refKind.equals("PT do hash")) refLine = "PT do hash";
             else if (ar.refKind.equals("consenso")) refLine = "nenhuma de tempo; consenso entre " + ar.ptCount + " PT (maior grupo: " + ar.consensusMax + ") escolhe a legenda certa, não alinha";
-            else refLine = (sr != null && !sr.refs.isEmpty()) ? "nenhuma (a referência não baixou)" : "nenhuma";
+            else refLine = (sr != null && sr.refsAssumed && !sr.refs.isEmpty()) ? "nenhuma (o addon não confirma o hash: referência de palpite ignorada)"
+                    : (sr != null && !sr.refs.isEmpty()) ? "nenhuma (a referência não baixou)" : "nenhuma";
 
             if (ar.pieced > 0) refLine += "; " + ar.pieced + " por partes (cortes)";
             if (ar.freeScaled > 0) refLine += "; " + ar.freeScaled + " com escala livre";
@@ -626,21 +628,14 @@ public class PlayerActivity extends Activity {
         }).start();
     }
 
-    /** texto UTF-8 de uma legenda baixada (null se não for legenda) */
+    /** texto UTF-8 de uma legenda baixada (null se não for legenda): gzip/zip, BOM, UTF-16, cp1252, ASS, fins de linha (ver SubtitleText) */
     private static String fetchText(String u) {
-        try {
-            byte[] data = httpGet(u);
-            if (data == null || data.length < 20) return null;
-            if ((data[0] & 0xFF) == 0x1F && (data[1] & 0xFF) == 0x8B) data = gunzip(data);
-            String text = decodeText(data);
-            if (text == null || !text.contains("-->")) return null; // não é legenda (página de erro, arquivo vazio...)
-            return text.replace("﻿", "");
-        } catch (Exception e) { return null; }
+        try { return SubtitleText.decode(httpGet(u)); } catch (Exception e) { return null; }
     }
 
     private static long[] fetchStarts(String u) {
         String t = fetchText(u);
-        return t == null ? null : SubtitleAlign.cueStarts(t);
+        return t == null ? null : SubtitleAlign.alignStarts(t);
     }
 
     /** baixa uma legenda; devolve null se não for uma legenda válida em português */
@@ -666,78 +661,30 @@ public class PlayerActivity extends Activity {
         } catch (Exception e) { return null; }
     }
 
-    private static byte[] gunzip(byte[] d) throws java.io.IOException {
-        java.io.InputStream in = new java.util.zip.GZIPInputStream(new java.io.ByteArrayInputStream(d));
-        java.io.ByteArrayOutputStream buf = new java.io.ByteArrayOutputStream();
-        byte[] b = new byte[16384];
-        int r;
-        while ((r = in.read(b)) > 0) { buf.write(b, 0, r); if (buf.size() > 5_000_000) break; }
-        in.close();
-        return buf.toByteArray();
-    }
-
-    /** texto da legenda: UTF-16 (com BOM), UTF-8, ou (se tiver bytes inválidos) Windows-1252, comum nas legendas antigas */
-    private static String decodeText(byte[] d) {
-        if (d.length >= 2 && (d[0] & 0xFF) == 0xFF && (d[1] & 0xFF) == 0xFE) return new String(d, 2, d.length - 2, java.nio.charset.StandardCharsets.UTF_16LE);
-        if (d.length >= 2 && (d[0] & 0xFF) == 0xFE && (d[1] & 0xFF) == 0xFF) return new String(d, 2, d.length - 2, java.nio.charset.StandardCharsets.UTF_16BE);
-        try {
-            return java.nio.charset.StandardCharsets.UTF_8.newDecoder()
-                    .onMalformedInput(java.nio.charset.CodingErrorAction.REPORT)
-                    .onUnmappableCharacter(java.nio.charset.CodingErrorAction.REPORT)
-                    .decode(java.nio.ByteBuffer.wrap(d)).toString();
-        } catch (java.nio.charset.CharacterCodingException e) {
-            return new String(d, java.nio.charset.Charset.forName("windows-1252"));
-        }
-    }
-
-    private static final java.util.HashSet<String> PT_W = words("não você vocês estou então isso são também muito porque pra obrigado tá nós meu minha ele dela já até bem tudo aqui foi vai tem sim uma");
-    private static final java.util.HashSet<String> EN_W = words("the you and that what this with have are not but your i'm it's don't they there just know");
-    private static final java.util.HashSet<String> ES_W = words("el los las pero usted esto estoy yo muy gracias señor tengo qué cómo hay soy eres nosotros");
-    private static java.util.HashSet<String> words(String s) { return new java.util.HashSet<>(java.util.Arrays.asList(s.split(" "))); }
-
-    /** confere se o texto é mesmo português (conta palavras típicas de português, inglês e espanhol) */
-    private static boolean looksPortuguese(String text) {
-        int pt = 0, en = 0, es = 0;
-        java.util.regex.Matcher m = java.util.regex.Pattern.compile("[\\p{L}']+").matcher(text.length() > 300000 ? text.substring(0, 300000) : text);
-        while (m.find()) {
-            String w = m.group().toLowerCase(Locale.ROOT);
-            if (PT_W.contains(w)) pt++;
-            if (EN_W.contains(w)) en++;
-            if (ES_W.contains(w)) es++;
-        }
-        return pt >= 3 && pt > 2 * Math.max(en, es);
-    }
-
-    private static final java.util.regex.Pattern CUE_END = java.util.regex.Pattern.compile("-->\\s*(?:(\\d+):)?(\\d{1,2}):(\\d\\d)[,.](\\d{3})");
+    private static boolean looksPortuguese(String text) { return SubtitleText.looksPortuguese(text); }
 
     /** fim da última fala da legenda (ms): serve para ver se ela combina com a duração do filme */
-    static long lastCueEnd(String text) {
-        long max = 0;
-        java.util.regex.Matcher m = CUE_END.matcher(text);
-        while (m.find()) {
-            long h = m.group(1) == null ? 0 : Long.parseLong(m.group(1));
-            long t = ((h * 60 + Long.parseLong(m.group(2))) * 60 + Long.parseLong(m.group(3))) * 1000 + Long.parseLong(m.group(4));
-            if (t > max) max = t;
-        }
-        return max;
-    }
+    static long lastCueEnd(String text) { return SubtitleText.lastCueEnd(text); }
 
     /** legendas que já vinham no arquivo (as que forem adicionadas depois são as baixadas, em português) */
     private final java.util.HashSet<Integer> embeddedSpu = new java.util.HashSet<>();
     private boolean embeddedKnown = false;
 
     /** legenda PT/BR que veio dentro do arquivo (a primeira que não seja "forçada"); NO_TRACK se não houver */
-    private int findEmbeddedPt(MediaPlayer.TrackDescription[] t) {
+    private int findEmbeddedPt(MediaPlayer.TrackDescription[] t) { return findEmbeddedPt(t, true); }
+
+    /** allowForced=false: ignora a faixa "forçada" (só traduz falas estrangeiras; escolhê-la no lugar da legenda completa deixaria o filme sem diálogo legendado) */
+    private int findEmbeddedPt(MediaPlayer.TrackDescription[] t, boolean allowForced) {
         if (t == null) return NO_TRACK;
         int first = NO_TRACK;
         for (MediaPlayer.TrackDescription d : t) {
             if (d.id == -1 || !isPortuguese(d.name)) continue;
             if (embeddedKnown && !embeddedSpu.contains(d.id)) continue;
             String n = d.name.toLowerCase(Locale.ROOT);
-            if (n.contains("forced") || n.contains("forçad") || n.contains("forcad")) { if (first == NO_TRACK) first = d.id; continue; }
+            if (n.contains("forced") || n.contains("forçad") || n.contains("forcad") || n.contains("foreign")) { if (first == NO_TRACK) first = d.id; continue; }
             return d.id;
         }
-        return first;
+        return allowForced ? first : NO_TRACK;
     }
 
     /** liga as legendas baixadas: as alinhadas à referência primeiro; a legenda PT embutida no arquivo (se houver) fica ativa */
@@ -749,7 +696,8 @@ public class PlayerActivity extends Activity {
         MediaPlayer.TrackDescription[] t = player.getSpuTracks();
         embeddedKnown = true;
         if (t != null) for (MediaPlayer.TrackDescription d : t) embeddedSpu.add(d.id);
-        embeddedPtId = findEmbeddedPt(t);
+        // a faixa embutida "forçada" só vale se não houver NENHUMA legenda baixada para mostrar no lugar dela
+        embeddedPtId = findEmbeddedPt(t, cands.isEmpty());
         glog("legenda PT embutida: " + (embeddedPtId == NO_TRACK ? "não há" : "faixa " + embeddedPtId));
         diagEmb = embeddedPtId == NO_TRACK ? "" : refTrusted ? "PT embutida mantida (há referência confiável do hash; o texto embutido não é lido)"
                 : "PT embutida mantida, sem validação (sem referência de tempo confiável)";
@@ -764,7 +712,7 @@ public class PlayerActivity extends Activity {
                 player.addSlave(0 /* legenda */, c.uri, i == 0 && !embeddedFirst);
                 addedSubs++;
                 attached.add(c);
-                subLabels.add("Português " + (subLabels.size() + 1) + (c.aligned ? (c.pieced ? " (sincronizada por partes)" : " (sincronizada)") : c.consensus ? " (consenso)" : c.hashMatch ? " (do hash)" : "") + (c.fixed ? " (corrigida)" : ""));
+                subLabels.add("Português " + (subLabels.size() + 1) + (c.aligned ? (c.pieced ? " (sincronizada por partes)" : " (sincronizada)") : c.consensus ? " (consenso)" : c.hashMatch ? " (do hash)" : "") + (c.fixed ? " (corrigida)" : "") + (c.sparse ? " (poucas falas)" : ""));
             } catch (Exception ignored) {}
         }
         if (embeddedFirst && !userPickedSub) player.setSpuTrack(embeddedPtId);
@@ -790,7 +738,7 @@ public class PlayerActivity extends Activity {
             if (player == null) return;
             MediaPlayer.TrackDescription[] t = player.getSpuTracks();
             if (t == null) return;
-            int id = findEmbeddedPt(t);
+            int id = findEmbeddedPt(t, cands.isEmpty() && !subsDownloaded);
             if (id != NO_TRACK) { embeddedPtId = id; if (!userPickedSub) { player.setSpuTrack(id); syncDelayToTrack(id); } return; }
             if (addedSubs > 0) return;
             player.setSpuTrack(-1);
@@ -892,7 +840,7 @@ public class PlayerActivity extends Activity {
     // libVLC: setSpuDelay(microssegundos); positivo = a legenda aparece MAIS TARDE (funciona na Fire TV)
     // O atraso é guardado por VÍDEO + FONTE (hash/nome do arquivo) + LEGENDA (url da baixada ou "emb:" + nome da faixa):
     // só volta a ser aplicado quando a mesma fonte E a mesma legenda estão ativas ("sub-delay-3"; o antigo "sub-delay-2", por título, não é mais lido).
-    private static final String DELAY_PREFS = "sub-delay-3";
+    private static final String DELAY_PREFS = "sub-delay-4";
 
     private String sourceId() {
         String h = srcHash;
@@ -922,7 +870,8 @@ public class PlayerActivity extends Activity {
         if (trackId == -1 || tracks == null) return null;
         String sub = null;
         SubtitleSync.Cand c = candForTrack(trackId, tracks);
-        if (c != null) sub = c.url != null ? c.url : "cand" + c.rank;
+        // o atraso manual é medido em cima do arquivo JÁ reescrito pelo ajuste automático: se o ajuste for outro (hash resolveu desta vez, outra referência), o atraso guardado não vale
+        if (c != null) sub = (c.url != null ? c.url : "cand" + c.rank) + "#" + c.sig;
         else for (MediaPlayer.TrackDescription d : tracks) if (d.id == trackId) sub = "emb:" + d.name;
         if (sub == null) return null;
         return "d3:" + (metaId != null ? metaId : "u") + "|" + sourceId() + "|" + sub;

@@ -38,6 +38,12 @@ final class SubtitleAlign {
     static final double WEAK_SCORE = 0.35;
     /** cada metade das falas precisa de pelo menos esta nota com a transformação encontrada */
     static final double MIN_HALF_SCORE = 0.35;
+    /** a candidata precisa ter pelo menos esta fração das falas da referência na janela que cobre (forçadas têm 5-20%) */
+    static final double MIN_CUE_RATIO = 0.45;
+    /** a referência precisa ter pelo menos esta fração das falas da candidata (senão valida quase nada) */
+    static final double MIN_REF_RATIO = 0.25;
+    /** só confere a razão de falas com referência de pelo menos isto (referências minúsculas já não passam de 20 falas) */
+    static final int RATIO_MIN_REF = 60;
     /** uma escala diferente de 1 só vence se for melhor que a escala 1 por esta margem */
     static final double SCALE_MARGIN = 0.05;
 
@@ -56,6 +62,12 @@ final class SubtitleAlign {
         double coverage = 1.0;
         /** a escala veio da busca livre/regressão (não é uma das razões fixas de fps) */
         boolean freeScale = false;
+        /** a candidata tem muito menos falas que a referência na mesma janela (legenda "forçada", só falas estrangeiras, ou incompleta) */
+        boolean sparse = false;
+        /** a referência tem muito menos falas que a candidata (referência forçada/incompleta: valida pouco) */
+        boolean sparseRef = false;
+        /** falas da candidata / falas da referência na janela coberta */
+        double cueRatio = 1.0;
         boolean halvesOk() { return scoreFirstHalf >= MIN_HALF_SCORE && scoreSecondHalf >= MIN_HALF_SCORE; }
         boolean singleOk() {
             if (!halvesOk()) return false;
@@ -63,10 +75,10 @@ final class SubtitleAlign {
             return score >= LOW_SCORE && Math.abs(scoreFirstHalf - scoreSecondHalf) <= 0.15;
         }
         /** aceito: transformação única com nota >= 0,5 e as duas metades batendo (ou 0,4-0,5 com metades parecidas), ou ajuste por partes validado */
-        boolean ok() { return cuts != null ? pieceOk : singleOk(); }
+        boolean ok() { return !sparse && !sparseRef && (cuts != null ? pieceOk : singleOk()); }
         boolean piecewise() { return cuts != null && pieceOk; }
         /** bateu em parte (nota global >= WEAK_SCORE) mas foi rejeitado: outra versão/corte do filme */
-        boolean differentVersion() { return !ok() && score >= WEAK_SCORE; }
+        boolean differentVersion() { return !ok() && !sparse && !sparseRef && score >= WEAK_SCORE; }
         long offsetAt(long c) {
             if (cuts == null) return offsetMs;
             int k = 0;
@@ -644,7 +656,23 @@ final class SubtitleAlign {
         }
         long lo = Math.max(ref[0], best.map(cand[0])), hi = Math.min(ref[ref.length - 1], best.map(cand[cand.length - 1]));
         best.coverage = Math.max(0, hi - lo) / (double) Math.max(1, ref[ref.length - 1] - ref[0]);
+        // legenda "forçada"/esparsa: acerta todas as poucas falas que tem e ganhava nota máxima (a nota divide pelo MENOR número de falas)
+        long wLo = best.map(cand[0]), wHi = best.map(cand[cand.length - 1]);
+        int refWin = lowerBound(ref, wHi + 1) - lowerBound(ref, wLo);
+        if (refWin >= RATIO_MIN_REF || ref.length >= RATIO_MIN_REF) {
+            best.cueRatio = cand.length / (double) Math.max(1, refWin);
+            if (best.cueRatio < MIN_CUE_RATIO) best.sparse = true;
+            if (refWin < MIN_REF_RATIO * cand.length) best.sparseRef = true;
+        }
         return best;
+    }
+
+    /** fração das falas da candidata que as duas transformações levam para menos de tol ms uma da outra (a mesma legenda ajustada por duas referências) */
+    static double agreement(Fit a, Fit b, long[] cand, long tol) {
+        if (cand == null || cand.length == 0) return 0;
+        int ok = 0;
+        for (long c : cand) if (Math.abs(a.map(c) - b.map(c)) <= tol) ok++;
+        return ok / (double) cand.length;
     }
 
     // ---------- consenso entre legendas (sem referência de tempo) ----------
@@ -664,13 +692,26 @@ final class SubtitleAlign {
         return matchesTol(b, a, 0, RAW_TOL_MS) / (double) Math.min(a.length, b.length);
     }
 
+    /**
+     * "mesmos tempos": concordância bruta >= RAW_AGREE E bem acima do acaso (a mesma comparação com as falas deslocadas de 9 e 23 s);
+     * em séries/animes, com falas a cada 2 s, qualquer par concorda ~35% só por sorte
+     */
+    static boolean sameTiming(long[] a, long[] b) {
+        double raw = rawAgreement(a, b);
+        if (raw < RAW_AGREE) return false;
+        double chance = 0;
+        long[] offs = {9000, -9000, 23000, -23000};
+        for (long o : offs) chance = Math.max(chance, matchesTol(b, a, o, RAW_TOL_MS) / (double) Math.min(a.length, b.length));
+        return raw >= chance + 0.2;
+    }
+
     /** componentes conexas por concordância bruta: ids 0.. na ordem do primeiro membro; legendas com poucas falas ficam sozinhas */
     static int[] consensusGroups(java.util.List<long[]> starts) {
         int n = starts.size();
         int[] p = new int[n];
         for (int i = 0; i < n; i++) p[i] = i;
         for (int i = 0; i < n; i++) for (int j = i + 1; j < n; j++) {
-            if (rawAgreement(starts.get(i), starts.get(j)) >= RAW_AGREE) {
+            if (sameTiming(starts.get(i), starts.get(j))) {
                 int a = find(p, i), b = find(p, j);
                 if (a != b) p[Math.max(a, b)] = Math.min(a, b);
             }
