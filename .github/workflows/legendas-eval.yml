@@ -36,8 +36,9 @@ jobs:
       - name: Testes sintéticos do alinhamento (deste branch)
         run: |
           mkdir -p /tmp/ev/syn
-          javac -d /tmp/ev/syn $SRC/SubtitleAlign.java $SRC/SubtitleText.java tools/legendas-eval/synthetic/*.java
-          { echo '## Testes sintéticos'; echo '```'; for c in T T2 TRev; do java -cp /tmp/ev/syn io.github.gabrielxyz404.gabiflix.$c || true; done; echo '```'; } | tee /tmp/out/sinteticos.md >> "$GITHUB_STEP_SUMMARY"
+          T=tools/legendas-eval
+          javac -d /tmp/ev/syn $SRC/SubtitleAlign.java $SRC/SubtitleText.java $SRC/SubtitleSync.java $T/stubs/android/net/Uri.java $T/stubs/android/util/Log.java $T/stubs/org/json/*.java $T/stubs/PlayerActivity.java $T/synthetic/*.java
+          { echo '## Testes sintéticos'; echo '```'; for c in T T2 TRev; do java -Dfile.encoding=UTF-8 -Dstdout.encoding=UTF-8 -cp /tmp/ev/syn io.github.gabrielxyz404.gabiflix.$c || true; done; echo '```'; } | tee /tmp/out/sinteticos.md >> "$GITHUB_STEP_SUMMARY"
       - name: Corpus (cache)
         id: cache
         uses: actions/cache@v4
@@ -53,12 +54,12 @@ jobs:
         run: |
           { echo '## Corpus'; echo '```'; ls /tmp/corpus | wc -l; cat /tmp/corpus/*/meta.txt | grep -vc '^#'; du -sh /tmp/corpus; echo '```'; } | tee -a "$GITHUB_STEP_SUMMARY"
       - name: Avaliação ANTES
-        run: java -Dfile.encoding=UTF-8 -Dstdout.encoding=UTF-8 -Xmx3g -cp /tmp/ev/base io.github.gabrielxyz404.gabiflix.Eval /tmp/corpus /tmp/out/stats_antes.tsv /tmp/out/cases_antes.tsv | tee /tmp/out/avaliacao_antes.md >> "$GITHUB_STEP_SUMMARY"
+        run: java -Dfile.encoding=UTF-8 -Dstdout.encoding=UTF-8 -Xmx3g -cp /tmp/ev/base io.github.gabrielxyz404.gabiflix.Eval /tmp/corpus /tmp/out/stats_antes.tsv /tmp/out/cases_antes.tsv | tee /tmp/out/avaliacao_antes.md | tee -a "$GITHUB_STEP_SUMMARY"
       - name: Avaliação DEPOIS
-        run: java -Dfile.encoding=UTF-8 -Dstdout.encoding=UTF-8 -Xmx3g -cp /tmp/ev/new io.github.gabrielxyz404.gabiflix.Eval /tmp/corpus /tmp/out/stats_depois.tsv /tmp/out/cases_depois.tsv | tee /tmp/out/avaliacao_depois.md >> "$GITHUB_STEP_SUMMARY"
+        run: java -Dfile.encoding=UTF-8 -Dstdout.encoding=UTF-8 -Xmx3g -cp /tmp/ev/new io.github.gabrielxyz404.gabiflix.Eval /tmp/corpus /tmp/out/stats_depois.tsv /tmp/out/cases_depois.tsv | tee /tmp/out/avaliacao_depois.md | tee -a "$GITHUB_STEP_SUMMARY"
       - name: Antes x depois
         run: |
-          java -Dfile.encoding=UTF-8 -Dstdout.encoding=UTF-8 -cp /tmp/ev/new io.github.gabrielxyz404.gabiflix.Diff /tmp/out/stats_antes.tsv /tmp/out/stats_depois.tsv /tmp/out/cases_antes.tsv /tmp/out/cases_depois.tsv | tee /tmp/out/diff.md >> "$GITHUB_STEP_SUMMARY"
+          java -Dfile.encoding=UTF-8 -Dstdout.encoding=UTF-8 -cp /tmp/ev/new io.github.gabrielxyz404.gabiflix.Diff /tmp/out/stats_antes.tsv /tmp/out/stats_depois.tsv /tmp/out/cases_antes.tsv /tmp/out/cases_depois.tsv | tee /tmp/out/diff.md | tee -a "$GITHUB_STEP_SUMMARY"
       - uses: actions/upload-artifact@v4
         if: always()
         with:
