@@ -63,4 +63,5 @@ final class Variant {
     }
     static long[] starts(String text) { return SubtitleAlign.cueStarts(text); }
     static double nullScore(SubtitleAlign.Fit f) { return -1; }
+    static long[] startsAll(String text) { return SubtitleAlign.cueStarts(text); }
 }

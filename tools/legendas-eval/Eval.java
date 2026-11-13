@@ -174,6 +174,26 @@ public class Eval {
         int[] rh = new int[7]; String[] rl = {"<0,30", "0,30-0,45", "0,45-0,60", "0,60-0,80", "0,80-1,20", "1,20-2", ">2"};
         StringBuilder exLow = new StringBuilder();
         StringBuilder exSparse = new StringBuilder(), exRej = new StringBuilder();
+        {
+            List<Pair> cand2 = pairs.stream().filter(q -> q.f.score >= 0.35).collect(Collectors.toList());
+            int[] worse = new int[1], better = new int[1], same = new int[1];
+            List<String> exW = Collections.synchronizedList(new ArrayList<>());
+            pool.submit(() -> cand2.parallelStream().forEach(q -> {
+                long[] pa = Variant.startsAll(q.pt.text), ea = Variant.startsAll(q.en.text);
+                if (pa.length == q.pt.starts.length && ea.length == q.en.starts.length) { synchronized (same) { same[0]++; } return; }
+                SubtitleAlign.Fit g = SubtitleAlign.align(ea, pa);
+                double d = q.f.score - g.score;
+                if (d <= -0.15) { synchronized (same) { worse[0]++; } exW.add(q.id + ": só falas de diálogo " + f2(q.f.score) + " x todas " + f2(g.score) + " (PT " + pa.length + "->" + q.pt.starts.length + ", EN " + ea.length + "->" + q.en.starts.length + ")"); }
+                else if (d >= 0.15) synchronized (same) { better[0]++; }
+                else synchronized (same) { same[0]++; }
+            })).get();
+            Collections.sort(exW);
+            out.println("### 2b. Falas só de diálogo x todas as falas (pares com nota >= 0,35)");
+            out.println("Nota melhor com só diálogo (>= +0,15): " + better[0] + "; pior (<= -0,15): **" + worse[0] + "**; igual: " + same[0] + ".");
+            for (int i = 0; i < Math.min(8, exW.size()); i++) out.println("- " + exW.get(i));
+            out.println();
+            stat("falas_dialogo_melhor/pior", better[0] + "/" + worse[0]);
+        }
         PrintWriter cw = new PrintWriter(casesOut.toFile());
         Map<Integer, Integer> cutsHist = new TreeMap<>();
         for (Map.Entry<Sub, List<Pair>> en : byPt.entrySet()) {
@@ -379,8 +399,15 @@ public class Eval {
         StringBuilder ex = new StringBuilder();
         for (Title t : titles) {
             List<Sub> P = t.pt.stream().filter(s -> s.ptOk && s.starts != null && s.starts.length >= 20).limit(10).collect(Collectors.toList());
-            List<Sub> E = t.en.stream().filter(s -> s.starts != null && s.starts.length >= 20).limit(3).collect(Collectors.toList());
-            if (P.size() < 2 || E.isEmpty()) continue;
+            List<Sub> E0 = t.en.stream().filter(s -> s.starts != null && s.starts.length >= 60).collect(Collectors.toList());
+            if (P.size() < 2 || E0.isEmpty()) continue;
+            // referências "do mesmo arquivo" (o addon só manda como referência as que casam com o hash): EN com a mesma linha do tempo da primeira (sem escala nem deslocamento grande)
+            List<Sub> E = new ArrayList<>();
+            E.add(E0.get(0));
+            for (int k = 1; k < E0.size() && E.size() < 3; k++) {
+                SubtitleAlign.Fit g = SubtitleAlign.align(E0.get(0).starts, E0.get(k).starts);
+                if (g.ok() && !g.piecewise() && Math.abs(g.scale - 1) < 0.0005 && Math.abs(g.offsetMs) < 2000 && g.coverage >= 0.9) E.add(E0.get(k));
+            }
             nT++;
             List<Integer> enCnt = new ArrayList<>();
             for (Sub e : t.en) if (e.starts != null) enCnt.add(e.starts.length);

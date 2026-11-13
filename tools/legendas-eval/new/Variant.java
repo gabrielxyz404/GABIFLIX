@@ -8,4 +8,5 @@ final class Variant {
     static long lastEnd(String text) { return SubtitleText.lastCueEnd(text); }
     static long[] starts(String text) { return SubtitleAlign.alignStarts(text); }
     static double nullScore(SubtitleAlign.Fit f) { return f.nullScore; }
+    static long[] startsAll(String text) { return SubtitleAlign.cueStarts(text); }
 }
