@@ -5,7 +5,7 @@ name: Mac app teste (sem publicar)
 on:
   workflow_dispatch:
   push:
-    branches: [mac-paridade]
+    branches: [mac-paridade, mac-revisao]
     paths:
       - mac/**
       - .github/workflows/mac-app-teste.yml
@@ -91,6 +91,33 @@ jobs:
           PY
           nohup python3 /tmp/serve.py > /tmp/srv.log 2>&1 &
           sleep 2; curl -sI http://127.0.0.1:8765/teste.mp4 | head -3
+      - name: Testar a janela do site (tamanhos, rotas)
+        run: |
+          xattr -cr mac/build/FramePlay.app
+          mkdir -p /tmp/telas
+          APP=mac/build/FramePlay.app/Contents/MacOS/FramePlay
+          shot() { screencapture -x "/tmp/telas/$1.png" || true; }
+          web() { echo "$1" > /tmp/gf-web; sleep "${2:-2.5}"; }
+          defaults delete FramePlay 2>/dev/null || true
+          $APP --gf-test-web > /tmp/telas/web.log 2>&1 &
+          sleep 25
+          web "js document.documentElement.getAttribute('data-gf-app') + ' | ' + navigator.userAgent + ' | ' + innerWidth + 'x' + innerHeight"
+          cat /tmp/gf-web.out | tee -a /tmp/telas/web-info.txt
+          shot w01-home
+          web "resize 900 650"; shot w02-home-900
+          web "resize 1000 700"; shot w03-home-1000
+          web "js location.hash='#/search'; 'ok'"; sleep 2; shot w04-busca
+          web "js location.hash='#/settings'; 'ok'"; sleep 2; shot w05-config
+          web "js location.hash='#/library'; 'ok'"; sleep 2; shot w06-mais-tarde
+          web "js location.hash='#/'; 'ok'"; sleep 2
+          web "js (function(){var c=document.querySelectorAll('.gf-card');if(c[0])c[0].click();return c.length})()" 6; cat /tmp/gf-web.out | tee -a /tmp/telas/web-info.txt
+          shot w07-netflix
+          web "resize 420 640"; shot w08-janela-minima
+          web "resize 1000 700"
+          web "js (function(){var a=document.querySelector('.gf-poster, [class*=meta-item-container] , .gf-row a');if(a)a.click();return !!a})()" 7; cat /tmp/gf-web.out | tee -a /tmp/telas/web-info.txt
+          shot w09-titulo
+          pkill -x FramePlay || true
+          sleep 2
       - name: Testar o player (telas)
         run: |
           xattr -cr mac/build/FramePlay.app
@@ -117,6 +144,16 @@ jobs:
           cmd "delay 2500"
           cmd "state"
           sleep 3; shot 09-atraso-2500
+          cmd "show"; cmd "layout"; sleep 1; shot 11-controles
+          cmd "sync"; cmd "hold 2 0"; sleep 3; cmd "state"
+          cmd "hold 1 2"; sleep 3; cmd "state"
+          cmd "close"
+          cmd "resize 700 460"; cmd "show"; cmd "layout"; sleep 1; shot 12-janela-pequena
+          cmd "resize 1000 700"; cmd "show"; cmd "layout"
+          cmd "fs"; sleep 4; cmd "show"; cmd "layout"; sleep 1; shot 13-tela-cheia
+          cmd "fs"; sleep 3
+          cmd "key 124"; cmd "key 123"; cmd "key 49"; sleep 1; cmd "key 49"
+          cmd "delay 2500"
           pkill -x FramePlay || true
           sleep 3
           cp /tmp/frameplay-player.log /tmp/telas/player1.log 2>/dev/null || true
@@ -131,14 +168,14 @@ jobs:
           grep -E "atraso|escolhida|tela:|estado:|comando" /tmp/telas/player1.log | cut -c1-400 | head -40 || true
           echo ---- segunda abertura
           grep -E "atraso|escolhida|estado:" /tmp/telas/player2.log | cut -c1-400 | head -20 || true
-      - name: Guardar as telas no branch mac-paridade-teste
+      - name: Guardar as telas no branch mac-revisao-app
         if: always()
         env:
           TOKEN: ${{ github.token }}
         run: |
           mkdir -p /tmp/telas && cp build.log /tmp/telas/ 2>/dev/null || true
           cd /tmp/telas
-          git init -q && git checkout -q -b mac-paridade-app
+          git init -q && git checkout -q -b mac-revisao-app
           git config user.name "FramePlay CI"; git config user.email "ci@frameplay.local"
           git add -A && git commit -qm "telas do teste do Mac (paridade)" || true
-          git push -q -f "https://x-access-token:${TOKEN}@github.com/${{ github.repository }}.git" mac-paridade-app || echo "::warning::não guardou as telas"
+          git push -q -f "https://x-access-token:${TOKEN}@github.com/${{ github.repository }}.git" mac-revisao-app || echo "::warning::não guardou as telas"

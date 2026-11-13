@@ -77,6 +77,28 @@ final class AppDelegate: NSObject, NSApplicationDelegate, WKScriptMessageHandler
 
         // teste automático (só no GitHub): --gf-test-play <link do vídeo> <código IMDb>
         let args = CommandLine.arguments
+        // teste automático da janela do site: --gf-test-web. O script escreve linhas em /tmp/gf-web: "resize L A" ou "js <código>" (resultado em /tmp/gf-web.out)
+        if args.contains("--gf-test-web") {
+            Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { [weak self] _ in
+                guard let self = self, let c = try? String(contentsOfFile: "/tmp/gf-web", encoding: .utf8) else { return }
+                try? FileManager.default.removeItem(atPath: "/tmp/gf-web")
+                for line in c.split(separator: "\n") {
+                    let l = String(line)
+                    if l.hasPrefix("resize ") {
+                        let n = l.split(separator: " ").compactMap { Int($0) }
+                        if n.count == 2 {
+                            self.window.setContentSize(NSSize(width: n[0], height: n[1]))
+                            self.window.center()
+                        }
+                    } else if l.hasPrefix("js ") {
+                        self.web.evaluateJavaScript(String(l.dropFirst(3))) { r, e in
+                            let out = "\(r ?? "nil") \(e?.localizedDescription ?? "")\n"
+                            try? out.write(toFile: "/tmp/gf-web.out", atomically: true, encoding: .utf8)
+                        }
+                    }
+                }
+            }
+        }
         if let i = args.firstIndex(of: "--gf-test-play"), i + 2 < args.count, let u = URL(string: args[i + 1]) {
             let id = args[i + 2]
             PlayerWindowController.testLog = true
@@ -191,6 +213,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, WKScriptMessageHandler
     /** devolve ao site onde o vídeo parou (o site salva no Continuar assistindo do Stremio) */
     func deliverProgress(time: Int64, length: Int64, ended: Bool, url: String) {
         player = nil
+        window.makeKeyAndOrderFront(nil) // também quando fechou sem tocar nada (tempo 0): a janela do site tem de voltar à frente
         guard time > 0 else { return }
         // guarda antes de entregar: se o app fechar antes do site receber, entrega na próxima abertura
         AppDelegate.saveLast(time: time, length: length, ended: ended, url: url)

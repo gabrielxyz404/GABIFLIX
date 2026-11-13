@@ -1180,6 +1180,33 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
             let ev = NSEvent.keyEvent(with: .keyDown, location: .zero, modifierFlags: [], timestamp: 0, windowNumber: window?.windowNumber ?? 0,
                                       context: nil, characters: "", charactersIgnoringModifiers: "", isARepeat: false, keyCode: UInt16(n))
             if let ev = ev { _ = handleKey(ev) }
+        case "show": showControls()
+        case "fs": toggleFullScreen()
+        case "resize":
+            let n2 = w.count > 2 ? Int(w[2]) ?? 0 : 0
+            if n > 0 && n2 > 0 { window?.setContentSize(NSSize(width: n, height: n2)); window?.center() }
+        case "layout":
+            // mede se a barra de controles cabe: largura da linha de botões contra a largura da barra
+            root.layoutSubtreeIfNeeded()
+            var parts: [String] = []
+            if let row = controls.subviews.first as? NSStackView {
+                for v in row.arrangedSubviews { parts.append("\(NSStringFromClass(type(of: v)).split(separator: ".").last ?? "")@\(Int(v.frame.minX))-\(Int(v.frame.maxX))") }
+                log("layout: janela=\(Int(root.bounds.width))x\(Int(root.bounds.height)) barra=\(Int(controls.frame.width)) linha=\(Int(row.frame.width)) fitting=\(Int(row.fittingSize.width)) slider=\(Int(slider.frame.width)) itens=\(parts.joined(separator: " "))")
+            }
+        case "hold":
+            // simula segurar o botão da fila N,M do painel (mouse apertado por 1,3 s) e solta
+            let col = w.count > 2 ? Int(w[2]) ?? 0 : 0
+            guard n < syncRows.count, col < syncRows[n].count, let win = window else { log("hold: sem botão"); break }
+            let b = syncRows[n][col]
+            let before = subDelayMs
+            let pt = b.convert(NSPoint(x: b.bounds.midX, y: b.bounds.midY), to: nil)
+            if let d = NSEvent.mouseEvent(with: .leftMouseDown, location: pt, modifierFlags: [], timestamp: ProcessInfo.processInfo.systemUptime, windowNumber: win.windowNumber, context: nil, eventNumber: 1, clickCount: 1, pressure: 1) {
+                b.mouseDown(with: d)
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1.3) { [weak self, weak b] in
+                    if let u = NSEvent.mouseEvent(with: .leftMouseUp, location: pt, modifierFlags: [], timestamp: ProcessInfo.processInfo.systemUptime, windowNumber: win.windowNumber, context: nil, eventNumber: 1, clickCount: 1, pressure: 0) { b?.mouseUp(with: u) }
+                    self?.log("hold: atraso antes=\(before) depois=\(self?.subDelayMs ?? -1)")
+                }
+            }
         case "state":
             log("estado: faixa=\(player.currentVideoSubTitleIndex) atraso=\(subDelayMs) vlcDelay=\(player.currentVideoSubTitleDelay) legendas=\(subTracks()) escolhida=\(candForTrack(Int(player.currentVideoSubTitleIndex))?.rank ?? -1)")
         default: break

@@ -651,7 +651,7 @@ html[data-gf-app="mac"][data-gf-route="home"][data-gf-view="grid"] #gf-home .gf-
 html[data-gf-app="mac"][data-gf-route="home"][data-gf-view="grid"] #gf-home .gf-mac-grid .gf-card,
 html[data-gf-app="mac"][data-gf-route="home"][data-gf-view="grid"] #gf-home .gf-mac-grid .gf-card.is-wide {
     flex: 1 1 0;
-    min-width: 110px;
+    min-width: 84px; /* 9 barras cabem juntas a partir de ~880px de janela (antes 110px: a 9ª ficava escondida abaixo de ~1120px) */
     width: auto;
     height: auto;
     min-height: 100vh;
@@ -677,7 +677,7 @@ html[data-gf-app="mac"][data-gf-route="home"][data-gf-view="grid"] #gf-home .gf-
 html[data-gf-app="mac"][data-gf-route="home"][data-gf-view="grid"] #gf-home .gf-mac-grid .gf-card:active { transform: none; }
 html[data-gf-app="mac"][data-gf-route="home"][data-gf-view="grid"] #gf-home .gf-mac-grid .gf-card-name,
 html[data-gf-app="mac"][data-gf-route="home"][data-gf-view="grid"] #gf-home .gf-mac-grid .gf-card.is-wide .gf-card-name {
-    font-size: clamp(0.95rem, 14cqw, 2.6rem);
+    font-size: clamp(0.78rem, 14cqw, 2.6rem);
     line-height: 1.05;
     white-space: normal;
     overflow-wrap: normal;
