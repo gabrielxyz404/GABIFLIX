@@ -23,8 +23,8 @@ jobs:
       - name: Baixar corpus de legendas reais
         run: |
           mkdir -p /tmp/ev/cls /tmp/corpus
-          javac -d /tmp/ev/cls tools/legendas-eval/Fetch.java
-          java -cp /tmp/ev/cls Fetch tools/legendas-eval/titles.txt /tmp/corpus 2>&1 | tee /tmp/fetch.log
+          javac -d /tmp/ev/cls tools/legendas-eval/Fetch.java android/app/src/main/java/io/github/gabrielxyz404/gabiflix/SubtitleAlign.java
+          java -cp /tmp/ev/cls io.github.gabrielxyz404.gabiflix.Fetch tools/legendas-eval/titles.txt /tmp/corpus 2>&1 | tee /tmp/fetch.log
       - name: Resumo da busca
         run: |
           { echo '## Corpus'; echo '```'; grep -E 'PT baixadas|lista falhou|cinemeta|->' /tmp/fetch.log | cut -c1-400; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
