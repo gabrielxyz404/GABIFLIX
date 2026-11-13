@@ -664,7 +664,7 @@ final class SubtitleAlign {
         // legenda "forçada"/esparsa: acerta todas as poucas falas que tem e ganhava nota máxima (a nota divide pelo MENOR número de falas)
         long wLo = best.map(cand[0]), wHi = best.map(cand[cand.length - 1]);
         int refWin = lowerBound(ref, wHi + 1) - lowerBound(ref, wLo);
-        if (refWin >= RATIO_MIN_REF || ref.length >= RATIO_MIN_REF) {
+        {
             best.cueRatio = cand.length / (double) Math.max(1, refWin);
             if (best.cueRatio < MIN_CUE_RATIO) best.sparse = true;
             if (refWin < MIN_REF_RATIO * cand.length) best.sparseRef = true;

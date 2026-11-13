@@ -332,6 +332,10 @@ final class SubtitleSync {
      * metades baterem (senão é outra versão/corte do filme). Sem referência de outro idioma, a melhor PT que casa com o hash
      * (a de menor posição) serve de referência para as outras PT. Sem nenhuma, não inventa nada.
      */
+    /** duas referências "concordam" se levam 90% das falas a menos de 2 s uma da outra (deriva pequena de escala é normal; 20-30 s de diferença é outra versão) */
+    private static final long AGREE_TOL_MS = 2000;
+    private static final double AGREE_MIN = 0.90;
+
     static AlignReport alignAll(List<Cand> all, List<long[]> refs, StringBuilder lg) {
         AlignReport rep = new AlignReport();
         markSparse(all, lg);
@@ -367,7 +371,7 @@ final class SubtitleSync {
                 if (best == null || (f.ok() && !best.ok()) || (f.ok() == best.ok() && f.score > best.score)) best = f;
                 if (f.ok()) oks.add(f);
                 // com 2 referências que validam E concordam, está confirmado: não precisa das outras
-                if (oks.size() >= 2 && SubtitleAlign.agreement(oks.get(0), oks.get(oks.size() - 1), starts, 600) >= 0.95) break;
+                if (oks.size() >= 2 && SubtitleAlign.agreement(oks.get(0), oks.get(oks.size() - 1), starts, AGREE_TOL_MS) >= AGREE_MIN) break;
             }
             if (best == null) continue;
             if (oks.size() >= 2) {
@@ -376,7 +380,7 @@ final class SubtitleSync {
                 int bestVotes = 0;
                 for (SubtitleAlign.Fit a : oks) {
                     int votes = 0;
-                    for (SubtitleAlign.Fit b : oks) if (SubtitleAlign.agreement(a, b, starts, 600) >= 0.95) votes++;
+                    for (SubtitleAlign.Fit b : oks) if (SubtitleAlign.agreement(a, b, starts, AGREE_TOL_MS) >= AGREE_MIN) votes++;
                     if (votes > bestVotes || (votes == bestVotes && pick != null && a.score > pick.score)) { bestVotes = votes; pick = a; }
                 }
                 if (bestVotes < 2) {

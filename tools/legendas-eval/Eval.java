@@ -283,7 +283,7 @@ public class Eval {
         }
 
         // --- consistência entre referências ---
-        final int[] cnt = new int[4]; // pares PT com >= 2 EN aceitas, comparáveis, inconsistentes, EN-EN sem casamento
+        final int[] cnt = new int[5]; // pares PT com >= 2 EN aceitas, comparáveis, inconsistentes, EN-EN sem casamento
         StringBuilder exInc = new StringBuilder();
         List<Runnable> jobs = new ArrayList<>();
         Object lock = new Object();
@@ -298,12 +298,13 @@ public class Eval {
                 SubtitleAlign.Fit g = SubtitleAlign.align(b.en.starts, a.en.starts);
                 if (!g.ok() || g.coverage < 0.75) { synchronized (lock) { cnt[3]++; } continue; }
                 compared = true;
-                int bad = 0, n = 0; long maxd = 0;
+                int bad = 0, bad2 = 0, n = 0; long maxd = 0;
                 for (long c : a.pt.starts) {
                     long p1 = g.map(a.f.map(c)), p2 = b.f.map(c);
                     long d = Math.abs(p1 - p2);
-                    n++; if (d > 600) bad++; maxd = Math.max(maxd, d);
+                    n++; if (d > 600) bad++; if (d > 2000) bad2++; maxd = Math.max(maxd, d);
                 }
+                if (bad2 > 0.10 * n) synchronized (lock) { cnt[4]++; }
                 if (bad > 0.05 * n) {
                     flagged = true;
                     incLines.add(a.id + " x " + b.en.title + " en" + b.en.idx + ": " + Math.round(100.0 * bad / n) + "% das falas divergem >0,6 s (máx " + sec(maxd) + "); EN" + a.en.idx + ": esc " + String.format(Locale.ROOT, "%.4f", a.f.scale) + " off " + sec(a.f.offsetMs) + (a.f.piecewise() ? " partes" : "") + " | EN" + b.en.idx + ": esc " + String.format(Locale.ROOT, "%.4f", b.f.scale) + " off " + sec(b.f.offsetMs) + (b.f.piecewise() ? " partes" : ""));
@@ -312,11 +313,11 @@ public class Eval {
             if (compared) synchronized (lock) { cnt[1]++; if (flagged) cnt[2]++; }
         })).get();
         out.println("### 4. Transformações inconsistentes (a mesma PT aceita com duas EN que casam entre si, mas com resultados diferentes)");
-        out.println("PT aceitas com >= 2 EN: " + cnt[0] + "; comparáveis: " + cnt[1] + "; **inconsistentes: " + cnt[2] + "** (>5% das falas divergem mais de 0,6 s).");
+        out.println("PT aceitas com >= 2 EN: " + cnt[0] + "; comparáveis: " + cnt[1] + "; **inconsistentes: " + cnt[2] + "** (>5% das falas divergem mais de 0,6 s); pares de EN com divergência GROSSEIRA (>10% das falas a mais de 2 s): " + cnt[4] + ".");
         Collections.sort(incLines);
         for (int i = 0; i < Math.min(12, incLines.size()); i++) out.println("- " + incLines.get(i));
         out.println();
-        stat("inconsistentes", cnt[2] + "/" + cnt[1]);
+        stat("inconsistentes", cnt[2] + "/" + cnt[1]); stat("inconsistentes_grosseiras_pares", cnt[4]);
 
         // --- recuperação de distorções conhecidas ---
         // referência de verdade: a transformação aceita (nota >= 0,8, escala/offset simples). Distorce a PT de forma conhecida e vê se a recuperação cai no mesmo lugar.
