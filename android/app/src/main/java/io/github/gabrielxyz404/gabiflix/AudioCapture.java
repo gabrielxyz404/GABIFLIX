@@ -26,7 +26,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
 final class AudioCapture {
     private AudioCapture() {}
 
-    static final String[] MODES = {"wav", "raw", "afile"};
+    /** só "afile": é o único modo com tempo exato (a saída de áudio passa pelo player normal, que respeita start-time/stop-time com precisão
+     * de ~20 ms; o sout/transcode ignora a busca e começa em outro ponto, medido com o vídeo de varredura) */
+    static final String[] MODES = {"afile"};
     static final int RATE = 8000;
 
     static final class Out {

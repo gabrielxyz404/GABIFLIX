@@ -1245,7 +1245,7 @@ public class PlayerActivity extends Activity {
             ui.postDelayed(() -> { showSyncDialog(); if (audioBtn != null) audioBtn.performClick(); }, 3000);
             return;
         }
-        startAudio(c, false);
+        startAudio(c, test);
         if (test && getIntent().getBooleanExtra("gfAudioDialog", false)) ui.postDelayed(this::showSyncDialog, 8000);
     }
 

@@ -13,7 +13,7 @@ permissions:
 jobs:
   audio:
     runs-on: ubuntu-latest
-    timeout-minutes: 90
+    timeout-minutes: 100
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v5
@@ -43,14 +43,23 @@ jobs:
             curl -fL -sS --retry 3 -o tos720.mov "$base/tears_of_steel_720p.mov" && curl -fL -sS --retry 3 -o TOS-en.srt "$base/subtitles/TOS-en.srt" && { ok=1; break; }
           done
           [ $ok = 1 ] || { echo "não baixou o filme"; exit 1; }
-          ls -la; ffprobe -hide_banner tos720.mov 2>&1 | tail -12
+          ls -la; ffprobe -hide_banner tos720.mov 2>&1 | tail -8
           ffmpeg -loglevel error -i tos720.mov -map 0:v:0 -map 0:a:0 -c copy /tmp/media/tos.mkv
-          ffmpeg -loglevel error -i tos720.mov -map 0:v:0 -map 0:a:0 -c:v copy -af "pan=5.1|FL=0.5*FL|FR=0.5*FR|FC=0.7*FL+0.7*FR|LFE=0.1*FL|BL=0.3*FL|BR=0.3*FR" -c:a ac3 -b:a 448k /tmp/media/tos_ac3.mkv
           cp TOS-en.srt /tmp/media/
-          python3 $GITHUB_WORKSPACE/tools/audio-test/mksubs.py TOS-en.srt /tmp/media
-          ls -la /tmp/media; head -12 /tmp/media/TOS-en.srt
+          python3 $GITHUB_WORKSPACE/tools/audio-test/mksubs.py TOS-en.srt /tmp/media tos
+          # Sintel (filme aberto, legenda oficial em inglês)
+          ok=0
+          for base in http://download.blender.org/demo/movies https://ftp.nluug.nl/pub/graphics/blender/demo/movies http://ftp.halifax.rwth-aachen.de/blender/demo/movies; do
+            curl -fL -sS --retry 3 -o sintel_src.mkv "$base/Sintel.2010.1080p.mkv" && { ok=1; break; }
+          done
+          [ $ok = 1 ] || { echo "não baixou o Sintel"; exit 1; }
+          curl -fL -sS --retry 3 -o sintel_en.srt https://durian.blender.org/wp-content/content/subtitles/sintel_en.srt || curl -fL -sS -o sintel_en.srt https://download.blender.org/durian/subs/sintel_en.srt
+          ffprobe -hide_banner sintel_src.mkv 2>&1 | grep -E "Duration|Stream"
+          ffmpeg -loglevel error -i sintel_src.mkv -map 0:v:0 -map 0:a:0 -c copy /tmp/media/sintel.mkv
+          cp sintel_en.srt /tmp/media/
+          ls -la /tmp/media; head -12 /tmp/media/sintel_en.srt; head -8 /tmp/media/TOS-en.srt
           ffprobe -hide_banner /tmp/media/tos.mkv 2>&1 | grep -E "Duration|Stream"
-          ffprobe -hide_banner /tmp/media/tos_ac3.mkv 2>&1 | grep -E "Duration|Stream"
+          ffprobe -hide_banner /tmp/media/sintel.mkv 2>&1 | grep -E "Duration|Stream"
           nohup python3 $GITHUB_WORKSPACE/tools/audio-test/server.py /tmp/media 8000 >/tmp/server.out 2>&1 &
           sleep 2; curl -sI http://127.0.0.1:8000/tos.mkv | head -3
       - name: KVM

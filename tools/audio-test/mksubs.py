@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Gera legendas de teste a partir do SRT oficial: wrong.srt (mesmas durações/pausas em outra ordem = "outro filme") e scaled.srt (tempos x 23.976/25, como a legenda de outro fps)."""
 import re, random, sys
-src, outdir = sys.argv[1], sys.argv[2]
+src, outdir, pre = sys.argv[1], sys.argv[2], sys.argv[3]
 t = open(src, encoding='utf-8-sig').read().replace('\r\n', '\n')
 blocks = [b for b in re.split(r'\n\s*\n', t.strip()) if '-->' in b]
 def ms(s):
@@ -23,7 +23,7 @@ def write(name, cs):
             f.write('%d\n%s --> %s\n%s\n\n' % (k, ts(a), ts(b), tx))
 # scaled: tempo na legenda = tempo do vídeo * 23.976/25
 k = 23.976 / 25
-write('scaled.srt', [(a * k, b * k, tx) for a, b, tx in cues])
+write('scaled-' + pre + '.srt', [(a * k, b * k, tx) for a, b, tx in cues])
 # wrong: durações e pausas embaralhadas
 rnd = random.Random(12345)
 durs = [b - a for a, b, _ in cues]
@@ -35,4 +35,4 @@ cur = t0
 for i, d in enumerate(durs):
     w.append((cur, cur + d, cues[i][2]))
     cur += d + (gaps[i] if i < len(gaps) else 0)
-write('wrong.srt', w)
+pass

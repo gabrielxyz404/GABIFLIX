@@ -40,10 +40,15 @@ final class AudioSyncRunner {
     /** sobra por janela: cabeçalho do contêiner/índice + leitura adiantada do cache */
     static final long OVERHEAD_PER_WINDOW = 3L * 1024 * 1024;
 
+    /**
+     * Estimativa conservadora: nos testes o libVLC NÃO pulou direto para o trecho (leu o arquivo desde o início até o ponto),
+     * então cada janela custa ~ bitrate x (início + duração). Fracões das janelas: média ~47% da duração.
+     */
     static long estimateBytes(long fileBytes, long durationMs, int windows, long windowMs) {
         if (fileBytes <= 0 || durationMs <= 0) return -1;
         double bps = fileBytes / (durationMs / 1000.0);
-        return (long) (bps * windows * windowMs / 1000.0) + windows * OVERHEAD_PER_WINDOW;
+        double avgStartS = 0.47 * durationMs / 1000.0;
+        return (long) (bps * windows * (avgStartS + windowMs / 1000.0));
     }
 
     private final Context ctx;
@@ -163,7 +168,7 @@ final class AudioSyncRunner {
                 StringBuilder why = new StringBuilder();
                 for (String md : order) {
                     if (cancel.get()) throw new InterruptedException();
-                    out = AudioCapture.capture(ctx, url, st, WINDOW_MS, dir, "w" + done, md, audioTrackId, cancel, 90000, verbose);
+                    out = AudioCapture.capture(ctx, url, st, WINDOW_MS, dir, "w" + done, md, audioTrackId, cancel, 150000, verbose);
                     if (out.ok()) { mode = md; break; }
                     why.append(md).append(": ").append(out.err).append("; ");
                     out = null;
@@ -176,7 +181,8 @@ final class AudioSyncRunner {
                 o.mode = mode;
                 if (out.readBytes > 0) o.readBytes += out.readBytes;
                 double durS = WINDOW_MS / 1000.0;
-                long adj = out.pcmSec > durS + 0.35 ? -(long) ((out.pcmSec - durS) * 1000) : 0;
+                long adj = 0; // afile: início exato (medido); janelas com duração muito diferente da pedida são descartadas
+                if (Math.abs(out.pcmSec - durS) > 1.0) { log("janela " + (done) + " descartada: duração " + out.pcmSec + " s em vez de " + durS); continue; }
                 byte[] v = AudioAlign.vad(out.pcm.x, out.pcm.rate);
                 float[] soft = AudioAlign.lastSoft;
                 AudioAlign.Win w = new AudioAlign.Win(st + adj, v, soft);
@@ -188,7 +194,7 @@ final class AudioSyncRunner {
             alog.setLength(0);
             res = AudioAlign.align(wins, sp, alog);
             log(alog.toString().trim());
-            if (!debugTag.isEmpty()) {
+            if (false) {
                 StringBuilder l2 = new StringBuilder();
                 AudioAlign.Result r2 = AudioAlign.align(winsRaw, sp, l2);
                 log("SEM ajuste de partida: " + r2.summary() + (r2.accepted ? " offset=" + r2.offsetMs : ""));
