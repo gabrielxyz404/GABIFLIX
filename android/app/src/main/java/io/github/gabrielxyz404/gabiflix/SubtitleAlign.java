@@ -126,6 +126,56 @@ final class SubtitleAlign {
         return out;
     }
 
+    private static final Pattern NON_SPEECH = Pattern.compile("\\[[^\\]]*\\]|\\([^)]*\\)|<[^>]*>|\\{[^}]*\\}|[♪♫♬#*]+");
+
+    /**
+     * início das falas de DIÁLOGO (ordem crescente): ignora as falas que são só descrição de som ("[porta bate]", "(música)", "♪ ♪"),
+     * que existem numa legenda para surdos (SDH) e não na outra e só atrapalham o casamento. Se sobrar quase nada, devolve todas.
+     * É o que o alinhamento deve usar nos dois lados (referência e candidata).
+     */
+    static long[] alignStarts(String text) {
+        ArrayList<Long> list = new ArrayList<>();
+        long cur = -1;
+        StringBuilder body = new StringBuilder();
+        int total = 0;
+        int i = 0, n = text.length();
+        while (i <= n) {
+            int e = text.indexOf('\n', i);
+            if (e < 0) e = n;
+            String ln = text.substring(i, e);
+            i = e + 1;
+            Matcher m = START.matcher(ln);
+            boolean isTime = m.find();
+            if (isTime || ln.trim().isEmpty()) {
+                if (cur >= 0 && list.size() < 6000) {
+                    total++;
+                    if (hasSpeech(body)) list.add(cur);
+                }
+                cur = -1;
+                body.setLength(0);
+                if (isTime) {
+                    long h = m.group(1) == null ? 0 : Long.parseLong(m.group(1));
+                    cur = ((h * 60 + Long.parseLong(m.group(2))) * 60 + Long.parseLong(m.group(3))) * 1000 + Long.parseLong(m.group(4));
+                }
+            } else if (cur >= 0) {
+                if (body.length() < 600) body.append(ln).append(' ');
+            }
+            if (e >= n) break;
+        }
+        if (cur >= 0 && list.size() < 6000) { total++; if (hasSpeech(body)) list.add(cur); }
+        if (list.size() < 20 || list.size() < 0.5 * total) return cueStarts(text);
+        long[] out = new long[list.size()];
+        for (int k = 0; k < out.length; k++) out[k] = list.get(k);
+        Arrays.sort(out);
+        return out;
+    }
+
+    private static boolean hasSpeech(CharSequence body) {
+        String s = NON_SPEECH.matcher(body).replaceAll(" ");
+        for (int k = 0; k < s.length(); k++) if (Character.isLetter(s.charAt(k))) return true;
+        return false;
+    }
+
     // ---------- reescrever os tempos ----------
     private static final Pattern TS = Pattern.compile("(?:(\\d+):)?(\\d{1,2}):(\\d\\d)([,.])(\\d{3})");
 

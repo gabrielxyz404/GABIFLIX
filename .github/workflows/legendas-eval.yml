@@ -3,8 +3,11 @@ name: Legendas avaliação
 on:
   workflow_dispatch:
     inputs:
-      verbose:
-        description: 'listar todos os pares (v) ou não'
+      ref_base:
+        description: 'versão ANTES (commit/branch com o SubtitleAlign a comparar)'
+        default: 'origin/main'
+      refetch:
+        description: 'baixar o corpus de novo (s) ou reaproveitar o cache'
         default: ''
 
 permissions:
@@ -13,34 +16,51 @@ permissions:
 jobs:
   eval:
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 150
     env:
       SRC: android/app/src/main/java/io/github/gabrielxyz404/gabiflix
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: 17
-      - name: Compilar (SubtitleAlign + fase 1 + avaliação + testes sintéticos)
+      - name: Compilar ANTES (SubtitleAlign da versão base) e DEPOIS (deste branch)
         run: |
-          mkdir -p /tmp/ev/cls /tmp/corpus /tmp/out
-          javac -d /tmp/ev/cls $SRC/SubtitleAlign.java tools/legendas-eval/*.java tools/legendas-eval/v1/*.java tools/legendas-eval/synthetic/*.java
-      - name: Testes sintéticos
+          mkdir -p /tmp/ev/base /tmp/ev/new /tmp/ev/basesrc /tmp/out
+          git show "${{ github.event.inputs.ref_base || 'origin/main' }}:$SRC/SubtitleAlign.java" > /tmp/ev/basesrc/SubtitleAlign.java
+          javac -d /tmp/ev/base /tmp/ev/basesrc/SubtitleAlign.java tools/legendas-eval/Eval.java tools/legendas-eval/Diff.java tools/legendas-eval/Fetch.java tools/legendas-eval/base/Variant.java
+          javac -d /tmp/ev/new $SRC/SubtitleAlign.java $SRC/SubtitleText.java tools/legendas-eval/Eval.java tools/legendas-eval/Diff.java tools/legendas-eval/Fetch.java tools/legendas-eval/new/Variant.java
+      - name: Testes sintéticos do alinhamento (deste branch)
         run: |
-          { echo '## Testes sintéticos'; echo '```'; java -cp /tmp/ev/cls io.github.gabrielxyz404.gabiflix.T; java -cp /tmp/ev/cls io.github.gabrielxyz404.gabiflix.T2; echo '```'; } | tee /tmp/out/sinteticos.md >> "$GITHUB_STEP_SUMMARY"
-      - name: Baixar legendas reais (PT e EN do addon OpenSubtitles)
-        run: java -cp /tmp/ev/cls io.github.gabrielxyz404.gabiflix.Fetch tools/legendas-eval/titles.txt /tmp/corpus 2>&1 | tee /tmp/fetch.log | grep -v '^CORPUS|' | cut -c1-600
+          mkdir -p /tmp/ev/syn
+          javac -d /tmp/ev/syn $SRC/SubtitleAlign.java $SRC/SubtitleText.java tools/legendas-eval/synthetic/*.java
+          { echo '## Testes sintéticos'; echo '```'; for c in T T2 TRev; do java -cp /tmp/ev/syn io.github.gabrielxyz404.gabiflix.$c || true; done; echo '```'; } | tee /tmp/out/sinteticos.md >> "$GITHUB_STEP_SUMMARY"
+      - name: Corpus (cache)
+        id: cache
+        uses: actions/cache@v4
+        with:
+          path: /tmp/corpus
+          key: corpus-v2-${{ hashFiles('tools/legendas-eval/titles.txt') }}${{ github.event.inputs.refetch }}
+      - name: Baixar legendas reais (PT, EN e outros idiomas do addon OpenSubtitles)
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: |
+          mkdir -p /tmp/corpus
+          java -cp /tmp/ev/new io.github.gabrielxyz404.gabiflix.Fetch tools/legendas-eval/titles.txt /tmp/corpus 2>&1 | tee /tmp/fetch.log | cut -c1-300
       - name: Resumo do corpus
         run: |
-          { echo '## Corpus'; echo '```'; grep -E 'PT baixadas|lista falhou' /tmp/fetch.log | cut -c1-300; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
-      - name: Avaliação fase 1 x fase 2
+          { echo '## Corpus'; echo '```'; ls /tmp/corpus | wc -l; cat /tmp/corpus/*/meta.txt | grep -vc '^#'; du -sh /tmp/corpus; echo '```'; } | tee -a "$GITHUB_STEP_SUMMARY"
+      - name: Avaliação ANTES
+        run: java -Dfile.encoding=UTF-8 -Dstdout.encoding=UTF-8 -Xmx3g -cp /tmp/ev/base io.github.gabrielxyz404.gabiflix.Eval /tmp/corpus /tmp/out/stats_antes.tsv /tmp/out/cases_antes.tsv | tee /tmp/out/avaliacao_antes.md >> "$GITHUB_STEP_SUMMARY"
+      - name: Avaliação DEPOIS
+        run: java -Dfile.encoding=UTF-8 -Dstdout.encoding=UTF-8 -Xmx3g -cp /tmp/ev/new io.github.gabrielxyz404.gabiflix.Eval /tmp/corpus /tmp/out/stats_depois.tsv /tmp/out/cases_depois.tsv | tee /tmp/out/avaliacao_depois.md >> "$GITHUB_STEP_SUMMARY"
+      - name: Antes x depois
         run: |
-          java -cp /tmp/ev/cls io.github.gabrielxyz404.gabiflix.Eval /tmp/fetch.log "${{ github.event.inputs.verbose }}" | tee /tmp/out/avaliacao.md >> "$GITHUB_STEP_SUMMARY"
-          cat /tmp/out/avaliacao.md
+          java -Dfile.encoding=UTF-8 -Dstdout.encoding=UTF-8 -cp /tmp/ev/new io.github.gabrielxyz404.gabiflix.Diff /tmp/out/stats_antes.tsv /tmp/out/stats_depois.tsv /tmp/out/cases_antes.tsv /tmp/out/cases_depois.tsv | tee /tmp/out/diff.md >> "$GITHUB_STEP_SUMMARY"
       - uses: actions/upload-artifact@v4
+        if: always()
         with:
           name: legendas-avaliacao
-          path: |
-            /tmp/out
-            /tmp/fetch.log
+          path: /tmp/out
