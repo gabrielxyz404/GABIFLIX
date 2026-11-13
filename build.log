@@ -1,0 +1,31 @@
+VLCKit 3.7.3
+baixando https://download.videolan.org/pub/cocoapods/prod/VLCKit-3.7.3-319ed2c0-79128878.tar.xz
+framework: /Users/runner/work/GABIFLIX/GABIFLIX/mac/build/vlckit/VLCKit - binary package/VLCKit.xcframework/macos-arm64_x86_64/VLCKit.framework
+Headers
+Modules
+PrivateHeaders
+Resources
+Versions
+VLCKit
+Architectures in the fat file: /Users/runner/work/GABIFLIX/GABIFLIX/mac/build/fw/VLCKit.framework/VLCKit are: x86_64 arm64 
+Sources/main.swift:105:33: warning: 'debugLogging' is deprecated: Set loggers with -[VLCLibrary setLoggers:] instead
+103 |             let id = args[i + 2]
+104 |             PlayerWindowController.testLog = true
+105 |             VLCLibrary.shared().debugLogging = true
+    |                                 `- warning: 'debugLogging' is deprecated: Set loggers with -[VLCLibrary setLoggers:] instead
+106 |             VLCLibrary.shared().debugLoggingLevel = 3
+107 |             // --gf-test-sub <link de uma legenda SRT>: legenda do "site" (sem busca no addon quando o código IMDb é "-")
+
+Sources/main.swift:106:33: warning: 'debugLoggingLevel' is deprecated: Use -[VLCLibrary setLogger:] with a VLCConsoleLogger instance instead
+104 |             PlayerWindowController.testLog = true
+105 |             VLCLibrary.shared().debugLogging = true
+106 |             VLCLibrary.shared().debugLoggingLevel = 3
+    |                                 `- warning: 'debugLoggingLevel' is deprecated: Use -[VLCLibrary setLogger:] with a VLCConsoleLogger instance instead
+107 |             // --gf-test-sub <link de uma legenda SRT>: legenda do "site" (sem busca no addon quando o código IMDb é "-")
+108 |             var subs: [URL] = []
+/Users/runner/work/GABIFLIX/GABIFLIX/mac/build/FramePlay.app: replacing existing signature
+assinatura ok
+total 70096
+drwxr-xr-x   3 runner  staff        96 Nov 13 22:32 .
+drwxr-xr-x  25 runner  staff       800 Nov 13 22:32 ..
+-rw-r--r--   1 runner  staff  35868084 Nov 13 22:32 FramePlay-Mac.zip

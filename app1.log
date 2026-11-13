@@ -1,0 +1,1061 @@
+2026-11-13 22:34:07.762 FramePlay[3680:14792] creating player instance using shared library
+2026-11-13 22:34:07.763 FramePlay[3680:14792] [ERR] option marq-color does not exist
+2026-11-13 22:34:07.763 FramePlay[3680:14792] [ERR] option marq-opacity does not exist
+2026-11-13 22:34:07.763 FramePlay[3680:14792] [ERR] option marq-position does not exist
+2026-11-13 22:34:07.763 FramePlay[3680:14792] [ERR] option marq-refresh does not exist
+2026-11-13 22:34:07.764 FramePlay[3680:14792] [ERR] option marq-size does not exist
+2026-11-13 22:34:07.764 FramePlay[3680:14792] [ERR] option marq-timeout does not exist
+2026-11-13 22:34:07.764 FramePlay[3680:14792] [ERR] option marq-x does not exist
+2026-11-13 22:34:07.764 FramePlay[3680:14792] [ERR] option marq-y does not exist
+2026-11-13 22:34:07.764 FramePlay[3680:14792] [DBG] creating audio output
+2026-11-13 22:34:07.764 FramePlay[3680:14792] [DBG] looking for audio output module matching "any": 8 candidates
+2026-11-13 22:34:07.764 FramePlay[3680:14792] [DBG] Rebuild device list
+2026-11-13 22:34:07.765 FramePlay[3680:14792] [DBG] found 3 audio device(s)
+2026-11-13 22:34:07.766 FramePlay[3680:14792] [DBG] DevID: 80 DevName: Apple Virtual Sound Device
+2026-11-13 22:34:07.767 FramePlay[3680:14792] [DBG] DevID: 86 DevName: Apple Virtual Sound Device
+2026-11-13 22:34:07.767 FramePlay[3680:14792] [DBG] this 'Apple Virtual Sound Device' is INPUT only. skipping...
+2026-11-13 22:34:07.772 FramePlay[3680:14792] [DBG] DevID: 59 DevName: Null Audio Device
+2026-11-13 22:34:07.773 FramePlay[3680:14792] [DBG] using audio output module "auhal"
+2026-11-13 22:34:07.773 FramePlay[3680:14792] [DBG] keeping audio output
+2026-11-13 22:34:07.823 FramePlay[3680:14792] [DBG] Creating an input for 'teste.mp4'
+2026-11-13 22:34:07.824 FramePlay[3680:14792] [DBG] selected sub language[0] pt
+2026-11-13 22:34:07.824 FramePlay[3680:14792] [DBG] selected sub language[1] pt
+2026-11-13 22:34:07.824 FramePlay[3680:14792] [DBG] reusing audio output
+2026-11-13 22:34:07.824 FramePlay[3680:14792] [DBG] keeping audio output
+2026-11-13 22:34:07.824 FramePlay[3680:15281] [DBG] using timeshift granularity of 50 MiB
+2026-11-13 22:34:07.824 FramePlay[3680:15281] [DBG] using default timeshift path
+2026-11-13 22:34:07.824 FramePlay[3680:15281] [DBG] `http://127.0.0.1:8765/teste.mp4' gives access `http' demux `any' path `127.0.0.1:8765/teste.mp4'
+2026-11-13 22:34:07.824 FramePlay[3680:15281] [DBG] creating demux: access='http' demux='any' location='127.0.0.1:8765/teste.mp4' file='(null)'
+2026-11-13 22:34:07.824 FramePlay[3680:15281] [DBG] looking for access_demux module matching "http": 8 candidates
+2026-11-13 22:34:07.824 FramePlay[3680:15281] [DBG] no access_demux modules matched
+2026-11-13 22:34:07.824 FramePlay[3680:15281] [DBG] creating access: http://127.0.0.1:8765/teste.mp4
+2026-11-13 22:34:07.824 FramePlay[3680:15281] [DBG] looking for access module matching "http": 44 candidates
+2026-11-13 22:34:07.824 FramePlay[3680:15281] [DBG] looking for keystore module matching "any": 6 candidates
+2026-11-13 22:34:07.824 FramePlay[3680:15281] [DBG] using keystore module "keychain"
+2026-11-13 22:34:07.842 FramePlay[3680:15281] [WARN] lookup failed (-25300: 'O item especificado não pôde ser encontrado nas chaves.')
+2026-11-13 22:34:07.844 FramePlay[3680:15281] [DBG] resolving 127.0.0.1 ...
+2026-11-13 22:34:07.844 FramePlay[3680:15281] [DBG] outgoing request:
+GET /teste.mp4 HTTP/1.1
+Host: 127.0.0.1:8765
+Accept: */*
+Accept-Language: en_US
+User-Agent: VLC/3.0.23 LibVLC/3.0.23
+Range: bytes=0-
+
+
+2026-11-13 22:34:07.851 FramePlay[3680:15281] [DBG] incoming response:
+HTTP/1.0 206 Partial Content
+Server: SimpleHTTP Python/3.15.2
+Date: Fri, 13 Nov 2026 22:34:07 GMT
+Content-Type: video/mp4
+Accept-Ranges: bytes
+Content-Length: 118313000
+Content-Range: bytes 0-118312999/118313000
+
+
+2026-11-13 22:34:07.851 FramePlay[3680:15281] [DBG] removing module "keychain"
+2026-11-13 22:34:07.851 FramePlay[3680:15281] [DBG] using access module "access"
+2026-11-13 22:34:07.851 FramePlay[3680:15281] [DBG] looking for stream_filter module matching "prefetch,cache_block": 50 candidates
+2026-11-13 22:34:07.851 FramePlay[3680:15281] [DBG] using 16777216 bytes buffer, 16777216 bytes read
+2026-11-13 22:34:07.851 FramePlay[3680:15281] [DBG] using stream_filter module "prefetch"
+2026-11-13 22:34:07.851 FramePlay[3680:15281] [DBG] looking for stream_filter module matching "any": 50 candidates
+2026-11-13 22:34:07.852 FramePlay[3680:15281] [DBG] no stream_filter modules matched
+2026-11-13 22:34:07.852 FramePlay[3680:15281] [DBG] looking for stream_directory module matching "any": 2 candidates
+2026-11-13 22:34:07.852 FramePlay[3680:15281] [DBG] no stream_directory modules matched
+2026-11-13 22:34:07.852 FramePlay[3680:15281] [DBG] attachment of directory-extractor failed for http://127.0.0.1:8765/teste.mp4
+2026-11-13 22:34:07.852 FramePlay[3680:15281] [DBG] looking for stream_filter module matching "record": 50 candidates
+2026-11-13 22:34:07.852 FramePlay[3680:15281] [DBG] using stream_filter module "record"
+2026-11-13 22:34:07.852 FramePlay[3680:15281] [DBG] creating demux: access='http' demux='any' location='127.0.0.1:8765/teste.mp4' file='(null)'
+2026-11-13 22:34:07.852 FramePlay[3680:15281] [DBG] looking for demux module matching "any": 94 candidates
+2026-11-13 22:34:07.853 FramePlay[3680:15284] [DBG] resolving 127.0.0.1 ...
+2026-11-13 22:34:07.853 FramePlay[3680:15284] [DBG] outgoing request:
+GET /teste.mp4 HTTP/1.1
+Host: 127.0.0.1:8765
+Accept: */*
+Accept-Language: en_US
+User-Agent: VLC/3.0.23 LibVLC/3.0.23
+Range: bytes=118056000-
+
+
+2026-11-13 22:34:07.854 FramePlay[3680:15284] [DBG] incoming response:
+HTTP/1.0 206 Partial Content
+Server: SimpleHTTP Python/3.15.2
+Date: Fri, 13 Nov 2026 22:34:07 GMT
+Content-Type: video/mp4
+Accept-Ranges: bytes
+Content-Length: 257000
+Content-Range: bytes 118056000-118312999/118313000
+
+
+2026-11-13 22:34:07.854 FramePlay[3680:15284] [DBG] connection failed
+2026-11-13 22:34:07.857 FramePlay[3680:15284] [DBG] end of stream
+2026-11-13 22:34:07.857 FramePlay[3680:15281] [DBG] dumping root Box "root"
+2026-11-13 22:34:07.858 FramePlay[3680:15281] [DBG] |   + ftyp size 32 offset 0
+2026-11-13 22:34:07.858 FramePlay[3680:15281] [DBG] |   + free size 8 offset 32
+2026-11-13 22:34:07.858 FramePlay[3680:15281] [DBG] |   + mdat size 118055960 offset 40
+2026-11-13 22:34:07.858 FramePlay[3680:15281] [DBG] |   + moov size 257000 offset 118056000
+2026-11-13 22:34:07.858 FramePlay[3680:15281] [DBG] |   |   + mvhd size 108 offset 118056008
+2026-11-13 22:34:07.858 FramePlay[3680:15281] [DBG] |   |   + trak size 80742 offset 118056116
+2026-11-13 22:34:07.858 FramePlay[3680:15281] [DBG] |   |   |   + tkhd size 92 offset 118056124
+2026-11-13 22:34:07.858 FramePlay[3680:15281] [DBG] |   |   |   + edts size 36 offset 118056216
+2026-11-13 22:34:07.858 FramePlay[3680:15281] [DBG] |   |   |   |   + elst size 28 offset 118056224
+2026-11-13 22:34:07.858 FramePlay[3680:15281] [DBG] |   |   |   + mdia size 80606 offset 118056252
+2026-11-13 22:34:07.858 FramePlay[3680:15281] [DBG] |   |   |   |   + mdhd size 32 offset 118056260
+2026-11-13 22:34:07.858 FramePlay[3680:15281] [DBG] |   |   |   |   + hdlr size 45 offset 118056292
+2026-11-13 22:34:07.858 FramePlay[3680:15281] [DBG] |   |   |   |   + minf size 80521 offset 118056337
+2026-11-13 22:34:07.858 FramePlay[3680:15281] [DBG] |   |   |   |   |   + vmhd size 20 offset 118056345
+2026-11-13 22:34:07.858 FramePlay[3680:15281] [DBG] |   |   |   |   |   + dinf size 36 offset 118056365
+2026-11-13 22:34:07.858 FramePlay[3680:15281] [DBG] |   |   |   |   |   |   + dref size 28 offset 118056373
+2026-11-13 22:34:07.858 FramePlay[3680:15281] [DBG] |   |   |   |   |   |   |   + url  size 12 offset 118056389
+2026-11-13 22:34:07.858 FramePlay[3680:15281] [DBG] |   |   |   |   |   + stbl size 80457 offset 118056401
+2026-11-13 22:34:07.858 FramePlay[3680:15281] [DBG] |   |   |   |   |   |   + stsd size 185 offset 118056409
+2026-11-13 22:34:07.858 FramePlay[3680:15281] [DBG] |   |   |   |   |   |   |   + avc1 size 169 offset 118056425
+2026-11-13 22:34:07.858 FramePlay[3680:15281] [DBG] |   |   |   |   |   |   |   |   + avcC size 47 offset 118056511
+2026-11-13 22:34:07.858 FramePlay[3680:15281] [DBG] |   |   |   |   |   |   |   |   + pasp size 16 offset 118056558
+2026-11-13 22:34:07.858 FramePlay[3680:15281] [DBG] |   |   |   |   |   |   |   |   + btrt size 20 offset 118056574
+2026-11-13 22:34:07.858 FramePlay[3680:15281] [DBG] |   |   |   |   |   |   + stts size 24 offset 118056594
+2026-11-13 22:34:07.858 FramePlay[3680:15281] [DBG] |   |   |   |   |   |   + stss size 176 offset 118056618
+2026-11-13 22:34:07.858 FramePlay[3680:15281] [DBG] |   |   |   |   |   |   + stsc size 28 offset 118056794
+2026-11-13 22:34:07.858 FramePlay[3680:15281] [DBG] |   |   |   |   |   |   + stsz size 40020 offset 118056822
+2026-11-13 22:34:07.858 FramePlay[3680:15281] [DBG] |   |   |   |   |   |   + stco size 40016 offset 118096842
+2026-11-13 22:34:07.858 FramePlay[3680:15281] [DBG] |   |   + trak size 176045 offset 118136858
+2026-11-13 22:34:07.858 FramePlay[3680:15281] [DBG] |   |   |   + tkhd size 92 offset 118136866
+2026-11-13 22:34:07.858 FramePlay[3680:15281] [DBG] |   |   |   + edts size 36 offset 118136958
+2026-11-13 22:34:07.859 FramePlay[3680:15281] [DBG] |   |   |   |   + elst size 28 offset 118136966
+2026-11-13 22:34:07.859 FramePlay[3680:15281] [DBG] |   |   |   + mdia size 175909 offset 118136994
+2026-11-13 22:34:07.859 FramePlay[3680:15281] [DBG] |   |   |   |   + mdhd size 32 offset 118137002
+2026-11-13 22:34:07.859 FramePlay[3680:15281] [DBG] |   |   |   |   + hdlr size 45 offset 118137034
+2026-11-13 22:34:07.859 FramePlay[3680:15281] [DBG] |   |   |   |   + minf size 175824 offset 118137079
+2026-11-13 22:34:07.859 FramePlay[3680:15281] [DBG] |   |   |   |   |   + smhd size 16 offset 118137087
+2026-11-13 22:34:07.859 FramePlay[3680:15281] [DBG] |   |   |   |   |   + dinf size 36 offset 118137103
+2026-11-13 22:34:07.859 FramePlay[3680:15281] [DBG] |   |   |   |   |   |   + dref size 28 offset 118137111
+2026-11-13 22:34:07.859 FramePlay[3680:15281] [DBG] |   |   |   |   |   |   |   + url  size 12 offset 118137127
+2026-11-13 22:34:07.859 FramePlay[3680:15281] [DBG] |   |   |   |   |   + stbl size 175764 offset 118137139
+2026-11-13 22:34:07.859 FramePlay[3680:15281] [DBG] |   |   |   |   |   |   + stsd size 126 offset 118137147
+2026-11-13 22:34:07.859 FramePlay[3680:15281] [DBG] |   |   |   |   |   |   |   + mp4a size 110 offset 118137163
+2026-11-13 22:34:07.859 FramePlay[3680:15281] [DBG] |   |   |   |   |   |   |   |   + esds size 54 offset 118137199
+2026-11-13 22:34:07.859 FramePlay[3680:15281] [DBG] |   |   |   |   |   |   |   |   + btrt size 20 offset 118137253
+2026-11-13 22:34:07.859 FramePlay[3680:15281] [DBG] |   |   |   |   |   |   + stts size 32 offset 118137273
+2026-11-13 22:34:07.859 FramePlay[3680:15281] [DBG] |   |   |   |   |   |   + stsc size 66592 offset 118137305
+2026-11-13 22:34:07.859 FramePlay[3680:15281] [DBG] |   |   |   |   |   |   + stsz size 68932 offset 118203897
+2026-11-13 22:34:07.859 FramePlay[3680:15281] [DBG] |   |   |   |   |   |   + stco size 40020 offset 118272829
+2026-11-13 22:34:07.859 FramePlay[3680:15281] [DBG] |   |   |   |   |   |   + sgpd size 26 offset 118312849
+2026-11-13 22:34:07.859 FramePlay[3680:15281] [DBG] |   |   |   |   |   |   + sbgp size 28 offset 118312875
+2026-11-13 22:34:07.859 FramePlay[3680:15281] [DBG] |   |   + udta size 97 offset 118312903
+2026-11-13 22:34:07.859 FramePlay[3680:15281] [DBG] |   |   |   + meta size 89 offset 118312911
+2026-11-13 22:34:07.859 FramePlay[3680:15281] [DBG] |   |   |   |   + hdlr size 33 offset 118312923
+2026-11-13 22:34:07.859 FramePlay[3680:15281] [DBG] |   |   |   |   + ilst size 44 offset 118312956
+2026-11-13 22:34:07.859 FramePlay[3680:15281] [DBG] |   |   |   |   |   + ctoo size 36 offset 118312964
+2026-11-13 22:34:07.859 FramePlay[3680:15281] [DBG] |   |   |   |   |   |   + data size 28 offset 118312972
+2026-11-13 22:34:07.859 FramePlay[3680:15281] [DBG] ISO Media (isom) version 512.
+2026-11-13 22:34:07.859 FramePlay[3680:15281] [DBG] found 2 tracks
+2026-11-13 22:34:07.863 FramePlay[3680:15281] [WARN] elst box found
+2026-11-13 22:34:07.863 FramePlay[3680:15281] [DBG]    - [0] duration=400000ms media time=0ms) rate=1.0
+2026-11-13 22:34:07.864 FramePlay[3680:15281] [DBG] track[Id 0x1] read 10000 chunk
+2026-11-13 22:34:07.864 FramePlay[3680:15281] [WARN] STTS table of 1 entries
+2026-11-13 22:34:07.864 FramePlay[3680:15281] [DBG] track[Id 0x1] read 10000 samples length:400s
+2026-11-13 22:34:07.864 FramePlay[3680:15281] [DBG] selecting program id=0
+2026-11-13 22:34:07.864 FramePlay[3680:15281] [DBG] adding track[Id 0x1] video (enable) language undef
+2026-11-13 22:34:07.864 FramePlay[3680:15281] [WARN] elst box found
+2026-11-13 22:34:07.864 FramePlay[3680:15281] [DBG]    - [0] duration=400000ms media time=23ms) rate=1.0
+2026-11-13 22:34:07.865 FramePlay[3680:15281] [DBG] track[Id 0x2] read 10001 chunk
+2026-11-13 22:34:07.865 FramePlay[3680:15281] [WARN] STTS table of 2 entries
+2026-11-13 22:34:07.865 FramePlay[3680:15281] [DBG] track[Id 0x2] read 17228 samples length:400s
+2026-11-13 22:34:07.865 FramePlay[3680:15281] [DBG] adding track[Id 0x2] audio (enable) language undef
+2026-11-13 22:34:07.865 FramePlay[3680:15281] [DBG] using demux module "mp4"
+2026-11-13 22:34:07.865 FramePlay[3680:15281] [DBG] looking for video decoder module matching "any": 26 candidates
+2026-11-13 22:34:07.865 FramePlay[3680:15281] [DBG] new SPS parsed: 0
+2026-11-13 22:34:07.865 FramePlay[3680:15281] [DBG] new PPS parsed: 0
+2026-11-13 22:34:07.865 FramePlay[3680:15281] [WARN] forcing CVPX format: 420v
+2026-11-13 22:34:07.945 FramePlay[3680:15281] [INF] Using Video Toolbox to decode 'h264'
+2026-11-13 22:34:07.945 FramePlay[3680:15281] [DBG] using video decoder module "videotoolbox"
+2026-11-13 22:34:07.945 FramePlay[3680:15281] [DBG] looking for audio decoder module matching "any": 32 candidates
+2026-11-13 22:34:07.945 FramePlay[3680:15281] [DBG] using ffmpeg Lavc58.134.100
+2026-11-13 22:34:07.945 FramePlay[3680:15281] [ERR] option quiet does not exist
+2026-11-13 22:34:07.946 FramePlay[3680:15281] [DBG] CPU flags: 0x00000068
+2026-11-13 22:34:07.949 FramePlay[3680:15281] [DBG] codec (aac) started
+2026-11-13 22:34:07.949 FramePlay[3680:15281] [DBG] using audio decoder module "avcodec"
+2026-11-13 22:34:07.950 FramePlay[3680:15281] [DBG] looking for meta reader module matching "any": 2 candidates
+2026-11-13 22:34:07.950 FramePlay[3680:15281] [DBG] no meta reader modules matched
+2026-11-13 22:34:07.950 FramePlay[3680:15281] [DBG] `http://127.0.0.1:8765/teste.mp4' successfully opened
+2026-11-13 22:34:07.950 FramePlay[3680:15281] [DBG] elst (0) gives 0ms (movie)-> 0ms (track)
+2026-11-13 22:34:07.950 FramePlay[3680:15281] [DBG] track[Id 0x1] using Sync Sample Box (stss)
+2026-11-13 22:34:07.950 FramePlay[3680:15281] [DBG] stss gives 0 --> 0 (sample number)
+2026-11-13 22:34:07.950 FramePlay[3680:15281] [DBG] elst (0) gives 0ms (movie)-> 23ms (track)
+2026-11-13 22:34:07.950 FramePlay[3680:15284] [DBG] resolving 127.0.0.1 ...
+2026-11-13 22:34:07.950 FramePlay[3680:15284] [DBG] outgoing request:
+GET /teste.mp4 HTTP/1.1
+Host: 127.0.0.1:8765
+Accept: */*
+Accept-Language: en_US
+User-Agent: VLC/3.0.23 LibVLC/3.0.23
+Range: bytes=304-
+
+
+2026-11-13 22:34:07.953 FramePlay[3680:15284] [DBG] incoming response:
+HTTP/1.0 206 Partial Content
+Server: SimpleHTTP Python/3.15.2
+Date: Fri, 13 Nov 2026 22:34:07 GMT
+Content-Type: video/mp4
+Accept-Ranges: bytes
+Content-Length: 118312696
+Content-Range: bytes 304-118312999/118313000
+
+
+2026-11-13 22:34:07.953 FramePlay[3680:15284] [DBG] connection failed
+2026-11-13 22:34:07.954 FramePlay[3680:15281] [DBG] Buffering 0%
+2026-11-13 22:34:07.954 FramePlay[3680:15281] [DBG] Buffering 8%
+2026-11-13 22:34:07.954 FramePlay[3680:15281] [DBG] Buffering 16%
+2026-11-13 22:34:07.954 FramePlay[3680:15281] [DBG] Buffering 25%
+2026-11-13 22:34:07.955 FramePlay[3680:15281] [DBG] Buffering 33%
+2026-11-13 22:34:07.955 FramePlay[3680:15281] [DBG] Buffering 41%
+2026-11-13 22:34:07.955 FramePlay[3680:15302] [DBG] reusing audio output
+2026-11-13 22:34:07.955 FramePlay[3680:15281] [DBG] Buffering 50%
+2026-11-13 22:34:07.955 FramePlay[3680:15302] [DBG] VLC is looking for: 'f32l' 44100 Hz Mono frame=1 samples/4 bytes
+2026-11-13 22:34:07.955 FramePlay[3680:15281] [DBG] Buffering 58%
+2026-11-13 22:34:07.955 FramePlay[3680:15302] [DBG] attempting to use device 0
+2026-11-13 22:34:07.956 FramePlay[3680:15281] [DBG] Buffering 66%
+2026-11-13 22:34:07.956 FramePlay[3680:15302] [DBG] using default audio device 80
+2026-11-13 22:34:07.956 FramePlay[3680:15281] [DBG] Buffering 75%
+2026-11-13 22:34:07.956 FramePlay[3680:15281] [DBG] Buffering 83%
+2026-11-13 22:34:07.956 FramePlay[3680:15302] [DBG] Current device has a latency of 0 us
+2026-11-13 22:34:07.956 FramePlay[3680:15281] [DBG] Buffering 91%
+2026-11-13 22:34:07.956 FramePlay[3680:15281] [DBG] Buffering 100%
+2026-11-13 22:34:07.956 FramePlay[3680:15281] [DBG] Stream buffering done (3250 ms in 2 ms)
+2026-11-13 22:34:07.966 FramePlay[3680:15302] [DBG] output layout of AUHAL has 1 channel
+2026-11-13 22:34:07.966 FramePlay[3680:15302] [DBG] VLC will output: Mono
+2026-11-13 22:34:07.967 FramePlay[3680:15302] [DBG] Current AU format: [44100.000000][mcpl][9][4][1][4][1][32]
+2026-11-13 22:34:07.994 FramePlay[3680:15302] [DBG] analog output successfully opened
+2026-11-13 22:34:07.994 FramePlay[3680:15302] [DBG] output 'f32l' 44100 Hz Mono frame=1 samples/4 bytes
+2026-11-13 22:34:07.994 FramePlay[3680:15302] [DBG] looking for audio volume module matching "any": 4 candidates
+2026-11-13 22:34:07.994 FramePlay[3680:15302] [DBG] using audio volume module "float_mixer"
+2026-11-13 22:34:07.994 FramePlay[3680:15302] [DBG] input 'f32l' 44100 Hz Mono frame=1 samples/4 bytes
+2026-11-13 22:34:07.994 FramePlay[3680:15302] [DBG] looking for audio filter module matching "scaletempo": 26 candidates
+2026-11-13 22:34:07.994 FramePlay[3680:15302] [DBG] format: 44100 rate, 1 nch, 4 bps, fl32
+2026-11-13 22:34:07.994 FramePlay[3680:15302] [DBG] params: 30 stride, 0.200 overlap, 14 search
+2026-11-13 22:34:07.994 FramePlay[3680:15302] [DBG] 1.000 scale, 1323.000 stride_in, 1323 stride_out, 1059 standing, 264 overlap, 617 search, 2204 queue, fl32 mode
+2026-11-13 22:34:07.994 FramePlay[3680:15302] [DBG] using audio filter module "scaletempo"
+2026-11-13 22:34:07.994 FramePlay[3680:15302] [DBG] conversion: 'f32l'->'f32l' 44100 Hz->44100 Hz Mono->Mono
+2026-11-13 22:34:07.994 FramePlay[3680:15302] [DBG] conversion pipeline complete
+2026-11-13 22:34:07.994 FramePlay[3680:15302] [DBG] looking for audio meter module matching "ebur128": 2 candidates
+2026-11-13 22:34:07.995 FramePlay[3680:15302] [DBG] using audio meter module "ebur128"
+2026-11-13 22:34:07.995 FramePlay[3680:15302] [DBG] conversion: 'f32l'->'f32l' 44100 Hz->44100 Hz Mono->Mono
+2026-11-13 22:34:07.995 FramePlay[3680:15302] [DBG] conversion pipeline complete
+2026-11-13 22:34:07.995 FramePlay[3680:15302] [DBG] conversion: 'f32l'->'f32l' 44100 Hz->44100 Hz Mono->Mono
+2026-11-13 22:34:07.995 FramePlay[3680:15302] [DBG] conversion pipeline complete
+2026-11-13 22:34:07.995 FramePlay[3680:15302] [DBG] looking for audio resampler module matching "soxr": 4 candidates
+2026-11-13 22:34:07.996 FramePlay[3680:15302] [DBG] Using SoX Resampler with 'cr32s' engine and 'Medium 16-bit with medium roll-off' quality to convert f32l/44100Hz to f32l/44100Hz.
+2026-11-13 22:34:07.996 FramePlay[3680:15302] [DBG] using audio resampler module "soxr"
+IOServiceMatchingfailed for: AppleM2ScalerParavirtDriver
+2026-11-13 22:34:08.291 FramePlay[3680:15309] [INF] vt cvpx chroma: 420v
+2026-11-13 22:34:08.291 FramePlay[3680:15309] [DBG] looking for text renderer module matching "freetype": 6 candidates
+2026-11-13 22:34:08.311 FramePlay[3680:15309] [DBG] using text renderer module "freetype"
+2026-11-13 22:34:08.311 FramePlay[3680:15309] [DBG] looking for video converter module matching "any": 32 candidates
+2026-11-13 22:34:08.312 FramePlay[3680:15309] [DBG] 32x32 (32x32) chroma: YUVA -> 16x16 (16x16) chroma: RGBA with scaling using Bicubic (good quality)
+2026-11-13 22:34:08.312 FramePlay[3680:15309] [DBG] using video converter module "swscale"
+2026-11-13 22:34:08.312 FramePlay[3680:15309] [DBG] looking for video converter module matching "any": 32 candidates
+2026-11-13 22:34:08.312 FramePlay[3680:15309] [DBG] YUVP to YUVA converter
+2026-11-13 22:34:08.312 FramePlay[3680:15309] [DBG] using video converter module "yuvp"
+2026-11-13 22:34:08.312 FramePlay[3680:15309] [DBG] Deinterlacing available
+2026-11-13 22:34:08.312 FramePlay[3680:15309] [DBG] deinterlace -1, mode auto, is_needed 0
+2026-11-13 22:34:08.312 FramePlay[3680:15309] [DBG] looking for vout window module matching "any": 0 candidates
+2026-11-13 22:34:08.312 FramePlay[3680:15309] [DBG] no vout window modules
+2026-11-13 22:34:08.312 FramePlay[3680:15316] [DBG] Opening vout display wrapper
+2026-11-13 22:34:08.312 FramePlay[3680:15316] [DBG] looking for vout display module matching "any": 14 candidates
+2026-11-13 22:34:08.313 FramePlay[3680:15316] [ERR] Failure to create CGL context!
+2026-11-13 22:34:08.314 FramePlay[3680:15316] [ERR] Failure to create CGL context!
+2026-11-13 22:34:08.348 FramePlay[3680:15316] [ERR] Initialization of open gl view failed
+2026-11-13 22:34:08.348 FramePlay[3680:15316] [ERR] Initialization of open gl view failed
+2026-11-13 22:34:08.348 FramePlay[3680:15316] [DBG] no vout display modules matched
+2026-11-13 22:34:08.349 FramePlay[3680:15309] [ERR] video output creation failed
+2026-11-13 22:34:08.349 FramePlay[3680:15309] [DBG] removing module "freetype"
+2026-11-13 22:34:08.349 FramePlay[3680:15309] [DBG] removing module "yuvp"
+2026-11-13 22:34:08.349 FramePlay[3680:15309] [DBG] removing module "swscale"
+2026-11-13 22:34:08.350 FramePlay[3680:15309] [ERR] failed to create video output
+2026-11-13 22:34:08.352 FramePlay[3680:15301] [WARN] Reloading the decoder module
+2026-11-13 22:34:08.352 FramePlay[3680:15301] [DBG] removing module "videotoolbox"
+2026-11-13 22:34:08.368 FramePlay[3680:15301] [DBG] looking for video decoder module matching "any": 26 candidates
+2026-11-13 22:34:08.368 FramePlay[3680:15301] [DBG] new SPS parsed: 0
+2026-11-13 22:34:08.368 FramePlay[3680:15301] [DBG] new PPS parsed: 0
+2026-11-13 22:34:08.368 FramePlay[3680:15301] [WARN] forcing CVPX format: 420v
+2026-11-13 22:34:08.372 FramePlay[3680:15301] [INF] Using Video Toolbox to decode 'h264'
+2026-11-13 22:34:08.372 FramePlay[3680:15301] [DBG] using video decoder module "videotoolbox"
+2026-11-13 22:34:08.373 FramePlay[3680:15281] [ERR] buffer deadlock prevented
+2026-11-13 22:34:08.373 FramePlay[3680:15281] [DBG] Decoder wait done in 416 ms
+2026-11-13 22:34:10.684 FramePlay[3680:15281] [DBG] loading spu-es slave: file:///var/folders/2s/vty41l455yv698g4xkgfv7z00000gn/T/frameplay-legendas/1.srt (forced: 1)
+2026-11-13 22:34:10.684 FramePlay[3680:15281] [DBG] `file:///var/folders/2s/vty41l455yv698g4xkgfv7z00000gn/T/frameplay-legendas/1.srt' gives access `file' demux `subtitle' path `/var/folders/2s/vty41l455yv698g4xkgfv7z00000gn/T/frameplay-legendas/1.srt'
+2026-11-13 22:34:10.684 FramePlay[3680:15281] [DBG] creating demux: access='file' demux='subtitle' location='/var/folders/2s/vty41l455yv698g4xkgfv7z00000gn/T/frameplay-legendas/1.srt' file='/var/folders/2s/vty41l455yv698g4xkgfv7z00000gn/T/frameplay-legendas/1.srt'
+2026-11-13 22:34:10.684 FramePlay[3680:15281] [DBG] looking for access_demux module matching "file": 8 candidates
+2026-11-13 22:34:10.684 FramePlay[3680:15281] [DBG] no access_demux modules matched
+2026-11-13 22:34:10.684 FramePlay[3680:15281] [DBG] creating access: file:///var/folders/2s/vty41l455yv698g4xkgfv7z00000gn/T/frameplay-legendas/1.srt
+2026-11-13 22:34:10.684 FramePlay[3680:15281] [DBG]  (path: /var/folders/2s/vty41l455yv698g4xkgfv7z00000gn/T/frameplay-legendas/1.srt)
+2026-11-13 22:34:10.684 FramePlay[3680:15281] [DBG] looking for access module matching "file": 44 candidates
+2026-11-13 22:34:10.684 FramePlay[3680:15281] [DBG] using access module "filesystem"
+2026-11-13 22:34:10.684 FramePlay[3680:15281] [DBG] looking for stream_filter module matching "prefetch,cache_read": 50 candidates
+2026-11-13 22:34:10.684 FramePlay[3680:15281] [DBG] Using stream method for AStream*
+2026-11-13 22:34:10.684 FramePlay[3680:15281] [DBG] starting pre-buffering
+2026-11-13 22:34:10.684 FramePlay[3680:15281] [DBG] received first data after 0 ms
+2026-11-13 22:34:10.684 FramePlay[3680:15281] [DBG] pre-buffering done 1024 bytes in 0s - 15625 KiB/s
+2026-11-13 22:34:10.684 FramePlay[3680:15281] [DBG] using stream_filter module "cache_read"
+2026-11-13 22:34:10.684 FramePlay[3680:15281] [DBG] looking for stream_filter module matching "any": 50 candidates
+2026-11-13 22:34:10.684 FramePlay[3680:15281] [DBG] no stream_filter modules matched
+2026-11-13 22:34:10.684 FramePlay[3680:15281] [DBG] looking for stream_directory module matching "any": 2 candidates
+2026-11-13 22:34:10.684 FramePlay[3680:15281] [DBG] no stream_directory modules matched
+2026-11-13 22:34:10.684 FramePlay[3680:15281] [DBG] attachment of directory-extractor failed for file:///var/folders/2s/vty41l455yv698g4xkgfv7z00000gn/T/frameplay-legendas/1.srt
+2026-11-13 22:34:10.684 FramePlay[3680:15281] [DBG] looking for stream_filter module matching "record": 50 candidates
+2026-11-13 22:34:10.684 FramePlay[3680:15281] [DBG] using stream_filter module "record"
+2026-11-13 22:34:10.685 FramePlay[3680:15281] [DBG] creating demux: access='file' demux='subtitle' location='/var/folders/2s/vty41l455yv698g4xkgfv7z00000gn/T/frameplay-legendas/1.srt' file='/var/folders/2s/vty41l455yv698g4xkgfv7z00000gn/T/frameplay-legendas/1.srt'
+2026-11-13 22:34:10.685 FramePlay[3680:15281] [DBG] looking for demux module matching "subtitle": 94 candidates
+2026-11-13 22:34:10.685 FramePlay[3680:15281] [DBG] this doesn't seem to be a vobsub file
+2026-11-13 22:34:10.685 FramePlay[3680:15281] [DBG] this doesn't seem to be a vobsub file
+2026-11-13 22:34:10.685 FramePlay[3680:15281] [DBG] Movie fps: 25.000000
+2026-11-13 22:34:10.685 FramePlay[3680:15281] [DBG] autodetecting subtitle format
+2026-11-13 22:34:10.685 FramePlay[3680:15281] [DBG] detected SubRIP format
+2026-11-13 22:34:10.685 FramePlay[3680:15281] [DBG] loading all subtitles...
+2026-11-13 22:34:10.685 FramePlay[3680:15281] [DBG] loaded 90 subtitles
+2026-11-13 22:34:10.685 FramePlay[3680:15281] [DBG] using demux module "subtitle"
+2026-11-13 22:34:10.685 FramePlay[3680:15281] [DBG] looking for spu decoder module matching "any": 40 candidates
+2026-11-13 22:34:10.685 FramePlay[3680:15281] [DBG] using ffmpeg Lavc58.134.100
+2026-11-13 22:34:10.685 FramePlay[3680:15281] [ERR] option quiet does not exist
+2026-11-13 22:34:10.685 FramePlay[3680:15281] [DBG] CPU flags: 0x00000068
+2026-11-13 22:34:10.685 FramePlay[3680:15281] [WARN] refusing to decode non validated subtitle codec
+2026-11-13 22:34:10.685 FramePlay[3680:15281] [DBG] using ffmpeg Lavc58.134.100
+2026-11-13 22:34:10.685 FramePlay[3680:15281] [ERR] option quiet does not exist
+2026-11-13 22:34:10.685 FramePlay[3680:15281] [DBG] CPU flags: 0x00000068
+2026-11-13 22:34:10.685 FramePlay[3680:15281] [WARN] refusing to decode non validated subtitle codec
+2026-11-13 22:34:10.685 FramePlay[3680:15281] [DBG] trying default character encoding: CP1252
+2026-11-13 22:34:10.685 FramePlay[3680:15281] [DBG] using automatic UTF-8 detection
+2026-11-13 22:34:10.690 FramePlay[3680:15281] [DBG] using spu decoder module "subsdec"
+2026-11-13 22:34:15.136 FramePlay[3680:15833] [INF] vt cvpx chroma: 420v
+2026-11-13 22:34:15.136 FramePlay[3680:15833] [DBG] looking for text renderer module matching "freetype": 6 candidates
+2026-11-13 22:34:15.143 FramePlay[3680:15833] [DBG] using text renderer module "freetype"
+2026-11-13 22:34:15.143 FramePlay[3680:15833] [DBG] looking for video converter module matching "any": 32 candidates
+2026-11-13 22:34:15.143 FramePlay[3680:15833] [DBG] 32x32 (32x32) chroma: YUVA -> 16x16 (16x16) chroma: RGBA with scaling using Bicubic (good quality)
+2026-11-13 22:34:15.143 FramePlay[3680:15833] [DBG] using video converter module "swscale"
+2026-11-13 22:34:15.143 FramePlay[3680:15833] [DBG] looking for video converter module matching "any": 32 candidates
+2026-11-13 22:34:15.143 FramePlay[3680:15833] [DBG] YUVP to YUVA converter
+2026-11-13 22:34:15.143 FramePlay[3680:15833] [DBG] using video converter module "yuvp"
+2026-11-13 22:34:15.144 FramePlay[3680:15833] [DBG] Deinterlacing available
+2026-11-13 22:34:15.145 FramePlay[3680:15833] [DBG] deinterlace -1, mode auto, is_needed 0
+2026-11-13 22:34:15.145 FramePlay[3680:15833] [DBG] looking for vout window module matching "any": 0 candidates
+2026-11-13 22:34:15.145 FramePlay[3680:15833] [DBG] no vout window modules
+2026-11-13 22:34:15.146 FramePlay[3680:15842] [DBG] Opening vout display wrapper
+2026-11-13 22:34:15.146 FramePlay[3680:15842] [DBG] looking for vout display module matching "any": 14 candidates
+2026-11-13 22:34:15.146 FramePlay[3680:15842] [ERR] Failure to create CGL context!
+2026-11-13 22:34:15.146 FramePlay[3680:15842] [ERR] Failure to create CGL context!
+2026-11-13 22:34:15.146 FramePlay[3680:15842] [ERR] Initialization of open gl view failed
+2026-11-13 22:34:15.146 FramePlay[3680:15842] [ERR] Initialization of open gl view failed
+2026-11-13 22:34:15.146 FramePlay[3680:15842] [DBG] no vout display modules matched
+2026-11-13 22:34:15.147 FramePlay[3680:15833] [ERR] video output creation failed
+2026-11-13 22:34:15.147 FramePlay[3680:15833] [DBG] removing module "freetype"
+2026-11-13 22:34:15.147 FramePlay[3680:15833] [DBG] removing module "yuvp"
+2026-11-13 22:34:15.147 FramePlay[3680:15833] [DBG] removing module "swscale"
+2026-11-13 22:34:15.147 FramePlay[3680:15833] [ERR] failed to create video output
+2026-11-13 22:34:15.342 FramePlay[3680:15301] [WARN] Reloading the decoder module
+2026-11-13 22:34:15.342 FramePlay[3680:15301] [DBG] removing module "videotoolbox"
+2026-11-13 22:34:15.345 FramePlay[3680:15301] [DBG] looking for video decoder module matching "any": 26 candidates
+2026-11-13 22:34:15.345 FramePlay[3680:15301] [DBG] new SPS parsed: 0
+2026-11-13 22:34:15.345 FramePlay[3680:15301] [DBG] new PPS parsed: 0
+2026-11-13 22:34:15.345 FramePlay[3680:15301] [WARN] forcing CVPX format: 420v
+2026-11-13 22:34:15.351 FramePlay[3680:15301] [INF] Using Video Toolbox to decode 'h264'
+2026-11-13 22:34:15.351 FramePlay[3680:15301] [DBG] using video decoder module "videotoolbox"
+2026-11-13 22:34:18.242 FramePlay[3680:15654] [WARN] no vout found, dropping subpicture
+2026-11-13 22:34:18.242 FramePlay[3680:15654] [WARN] can't get output subpicture
+2026-11-13 22:34:25.097 FramePlay[3680:16385] [INF] vt cvpx chroma: 420v
+2026-11-13 22:34:25.097 FramePlay[3680:16385] [DBG] looking for text renderer module matching "freetype": 6 candidates
+2026-11-13 22:34:25.103 FramePlay[3680:16385] [DBG] using text renderer module "freetype"
+2026-11-13 22:34:25.103 FramePlay[3680:16385] [DBG] looking for video converter module matching "any": 32 candidates
+2026-11-13 22:34:25.103 FramePlay[3680:16385] [DBG] 32x32 (32x32) chroma: YUVA -> 16x16 (16x16) chroma: RGBA with scaling using Bicubic (good quality)
+2026-11-13 22:34:25.103 FramePlay[3680:16385] [DBG] using video converter module "swscale"
+2026-11-13 22:34:25.103 FramePlay[3680:16385] [DBG] looking for video converter module matching "any": 32 candidates
+2026-11-13 22:34:25.103 FramePlay[3680:16385] [DBG] YUVP to YUVA converter
+2026-11-13 22:34:25.103 FramePlay[3680:16385] [DBG] using video converter module "yuvp"
+2026-11-13 22:34:25.103 FramePlay[3680:16385] [DBG] Deinterlacing available
+2026-11-13 22:34:25.104 FramePlay[3680:16385] [DBG] deinterlace -1, mode auto, is_needed 0
+2026-11-13 22:34:25.104 FramePlay[3680:16385] [DBG] looking for vout window module matching "any": 0 candidates
+2026-11-13 22:34:25.104 FramePlay[3680:16385] [DBG] no vout window modules
+2026-11-13 22:34:25.104 FramePlay[3680:16386] [DBG] Opening vout display wrapper
+2026-11-13 22:34:25.104 FramePlay[3680:16386] [DBG] looking for vout display module matching "any": 14 candidates
+2026-11-13 22:34:25.104 FramePlay[3680:16386] [ERR] Failure to create CGL context!
+2026-11-13 22:34:25.104 FramePlay[3680:16386] [ERR] Failure to create CGL context!
+2026-11-13 22:34:25.104 FramePlay[3680:16386] [ERR] Initialization of open gl view failed
+2026-11-13 22:34:25.104 FramePlay[3680:16386] [ERR] Initialization of open gl view failed
+2026-11-13 22:34:25.104 FramePlay[3680:16386] [DBG] no vout display modules matched
+2026-11-13 22:34:25.104 FramePlay[3680:16385] [ERR] video output creation failed
+2026-11-13 22:34:25.104 FramePlay[3680:16385] [DBG] removing module "freetype"
+2026-11-13 22:34:25.104 FramePlay[3680:16385] [DBG] removing module "yuvp"
+2026-11-13 22:34:25.104 FramePlay[3680:16385] [DBG] removing module "swscale"
+2026-11-13 22:34:25.104 FramePlay[3680:16385] [ERR] failed to create video output
+2026-11-13 22:34:25.352 FramePlay[3680:15301] [WARN] Reloading the decoder module
+2026-11-13 22:34:25.352 FramePlay[3680:15301] [DBG] removing module "videotoolbox"
+2026-11-13 22:34:25.356 FramePlay[3680:15301] [DBG] looking for video decoder module matching "any": 26 candidates
+2026-11-13 22:34:25.356 FramePlay[3680:15301] [DBG] new SPS parsed: 0
+2026-11-13 22:34:25.356 FramePlay[3680:15301] [DBG] new PPS parsed: 0
+2026-11-13 22:34:25.356 FramePlay[3680:15301] [WARN] forcing CVPX format: 420v
+2026-11-13 22:34:25.360 FramePlay[3680:15301] [INF] Using Video Toolbox to decode 'h264'
+2026-11-13 22:34:25.360 FramePlay[3680:15301] [DBG] using video decoder module "videotoolbox"
+2026-11-13 22:34:25.450 FramePlay[3680:15654] [WARN] no vout found, dropping subpicture
+2026-11-13 22:34:25.450 FramePlay[3680:15654] [WARN] can't get output subpicture
+2026-11-13 22:34:32.845 FramePlay[3680:15654] [WARN] no vout found, dropping subpicture
+2026-11-13 22:34:32.845 FramePlay[3680:15654] [WARN] can't get output subpicture
+2026-11-13 22:34:33.428 FramePlay[3680:15284] [DBG] pausing
+2026-11-13 22:34:33.429 FramePlay[3680:15301] [DBG] toggling resume
+2026-11-13 22:34:33.431 FramePlay[3680:15302] [DBG] toggling resume
+2026-11-13 22:34:37.426 FramePlay[3680:15284] [DBG] resuming
+2026-11-13 22:34:37.426 FramePlay[3680:15301] [DBG] toggling pause
+2026-11-13 22:34:37.426 FramePlay[3680:15302] [DBG] toggling pause
+2026-11-13 22:34:39.079 FramePlay[3680:17033] [INF] vt cvpx chroma: 420v
+2026-11-13 22:34:39.079 FramePlay[3680:17033] [DBG] looking for text renderer module matching "freetype": 6 candidates
+2026-11-13 22:34:39.086 FramePlay[3680:17033] [DBG] using text renderer module "freetype"
+2026-11-13 22:34:39.086 FramePlay[3680:17033] [DBG] looking for video converter module matching "any": 32 candidates
+2026-11-13 22:34:39.086 FramePlay[3680:17033] [DBG] 32x32 (32x32) chroma: YUVA -> 16x16 (16x16) chroma: RGBA with scaling using Bicubic (good quality)
+2026-11-13 22:34:39.086 FramePlay[3680:17033] [DBG] using video converter module "swscale"
+2026-11-13 22:34:39.086 FramePlay[3680:17033] [DBG] looking for video converter module matching "any": 32 candidates
+2026-11-13 22:34:39.086 FramePlay[3680:17033] [DBG] YUVP to YUVA converter
+2026-11-13 22:34:39.086 FramePlay[3680:17033] [DBG] using video converter module "yuvp"
+2026-11-13 22:34:39.086 FramePlay[3680:17033] [DBG] Deinterlacing available
+2026-11-13 22:34:39.086 FramePlay[3680:17033] [DBG] deinterlace -1, mode auto, is_needed 0
+2026-11-13 22:34:39.086 FramePlay[3680:17033] [DBG] looking for vout window module matching "any": 0 candidates
+2026-11-13 22:34:39.086 FramePlay[3680:17033] [DBG] no vout window modules
+2026-11-13 22:34:39.086 FramePlay[3680:17034] [DBG] Opening vout display wrapper
+2026-11-13 22:34:39.086 FramePlay[3680:17034] [DBG] looking for vout display module matching "any": 14 candidates
+2026-11-13 22:34:39.086 FramePlay[3680:17034] [ERR] Failure to create CGL context!
+2026-11-13 22:34:39.086 FramePlay[3680:17034] [ERR] Failure to create CGL context!
+2026-11-13 22:34:39.086 FramePlay[3680:17034] [ERR] Initialization of open gl view failed
+2026-11-13 22:34:39.086 FramePlay[3680:17034] [ERR] Initialization of open gl view failed
+2026-11-13 22:34:39.086 FramePlay[3680:17034] [DBG] no vout display modules matched
+2026-11-13 22:34:39.087 FramePlay[3680:17033] [ERR] video output creation failed
+2026-11-13 22:34:39.087 FramePlay[3680:17033] [DBG] removing module "freetype"
+2026-11-13 22:34:39.087 FramePlay[3680:17033] [DBG] removing module "yuvp"
+2026-11-13 22:34:39.087 FramePlay[3680:17033] [DBG] removing module "swscale"
+2026-11-13 22:34:39.087 FramePlay[3680:17033] [ERR] failed to create video output
+2026-11-13 22:34:39.343 FramePlay[3680:15301] [WARN] Reloading the decoder module
+2026-11-13 22:34:39.343 FramePlay[3680:15301] [DBG] removing module "videotoolbox"
+2026-11-13 22:34:39.345 FramePlay[3680:15301] [DBG] looking for video decoder module matching "any": 26 candidates
+2026-11-13 22:34:39.345 FramePlay[3680:15301] [DBG] new SPS parsed: 0
+2026-11-13 22:34:39.345 FramePlay[3680:15301] [DBG] new PPS parsed: 0
+2026-11-13 22:34:39.346 FramePlay[3680:15301] [WARN] forcing CVPX format: 420v
+2026-11-13 22:34:39.350 FramePlay[3680:15301] [INF] Using Video Toolbox to decode 'h264'
+2026-11-13 22:34:39.350 FramePlay[3680:15301] [DBG] using video decoder module "videotoolbox"
+2026-11-13 22:34:40.297 FramePlay[3680:15654] [WARN] no vout found, dropping subpicture
+2026-11-13 22:34:40.297 FramePlay[3680:15654] [WARN] can't get output subpicture
+2026-11-13 22:34:47.810 FramePlay[3680:15654] [WARN] no vout found, dropping subpicture
+2026-11-13 22:34:47.811 FramePlay[3680:15654] [WARN] can't get output subpicture
+2026-11-13 22:34:49.059 FramePlay[3680:17617] [INF] vt cvpx chroma: 420v
+2026-11-13 22:34:49.059 FramePlay[3680:17617] [DBG] looking for text renderer module matching "freetype": 6 candidates
+2026-11-13 22:34:49.065 FramePlay[3680:17617] [DBG] using text renderer module "freetype"
+2026-11-13 22:34:49.065 FramePlay[3680:17617] [DBG] looking for video converter module matching "any": 32 candidates
+2026-11-13 22:34:49.065 FramePlay[3680:17617] [DBG] 32x32 (32x32) chroma: YUVA -> 16x16 (16x16) chroma: RGBA with scaling using Bicubic (good quality)
+2026-11-13 22:34:49.065 FramePlay[3680:17617] [DBG] using video converter module "swscale"
+2026-11-13 22:34:49.065 FramePlay[3680:17617] [DBG] looking for video converter module matching "any": 32 candidates
+2026-11-13 22:34:49.065 FramePlay[3680:17617] [DBG] YUVP to YUVA converter
+2026-11-13 22:34:49.065 FramePlay[3680:17617] [DBG] using video converter module "yuvp"
+2026-11-13 22:34:49.065 FramePlay[3680:17617] [DBG] Deinterlacing available
+2026-11-13 22:34:49.065 FramePlay[3680:17617] [DBG] deinterlace -1, mode auto, is_needed 0
+2026-11-13 22:34:49.065 FramePlay[3680:17617] [DBG] looking for vout window module matching "any": 0 candidates
+2026-11-13 22:34:49.066 FramePlay[3680:17617] [DBG] no vout window modules
+2026-11-13 22:34:49.066 FramePlay[3680:17618] [DBG] Opening vout display wrapper
+2026-11-13 22:34:49.066 FramePlay[3680:17618] [DBG] looking for vout display module matching "any": 14 candidates
+2026-11-13 22:34:49.066 FramePlay[3680:17618] [ERR] Failure to create CGL context!
+2026-11-13 22:34:49.066 FramePlay[3680:17618] [ERR] Failure to create CGL context!
+2026-11-13 22:34:49.066 FramePlay[3680:17618] [ERR] Initialization of open gl view failed
+2026-11-13 22:34:49.066 FramePlay[3680:17618] [ERR] Initialization of open gl view failed
+2026-11-13 22:34:49.066 FramePlay[3680:17618] [DBG] no vout display modules matched
+2026-11-13 22:34:49.066 FramePlay[3680:17617] [ERR] video output creation failed
+2026-11-13 22:34:49.066 FramePlay[3680:17617] [DBG] removing module "freetype"
+2026-11-13 22:34:49.066 FramePlay[3680:17617] [DBG] removing module "yuvp"
+2026-11-13 22:34:49.066 FramePlay[3680:17617] [DBG] removing module "swscale"
+2026-11-13 22:34:49.066 FramePlay[3680:17617] [ERR] failed to create video output
+2026-11-13 22:34:49.323 FramePlay[3680:15301] [WARN] Reloading the decoder module
+2026-11-13 22:34:49.323 FramePlay[3680:15301] [DBG] removing module "videotoolbox"
+2026-11-13 22:34:49.325 FramePlay[3680:15301] [DBG] looking for video decoder module matching "any": 26 candidates
+2026-11-13 22:34:49.325 FramePlay[3680:15301] [DBG] new SPS parsed: 0
+2026-11-13 22:34:49.325 FramePlay[3680:15301] [DBG] new PPS parsed: 0
+2026-11-13 22:34:49.325 FramePlay[3680:15301] [WARN] forcing CVPX format: 420v
+2026-11-13 22:34:49.329 FramePlay[3680:15301] [INF] Using Video Toolbox to decode 'h264'
+2026-11-13 22:34:49.329 FramePlay[3680:15301] [DBG] using video decoder module "videotoolbox"
+2026-11-13 22:34:55.089 FramePlay[3680:15654] [WARN] no vout found, dropping subpicture
+2026-11-13 22:34:55.089 FramePlay[3680:15654] [WARN] can't get output subpicture
+2026-11-13 22:34:59.068 FramePlay[3680:18119] [INF] vt cvpx chroma: 420v
+2026-11-13 22:34:59.068 FramePlay[3680:18119] [DBG] looking for text renderer module matching "freetype": 6 candidates
+2026-11-13 22:34:59.073 FramePlay[3680:18119] [DBG] using text renderer module "freetype"
+2026-11-13 22:34:59.073 FramePlay[3680:18119] [DBG] looking for video converter module matching "any": 32 candidates
+2026-11-13 22:34:59.073 FramePlay[3680:18119] [DBG] 32x32 (32x32) chroma: YUVA -> 16x16 (16x16) chroma: RGBA with scaling using Bicubic (good quality)
+2026-11-13 22:34:59.073 FramePlay[3680:18119] [DBG] using video converter module "swscale"
+2026-11-13 22:34:59.073 FramePlay[3680:18119] [DBG] looking for video converter module matching "any": 32 candidates
+2026-11-13 22:34:59.073 FramePlay[3680:18119] [DBG] YUVP to YUVA converter
+2026-11-13 22:34:59.073 FramePlay[3680:18119] [DBG] using video converter module "yuvp"
+2026-11-13 22:34:59.073 FramePlay[3680:18119] [DBG] Deinterlacing available
+2026-11-13 22:34:59.073 FramePlay[3680:18119] [DBG] deinterlace -1, mode auto, is_needed 0
+2026-11-13 22:34:59.073 FramePlay[3680:18119] [DBG] looking for vout window module matching "any": 0 candidates
+2026-11-13 22:34:59.073 FramePlay[3680:18119] [DBG] no vout window modules
+2026-11-13 22:34:59.073 FramePlay[3680:18122] [DBG] Opening vout display wrapper
+2026-11-13 22:34:59.073 FramePlay[3680:18122] [DBG] looking for vout display module matching "any": 14 candidates
+2026-11-13 22:34:59.073 FramePlay[3680:18122] [ERR] Failure to create CGL context!
+2026-11-13 22:34:59.073 FramePlay[3680:18122] [ERR] Failure to create CGL context!
+2026-11-13 22:34:59.074 FramePlay[3680:18122] [ERR] Initialization of open gl view failed
+2026-11-13 22:34:59.074 FramePlay[3680:18122] [ERR] Initialization of open gl view failed
+2026-11-13 22:34:59.074 FramePlay[3680:18122] [DBG] no vout display modules matched
+2026-11-13 22:34:59.074 FramePlay[3680:18119] [ERR] video output creation failed
+2026-11-13 22:34:59.074 FramePlay[3680:18119] [DBG] removing module "freetype"
+2026-11-13 22:34:59.075 FramePlay[3680:18119] [DBG] removing module "yuvp"
+2026-11-13 22:34:59.075 FramePlay[3680:18119] [DBG] removing module "swscale"
+2026-11-13 22:34:59.075 FramePlay[3680:18119] [ERR] failed to create video output
+2026-11-13 22:34:59.325 FramePlay[3680:15301] [WARN] Reloading the decoder module
+2026-11-13 22:34:59.325 FramePlay[3680:15301] [DBG] removing module "videotoolbox"
+2026-11-13 22:34:59.330 FramePlay[3680:15301] [DBG] looking for video decoder module matching "any": 26 candidates
+2026-11-13 22:34:59.330 FramePlay[3680:15301] [DBG] new SPS parsed: 0
+2026-11-13 22:34:59.330 FramePlay[3680:15301] [DBG] new PPS parsed: 0
+2026-11-13 22:34:59.330 FramePlay[3680:15301] [WARN] forcing CVPX format: 420v
+2026-11-13 22:34:59.335 FramePlay[3680:15301] [INF] Using Video Toolbox to decode 'h264'
+2026-11-13 22:34:59.335 FramePlay[3680:15301] [DBG] using video decoder module "videotoolbox"
+2026-11-13 22:35:02.236 FramePlay[3680:15654] [WARN] no vout found, dropping subpicture
+2026-11-13 22:35:02.236 FramePlay[3680:15654] [WARN] can't get output subpicture
+2026-11-13 22:35:09.055 FramePlay[3680:18708] [INF] vt cvpx chroma: 420v
+2026-11-13 22:35:09.056 FramePlay[3680:18708] [DBG] looking for text renderer module matching "freetype": 6 candidates
+2026-11-13 22:35:09.063 FramePlay[3680:18708] [DBG] using text renderer module "freetype"
+2026-11-13 22:35:09.063 FramePlay[3680:18708] [DBG] looking for video converter module matching "any": 32 candidates
+2026-11-13 22:35:09.063 FramePlay[3680:18708] [DBG] 32x32 (32x32) chroma: YUVA -> 16x16 (16x16) chroma: RGBA with scaling using Bicubic (good quality)
+2026-11-13 22:35:09.063 FramePlay[3680:18708] [DBG] using video converter module "swscale"
+2026-11-13 22:35:09.063 FramePlay[3680:18708] [DBG] looking for video converter module matching "any": 32 candidates
+2026-11-13 22:35:09.063 FramePlay[3680:18708] [DBG] YUVP to YUVA converter
+2026-11-13 22:35:09.063 FramePlay[3680:18708] [DBG] using video converter module "yuvp"
+2026-11-13 22:35:09.063 FramePlay[3680:18708] [DBG] Deinterlacing available
+2026-11-13 22:35:09.063 FramePlay[3680:18708] [DBG] deinterlace -1, mode auto, is_needed 0
+2026-11-13 22:35:09.064 FramePlay[3680:18708] [DBG] looking for vout window module matching "any": 0 candidates
+2026-11-13 22:35:09.064 FramePlay[3680:18708] [DBG] no vout window modules
+2026-11-13 22:35:09.064 FramePlay[3680:18709] [DBG] Opening vout display wrapper
+2026-11-13 22:35:09.064 FramePlay[3680:18709] [DBG] looking for vout display module matching "any": 14 candidates
+2026-11-13 22:35:09.064 FramePlay[3680:18709] [ERR] Failure to create CGL context!
+2026-11-13 22:35:09.064 FramePlay[3680:18709] [ERR] Failure to create CGL context!
+2026-11-13 22:35:09.064 FramePlay[3680:18709] [ERR] Initialization of open gl view failed
+2026-11-13 22:35:09.064 FramePlay[3680:18709] [ERR] Initialization of open gl view failed
+2026-11-13 22:35:09.064 FramePlay[3680:18709] [DBG] no vout display modules matched
+2026-11-13 22:35:09.064 FramePlay[3680:18708] [ERR] video output creation failed
+2026-11-13 22:35:09.064 FramePlay[3680:18708] [DBG] removing module "freetype"
+2026-11-13 22:35:09.064 FramePlay[3680:18708] [DBG] removing module "yuvp"
+2026-11-13 22:35:09.064 FramePlay[3680:18708] [DBG] removing module "swscale"
+2026-11-13 22:35:09.065 FramePlay[3680:18708] [ERR] failed to create video output
+2026-11-13 22:35:09.300 FramePlay[3680:15301] [WARN] Reloading the decoder module
+2026-11-13 22:35:09.301 FramePlay[3680:15301] [DBG] removing module "videotoolbox"
+2026-11-13 22:35:09.304 FramePlay[3680:15301] [DBG] looking for video decoder module matching "any": 26 candidates
+2026-11-13 22:35:09.304 FramePlay[3680:15301] [DBG] new SPS parsed: 0
+2026-11-13 22:35:09.304 FramePlay[3680:15301] [DBG] new PPS parsed: 0
+2026-11-13 22:35:09.304 FramePlay[3680:15301] [WARN] forcing CVPX format: 420v
+2026-11-13 22:35:09.308 FramePlay[3680:15301] [INF] Using Video Toolbox to decode 'h264'
+2026-11-13 22:35:09.308 FramePlay[3680:15301] [DBG] using video decoder module "videotoolbox"
+2026-11-13 22:35:09.604 FramePlay[3680:15654] [WARN] no vout found, dropping subpicture
+2026-11-13 22:35:09.604 FramePlay[3680:15654] [WARN] can't get output subpicture
+2026-11-13 22:35:10.428 FramePlay[3680:15284] [DBG] pausing
+2026-11-13 22:35:10.429 FramePlay[3680:15301] [DBG] toggling resume
+2026-11-13 22:35:10.476 FramePlay[3680:15302] [DBG] toggling resume
+2026-11-13 22:35:16.829 FramePlay[3680:15654] [WARN] no vout found, dropping subpicture
+2026-11-13 22:35:16.829 FramePlay[3680:15654] [WARN] can't get output subpicture
+2026-11-13 22:35:16.829 FramePlay[3680:15654] [DBG] toggling resume
+2026-11-13 22:35:18.877 FramePlay[3680:15284] [DBG] resuming
+2026-11-13 22:35:18.877 FramePlay[3680:15301] [DBG] toggling pause
+2026-11-13 22:35:18.877 FramePlay[3680:15302] [DBG] toggling pause
+2026-11-13 22:35:18.877 FramePlay[3680:15654] [DBG] toggling pause
+2026-11-13 22:35:18.967 FramePlay[3680:15302] [WARN] playback too early (-56608): down-sampling
+2026-11-13 22:35:26.178 FramePlay[3680:15654] [WARN] no vout found, dropping subpicture
+2026-11-13 22:35:26.179 FramePlay[3680:15654] [WARN] can't get output subpicture
+2026-11-13 22:35:27.539 FramePlay[3680:19972] [INF] vt cvpx chroma: 420v
+2026-11-13 22:35:27.540 FramePlay[3680:19972] [DBG] looking for text renderer module matching "freetype": 6 candidates
+2026-11-13 22:35:27.551 FramePlay[3680:19972] [DBG] using text renderer module "freetype"
+2026-11-13 22:35:27.551 FramePlay[3680:19972] [DBG] looking for video converter module matching "any": 32 candidates
+2026-11-13 22:35:27.552 FramePlay[3680:19972] [DBG] 32x32 (32x32) chroma: YUVA -> 16x16 (16x16) chroma: RGBA with scaling using Bicubic (good quality)
+2026-11-13 22:35:27.552 FramePlay[3680:19972] [DBG] using video converter module "swscale"
+2026-11-13 22:35:27.552 FramePlay[3680:19972] [DBG] looking for video converter module matching "any": 32 candidates
+2026-11-13 22:35:27.552 FramePlay[3680:19972] [DBG] YUVP to YUVA converter
+2026-11-13 22:35:27.552 FramePlay[3680:19972] [DBG] using video converter module "yuvp"
+2026-11-13 22:35:27.552 FramePlay[3680:19972] [DBG] Deinterlacing available
+2026-11-13 22:35:27.552 FramePlay[3680:19972] [DBG] deinterlace -1, mode auto, is_needed 0
+2026-11-13 22:35:27.552 FramePlay[3680:19972] [DBG] looking for vout window module matching "any": 0 candidates
+2026-11-13 22:35:27.552 FramePlay[3680:19972] [DBG] no vout window modules
+2026-11-13 22:35:27.552 FramePlay[3680:19973] [DBG] Opening vout display wrapper
+2026-11-13 22:35:27.552 FramePlay[3680:19973] [DBG] looking for vout display module matching "any": 14 candidates
+2026-11-13 22:35:27.552 FramePlay[3680:19973] [ERR] Failure to create CGL context!
+2026-11-13 22:35:27.552 FramePlay[3680:19973] [ERR] Failure to create CGL context!
+2026-11-13 22:35:27.554 FramePlay[3680:19973] [ERR] Initialization of open gl view failed
+2026-11-13 22:35:27.554 FramePlay[3680:19973] [ERR] Initialization of open gl view failed
+2026-11-13 22:35:27.554 FramePlay[3680:19973] [DBG] no vout display modules matched
+2026-11-13 22:35:27.554 FramePlay[3680:19972] [ERR] video output creation failed
+2026-11-13 22:35:27.554 FramePlay[3680:19972] [DBG] removing module "freetype"
+2026-11-13 22:35:27.554 FramePlay[3680:19972] [DBG] removing module "yuvp"
+2026-11-13 22:35:27.554 FramePlay[3680:19972] [DBG] removing module "swscale"
+2026-11-13 22:35:27.554 FramePlay[3680:19972] [ERR] failed to create video output
+2026-11-13 22:35:27.800 FramePlay[3680:15301] [WARN] Reloading the decoder module
+2026-11-13 22:35:27.800 FramePlay[3680:15301] [DBG] removing module "videotoolbox"
+2026-11-13 22:35:27.803 FramePlay[3680:15301] [DBG] looking for video decoder module matching "any": 26 candidates
+2026-11-13 22:35:27.804 FramePlay[3680:15301] [DBG] new SPS parsed: 0
+2026-11-13 22:35:27.804 FramePlay[3680:15301] [DBG] new PPS parsed: 0
+2026-11-13 22:35:27.804 FramePlay[3680:15301] [WARN] forcing CVPX format: 420v
+2026-11-13 22:35:27.808 FramePlay[3680:15301] [INF] Using Video Toolbox to decode 'h264'
+2026-11-13 22:35:27.809 FramePlay[3680:15301] [DBG] using video decoder module "videotoolbox"
+2026-11-13 22:35:30.627 FramePlay[3680:15302] [DBG] resampling stopped (drift: 5891 us)
+2026-11-13 22:35:33.284 FramePlay[3680:15654] [WARN] no vout found, dropping subpicture
+2026-11-13 22:35:33.284 FramePlay[3680:15654] [WARN] can't get output subpicture
+2026-11-13 22:35:37.581 FramePlay[3680:20411] [INF] vt cvpx chroma: 420v
+2026-11-13 22:35:37.581 FramePlay[3680:20411] [DBG] looking for text renderer module matching "freetype": 6 candidates
+2026-11-13 22:35:37.587 FramePlay[3680:20411] [DBG] using text renderer module "freetype"
+2026-11-13 22:35:37.587 FramePlay[3680:20411] [DBG] looking for video converter module matching "any": 32 candidates
+2026-11-13 22:35:37.587 FramePlay[3680:20411] [DBG] 32x32 (32x32) chroma: YUVA -> 16x16 (16x16) chroma: RGBA with scaling using Bicubic (good quality)
+2026-11-13 22:35:37.587 FramePlay[3680:20411] [DBG] using video converter module "swscale"
+2026-11-13 22:35:37.588 FramePlay[3680:20411] [DBG] looking for video converter module matching "any": 32 candidates
+2026-11-13 22:35:37.588 FramePlay[3680:20411] [DBG] YUVP to YUVA converter
+2026-11-13 22:35:37.588 FramePlay[3680:20411] [DBG] using video converter module "yuvp"
+2026-11-13 22:35:37.588 FramePlay[3680:20411] [DBG] Deinterlacing available
+2026-11-13 22:35:37.588 FramePlay[3680:20411] [DBG] deinterlace -1, mode auto, is_needed 0
+2026-11-13 22:35:37.588 FramePlay[3680:20411] [DBG] looking for vout window module matching "any": 0 candidates
+2026-11-13 22:35:37.588 FramePlay[3680:20411] [DBG] no vout window modules
+2026-11-13 22:35:37.588 FramePlay[3680:20412] [DBG] Opening vout display wrapper
+2026-11-13 22:35:37.588 FramePlay[3680:20412] [DBG] looking for vout display module matching "any": 14 candidates
+2026-11-13 22:35:37.588 FramePlay[3680:20412] [ERR] Failure to create CGL context!
+2026-11-13 22:35:37.588 FramePlay[3680:20412] [ERR] Failure to create CGL context!
+2026-11-13 22:35:37.588 FramePlay[3680:20412] [ERR] Initialization of open gl view failed
+2026-11-13 22:35:37.588 FramePlay[3680:20412] [ERR] Initialization of open gl view failed
+2026-11-13 22:35:37.588 FramePlay[3680:20412] [DBG] no vout display modules matched
+2026-11-13 22:35:37.588 FramePlay[3680:20411] [ERR] video output creation failed
+2026-11-13 22:35:37.588 FramePlay[3680:20411] [DBG] removing module "freetype"
+2026-11-13 22:35:37.588 FramePlay[3680:20411] [DBG] removing module "yuvp"
+2026-11-13 22:35:37.588 FramePlay[3680:20411] [DBG] removing module "swscale"
+2026-11-13 22:35:37.588 FramePlay[3680:20411] [ERR] failed to create video output
+2026-11-13 22:35:37.738 FramePlay[3680:15301] [WARN] Reloading the decoder module
+2026-11-13 22:35:37.738 FramePlay[3680:15301] [DBG] removing module "videotoolbox"
+2026-11-13 22:35:37.741 FramePlay[3680:15301] [DBG] looking for video decoder module matching "any": 26 candidates
+2026-11-13 22:35:37.741 FramePlay[3680:15301] [DBG] new SPS parsed: 0
+2026-11-13 22:35:37.741 FramePlay[3680:15301] [DBG] new PPS parsed: 0
+2026-11-13 22:35:37.741 FramePlay[3680:15301] [WARN] forcing CVPX format: 420v
+2026-11-13 22:35:37.746 FramePlay[3680:15301] [INF] Using Video Toolbox to decode 'h264'
+2026-11-13 22:35:37.746 FramePlay[3680:15301] [DBG] using video decoder module "videotoolbox"
+2026-11-13 22:35:40.394 FramePlay[3680:15654] [WARN] no vout found, dropping subpicture
+2026-11-13 22:35:40.395 FramePlay[3680:15654] [WARN] can't get output subpicture
+2026-11-13 22:35:47.509 FramePlay[3680:21198] [INF] vt cvpx chroma: 420v
+2026-11-13 22:35:47.511 FramePlay[3680:21198] [DBG] looking for text renderer module matching "freetype": 6 candidates
+2026-11-13 22:35:47.519 FramePlay[3680:21198] [DBG] using text renderer module "freetype"
+2026-11-13 22:35:47.519 FramePlay[3680:21198] [DBG] looking for video converter module matching "any": 32 candidates
+2026-11-13 22:35:47.519 FramePlay[3680:21198] [DBG] 32x32 (32x32) chroma: YUVA -> 16x16 (16x16) chroma: RGBA with scaling using Bicubic (good quality)
+2026-11-13 22:35:47.519 FramePlay[3680:21198] [DBG] using video converter module "swscale"
+2026-11-13 22:35:47.519 FramePlay[3680:21198] [DBG] looking for video converter module matching "any": 32 candidates
+2026-11-13 22:35:47.519 FramePlay[3680:21198] [DBG] YUVP to YUVA converter
+2026-11-13 22:35:47.519 FramePlay[3680:21198] [DBG] using video converter module "yuvp"
+2026-11-13 22:35:47.519 FramePlay[3680:21198] [DBG] Deinterlacing available
+2026-11-13 22:35:47.519 FramePlay[3680:21198] [DBG] deinterlace -1, mode auto, is_needed 0
+2026-11-13 22:35:47.519 FramePlay[3680:21198] [DBG] looking for vout window module matching "any": 0 candidates
+2026-11-13 22:35:47.519 FramePlay[3680:21198] [DBG] no vout window modules
+2026-11-13 22:35:47.519 FramePlay[3680:21201] [DBG] Opening vout display wrapper
+2026-11-13 22:35:47.519 FramePlay[3680:21201] [DBG] looking for vout display module matching "any": 14 candidates
+2026-11-13 22:35:47.519 FramePlay[3680:21201] [ERR] Failure to create CGL context!
+2026-11-13 22:35:47.519 FramePlay[3680:21201] [ERR] Failure to create CGL context!
+2026-11-13 22:35:47.520 FramePlay[3680:21201] [ERR] Initialization of open gl view failed
+2026-11-13 22:35:47.520 FramePlay[3680:21201] [ERR] Initialization of open gl view failed
+2026-11-13 22:35:47.520 FramePlay[3680:21201] [DBG] no vout display modules matched
+2026-11-13 22:35:47.520 FramePlay[3680:21198] [ERR] video output creation failed
+2026-11-13 22:35:47.520 FramePlay[3680:21198] [DBG] removing module "freetype"
+2026-11-13 22:35:47.520 FramePlay[3680:21198] [DBG] removing module "yuvp"
+2026-11-13 22:35:47.520 FramePlay[3680:21198] [DBG] removing module "swscale"
+2026-11-13 22:35:47.520 FramePlay[3680:21198] [ERR] failed to create video output
+2026-11-13 22:35:47.682 FramePlay[3680:15654] [WARN] no vout found, dropping subpicture
+2026-11-13 22:35:47.682 FramePlay[3680:15654] [WARN] can't get output subpicture
+2026-11-13 22:35:47.763 FramePlay[3680:15301] [WARN] Reloading the decoder module
+2026-11-13 22:35:47.763 FramePlay[3680:15301] [DBG] removing module "videotoolbox"
+2026-11-13 22:35:47.766 FramePlay[3680:15301] [DBG] looking for video decoder module matching "any": 26 candidates
+2026-11-13 22:35:47.767 FramePlay[3680:15301] [DBG] new SPS parsed: 0
+2026-11-13 22:35:47.767 FramePlay[3680:15301] [DBG] new PPS parsed: 0
+2026-11-13 22:35:47.767 FramePlay[3680:15301] [WARN] forcing CVPX format: 420v
+2026-11-13 22:35:47.772 FramePlay[3680:15301] [INF] Using Video Toolbox to decode 'h264'
+2026-11-13 22:35:47.772 FramePlay[3680:15301] [DBG] using video decoder module "videotoolbox"
+2026-11-13 22:35:55.157 FramePlay[3680:15654] [WARN] no vout found, dropping subpicture
+2026-11-13 22:35:55.157 FramePlay[3680:15654] [WARN] can't get output subpicture
+2026-11-13 22:35:57.582 FramePlay[3680:21634] [INF] vt cvpx chroma: 420v
+2026-11-13 22:35:57.583 FramePlay[3680:21634] [DBG] looking for text renderer module matching "freetype": 6 candidates
+2026-11-13 22:35:57.590 FramePlay[3680:21634] [DBG] using text renderer module "freetype"
+2026-11-13 22:35:57.590 FramePlay[3680:21634] [DBG] looking for video converter module matching "any": 32 candidates
+2026-11-13 22:35:57.590 FramePlay[3680:21634] [DBG] 32x32 (32x32) chroma: YUVA -> 16x16 (16x16) chroma: RGBA with scaling using Bicubic (good quality)
+2026-11-13 22:35:57.590 FramePlay[3680:21634] [DBG] using video converter module "swscale"
+2026-11-13 22:35:57.590 FramePlay[3680:21634] [DBG] looking for video converter module matching "any": 32 candidates
+2026-11-13 22:35:57.590 FramePlay[3680:21634] [DBG] YUVP to YUVA converter
+2026-11-13 22:35:57.590 FramePlay[3680:21634] [DBG] using video converter module "yuvp"
+2026-11-13 22:35:57.590 FramePlay[3680:21634] [DBG] Deinterlacing available
+2026-11-13 22:35:57.590 FramePlay[3680:21634] [DBG] deinterlace -1, mode auto, is_needed 0
+2026-11-13 22:35:57.590 FramePlay[3680:21634] [DBG] looking for vout window module matching "any": 0 candidates
+2026-11-13 22:35:57.590 FramePlay[3680:21634] [DBG] no vout window modules
+2026-11-13 22:35:57.590 FramePlay[3680:21635] [DBG] Opening vout display wrapper
+2026-11-13 22:35:57.590 FramePlay[3680:21635] [DBG] looking for vout display module matching "any": 14 candidates
+2026-11-13 22:35:57.590 FramePlay[3680:21635] [ERR] Failure to create CGL context!
+2026-11-13 22:35:57.590 FramePlay[3680:21635] [ERR] Failure to create CGL context!
+2026-11-13 22:35:57.590 FramePlay[3680:21635] [ERR] Initialization of open gl view failed
+2026-11-13 22:35:57.590 FramePlay[3680:21635] [ERR] Initialization of open gl view failed
+2026-11-13 22:35:57.590 FramePlay[3680:21635] [DBG] no vout display modules matched
+2026-11-13 22:35:57.590 FramePlay[3680:21634] [ERR] video output creation failed
+2026-11-13 22:35:57.590 FramePlay[3680:21634] [DBG] removing module "freetype"
+2026-11-13 22:35:57.590 FramePlay[3680:21634] [DBG] removing module "yuvp"
+2026-11-13 22:35:57.591 FramePlay[3680:21634] [DBG] removing module "swscale"
+2026-11-13 22:35:57.591 FramePlay[3680:21634] [ERR] failed to create video output
+2026-11-13 22:35:57.786 FramePlay[3680:15301] [WARN] Reloading the decoder module
+2026-11-13 22:35:57.786 FramePlay[3680:15301] [DBG] removing module "videotoolbox"
+2026-11-13 22:35:57.792 FramePlay[3680:15301] [DBG] looking for video decoder module matching "any": 26 candidates
+2026-11-13 22:35:57.792 FramePlay[3680:15301] [DBG] new SPS parsed: 0
+2026-11-13 22:35:57.792 FramePlay[3680:15301] [DBG] new PPS parsed: 0
+2026-11-13 22:35:57.792 FramePlay[3680:15301] [WARN] forcing CVPX format: 420v
+2026-11-13 22:35:57.799 FramePlay[3680:15301] [INF] Using Video Toolbox to decode 'h264'
+2026-11-13 22:35:57.799 FramePlay[3680:15301] [DBG] using video decoder module "videotoolbox"
+2026-11-13 22:36:02.121 FramePlay[3680:15654] [WARN] no vout found, dropping subpicture
+2026-11-13 22:36:02.121 FramePlay[3680:15654] [WARN] can't get output subpicture
+2026-11-13 22:36:07.580 FramePlay[3680:21882] [INF] vt cvpx chroma: 420v
+2026-11-13 22:36:07.580 FramePlay[3680:21882] [DBG] looking for text renderer module matching "freetype": 6 candidates
+2026-11-13 22:36:07.589 FramePlay[3680:21882] [DBG] using text renderer module "freetype"
+2026-11-13 22:36:07.589 FramePlay[3680:21882] [DBG] looking for video converter module matching "any": 32 candidates
+2026-11-13 22:36:07.589 FramePlay[3680:21882] [DBG] 32x32 (32x32) chroma: YUVA -> 16x16 (16x16) chroma: RGBA with scaling using Bicubic (good quality)
+2026-11-13 22:36:07.589 FramePlay[3680:21882] [DBG] using video converter module "swscale"
+2026-11-13 22:36:07.589 FramePlay[3680:21882] [DBG] looking for video converter module matching "any": 32 candidates
+2026-11-13 22:36:07.589 FramePlay[3680:21882] [DBG] YUVP to YUVA converter
+2026-11-13 22:36:07.589 FramePlay[3680:21882] [DBG] using video converter module "yuvp"
+2026-11-13 22:36:07.589 FramePlay[3680:21882] [DBG] Deinterlacing available
+2026-11-13 22:36:07.589 FramePlay[3680:21882] [DBG] deinterlace -1, mode auto, is_needed 0
+2026-11-13 22:36:07.589 FramePlay[3680:21882] [DBG] looking for vout window module matching "any": 0 candidates
+2026-11-13 22:36:07.589 FramePlay[3680:21882] [DBG] no vout window modules
+2026-11-13 22:36:07.590 FramePlay[3680:21892] [DBG] Opening vout display wrapper
+2026-11-13 22:36:07.590 FramePlay[3680:21892] [DBG] looking for vout display module matching "any": 14 candidates
+2026-11-13 22:36:07.590 FramePlay[3680:21892] [ERR] Failure to create CGL context!
+2026-11-13 22:36:07.590 FramePlay[3680:21892] [ERR] Failure to create CGL context!
+2026-11-13 22:36:07.590 FramePlay[3680:21892] [ERR] Initialization of open gl view failed
+2026-11-13 22:36:07.590 FramePlay[3680:21892] [ERR] Initialization of open gl view failed
+2026-11-13 22:36:07.590 FramePlay[3680:21892] [DBG] no vout display modules matched
+2026-11-13 22:36:07.590 FramePlay[3680:21882] [ERR] video output creation failed
+2026-11-13 22:36:07.590 FramePlay[3680:21882] [DBG] removing module "freetype"
+2026-11-13 22:36:07.590 FramePlay[3680:21882] [DBG] removing module "yuvp"
+2026-11-13 22:36:07.590 FramePlay[3680:21882] [DBG] removing module "swscale"
+2026-11-13 22:36:07.590 FramePlay[3680:21882] [ERR] failed to create video output
+2026-11-13 22:36:07.745 FramePlay[3680:15301] [WARN] Reloading the decoder module
+2026-11-13 22:36:07.746 FramePlay[3680:15301] [DBG] removing module "videotoolbox"
+2026-11-13 22:36:07.748 FramePlay[3680:15301] [DBG] looking for video decoder module matching "any": 26 candidates
+2026-11-13 22:36:07.748 FramePlay[3680:15301] [DBG] new SPS parsed: 0
+2026-11-13 22:36:07.748 FramePlay[3680:15301] [DBG] new PPS parsed: 0
+2026-11-13 22:36:07.748 FramePlay[3680:15301] [WARN] forcing CVPX format: 420v
+2026-11-13 22:36:07.752 FramePlay[3680:15301] [INF] Using Video Toolbox to decode 'h264'
+2026-11-13 22:36:07.752 FramePlay[3680:15301] [DBG] using video decoder module "videotoolbox"
+2026-11-13 22:36:09.496 FramePlay[3680:15654] [WARN] no vout found, dropping subpicture
+2026-11-13 22:36:09.496 FramePlay[3680:15654] [WARN] can't get output subpicture
+2026-11-13 22:36:16.980 FramePlay[3680:15654] [WARN] no vout found, dropping subpicture
+2026-11-13 22:36:16.980 FramePlay[3680:15654] [WARN] can't get output subpicture
+2026-11-13 22:36:17.588 FramePlay[3680:22177] [INF] vt cvpx chroma: 420v
+2026-11-13 22:36:17.589 FramePlay[3680:22177] [DBG] looking for text renderer module matching "freetype": 6 candidates
+2026-11-13 22:36:17.594 FramePlay[3680:22177] [DBG] using text renderer module "freetype"
+2026-11-13 22:36:17.594 FramePlay[3680:22177] [DBG] looking for video converter module matching "any": 32 candidates
+2026-11-13 22:36:17.594 FramePlay[3680:22177] [DBG] 32x32 (32x32) chroma: YUVA -> 16x16 (16x16) chroma: RGBA with scaling using Bicubic (good quality)
+2026-11-13 22:36:17.595 FramePlay[3680:22177] [DBG] using video converter module "swscale"
+2026-11-13 22:36:17.595 FramePlay[3680:22177] [DBG] looking for video converter module matching "any": 32 candidates
+2026-11-13 22:36:17.595 FramePlay[3680:22177] [DBG] YUVP to YUVA converter
+2026-11-13 22:36:17.595 FramePlay[3680:22177] [DBG] using video converter module "yuvp"
+2026-11-13 22:36:17.595 FramePlay[3680:22177] [DBG] Deinterlacing available
+2026-11-13 22:36:17.595 FramePlay[3680:22177] [DBG] deinterlace -1, mode auto, is_needed 0
+2026-11-13 22:36:17.595 FramePlay[3680:22177] [DBG] looking for vout window module matching "any": 0 candidates
+2026-11-13 22:36:17.595 FramePlay[3680:22177] [DBG] no vout window modules
+2026-11-13 22:36:17.595 FramePlay[3680:22178] [DBG] Opening vout display wrapper
+2026-11-13 22:36:17.595 FramePlay[3680:22178] [DBG] looking for vout display module matching "any": 14 candidates
+2026-11-13 22:36:17.595 FramePlay[3680:22178] [ERR] Failure to create CGL context!
+2026-11-13 22:36:17.595 FramePlay[3680:22178] [ERR] Failure to create CGL context!
+2026-11-13 22:36:17.595 FramePlay[3680:22178] [ERR] Initialization of open gl view failed
+2026-11-13 22:36:17.595 FramePlay[3680:22178] [ERR] Initialization of open gl view failed
+2026-11-13 22:36:17.595 FramePlay[3680:22178] [DBG] no vout display modules matched
+2026-11-13 22:36:17.595 FramePlay[3680:22177] [ERR] video output creation failed
+2026-11-13 22:36:17.595 FramePlay[3680:22177] [DBG] removing module "freetype"
+2026-11-13 22:36:17.595 FramePlay[3680:22177] [DBG] removing module "yuvp"
+2026-11-13 22:36:17.595 FramePlay[3680:22177] [DBG] removing module "swscale"
+2026-11-13 22:36:17.595 FramePlay[3680:22177] [ERR] failed to create video output
+2026-11-13 22:36:17.801 FramePlay[3680:15301] [WARN] Reloading the decoder module
+2026-11-13 22:36:17.801 FramePlay[3680:15301] [DBG] removing module "videotoolbox"
+2026-11-13 22:36:17.807 FramePlay[3680:15301] [DBG] looking for video decoder module matching "any": 26 candidates
+2026-11-13 22:36:17.807 FramePlay[3680:15301] [DBG] new SPS parsed: 0
+2026-11-13 22:36:17.807 FramePlay[3680:15301] [DBG] new PPS parsed: 0
+2026-11-13 22:36:17.807 FramePlay[3680:15301] [WARN] forcing CVPX format: 420v
+2026-11-13 22:36:17.814 FramePlay[3680:15301] [INF] Using Video Toolbox to decode 'h264'
+2026-11-13 22:36:17.814 FramePlay[3680:15301] [DBG] using video decoder module "videotoolbox"
+2026-11-13 22:36:24.385 FramePlay[3680:15654] [WARN] no vout found, dropping subpicture
+2026-11-13 22:36:24.385 FramePlay[3680:15654] [WARN] can't get output subpicture
+2026-11-13 22:36:27.570 FramePlay[3680:22827] [INF] vt cvpx chroma: 420v
+2026-11-13 22:36:27.578 FramePlay[3680:22827] [DBG] looking for text renderer module matching "freetype": 6 candidates
+2026-11-13 22:36:27.610 FramePlay[3680:22827] [DBG] using text renderer module "freetype"
+2026-11-13 22:36:27.610 FramePlay[3680:22827] [DBG] looking for video converter module matching "any": 32 candidates
+2026-11-13 22:36:27.611 FramePlay[3680:22827] [DBG] 32x32 (32x32) chroma: YUVA -> 16x16 (16x16) chroma: RGBA with scaling using Bicubic (good quality)
+2026-11-13 22:36:27.611 FramePlay[3680:22827] [DBG] using video converter module "swscale"
+2026-11-13 22:36:27.611 FramePlay[3680:22827] [DBG] looking for video converter module matching "any": 32 candidates
+2026-11-13 22:36:27.611 FramePlay[3680:22827] [DBG] YUVP to YUVA converter
+2026-11-13 22:36:27.611 FramePlay[3680:22827] [DBG] using video converter module "yuvp"
+2026-11-13 22:36:27.611 FramePlay[3680:22827] [DBG] Deinterlacing available
+2026-11-13 22:36:27.611 FramePlay[3680:22827] [DBG] deinterlace -1, mode auto, is_needed 0
+2026-11-13 22:36:27.611 FramePlay[3680:22827] [DBG] looking for vout window module matching "any": 0 candidates
+2026-11-13 22:36:27.611 FramePlay[3680:22827] [DBG] no vout window modules
+2026-11-13 22:36:27.611 FramePlay[3680:22832] [DBG] Opening vout display wrapper
+2026-11-13 22:36:27.612 FramePlay[3680:22832] [DBG] looking for vout display module matching "any": 14 candidates
+2026-11-13 22:36:27.612 FramePlay[3680:22832] [ERR] Failure to create CGL context!
+2026-11-13 22:36:27.612 FramePlay[3680:22832] [ERR] Failure to create CGL context!
+2026-11-13 22:36:27.637 FramePlay[3680:22832] [ERR] Initialization of open gl view failed
+2026-11-13 22:36:27.638 FramePlay[3680:22832] [ERR] Initialization of open gl view failed
+2026-11-13 22:36:27.638 FramePlay[3680:22832] [DBG] no vout display modules matched
+2026-11-13 22:36:27.639 FramePlay[3680:22827] [ERR] video output creation failed
+2026-11-13 22:36:27.639 FramePlay[3680:22827] [DBG] removing module "freetype"
+2026-11-13 22:36:27.639 FramePlay[3680:22827] [DBG] removing module "yuvp"
+2026-11-13 22:36:27.639 FramePlay[3680:22827] [DBG] removing module "swscale"
+2026-11-13 22:36:27.639 FramePlay[3680:22827] [ERR] failed to create video output
+2026-11-13 22:36:27.801 FramePlay[3680:15301] [WARN] Reloading the decoder module
+2026-11-13 22:36:27.801 FramePlay[3680:15301] [DBG] removing module "videotoolbox"
+2026-11-13 22:36:27.807 FramePlay[3680:15301] [DBG] looking for video decoder module matching "any": 26 candidates
+2026-11-13 22:36:27.807 FramePlay[3680:15301] [DBG] new SPS parsed: 0
+2026-11-13 22:36:27.807 FramePlay[3680:15301] [DBG] new PPS parsed: 0
+2026-11-13 22:36:27.807 FramePlay[3680:15301] [WARN] forcing CVPX format: 420v
+2026-11-13 22:36:27.811 FramePlay[3680:15301] [INF] Using Video Toolbox to decode 'h264'
+2026-11-13 22:36:27.811 FramePlay[3680:15301] [DBG] using video decoder module "videotoolbox"
+2026-11-13 22:36:31.554 FramePlay[3680:15654] [WARN] no vout found, dropping subpicture
+2026-11-13 22:36:31.554 FramePlay[3680:15654] [WARN] can't get output subpicture
+2026-11-13 22:36:37.518 FramePlay[3680:23212] [INF] vt cvpx chroma: 420v
+2026-11-13 22:36:37.518 FramePlay[3680:23212] [DBG] looking for text renderer module matching "freetype": 6 candidates
+2026-11-13 22:36:37.525 FramePlay[3680:23212] [DBG] using text renderer module "freetype"
+2026-11-13 22:36:37.525 FramePlay[3680:23212] [DBG] looking for video converter module matching "any": 32 candidates
+2026-11-13 22:36:37.525 FramePlay[3680:23212] [DBG] 32x32 (32x32) chroma: YUVA -> 16x16 (16x16) chroma: RGBA with scaling using Bicubic (good quality)
+2026-11-13 22:36:37.525 FramePlay[3680:23212] [DBG] using video converter module "swscale"
+2026-11-13 22:36:37.525 FramePlay[3680:23212] [DBG] looking for video converter module matching "any": 32 candidates
+2026-11-13 22:36:37.525 FramePlay[3680:23212] [DBG] YUVP to YUVA converter
+2026-11-13 22:36:37.525 FramePlay[3680:23212] [DBG] using video converter module "yuvp"
+2026-11-13 22:36:37.525 FramePlay[3680:23212] [DBG] Deinterlacing available
+2026-11-13 22:36:37.525 FramePlay[3680:23212] [DBG] deinterlace -1, mode auto, is_needed 0
+2026-11-13 22:36:37.525 FramePlay[3680:23212] [DBG] looking for vout window module matching "any": 0 candidates
+2026-11-13 22:36:37.525 FramePlay[3680:23212] [DBG] no vout window modules
+2026-11-13 22:36:37.525 FramePlay[3680:23213] [DBG] Opening vout display wrapper
+2026-11-13 22:36:37.525 FramePlay[3680:23213] [DBG] looking for vout display module matching "any": 14 candidates
+2026-11-13 22:36:37.525 FramePlay[3680:23213] [ERR] Failure to create CGL context!
+2026-11-13 22:36:37.525 FramePlay[3680:23213] [ERR] Failure to create CGL context!
+2026-11-13 22:36:37.525 FramePlay[3680:23213] [ERR] Initialization of open gl view failed
+2026-11-13 22:36:37.525 FramePlay[3680:23213] [ERR] Initialization of open gl view failed
+2026-11-13 22:36:37.525 FramePlay[3680:23213] [DBG] no vout display modules matched
+2026-11-13 22:36:37.525 FramePlay[3680:23212] [ERR] video output creation failed
+2026-11-13 22:36:37.525 FramePlay[3680:23212] [DBG] removing module "freetype"
+2026-11-13 22:36:37.525 FramePlay[3680:23212] [DBG] removing module "yuvp"
+2026-11-13 22:36:37.526 FramePlay[3680:23212] [DBG] removing module "swscale"
+2026-11-13 22:36:37.526 FramePlay[3680:23212] [ERR] failed to create video output
+2026-11-13 22:36:37.803 FramePlay[3680:15301] [WARN] Reloading the decoder module
+2026-11-13 22:36:37.803 FramePlay[3680:15301] [DBG] removing module "videotoolbox"
+2026-11-13 22:36:37.809 FramePlay[3680:15301] [DBG] looking for video decoder module matching "any": 26 candidates
+2026-11-13 22:36:37.809 FramePlay[3680:15301] [DBG] new SPS parsed: 0
+2026-11-13 22:36:37.809 FramePlay[3680:15301] [DBG] new PPS parsed: 0
+2026-11-13 22:36:37.809 FramePlay[3680:15301] [WARN] forcing CVPX format: 420v
+2026-11-13 22:36:37.817 FramePlay[3680:15301] [INF] Using Video Toolbox to decode 'h264'
+2026-11-13 22:36:37.817 FramePlay[3680:15301] [DBG] using video decoder module "videotoolbox"
+2026-11-13 22:36:38.519 FramePlay[3680:15654] [WARN] no vout found, dropping subpicture
+2026-11-13 22:36:38.519 FramePlay[3680:15654] [WARN] can't get output subpicture
+2026-11-13 22:36:44.922 FramePlay[3680:15281] [DBG] elst (0) gives 153954ms (movie)-> 153955ms (track)
+2026-11-13 22:36:44.922 FramePlay[3680:15281] [DBG] track[Id 0x1] using Sync Sample Box (stss)
+2026-11-13 22:36:44.922 FramePlay[3680:15281] [DBG] stss gives 3848 --> 3750 (sample number)
+2026-11-13 22:36:44.922 FramePlay[3680:15281] [DBG] seeking with 3955ms preroll (use input-fast-seek to avoid)
+2026-11-13 22:36:44.922 FramePlay[3680:15281] [DBG] elst (0) gives 150000ms (movie)-> 150023ms (track)
+2026-11-13 22:36:44.923 FramePlay[3680:15281] [DBG] Buffering 0%
+2026-11-13 22:36:44.923 FramePlay[3680:15281] [DBG] Buffering 3%
+2026-11-13 22:36:44.923 FramePlay[3680:15281] [DBG] Buffering 7%
+2026-11-13 22:36:44.924 FramePlay[3680:15281] [DBG] Buffering 11%
+2026-11-13 22:36:44.925 FramePlay[3680:15281] [DBG] Buffering 14%
+2026-11-13 22:36:44.925 FramePlay[3680:15281] [DBG] Buffering 18%
+2026-11-13 22:36:44.925 FramePlay[3680:15281] [DBG] Buffering 21%
+2026-11-13 22:36:44.926 FramePlay[3680:15281] [DBG] Buffering 25%
+2026-11-13 22:36:44.926 FramePlay[3680:15281] [DBG] Buffering 28%
+2026-11-13 22:36:44.926 FramePlay[3680:15281] [DBG] Buffering 32%
+2026-11-13 22:36:44.927 FramePlay[3680:15281] [DBG] Buffering 36%
+2026-11-13 22:36:44.928 FramePlay[3680:15281] [DBG] Buffering 39%
+2026-11-13 22:36:44.928 FramePlay[3680:15281] [DBG] Buffering 43%
+2026-11-13 22:36:44.929 FramePlay[3680:15281] [DBG] Buffering 46%
+2026-11-13 22:36:44.929 FramePlay[3680:15281] [DBG] Buffering 50%
+2026-11-13 22:36:44.929 FramePlay[3680:15281] [DBG] Buffering 54%
+2026-11-13 22:36:44.930 FramePlay[3680:15281] [DBG] Buffering 57%
+2026-11-13 22:36:44.931 FramePlay[3680:15281] [DBG] Buffering 61%
+2026-11-13 22:36:44.934 FramePlay[3680:15281] [DBG] Buffering 64%
+2026-11-13 22:36:44.934 FramePlay[3680:15281] [DBG] Buffering 68%
+2026-11-13 22:36:44.935 FramePlay[3680:15281] [DBG] Buffering 71%
+2026-11-13 22:36:44.935 FramePlay[3680:15281] [DBG] Buffering 75%
+2026-11-13 22:36:44.936 FramePlay[3680:15281] [DBG] Buffering 79%
+2026-11-13 22:36:44.936 FramePlay[3680:15281] [DBG] Buffering 82%
+2026-11-13 22:36:44.936 FramePlay[3680:15281] [DBG] Buffering 86%
+2026-11-13 22:36:44.937 FramePlay[3680:15281] [DBG] Buffering 89%
+2026-11-13 22:36:44.937 FramePlay[3680:15281] [DBG] Buffering 93%
+2026-11-13 22:36:44.938 FramePlay[3680:15281] [DBG] Buffering 97%
+2026-11-13 22:36:44.938 FramePlay[3680:15281] [DBG] Stream buffering done (7022 ms in 15 ms)
+2026-11-13 22:36:44.953 FramePlay[3680:15302] [DBG] end of audio preroll
+2026-11-13 22:36:44.956 FramePlay[3680:23644] [INF] vt cvpx chroma: 420v
+2026-11-13 22:36:44.956 FramePlay[3680:23644] [DBG] looking for text renderer module matching "freetype": 6 candidates
+2026-11-13 22:36:44.962 FramePlay[3680:23644] [DBG] using text renderer module "freetype"
+2026-11-13 22:36:44.962 FramePlay[3680:23644] [DBG] looking for video converter module matching "any": 32 candidates
+2026-11-13 22:36:44.963 FramePlay[3680:23644] [DBG] 32x32 (32x32) chroma: YUVA -> 16x16 (16x16) chroma: RGBA with scaling using Bicubic (good quality)
+2026-11-13 22:36:44.963 FramePlay[3680:23644] [DBG] using video converter module "swscale"
+2026-11-13 22:36:44.963 FramePlay[3680:23644] [DBG] looking for video converter module matching "any": 32 candidates
+2026-11-13 22:36:44.963 FramePlay[3680:23644] [DBG] YUVP to YUVA converter
+2026-11-13 22:36:44.963 FramePlay[3680:23644] [DBG] using video converter module "yuvp"
+2026-11-13 22:36:44.963 FramePlay[3680:23644] [DBG] Deinterlacing available
+2026-11-13 22:36:44.963 FramePlay[3680:23644] [DBG] deinterlace -1, mode auto, is_needed 0
+2026-11-13 22:36:44.963 FramePlay[3680:23644] [DBG] looking for vout window module matching "any": 0 candidates
+2026-11-13 22:36:44.963 FramePlay[3680:23644] [DBG] no vout window modules
+2026-11-13 22:36:44.963 FramePlay[3680:23645] [DBG] Opening vout display wrapper
+2026-11-13 22:36:44.963 FramePlay[3680:23645] [DBG] looking for vout display module matching "any": 14 candidates
+2026-11-13 22:36:44.963 FramePlay[3680:23645] [ERR] Failure to create CGL context!
+2026-11-13 22:36:44.963 FramePlay[3680:23645] [ERR] Failure to create CGL context!
+2026-11-13 22:36:44.964 FramePlay[3680:23645] [ERR] Initialization of open gl view failed
+2026-11-13 22:36:44.964 FramePlay[3680:23645] [ERR] Initialization of open gl view failed
+2026-11-13 22:36:44.964 FramePlay[3680:23645] [DBG] no vout display modules matched
+2026-11-13 22:36:44.964 FramePlay[3680:23644] [ERR] video output creation failed
+2026-11-13 22:36:44.964 FramePlay[3680:23644] [DBG] removing module "freetype"
+2026-11-13 22:36:44.965 FramePlay[3680:23644] [DBG] removing module "yuvp"
+2026-11-13 22:36:44.965 FramePlay[3680:23644] [DBG] removing module "swscale"
+2026-11-13 22:36:44.965 FramePlay[3680:23644] [ERR] failed to create video output
+2026-11-13 22:36:44.968 FramePlay[3680:15301] [WARN] Reloading the decoder module
+2026-11-13 22:36:44.968 FramePlay[3680:15301] [DBG] removing module "videotoolbox"
+2026-11-13 22:36:44.981 FramePlay[3680:15301] [DBG] looking for video decoder module matching "any": 26 candidates
+2026-11-13 22:36:44.981 FramePlay[3680:15301] [DBG] new SPS parsed: 0
+2026-11-13 22:36:44.981 FramePlay[3680:15301] [DBG] new PPS parsed: 0
+2026-11-13 22:36:44.981 FramePlay[3680:15301] [WARN] forcing CVPX format: 420v
+2026-11-13 22:36:44.985 FramePlay[3680:15301] [INF] Using Video Toolbox to decode 'h264'
+2026-11-13 22:36:44.986 FramePlay[3680:15301] [DBG] using video decoder module "videotoolbox"
+2026-11-13 22:36:44.986 FramePlay[3680:15281] [ERR] buffer deadlock prevented
+2026-11-13 22:36:44.986 FramePlay[3680:15281] [DBG] Decoder wait done in 47 ms
+2026-11-13 22:36:45.763 FramePlay[3680:15654] [WARN] no vout found, dropping subpicture
+2026-11-13 22:36:45.763 FramePlay[3680:15654] [WARN] can't get output subpicture
+2026-11-13 22:36:47.426 FramePlay[3680:15281] [DBG] elst (0) gives 146162ms (movie)-> 146162ms (track)
+2026-11-13 22:36:47.427 FramePlay[3680:15281] [DBG] track[Id 0x1] using Sync Sample Box (stss)
+2026-11-13 22:36:47.427 FramePlay[3680:15281] [DBG] stss gives 3654 --> 3500 (sample number)
+2026-11-13 22:36:47.427 FramePlay[3680:15281] [DBG] seeking with 6163ms preroll (use input-fast-seek to avoid)
+2026-11-13 22:36:47.427 FramePlay[3680:15281] [DBG] elst (0) gives 140000ms (movie)-> 140023ms (track)
+2026-11-13 22:36:47.427 FramePlay[3680:15284] [DBG] resolving 127.0.0.1 ...
+2026-11-13 22:36:47.427 FramePlay[3680:15284] [DBG] outgoing request:
+GET /teste.mp4 HTTP/1.1
+Host: 127.0.0.1:8765
+Accept: */*
+Accept-Language: en_US
+User-Agent: VLC/3.0.23 LibVLC/3.0.23
+Range: bytes=41333668-
+
+
+2026-11-13 22:36:47.436 FramePlay[3680:15284] [DBG] incoming response:
+HTTP/1.0 206 Partial Content
+Server: SimpleHTTP Python/3.15.2
+Date: Fri, 13 Nov 2026 22:36:47 GMT
+Content-Type: video/mp4
+Accept-Ranges: bytes
+Content-Length: 76979332
+Content-Range: bytes 41333668-118312999/118313000
+
+
+2026-11-13 22:36:47.436 FramePlay[3680:15284] [DBG] connection failed
+2026-11-13 22:36:47.440 FramePlay[3680:15281] [DBG] Buffering 0%
+2026-11-13 22:36:47.440 FramePlay[3680:15281] [DBG] Buffering 3%
+2026-11-13 22:36:47.440 FramePlay[3680:15281] [DBG] Buffering 5%
+2026-11-13 22:36:47.440 FramePlay[3680:15281] [DBG] Buffering 8%
+2026-11-13 22:36:47.440 FramePlay[3680:15281] [DBG] Buffering 11%
+2026-11-13 22:36:47.440 FramePlay[3680:15281] [DBG] Buffering 13%
+2026-11-13 22:36:47.440 FramePlay[3680:15281] [DBG] Buffering 16%
+2026-11-13 22:36:47.440 FramePlay[3680:15281] [DBG] Buffering 19%
+2026-11-13 22:36:47.441 FramePlay[3680:15281] [DBG] Buffering 22%
+2026-11-13 22:36:47.441 FramePlay[3680:15281] [DBG] Buffering 24%
+2026-11-13 22:36:47.441 FramePlay[3680:15281] [DBG] Buffering 27%
+2026-11-13 22:36:47.441 FramePlay[3680:15281] [DBG] Buffering 30%
+2026-11-13 22:36:47.441 FramePlay[3680:15281] [DBG] Buffering 32%
+2026-11-13 22:36:47.441 FramePlay[3680:15281] [DBG] Buffering 35%
+2026-11-13 22:36:47.441 FramePlay[3680:15281] [DBG] Buffering 38%
+2026-11-13 22:36:47.442 FramePlay[3680:15281] [DBG] Buffering 41%
+2026-11-13 22:36:47.442 FramePlay[3680:15281] [DBG] Buffering 43%
+2026-11-13 22:36:47.442 FramePlay[3680:15281] [DBG] Buffering 46%
+2026-11-13 22:36:47.442 FramePlay[3680:15281] [DBG] Buffering 49%
+2026-11-13 22:36:47.442 FramePlay[3680:15281] [DBG] Buffering 51%
+2026-11-13 22:36:47.442 FramePlay[3680:15281] [DBG] Buffering 54%
+2026-11-13 22:36:47.443 FramePlay[3680:15281] [DBG] Buffering 57%
+2026-11-13 22:36:47.443 FramePlay[3680:15281] [DBG] Buffering 60%
+2026-11-13 22:36:47.443 FramePlay[3680:15281] [DBG] Buffering 62%
+2026-11-13 22:36:47.443 FramePlay[3680:15281] [DBG] Buffering 65%
+2026-11-13 22:36:47.443 FramePlay[3680:15281] [DBG] Buffering 68%
+2026-11-13 22:36:47.443 FramePlay[3680:15281] [DBG] Buffering 71%
+2026-11-13 22:36:47.444 FramePlay[3680:15281] [DBG] Buffering 73%
+2026-11-13 22:36:47.445 FramePlay[3680:15281] [DBG] Buffering 76%
+2026-11-13 22:36:47.445 FramePlay[3680:15281] [DBG] Buffering 79%
+2026-11-13 22:36:47.445 FramePlay[3680:15281] [DBG] Buffering 81%
+2026-11-13 22:36:47.446 FramePlay[3680:15281] [DBG] Buffering 84%
+2026-11-13 22:36:47.446 FramePlay[3680:15281] [DBG] Buffering 87%
+2026-11-13 22:36:47.446 FramePlay[3680:15281] [DBG] Buffering 90%
+2026-11-13 22:36:47.446 FramePlay[3680:15281] [DBG] Buffering 92%
+2026-11-13 22:36:47.447 FramePlay[3680:15281] [DBG] Buffering 95%
+2026-11-13 22:36:47.447 FramePlay[3680:15281] [DBG] Buffering 98%
+2026-11-13 22:36:47.447 FramePlay[3680:15281] [DBG] Stream buffering done (9280 ms in 7 ms)
+2026-11-13 22:36:47.463 FramePlay[3680:15302] [DBG] end of audio preroll
+2026-11-13 22:36:47.475 FramePlay[3680:23668] [INF] vt cvpx chroma: 420v
+2026-11-13 22:36:47.475 FramePlay[3680:23668] [DBG] looking for text renderer module matching "freetype": 6 candidates
+2026-11-13 22:36:47.480 FramePlay[3680:23668] [DBG] using text renderer module "freetype"
+2026-11-13 22:36:47.480 FramePlay[3680:23668] [DBG] looking for video converter module matching "any": 32 candidates
+2026-11-13 22:36:47.480 FramePlay[3680:23668] [DBG] 32x32 (32x32) chroma: YUVA -> 16x16 (16x16) chroma: RGBA with scaling using Bicubic (good quality)
+2026-11-13 22:36:47.480 FramePlay[3680:23668] [DBG] using video converter module "swscale"
+2026-11-13 22:36:47.480 FramePlay[3680:23668] [DBG] looking for video converter module matching "any": 32 candidates
+2026-11-13 22:36:47.480 FramePlay[3680:23668] [DBG] YUVP to YUVA converter
+2026-11-13 22:36:47.480 FramePlay[3680:23668] [DBG] using video converter module "yuvp"
+2026-11-13 22:36:47.480 FramePlay[3680:23668] [DBG] Deinterlacing available
+2026-11-13 22:36:47.480 FramePlay[3680:23668] [DBG] deinterlace -1, mode auto, is_needed 0
+2026-11-13 22:36:47.480 FramePlay[3680:23668] [DBG] looking for vout window module matching "any": 0 candidates
+2026-11-13 22:36:47.480 FramePlay[3680:23668] [DBG] no vout window modules
+2026-11-13 22:36:47.480 FramePlay[3680:23669] [DBG] Opening vout display wrapper
+2026-11-13 22:36:47.480 FramePlay[3680:23669] [DBG] looking for vout display module matching "any": 14 candidates
+2026-11-13 22:36:47.480 FramePlay[3680:23669] [ERR] Failure to create CGL context!
+2026-11-13 22:36:47.480 FramePlay[3680:23669] [ERR] Failure to create CGL context!
+2026-11-13 22:36:47.481 FramePlay[3680:23669] [ERR] Initialization of open gl view failed
+2026-11-13 22:36:47.481 FramePlay[3680:23669] [ERR] Initialization of open gl view failed
+2026-11-13 22:36:47.481 FramePlay[3680:23669] [DBG] no vout display modules matched
+2026-11-13 22:36:47.481 FramePlay[3680:23668] [ERR] video output creation failed
+2026-11-13 22:36:47.481 FramePlay[3680:23668] [DBG] removing module "freetype"
+2026-11-13 22:36:47.481 FramePlay[3680:23668] [DBG] removing module "yuvp"
+2026-11-13 22:36:47.481 FramePlay[3680:23668] [DBG] removing module "swscale"
+2026-11-13 22:36:47.482 FramePlay[3680:23668] [ERR] failed to create video output
+2026-11-13 22:36:47.483 FramePlay[3680:15301] [WARN] Reloading the decoder module
+2026-11-13 22:36:47.483 FramePlay[3680:15301] [DBG] removing module "videotoolbox"
+2026-11-13 22:36:47.495 FramePlay[3680:15301] [DBG] looking for video decoder module matching "any": 26 candidates
+2026-11-13 22:36:47.495 FramePlay[3680:15301] [DBG] new SPS parsed: 0
+2026-11-13 22:36:47.495 FramePlay[3680:15301] [DBG] new PPS parsed: 0
+2026-11-13 22:36:47.495 FramePlay[3680:15301] [WARN] forcing CVPX format: 420v
+2026-11-13 22:36:47.499 FramePlay[3680:15301] [INF] Using Video Toolbox to decode 'h264'
+2026-11-13 22:36:47.499 FramePlay[3680:15301] [DBG] using video decoder module "videotoolbox"
+2026-11-13 22:36:47.500 FramePlay[3680:15281] [ERR] buffer deadlock prevented
+2026-11-13 22:36:47.500 FramePlay[3680:15281] [DBG] Decoder wait done in 53 ms
+2026-11-13 22:36:48.104 FramePlay[3680:23672] [INF] vt cvpx chroma: 420v
+2026-11-13 22:36:48.104 FramePlay[3680:23672] [DBG] looking for text renderer module matching "freetype": 6 candidates
+2026-11-13 22:36:48.110 FramePlay[3680:23672] [DBG] using text renderer module "freetype"
+2026-11-13 22:36:48.110 FramePlay[3680:23672] [DBG] looking for video converter module matching "any": 32 candidates
+2026-11-13 22:36:48.110 FramePlay[3680:23672] [DBG] 32x32 (32x32) chroma: YUVA -> 16x16 (16x16) chroma: RGBA with scaling using Bicubic (good quality)
+2026-11-13 22:36:48.110 FramePlay[3680:23672] [DBG] using video converter module "swscale"
+2026-11-13 22:36:48.110 FramePlay[3680:23672] [DBG] looking for video converter module matching "any": 32 candidates
+2026-11-13 22:36:48.110 FramePlay[3680:23672] [DBG] YUVP to YUVA converter
+2026-11-13 22:36:48.110 FramePlay[3680:23672] [DBG] using video converter module "yuvp"
+2026-11-13 22:36:48.110 FramePlay[3680:23672] [DBG] Deinterlacing available
+2026-11-13 22:36:48.110 FramePlay[3680:23672] [DBG] deinterlace -1, mode auto, is_needed 0
+2026-11-13 22:36:48.110 FramePlay[3680:23672] [DBG] looking for vout window module matching "any": 0 candidates
+2026-11-13 22:36:48.110 FramePlay[3680:23672] [DBG] no vout window modules
+2026-11-13 22:36:48.110 FramePlay[3680:23673] [DBG] Opening vout display wrapper
+2026-11-13 22:36:48.110 FramePlay[3680:23673] [DBG] looking for vout display module matching "any": 14 candidates
+2026-11-13 22:36:48.110 FramePlay[3680:23673] [ERR] Failure to create CGL context!
+2026-11-13 22:36:48.110 FramePlay[3680:23673] [ERR] Failure to create CGL context!
+2026-11-13 22:36:48.110 FramePlay[3680:23673] [ERR] Initialization of open gl view failed
+2026-11-13 22:36:48.110 FramePlay[3680:23673] [ERR] Initialization of open gl view failed
+2026-11-13 22:36:48.110 FramePlay[3680:23673] [DBG] no vout display modules matched
+2026-11-13 22:36:48.111 FramePlay[3680:23672] [ERR] video output creation failed
+2026-11-13 22:36:48.111 FramePlay[3680:23672] [DBG] removing module "freetype"
+2026-11-13 22:36:48.111 FramePlay[3680:23672] [DBG] removing module "yuvp"
+2026-11-13 22:36:48.111 FramePlay[3680:23672] [DBG] removing module "swscale"
+2026-11-13 22:36:48.111 FramePlay[3680:23672] [ERR] failed to create video output
+2026-11-13 22:36:48.260 FramePlay[3680:15301] [WARN] Reloading the decoder module
+2026-11-13 22:36:48.260 FramePlay[3680:15301] [DBG] removing module "videotoolbox"
+2026-11-13 22:36:48.266 FramePlay[3680:15301] [DBG] looking for video decoder module matching "any": 26 candidates
+2026-11-13 22:36:48.266 FramePlay[3680:15301] [DBG] new SPS parsed: 0
+2026-11-13 22:36:48.266 FramePlay[3680:15301] [DBG] new PPS parsed: 0
+2026-11-13 22:36:48.266 FramePlay[3680:15301] [WARN] forcing CVPX format: 420v
+2026-11-13 22:36:48.274 FramePlay[3680:15301] [INF] Using Video Toolbox to decode 'h264'
+2026-11-13 22:36:48.275 FramePlay[3680:15301] [DBG] using video decoder module "videotoolbox"
+2026-11-13 22:36:49.894 FramePlay[3680:15284] [DBG] pausing
+2026-11-13 22:36:49.894 FramePlay[3680:15301] [DBG] toggling resume
+2026-11-13 22:36:49.924 FramePlay[3680:15302] [DBG] toggling resume
+2026-11-13 22:36:52.874 FramePlay[3680:15654] [WARN] no vout found, dropping subpicture
+2026-11-13 22:36:52.874 FramePlay[3680:15654] [WARN] can't get output subpicture
+2026-11-13 22:36:52.875 FramePlay[3680:15654] [DBG] toggling resume
+2026-11-13 22:36:53.427 FramePlay[3680:15284] [DBG] resuming
+2026-11-13 22:36:53.428 FramePlay[3680:15301] [DBG] toggling pause
+2026-11-13 22:36:53.428 FramePlay[3680:15302] [DBG] toggling pause
+2026-11-13 22:36:53.428 FramePlay[3680:15654] [DBG] toggling pause
