@@ -41,10 +41,12 @@ for i in 1 2 3; do
   [ -n "$1" ] && adb shell input tap $1 $2
   sleep 1
   snap $i-controles-$3
-  adb shell input tap 1200 300   # esconde os controles
-  sleep 1
+  adb shell input keyevent KEYCODE_MEDIA_PLAY
+  sleep 6
   snap $i-modo
-  adb shell input tap 1200 300   # mostra de novo
+  adb shell input keyevent KEYCODE_MEDIA_PAUSE
+  sleep 1
+  adb shell input tap 1200 300   # mostra os controles
   sleep 1
 done
 adb logcat -d | grep -iE "vlc|PlayerActivity|gabiflix|AndroidRuntime" | tail -80 > shots/$P-log.txt

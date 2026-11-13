@@ -93,15 +93,44 @@ public class PlayerActivity extends Activity {
                 player.setScale(0f);
                 player.setAspectRatio(w + ":" + h);
             } else if (scaleIndex == 1) {
+                // Preencher = corta o excesso: o VLC usa FIT_SCREEN (superfície maior que a tela) e a superfície das
+                // legendas é trazida de volta para o tamanho da tela (senão a legenda fica fora da área visível)
                 player.setAspectRatio(null);
-                org.videolan.libvlc.interfaces.IMedia.VideoTrack vt = player.getCurrentVideoTrack();
-                if (vt != null && vt.width > 0 && vt.height > 0) {
-                    double vw = vt.width * (vt.sarNum > 0 && vt.sarDen > 0 ? (double) vt.sarNum / vt.sarDen : 1.0), vh = vt.height;
-                    player.setScale((float) Math.max(w / vw, h / vh));
-                } else player.setScale(0f);
+                player.setScale(0f);
+                player.setVideoScale(MediaPlayer.ScaleType.SURFACE_FIT_SCREEN);
             } else {
                 player.setAspectRatio(null);
                 player.setScale(0f);
+            }
+        } catch (Throwable t) { glog("escala: " + t); }
+        fixSubtitleSurface();
+        ui.postDelayed(this::fixSubtitleSurface, 400);
+    }
+
+    /** a superfície das legendas do VLC herda o tamanho/posição do vídeo; aqui ela volta a cobrir exatamente a área visível */
+    private void fixSubtitleSurface() {
+        if (videoLayout == null) return;
+        try {
+            android.view.SurfaceView sub = null;
+            try {
+                java.lang.reflect.Field f = videoLayout.getClass().getDeclaredField("mSubtitlesSurface");
+                f.setAccessible(true);
+                sub = (android.view.SurfaceView) f.get(videoLayout);
+            } catch (Throwable ignored) {}
+            if (sub == null) for (int i = videoLayout.getChildCount() - 1; i >= 0 && sub == null; i--) {
+                View c = videoLayout.getChildAt(i);
+                if (c instanceof android.view.SurfaceView) sub = (android.view.SurfaceView) c;
+            }
+            if (sub == null) { glog("escala: sem superfície de legendas"); return; }
+            final android.view.SurfaceView sv = sub;
+            ViewGroup.LayoutParams lp = sv.getLayoutParams();
+            int w = videoLayout.getWidth(), h = videoLayout.getHeight();
+            glog("escala: legendas " + sv.getWidth() + "x" + sv.getHeight() + " em (" + sv.getLeft() + "," + sv.getTop() + "), tela " + w + "x" + h);
+            if (lp != null && (lp.width != ViewGroup.LayoutParams.MATCH_PARENT || lp.height != ViewGroup.LayoutParams.MATCH_PARENT)) {
+                lp.width = ViewGroup.LayoutParams.MATCH_PARENT;
+                lp.height = ViewGroup.LayoutParams.MATCH_PARENT;
+                if (lp instanceof FrameLayout.LayoutParams) ((FrameLayout.LayoutParams) lp).gravity = Gravity.CENTER;
+                sv.setLayoutParams(lp);
             }
         } catch (Throwable t) { glog("escala: " + t); }
     }

@@ -40,10 +40,10 @@ jobs:
           timeout 300 sudo apt-get install -y -qq ffmpeg >/dev/null || (sudo apt-get update -qq && timeout 300 sudo apt-get install -y -qq ffmpeg >/dev/null)
           mkdir -p /tmp/video && cd /tmp/video
           python3 - <<'PY'
-          def ts(s): return "%02d:%02d:%02d,000"%(s//3600,s//60%60,s%60)
+          def ts(s): return "%02d:%02d:%02d,%03d"%(s//3600,s//60%60,s%60,0)
           out=[]
           for i in range(30):
-              a=i*10; out.append("%d\n%s --> %s\nVocê não sabe o que ela fez para nós, mas eu também estou aqui (%d)\ne isso é uma linha de baixo que tem de ficar inteira, com você\n"%(i+1,ts(a),ts(a+9),i+1))
+              a=i*10; out.append("%d\n%s --> %s\nVocê não sabe o que ela fez para nós, mas eu também estou aqui (%d)\ne isso é uma linha de baixo que tem de ficar inteira, com você\n"%(i+1,ts(a),ts(a+9)[:-3]+"900",i+1))
           open("teste.srt","w").write("\n".join(out))
           PY
           ffmpeg -loglevel error -f lavfi -i testsrc2=size=1280x720:rate=24 -f lavfi -i sine=frequency=440:sample_rate=48000 -t 300 -c:v libx264 -preset veryfast -pix_fmt yuv420p -c:a aac teste.mkv
