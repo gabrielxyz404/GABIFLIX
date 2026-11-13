@@ -61,10 +61,9 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
     private var lastLength: Int64 = 0
     private var lastReport = Date.distantPast
     private var playingSince = Date.distantFuture
-    private var fillMode = false
 
     // legendas baixadas (arquivos já em UTF-8) e as que já vinham no vídeo
-    private var cands: [SubCand] = []
+    private var cands: [SubtitleSync.Cand] = []
     private var subsDownloaded = false
     private var subsAttached = false
     private var addedSubs = 0
@@ -74,8 +73,32 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
     private var subLabels: [String] = []
     /** ajuste manual da legenda (ms; positivo = a legenda aparece mais tarde), lembrado por título */
     private var subDelayMs = 0
-    private var delayValueLabel: NSTextField?
-    private var attached: [SubCand] = []
+    private var srcHash: String? = nil
+    private var srcName: String? = nil
+    private var refTrusted = false
+    private var diagHash = "…"
+    private var diagEmb = ""
+    /** última combinação vídeo+fonte+legenda para a qual o atraso foi carregado; "\0" = ainda nenhuma */
+    private var lastSyncKey = "\u{0}"
+    private var announcedKey = ""
+    private var scaleMode = 0
+    private var scaleButton: NSButton?
+    private var lastScale = (-1, -1, -1)
+    private var scaleForce = 0
+    private let noticeLabel = NSTextField(labelWithString: "")
+    private var noticeUntil = Date.distantPast
+    private var syncPanel: NSView?
+    private var syncRows: [[SyncButton]] = []
+    private var syncFocus = (0, 0)
+    private var syncValue: NSTextField?
+    private var enterStart = Date.distantPast
+    private var enterLast = Date.distantPast
+    private var speechPanel: NSView?
+    private var speechTable: NSTableView?
+    var speechCues: [SubtitleAlign.Cue] = []
+    private var speechNow: Int64 = 0
+    private var speechWasPlaying = false
+    private var attached: [SubtitleSync.Cand] = []
     private var userPickedSub = false
     private var embeddedPtId: Int? = nil
     /** diagnóstico mostrado no topo do menu de legendas */
@@ -99,7 +122,6 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
         w.isReleasedWhenClosed = false
         super.init(window: w)
         w.delegate = self
-        subDelayMs = Int(UserDefaults.standard.integer(forKey: delayKey()))
         buildUI()
         loadSubtitles()
         start()
@@ -131,6 +153,15 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
         message.isHidden = true
         message.translatesAutoresizingMaskIntoConstraints = false
         root.addSubview(message)
+
+        noticeLabel.textColor = .white
+        noticeLabel.font = .boldSystemFont(ofSize: 15)
+        noticeLabel.alignment = .center
+        noticeLabel.drawsBackground = true
+        noticeLabel.backgroundColor = NSColor(white: 0, alpha: 0.7)
+        noticeLabel.isHidden = true
+        noticeLabel.translatesAutoresizingMaskIntoConstraints = false
+        root.addSubview(noticeLabel)
 
         // camada transparente por cima do vídeo: recebe cliques, movimento do mouse e teclado
         overlay.translatesAutoresizingMaskIntoConstraints = false
@@ -171,6 +202,7 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
         let audio = button("Áudio", #selector(chooseAudio))
         let subs = button("Legendas", #selector(chooseSubtitles))
         let scale = button("Tela: Ajustar", #selector(toggleScale(_:)))
+        scaleButton = scale
         let fs = button("Tela cheia", #selector(toggleFullScreen))
 
         let row = NSStackView(views: [playButton, rw, ff, timeLabel, slider, lengthLabel, audio, subs, scale, fs])
@@ -195,6 +227,9 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
             message.centerXAnchor.constraint(equalTo: root.centerXAnchor),
             message.centerYAnchor.constraint(equalTo: root.centerYAnchor),
             message.widthAnchor.constraint(lessThanOrEqualTo: root.widthAnchor, constant: -80),
+            noticeLabel.centerXAnchor.constraint(equalTo: root.centerXAnchor),
+            noticeLabel.topAnchor.constraint(equalTo: root.topAnchor, constant: 84),
+            noticeLabel.widthAnchor.constraint(lessThanOrEqualTo: root.widthAnchor, constant: -80),
 
             topBar.leadingAnchor.constraint(equalTo: root.leadingAnchor),
             topBar.trailingAnchor.constraint(equalTo: root.trailingAnchor),
@@ -292,6 +327,7 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
             if !startedPlaying {
                 startedPlaying = true
                 playingSince = Date()
+                scaleForce = 6
                 DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) { [weak self] in self?.selectEmbeddedPortuguese() }
             }
             if !resumeDone && len > 0 {
@@ -316,6 +352,8 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
 
         attachReadySubs()
         reportProgress(force: false)
+        if scaleForce > 0 { scaleForce -= 1; applyScale(force: true) } else { applyScale() }
+        if !noticeLabel.isHidden && Date() > noticeUntil { noticeLabel.isHidden = true }
 
         setTitle(playButton, player.isPlaying ? "❚❚" : "▶")
         if !userSeeking && len > 0 { slider.doubleValue = Double(t) * 1000 / Double(len) }
@@ -381,14 +419,6 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
         showControls()
     }
 
-    @objc private func toggleScale(_ sender: NSButton) {
-        fillMode = !fillMode
-        videoView.fillScreen = fillMode
-        sender.attributedTitle = NSAttributedString(string: "  Tela: \(fillMode ? "Preencher" : "Ajustar")  ", attributes: [
-            .foregroundColor: NSColor.white, .font: NSFont.boldSystemFont(ofSize: 13)])
-        showControls()
-    }
-
     private func skip(_ ms: Int64) {
         let len = Int64(player.media?.length.intValue ?? 0)
         var t = max(0, Int64(player.time.intValue) + ms)
@@ -411,6 +441,7 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
     @objc private func toggleFullScreen() { window?.toggleFullScreen(nil) }
 
     private func handleKey(_ e: NSEvent) -> Bool {
+        if syncPanel != nil || speechPanel != nil { return panelKey(e) }
         switch e.keyCode {
         case 49: togglePlay(); return true                 // espaço
         case 123: skip(-10000); return true                // ←
@@ -449,31 +480,6 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
     }
     private func isDownloaded(_ id: Int) -> Bool { addedSubs > 0 && embeddedKnown && id != -1 && !embeddedSubs.contains(id) }
 
-    /** uma legenda baixada: arquivo local em UTF-8, fim da última fala, posição na lista do addon (hash primeiro) */
-    struct SubCand {
-        let url: URL
-        var lastMs: Int64
-        var text: String
-        let ext: String
-        let rank: Int
-        let hashMatch: Bool
-        var fixed = false
-        var score = 0.0
-        var aligned = false
-        var alignScore = 0.0
-        var alignScale = 1.0
-        var alignOffsetMs: Int64 = 0
-    }
-    struct FoundSub { let url: URL; let hashMatch: Bool; let lang: String }
-    /** resposta do addon: legendas PT + candidatas a referência de tempo (outros idiomas, nunca mostradas) */
-    struct SearchResult {
-        var pt: [FoundSub] = []
-        var refs: [FoundSub] = []
-        var sawMatchField = false
-        var refsAssumed = false
-        var total = 0
-        var ok = false
-    }
     struct VideoHash {
         var hash: String? = nil
         var size: Int64 = 0
@@ -488,62 +494,64 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
         if l == "eng" || l == "en" { return "EN" }
         return l.uppercased()
     }
-    private static func signedSecs(_ ms: Int64) -> String {
-        let v = String(format: "%.1f", Double(abs(ms)) / 1000.0).replacingOccurrences(of: ".", with: ",")
-        return (ms > 0 ? "+" : ms < 0 ? "−" : "") + v + " s"
-    }
-
-    /** baixa as legendas: hash do arquivo (como o Stremio desktop), busca no OpenSubtitles do Stremio com hash/tamanho/nome
-        (os resultados do hash vêm primeiro) mais as do site; alinha cada uma à legenda de referência (outro idioma, mesmo hash);
-        cada uma vira UTF-8 e só fica se for legenda de verdade e em português */
+    /** baixa as legendas (porte do loadSubtitlesInBackground do Android): hash do arquivo (como o Stremio desktop), busca no OpenSubtitles
+        do Stremio com hash/tamanho/nome (os resultados do hash vêm primeiro) mais as do site; alinha cada uma à referência de tempo
+        (outro idioma com o mesmo hash, ou a PT do hash); cada uma vira UTF-8 e só fica se for legenda de verdade e em português */
     private func loadSubtitles() {
-        let given = subtitleURLs
+        let given = subtitleURLs.map { $0.absoluteString }
         let type = metaType, id = metaId
         let videoURL = url
         DispatchQueue.global(qos: .userInitiated).async { [weak self] in
             let vh = PlayerWindowController.computeHashTimeboxed(videoURL, seconds: 25)
             let fname = PlayerWindowController.fileName(of: videoURL, vh)
+            DispatchQueue.main.async { self?.srcHash = vh.hash; self?.srcName = fname }
             if let h = vh.hash { self?.log("hash=\(h) tamanho=\(vh.size) arquivo=\(fname ?? "?")") }
             else { self?.log("hash não calculado: \(vh.error); arquivo=\(fname ?? "?")") }
 
-            var sr: SearchResult? = nil
+            var sr: SubtitleSync.SearchResult? = nil
             if !type.isEmpty && !id.isEmpty {
                 let extras = PlayerWindowController.makeExtras(vh, fname)
-                if !extras.isEmpty { sr = PlayerWindowController.searchOpenSubtitles(type: type, id: id, extras: extras) }
+                if !extras.isEmpty { sr = PlayerWindowController.search(type, id, extras) }
                 if sr == nil || (sr?.pt.isEmpty ?? true) {
-                    let plain = PlayerWindowController.searchOpenSubtitles(type: type, id: id, extras: "")
-                    if var cur = sr {
+                    let plain = PlayerWindowController.search(type, id, "")
+                    if let cur = sr {
                         cur.pt.append(contentsOf: plain.pt)
-                        if cur.refs.isEmpty { cur.refs = plain.refs; cur.refsAssumed = plain.refsAssumed }
+                        if cur.refs.isEmpty { cur.refs.append(contentsOf: plain.refs); cur.refsAssumed = plain.refsAssumed }
                         if !cur.ok { cur.ok = plain.ok }
-                        sr = cur
                     } else { sr = plain }
                 }
             }
-            let hashHits = (sr?.pt.filter { $0.hashMatch }.count ?? 0) + (sr?.refs.filter { $0.hashMatch }.count ?? 0)
+            var hashHits = 0
+            if let s = sr {
+                for f in s.pt where f.hashMatch { hashHits += 1 }
+                for f in s.refs where f.hashMatch { hashHits += 1 }
+            }
+            let hashLine = hashHits > 0 ? "sim" : vh.hash != nil ? "calculado, sem casamento" : "não"
             let idLine: String
             if vh.hash == nil { idLine = "Vídeo não identificado (sem hash: \(PlayerWindowController.shortReason(vh.error)))" }
             else if sr == nil || sr?.ok != true { idLine = "Hash calculado, mas a busca de legendas falhou" }
             else if sr?.sawMatchField != true { idLine = "Hash calculado (o addon não confirma a correspondência)" }
             else if hashHits > 0 { idLine = "Vídeo identificado ✓" }
             else { idLine = "Hash calculado, sem correspondência no OpenSubtitles" }
-            let guess: String = (sr?.refsAssumed ?? false) ? " (palpite)" : ""
-            let nTotal = sr?.total ?? 0, nPt = sr?.pt.count ?? 0, nRefs = sr?.refs.count ?? 0
-            self?.log(idLine + "; addon: \(nTotal) itens, PT=\(nPt), referências=\(nRefs)" + guess + ", hash igual=\(hashHits)")
+            var addonLine = ""
+            if let s = sr { addonLine = "; addon: \(s.total) itens, PT=\(s.pt.count), referências=\(s.refs.count)" + (s.refsAssumed ? " (palpite)" : "") + ", hash igual=\(hashHits)" }
+            self?.log(idLine + addonLine)
 
-            var merged: [FoundSub] = []
+            var merged: [SubtitleSync.Found] = []
             var seen = Set<String>()
-            for f in (sr?.pt ?? []) where seen.insert(f.url.absoluteString).inserted { merged.append(f) }
-            for u in given where seen.insert(u.absoluteString).inserted { merged.append(FoundSub(url: u, hashMatch: false, lang: "por")) }
-            if merged.count > 14 { merged = Array(merged.prefix(14)) }
+            for f in (sr?.pt ?? []) where seen.insert(f.url).inserted { merged.append(f) }
+            for u in given where u.hasPrefix("http") && seen.insert(u).inserted { merged.append(SubtitleSync.Found(u, false, "por")) }
+            while merged.count > 14 { merged.removeLast() }
             self?.log("candidatas para baixar: \(merged.count) (do site: \(given.count))")
 
             let dir = FileManager.default.temporaryDirectory.appendingPathComponent("frameplay-legendas", isDirectory: true)
             try? FileManager.default.removeItem(at: dir)
             try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
 
-            // referências de tempo, baixadas ao mesmo tempo que as legendas PT
-            let refList = sr?.refs ?? []
+            // referências de tempo (outro idioma, nunca mostradas), baixadas ao mesmo tempo que as legendas PT.
+            // Referência "de palpite" (o addon não diz quem casa com o hash): outra versão do filme daria um tempo errado com cara de certo; na dúvida não usa
+            var refList: [SubtitleSync.Found] = []
+            if let s = sr, !s.refsAssumed { refList = s.refs }
             var refResults = [[Int64]?](repeating: nil, count: refList.count)
             let lock = NSLock()
             let rgroup = DispatchGroup()
@@ -557,7 +565,7 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
                     rgroup.leave()
                 }
             }
-            var ok = PlayerWindowController.fetchAll(merged, dir: dir)
+            let ok = PlayerWindowController.fetchAll(merged, dir: dir)
             _ = rgroup.wait(timeout: .now() + 10)
             lock.lock()
             let gotRefs = refResults
@@ -572,34 +580,44 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
             }
             self?.log("legendas PT válidas: \(ok.count) de \(merged.count); referências baixadas: \(refStarts.count)")
 
-            var lg = "alinhamento com \(refStarts.count) referência(s):"
-            let nAligned = PlayerWindowController.alignAll(&ok, refStarts, &lg)
-            self?.log(lg + "\n  alinhadas: \(nAligned)")
-            let refLine: String
-            if refStarts.isEmpty { refLine = (sr?.refs.isEmpty ?? true) ? "sem referência" : "referência não baixou" }
-            else { refLine = "referência \(PlayerWindowController.langShort(refLang)) ✓" + (nAligned == 0 ? " (nenhuma legenda casou)" : "") }
+            // alinha cada legenda PT à referência (escala x deslocamento)
+            let lg = StrBuf().a("alinhamento com \(refStarts.count) referência(s):")
+            let ar = SubtitleSync.alignAll(ok, refStarts, lg)
+            let nAligned = ar.aligned
+            self?.log(lg.s + "\n  alinhadas: \(nAligned)")
+            let assumed = sr?.refsAssumed ?? false
+            let hasRefs = !(sr?.refs.isEmpty ?? true)
+            var refLine: String
+            if ar.refKind == "outro idioma" { refLine = "outro idioma (\(PlayerWindowController.langShort(refLang)))" + (assumed ? ", palpite" : ", do hash") + (nAligned == 0 ? ", nenhuma legenda casou" : "") }
+            else if ar.refKind == "PT do hash" { refLine = "PT do hash" }
+            else if ar.refKind == "consenso" { refLine = "nenhuma de tempo; consenso entre \(ar.ptCount) PT (maior grupo: \(ar.consensusMax)) escolhe a legenda certa, não alinha" }
+            else { refLine = (assumed && hasRefs) ? "nenhuma (o addon não confirma o hash: referência de palpite ignorada)" : hasRefs ? "nenhuma (a referência não baixou)" : "nenhuma" }
+            if ar.pieced > 0 { refLine += "; \(ar.pieced) por partes (cortes)" }
+            if ar.freeScaled > 0 { refLine += "; \(ar.freeScaled) com escala livre" }
+            let trusted = (ar.refKind == "outro idioma" && !assumed) || ar.refKind == "PT do hash"
 
-            let finalOk = ok
-            let finalId = idLine
+            let fId = idLine, fRef = refLine, fHash = hashLine
             DispatchQueue.main.async {
                 guard let self = self else { return }
-                self.cands = finalOk
-                self.diagId = finalId
-                self.diagRef = refLine
+                self.cands = ok
+                self.diagId = fId
+                self.diagRef = fRef
+                self.diagHash = fHash
+                self.refTrusted = trusted
                 self.subsDownloaded = true
                 self.attachReadySubs()
             }
         }
     }
 
-    private static func fetchAll(_ items: [FoundSub], dir: URL) -> [SubCand] {
-        var results = [SubCand?](repeating: nil, count: items.count)
+    private static func fetchAll(_ items: [SubtitleSync.Found], dir: URL) -> [SubtitleSync.Cand] {
+        var results = [SubtitleSync.Cand?](repeating: nil, count: items.count)
         let lock = NSLock()
         let group = DispatchGroup()
         for (i, f) in items.enumerated() {
             group.enter()
             DispatchQueue.global(qos: .userInitiated).async {
-                let c = fetchSubtitle(f, dir: dir, n: i + 1, rank: i)
+                let c = fetchSubtitle(f, dir: dir, rank: i)
                 lock.lock()
                 results[i] = c
                 lock.unlock()
@@ -613,164 +631,57 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
         return out
     }
 
-    /** início das falas (ms) de uma legenda de referência; nil se não for legenda */
-    private static func fetchStarts(_ u: URL) -> [Int64]? {
-        guard var data = get(u), data.count >= 20 else { return nil }
-        if data.count > 2 && data[0] == 0x1F && data[1] == 0x8B {
-            guard let d = gunzip(data) else { return nil }
-            data = d
-        }
-        guard let text = decodeText(data), text.contains("-->") else { return nil }
-        return SubtitleAlign.cueStarts(text.replacingOccurrences(of: "\u{FEFF}", with: ""))
+    /** texto UTF-8 de uma legenda baixada (nil se não for legenda): gzip/zip, BOM, UTF-16, cp1252, ASS, fins de linha (ver SubtitleText) */
+    private static func fetchText(_ u: String) -> String? {
+        guard let url = URL(string: u), let d = get(url) else { return nil }
+        return SubtitleText.decode([UInt8](d))
     }
 
-    /** alinha cada legenda PT à melhor das referências (reescrevendo o arquivo); devolve quantas ficaram alinhadas */
-    private static func alignAll(_ all: inout [SubCand], _ refs: [[Int64]], _ lg: inout String) -> Int {
-        var n = 0
-        if refs.isEmpty { return 0 }
-        for i in 0..<all.count {
-            let starts = SubtitleAlign.cueStarts(all[i].text)
-            var best: SubtitleAlign.Fit? = nil
-            for r in refs {
-                let f = SubtitleAlign.align(r, starts)
-                if best == nil || f.score > (best?.score ?? 0) { best = f }
-                if (best?.score ?? 0) >= 0.6 { break } // já está claro: não precisa das outras referências
-            }
-            guard let b = best else { continue }
-            lg += "\n  #\(all[i].rank) alinhamento: nota=\(String(format: "%.2f", b.score)) escala=\(String(format: "%.4f", b.scale)) deslocamento=\(b.offsetMs)ms"
-            if !b.ok { continue }
-            var c = all[i]
-            c.aligned = true
-            c.alignScore = b.score
-            c.alignScale = b.scale
-            c.alignOffsetMs = b.offsetMs
-            if b.scale != 1.0 || abs(b.offsetMs) >= 50 {
-                let t = SubtitleAlign.transform(c.text, b.scale, b.offsetMs)
-                do { try Data(t.utf8).write(to: c.url) } catch { continue }
-                c.text = t
-                let l = lastCueEnd(t, pattern: cueEndPattern)
-                if l > 0 { c.lastMs = l }
-            }
-            all[i] = c
-            n += 1
-        }
-        return n
+    private static func fetchStarts(_ u: String) -> [Int64]? {
+        guard let t = fetchText(u) else { return nil }
+        return SubtitleAlign.alignStarts(t)
     }
 
     /** baixa uma legenda; devolve nil se não for uma legenda válida em português */
-    private static func fetchSubtitle(_ f: FoundSub, dir: URL, n: Int, rank: Int) -> SubCand? {
-        guard var data = get(f.url), data.count >= 20 else { return nil }
-        if data.count > 2 && data[0] == 0x1F && data[1] == 0x8B {
-            guard let d = gunzip(data) else { return nil }
-            data = d
-        }
-        guard var text = decodeText(data) else { return nil }
-        text = text.replacingOccurrences(of: "\u{FEFF}", with: "")
-        var ext = "srt"
-        var last = lastCueEnd(text, pattern: cueEndPattern)
-        if last > 0 {
-            if text.hasPrefix("WEBVTT") { ext = "vtt" }
-        } else {
-            last = lastCueEnd(text, pattern: assEndPattern)
-            if last > 0 && text.contains("Dialogue:") { ext = "ass" } else { return nil } // não é SRT/VTT/ASS (página de erro, arquivo vazio...)
-        }
-        if !looksPortuguese(text) { return nil } // legenda de outro idioma com etiqueta errada
-        let out = dir.appendingPathComponent("\(n).\(ext)")
+    private static func fetchSubtitle(_ fo: SubtitleSync.Found, dir: URL, rank: Int) -> SubtitleSync.Cand? {
+        guard let text = fetchText(fo.url) else { return nil }
+        if !SubtitleText.looksPortuguese(text) { return nil } // legenda de outro idioma com etiqueta errada
+        let out = dir.appendingPathComponent("\(rank + 1)." + (text.hasPrefix("WEBVTT") ? "vtt" : "srt"))
         do { try Data(text.utf8).write(to: out) } catch { return nil } // sempre UTF-8: acentos certos no VLC
-        return SubCand(url: out, lastMs: last, text: text, ext: ext, rank: rank, hashMatch: f.hashMatch)
+        let c = SubtitleSync.Cand()
+        c.url = fo.url
+        c.file = out
+        c.text = text
+        c.lastMs = SubtitleText.lastCueEnd(text)
+        c.rank = rank
+        c.hashMatch = fo.hashMatch
+        c.rel = fo.rel
+        return c
     }
 
-    private static func gunzip(_ d: Data) -> Data? {
-        let tmp = FileManager.default.temporaryDirectory.appendingPathComponent("fp-\(UUID().uuidString).gz")
-        do { try d.write(to: tmp) } catch { return nil }
-        defer { try? FileManager.default.removeItem(at: tmp) }
-        let p = Process()
-        p.executableURL = URL(fileURLWithPath: "/usr/bin/gunzip")
-        p.arguments = ["-c", tmp.path]
-        let pipe = Pipe()
-        p.standardOutput = pipe
-        p.standardError = FileHandle.nullDevice
-        do { try p.run() } catch { return nil }
-        let out = pipe.fileHandleForReading.readDataToEndOfFile()
-        p.waitUntilExit()
-        if out.isEmpty { return nil }
-        return out.count > 5_000_000 ? Data(out.prefix(5_000_000)) : out
-    }
-
-    /** texto da legenda: UTF-16 (com BOM), UTF-8, ou (se tiver bytes inválidos) Windows-1252, comum nas legendas antigas */
-    private static func decodeText(_ d: Data) -> String? {
-        if d.count >= 2 && d[0] == 0xFF && d[1] == 0xFE { return String(data: d.subdata(in: 2..<d.count), encoding: .utf16LittleEndian) }
-        if d.count >= 2 && d[0] == 0xFE && d[1] == 0xFF { return String(data: d.subdata(in: 2..<d.count), encoding: .utf16BigEndian) }
-        if let s = String(data: d, encoding: .utf8) { return s }
-        if let s = String(data: d, encoding: .windowsCP1252) { return s }
-        return String(data: d, encoding: .isoLatin1)
-    }
-
-    private static func wordSet(_ s: String) -> Set<String> { Set(s.components(separatedBy: " ")) }
-    private static let ptWords = wordSet("não você vocês estou então isso são também muito porque pra obrigado tá nós meu minha ele dela já até bem tudo aqui foi vai tem sim uma")
-    private static let enWords = wordSet("the you and that what this with have are not but your i'm it's don't they there just know")
-    private static let esWords = wordSet("el los las pero usted esto estoy yo muy gracias señor tengo qué cómo hay soy eres nosotros")
-    private static let wordRegex = try? NSRegularExpression(pattern: "[\\p{L}']+")
-
-    /** confere se o texto é mesmo português (conta palavras típicas de português, inglês e espanhol) */
-    private static func looksPortuguese(_ full: String) -> Bool {
-        guard let re = wordRegex else { return false }
-        let text = full.count > 300000 ? String(full.prefix(300000)) : full
-        let ns = text as NSString
-        var pt = 0, en = 0, es = 0
-        for m in re.matches(in: text, range: NSRange(location: 0, length: ns.length)) {
-            let w = ns.substring(with: m.range).lowercased()
-            if ptWords.contains(w) { pt += 1 }
-            if enWords.contains(w) { en += 1 }
-            if esWords.contains(w) { es += 1 }
-        }
-        return pt >= 3 && pt > 2 * max(en, es)
-    }
-
-    // os dois padrões têm 4 grupos: horas (opcional no SRT), minutos, segundos e fração
-    private static let cueEndPattern = "-->\\s*(?:(\\d+):)?(\\d{1,2}):(\\d\\d)[,.](\\d{3})"
-    private static let assEndPattern = "Dialogue:\\s*[^,\\n]*,\\s*\\d+:\\d\\d:\\d\\d[.]\\d+\\s*,\\s*(\\d+):(\\d\\d):(\\d\\d)[.](\\d\\d?)"
-
-    /** fim da última fala da legenda (ms): serve para ver se ela combina com a duração do filme */
-    private static func lastCueEnd(_ text: String, pattern: String) -> Int64 {
-        guard let re = try? NSRegularExpression(pattern: pattern) else { return 0 }
-        let ns = text as NSString
-        var best: Int64 = 0
-        func num(_ m: NSTextCheckingResult, _ i: Int) -> Int64 {
-            let r = m.range(at: i)
-            if r.location == NSNotFound || r.length == 0 { return 0 }
-            return Int64(ns.substring(with: r)) ?? 0
-        }
-        for m in re.matches(in: text, range: NSRange(location: 0, length: ns.length)) {
-            if m.numberOfRanges < 5 { continue }
-            var ms: Int64 = 0
-            let fr = m.range(at: 4)
-            if fr.location != NSNotFound {
-                var f = ns.substring(with: fr)
-                while f.count < 3 { f += "0" } // ASS usa centésimos
-                ms = Int64(String(f.prefix(3))) ?? 0
-            }
-            let t = ((num(m, 1) * 60 + num(m, 2)) * 60 + num(m, 3)) * 1000 + ms
-            if t > best { best = t }
-        }
-        return best
-    }
-
-    /** legenda PT/BR que veio dentro do arquivo (a primeira que não seja "forçada"); nil se não houver */
-    private func findEmbeddedPt() -> Int? {
-        let names = (player.videoSubTitlesNames as? [String]) ?? []
-        let ids = (player.videoSubTitlesIndexes as? [NSNumber])?.map { $0.intValue } ?? []
+    /** legenda PT/BR que veio dentro do arquivo (a primeira que não seja "forçada"); nil se não houver.
+        allowForced=false: ignora a faixa "forçada" (só traduz falas estrangeiras; escolhê-la no lugar da legenda completa deixaria o filme sem diálogo legendado) */
+    private func findEmbeddedPt(allowForced: Bool) -> Int? {
         var forced: Int? = nil
-        for (i, id) in ids.enumerated() where i < names.count && id != -1 && isPortuguese(names[i]) {
+        for (id, name) in subTracks() where id != -1 && isPortuguese(name) {
             if embeddedKnown && !embeddedSubs.contains(id) { continue }
-            let n = names[i].lowercased()
-            if n.contains("forced") || n.contains("forçad") || n.contains("forcad") {
+            let n = name.lowercased()
+            if n.contains("forced") || n.contains("forçad") || n.contains("forcad") || n.contains("foreign") {
                 if forced == nil { forced = id }
                 continue
             }
             return id
         }
-        return forced
+        return allowForced ? forced : nil
+    }
+
+    /** as faixas de legenda do VLC: (id, nome) */
+    private func subTracks() -> [(Int, String)] {
+        let names = (player.videoSubTitlesNames as? [String]) ?? []
+        let ids = (player.videoSubTitlesIndexes as? [NSNumber])?.map { $0.intValue } ?? []
+        var out: [(Int, String)] = []
+        for (i, id) in ids.enumerated() where i < names.count { out.append((id, names[i])) }
+        return out
     }
 
     /** liga as legendas baixadas: as alinhadas à referência primeiro; a legenda PT embutida no arquivo (se houver) fica ativa */
@@ -783,170 +694,49 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
         if len <= 0 && since < 13 { return }
         subsAttached = true
         embeddedKnown = true
-        embeddedSubs = Set(((player.videoSubTitlesIndexes as? [NSNumber]) ?? []).map { $0.intValue })
-        embeddedPtId = findEmbeddedPt()
-        let embDesc: String = embeddedPtId != nil ? "faixa \(embeddedPtId ?? -1)" : "não há"
-        log("legenda PT embutida: " + embDesc)
+        embeddedSubs = Set(subTracks().map { $0.0 })
+        // a faixa embutida "forçada" só vale se não houver NENHUMA legenda baixada para mostrar no lugar dela
+        embeddedPtId = findEmbeddedPt(allowForced: cands.isEmpty)
+        log("legenda PT embutida: " + (embeddedPtId == nil ? "não há" : "faixa \(embeddedPtId ?? -1)"))
+        diagEmb = embeddedPtId == nil ? "" : refTrusted ? "PT embutida mantida (há referência confiável do hash; o texto embutido não é lido)"
+            : "PT embutida mantida, sem validação (sem referência de tempo confiável)"
         if cands.isEmpty { return }
-        var lg = "ranking das legendas:"
-        let use = PlayerWindowController.rankAll(cands, len: len, lg: &lg)
-        log(lg)
+        let lg = StrBuf().a("ranking das legendas:")
+        let use = SubtitleSync.rank(cands, len, srcName, lg)
+        log(lg.s)
         let embeddedFirst = embeddedPtId != nil
         for (i, c) in use.enumerated() where i < 6 {
-            _ = player.addPlaybackSlave(c.url, type: .subtitle, enforce: i == 0 && !embeddedFirst)
+            guard let f = c.file else { continue }
+            _ = player.addPlaybackSlave(f, type: .subtitle, enforce: i == 0 && !embeddedFirst)
             addedSubs += 1
             attached.append(c)
-            subLabels.append("Português \(subLabels.count + 1)" + (c.aligned ? " (sincronizada)" : c.hashMatch ? " (do hash)" : "") + (c.fixed ? " (corrigida)" : ""))
+            subLabels.append("Português \(subLabels.count + 1)" + (c.aligned ? (c.pieced ? " (sincronizada por partes)" : " (sincronizada)") : c.consensus ? " (consenso)" : c.hashMatch ? " (do hash)" : "") + (c.fixed ? " (corrigida)" : "") + (c.sparse ? " (poucas falas)" : ""))
         }
         if embeddedFirst && !userPickedSub, let id = embeddedPtId { player.currentVideoSubTitleIndex = Int32(id) }
         if let f = use.first {
             let pick: String = embeddedFirst ? "embutida (faixa \(embeddedPtId ?? -1))" : "candidata #\(f.rank)"
-            let sc = String(format: "%.2f", f.alignScore)
-            log("escolhida: " + pick + "; melhor baixada: #\(f.rank) alinhada=\(f.aligned) nota=" + sc + " deslocamento=\(f.alignOffsetMs)ms hash=\(f.hashMatch) corrigida=\(f.fixed); \(addedSubs) no menu")
+            log("escolhida: " + pick + "; melhor baixada: #\(f.rank) alinhada=\(f.aligned) nota=" + J.fmt(f.alignScore, 2) + " deslocamento=\(f.alignOffsetMs)ms hash=\(f.hashMatch) corrigida=\(f.fixed); \(addedSubs) no menu")
         }
-        applySubDelay()
+        syncDelayToTrack(embeddedFirst && !userPickedSub ? (embeddedPtId ?? -1) : Int(player.currentVideoSubTitleIndex))
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) { [weak self] in
-            guard let self = self else { return }
-            self.applySubDelay()
+            guard let self = self, !self.finished else { return }
             if embeddedFirst && !self.userPickedSub, let id = self.embeddedPtId { self.player.currentVideoSubTitleIndex = Int32(id) }
+            self.syncDelayToTrack(Int(self.player.currentVideoSubTitleIndex))
         }
-    }
-
-    /** ordem final: primeiro as alinhadas à referência (maior nota primeiro); depois as demais pela heurística de fim da legenda */
-    private static func rankAll(_ all: [SubCand], len: Int64, lg: inout String) -> [SubCand] {
-        let good = all.filter { $0.aligned }.sorted { (a: SubCand, b: SubCand) -> Bool in
-            if a.alignScore != b.alignScore { return a.alignScore > b.alignScore }
-            return a.rank < b.rank
+        // a legenda baixada escolhida por addPlaybackSlave pode demorar a ficar ativa: confere de novo
+        DispatchQueue.main.asyncAfter(deadline: .now() + 4) { [weak self] in
+            guard let self = self, !self.finished else { return }
+            self.syncDelayToTrack(Int(self.player.currentVideoSubTitleIndex))
         }
-        let rest = all.filter { !$0.aligned }
-        return good + rankCands(rest, len: len, lg: &lg)
-    }
-
-    // ---------- ranking e correção de taxa de quadros ----------
-    /** razões entre taxas de quadros que dá para distinguir pelo fim da legenda (24/23,976 é pequena demais: 0,1%) */
-    private static let fpsFactors: [Double] = [25.0 / 23.976, 23.976 / 25.0, 25.0 / 24.0, 24.0 / 25.0]
-
-    private static func matchFactor(_ ratio: Double) -> Double {
-        var best = 0.0, bestD = 0.012 // tolerância de 1,2%
-        for f in fpsFactors {
-            let d = abs(ratio - f)
-            if d < bestD { bestD = d; best = f }
-        }
-        return best
-    }
-
-    private static func plausible(_ last: Int64, _ len: Int64) -> Bool {
-        return last > 0 && Double(last) >= Double(len) * 0.6 && Double(last) <= Double(len) * 1.05
-    }
-
-    /** Heurística: a última fala costuma terminar alguns minutos antes do fim do vídeo (créditos), então não
-        comparamos com a duração e sim com uma legenda de REFERÊNCIA:
-        1) a primeira candidata que o addon marcou como casando com o hash do arquivo (e com duração plausível); ou
-        2) se não houver, o maior grupo de candidatas cujo fim da última fala difere menos de 1,5% (mín. 2).
-        Uma candidata (que não seja de hash) cujo fim é ~4,27% maior/menor que o da referência (25/23,976 ou 23,976/25;
-        também 25/24 e 24/25) foi feita para outra taxa de quadros: reescalamos todos os tempos pelo fator inverso,
-        conferimos que agora bate com a referência (1,5%) e marcamos como "corrigida".
-        Nota = ajuste à referência (ou a 0,93 da duração, sem referência) + 0,01 por posição na lista do addon
-        + 0,01 se corrigida - 0,02 se casa com o hash. Menor = melhor. Fim fora de 0,5x..1,12x da duração é descartado. */
-    private static func rankCands(_ all: [SubCand], len: Int64, lg: inout String) -> [SubCand] {
-        var sorted = all.sorted { $0.rank < $1.rank }
-        if len <= 0 || sorted.isEmpty { return sorted }
-        var ref: Int64 = 0
-        var why = "sem referência"
-        for c in sorted where c.hashMatch && plausible(c.lastMs, len) { ref = c.lastMs; why = "legenda do hash #\(c.rank)"; break }
-        if ref == 0 {
-            var bestN = 0
-            for a in sorted where plausible(a.lastMs, len) {
-                var n = 0
-                for b in sorted where b.rank != a.rank && b.lastMs > 0 && abs(Double(b.lastMs) / Double(a.lastMs) - 1) <= 0.015 { n += 1 }
-                if n > bestN { bestN = n; ref = a.lastMs }
-            }
-            if ref > 0 { why = "grupo de \(bestN + 1) legendas parecidas" }
-        }
-        lg += "referência de fim=\(ref)ms (\(why)), duração=\(len)ms"
-
-        if ref > 0 {
-            for i in 0..<sorted.count {
-                let c = sorted[i]
-                if c.hashMatch || c.lastMs <= 0 { continue }
-                let f = matchFactor(Double(c.lastMs) / Double(ref))
-                if f <= 0 { continue }
-                let fixed = rescale(c.text, 1.0 / f)
-                let nl = c.ext == "ass" ? lastCueEnd(fixed, pattern: assEndPattern) : lastCueEnd(fixed, pattern: cueEndPattern)
-                if nl <= 0 || abs(Double(nl) / Double(ref) - 1) > 0.015 { continue }
-                do { try Data(fixed.utf8).write(to: c.url) } catch { continue }
-                lg += "\n  #\(c.rank) corrigida: fim \(c.lastMs)->\(nl)ms (fator \(String(format: "%.4f", f)))"
-                sorted[i].text = fixed
-                sorted[i].lastMs = nl
-                sorted[i].fixed = true
-            }
-        }
-
-        var use = sorted.filter { $0.lastMs <= 0 || (Double($0.lastMs) >= Double(len) * 0.5 && Double($0.lastMs) <= Double(len) * 1.12) }
-        if use.isEmpty { use = sorted }
-        for i in 0..<use.count {
-            var fit = 0.3
-            if use[i].lastMs > 0 {
-                let d = ref > 0 ? abs(Double(use[i].lastMs) / Double(ref) - 1) : abs(Double(use[i].lastMs) / Double(len) - 0.93)
-                fit = min(0.3, max(0, d - 0.005))
-            }
-            use[i].score = fit + 0.01 * Double(use[i].rank) + (use[i].fixed ? 0.01 : 0) - (use[i].hashMatch ? 0.02 : 0)
-            lg += "\n  #\(use[i].rank) fim=\(use[i].lastMs)ms hash=\(use[i].hashMatch) corrigida=\(use[i].fixed) nota=\(String(format: "%.4f", use[i].score))"
-        }
-        use.sort { $0.score < $1.score }
-        return use
-    }
-
-    /** multiplica por k todos os tempos das falas (SRT/VTT: linhas "a --> b"; ASS: linhas "Dialogue:") */
-    private static func rescale(_ text: String, _ k: Double) -> String {
-        let lines = text.components(separatedBy: "\n")
-        var out: [String] = []
-        out.reserveCapacity(lines.count)
-        for ln in lines {
-            if ln.contains("-->") { out.append(scaleStamps(ln, pattern: "(?:(\\d+):)?(\\d{1,2}):(\\d\\d)([,.])(\\d{3})", k: k, limit: 100, ass: false)) }
-            else if ln.hasPrefix("Dialogue:") { out.append(scaleStamps(ln, pattern: "(\\d+):(\\d\\d):(\\d\\d)[.](\\d\\d?)", k: k, limit: 2, ass: true)) }
-            else { out.append(ln) }
-        }
-        return out.joined(separator: "\n")
-    }
-
-    private static func scaleStamps(_ line: String, pattern: String, k: Double, limit: Int, ass: Bool) -> String {
-        guard let re = try? NSRegularExpression(pattern: pattern) else { return line }
-        let ns = line as NSString
-        let result = NSMutableString(string: line)
-        let found = Array(re.matches(in: line, range: NSRange(location: 0, length: ns.length)).prefix(limit))
-        for m in found.reversed() {
-            func grp(_ i: Int) -> String {
-                let r = m.range(at: i)
-                return r.location == NSNotFound ? "" : ns.substring(with: r)
-            }
-            let h = Int64(grp(1)) ?? 0
-            let mi = Int64(grp(2)) ?? 0
-            let se = Int64(grp(3)) ?? 0
-            let rep: String
-            if ass {
-                let frac = grp(4)
-                let cs = (Int64(frac) ?? 0) * (frac.count == 1 ? 10 : 1)
-                let total = (((h * 60 + mi) * 60 + se) * 100 + cs)
-                let n = Int64((Double(total) * k).rounded())
-                rep = String(format: "%lld:%02lld:%02lld.%02lld", n / 360000, (n / 6000) % 60, (n / 100) % 60, n % 100)
-            } else {
-                let ms = ((h * 60 + mi) * 60 + se) * 1000 + (Int64(grp(5)) ?? 0)
-                let n = Int64((Double(ms) * k).rounded())
-                rep = String(format: "%02lld:%02lld:%02lld%@%03lld", n / 3600000, (n / 60000) % 60, (n / 1000) % 60, grp(4), n % 1000)
-            }
-            result.replaceCharacters(in: m.range, with: rep)
-        }
-        return result as String
     }
 
     /** liga a PT/BR que vier dentro do arquivo (vem perfeitamente sincronizada); se não houver nada em português, desliga */
     private func selectEmbeddedPortuguese() {
         guard !embeddedCheckDone, !finished else { return }
         embeddedCheckDone = true
-        if let id = findEmbeddedPt() {
+        if let id = findEmbeddedPt(allowForced: cands.isEmpty && !subsDownloaded) {
             embeddedPtId = id
-            if !userPickedSub { player.currentVideoSubTitleIndex = Int32(id) }
+            if !userPickedSub { player.currentVideoSubTitleIndex = Int32(id); syncDelayToTrack(id) }
             return
         }
         if addedSubs > 0 { return }
@@ -962,13 +752,12 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
     }
 
     @objc private func chooseSubtitles(_ sender: NSButton) {
-        let names = (player.videoSubTitlesNames as? [String]) ?? []
-        let ids = (player.videoSubTitlesIndexes as? [NSNumber])?.map { $0.intValue } ?? []
+        let tracks = subTracks()
         let current = Int(player.currentVideoSubTitleIndex)
         var rows: [(String, Int)] = []
         var chosen: String? = current == -1 ? "desativada" : nil
         var n = 0
-        for (i, id) in ids.enumerated() where i < names.count {
+        for (id, name) in tracks {
             if id == -1 { rows.append(("Desativado", id)); continue }
             if isDownloaded(id) {
                 n += 1
@@ -976,24 +765,20 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
                 rows.append((title, id))
                 if id == current && n <= attached.count {
                     let c = attached[n - 1]
-                    var adj = "sem ajuste"
-                    if c.aligned {
-                        adj = "ajuste \(PlayerWindowController.signedSecs(c.alignOffsetMs))"
-                        if c.alignScale != 1.0 { adj += ", velocidade ×" + String(format: "%.4f", c.alignScale).replacingOccurrences(of: ".", with: ",") }
-                    } else if c.fixed { adj = "velocidade corrigida" }
+                    let adj = !c.alignNote.isEmpty ? c.alignNote : c.fixed ? "velocidade corrigida" : "sem ajuste auto"
                     chosen = "\(title) (\(adj))"
                 }
-            } else if isPortuguese(names[i]) {
-                rows.append(("Embutida: \(names[i])", id))
-                if id == current { chosen = "Embutida: \(names[i])" }
+            } else if isPortuguese(name) {
+                rows.append(("Embutida: \(name)", id))
+                if id == current { chosen = "Embutida: \(name)" }
             }
         }
         let menu = NSMenu()
-        menu.addItem(greyItem(diagId))
-        var second = !subsDownloaded ? "baixando legendas…" : (cands.count == 1 ? "1 legenda PT" : "\(cands.count) legendas PT")
-        if !diagRef.isEmpty { second += " · " + diagRef }
-        menu.addItem(greyItem(second))
-        if let c = chosen { menu.addItem(greyItem("escolhida: " + c + (subDelayMs != 0 ? " · atraso " + PlayerWindowController.signedSecs(Int64(subDelayMs)) : ""))) }
+        menu.addItem(greyItem(diagId + " · " + (!subsDownloaded ? "baixando legendas…" : cands.count == 1 ? "1 legenda PT" : "\(cands.count) legendas PT")))
+        menu.addItem(greyItem("Hash: " + diagHash + " · Referência: " + (diagRef.isEmpty ? "…" : diagRef)))
+        if !diagEmb.isEmpty { menu.addItem(greyItem(diagEmb)) }
+        if let c = chosen { menu.addItem(greyItem("Escolhida: " + c)) }
+        menu.addItem(greyItem("Atraso manual: " + (subDelayMs == 0 ? "0,0 s" : SubtitleSync.signedSecs(Int64(subDelayMs)))))
         menu.addItem(NSMenuItem.separator())
         if rows.count <= 1 {
             menu.addItem(withTitle: !subsDownloaded ? "Procurando legendas em português…" : "Não há legendas em português", action: nil, keyEquivalent: "")
@@ -1005,67 +790,431 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
                 item.state = current == id ? .on : .off
                 menu.addItem(item)
             }
-            menu.addItem(NSMenuItem.separator())
-            let sync = NSMenuItem(title: "Sincronizar legenda… (\(delayLabel()))", action: #selector(showSyncSheet), keyEquivalent: "")
-            sync.target = self
-            menu.addItem(sync)
         }
+        menu.addItem(NSMenuItem.separator())
+        let sync = NSMenuItem(title: "Sincronizar legenda…", action: #selector(showSyncPanel), keyEquivalent: "")
+        sync.target = self
+        menu.addItem(sync)
         menu.popUp(positioning: nil, at: NSPoint(x: 0, y: sender.bounds.height + 4), in: sender)
         showControls()
     }
     @objc private func pickSubtitle(_ item: NSMenuItem) {
         userPickedSub = true
         player.currentVideoSubTitleIndex = Int32(item.tag)
+        syncDelayToTrack(item.tag)
     }
 
     // ---------- ajuste manual do atraso da legenda ----------
-    // VLCKit: currentVideoSubTitleDelay em microssegundos; positivo = a legenda aparece MAIS TARDE
-    private func delayKey() -> String { "fp-subdelay-" + (metaId.isEmpty ? positionKey() : metaId) }
+    // VLCKit: currentVideoSubTitleDelay em microssegundos; positivo = a legenda aparece MAIS TARDE.
+    // O atraso é guardado por VÍDEO + FONTE (hash/nome do arquivo) + LEGENDA (url da baixada ou "emb:" + nome da faixa), como no Android ("sub-delay-4"):
+    // só volta a ser aplicado quando a mesma fonte E a mesma legenda estão ativas. O antigo "fp-subdelay-" (por título) não é mais lido.
+    private static let delayPrefs = "sub-delay-4:"
+    private static let maxDelayMs = 600000
+
+    /** String.hashCode() do Java (sobre as unidades UTF-16) */
+    private static func javaHash(_ s: String) -> Int32 {
+        var h: Int32 = 0
+        for u in s.utf16 { h = h &* 31 &+ Int32(u) }
+        return h
+    }
+
+    private func sourceId() -> String {
+        if let h = srcHash { return "h:" + h }
+        if let n = srcName ?? PlayerWindowController.fileName(of: url, VideoHash()) { return "f:" + n }
+        var u = url.absoluteString
+        if let q = u.firstIndex(of: "?") { u = String(u[u.startIndex..<q]) }
+        return "u:" + String(UInt32(bitPattern: PlayerWindowController.javaHash(u)), radix: 16)
+    }
+
+    /** legenda baixada que corresponde à faixa do VLC (as baixadas são as faixas novas, na ordem em que foram adicionadas); nil se for embutida/desativada */
+    private func candForTrack(_ trackId: Int) -> SubtitleSync.Cand? {
+        if trackId == -1 { return nil }
+        var n = 0
+        for (id, _) in subTracks() {
+            if id == -1 || !isDownloaded(id) { continue }
+            if id == trackId { return n < attached.count ? attached[n] : nil }
+            n += 1
+        }
+        return nil
+    }
+
+    /** chave do atraso para a faixa; nil se não há legenda ativa */
+    private func delayKeyFor(_ trackId: Int) -> String? {
+        if trackId == -1 { return nil }
+        var sub: String? = nil
+        if let c = candForTrack(trackId) {
+            // o atraso manual é medido em cima do arquivo JÁ reescrito pelo ajuste automático: se o ajuste for outro, o atraso guardado não vale
+            sub = (c.url ?? "cand\(c.rank)") + "#" + c.sig
+        } else {
+            for (id, name) in subTracks() where id == trackId { sub = "emb:" + name }
+        }
+        guard let s = sub else { return nil }
+        return "d3:" + (metaId.isEmpty ? "u" : metaId) + "|" + sourceId() + "|" + s
+    }
+
+    private func savedDelay(_ key: String?) -> Int {
+        guard let k = key else { return 0 }
+        return UserDefaults.standard.integer(forKey: PlayerWindowController.delayPrefs + k)
+    }
+
+    /** a legenda ativa mudou (ou ficou conhecida): carrega o atraso guardado dela (ou 0) e aplica */
+    private func syncDelayToTrack(_ trackId: Int) {
+        let k = delayKeyFor(trackId)
+        let tag = k ?? ""
+        if tag == lastSyncKey { return }
+        lastSyncKey = tag
+        let m = PlayerWindowController.maxDelayMs
+        subDelayMs = max(-m, min(m, savedDelay(k)))
+        applySubDelay()
+        log("atraso da legenda ativa (\(k ?? "nenhuma")): \(subDelayMs) ms")
+        if subDelayMs != 0 && tag != announcedKey {
+            announcedKey = tag
+            notice("Legenda: atraso guardado " + SubtitleSync.signedSecs(Int64(subDelayMs)))
+        }
+    }
+
+    private func notice(_ s: String, seconds: Double = 3) {
+        noticeLabel.stringValue = "  " + s + "  "
+        noticeLabel.isHidden = false
+        noticeUntil = Date().addingTimeInterval(seconds)
+    }
 
     private func applySubDelay() { player.currentVideoSubTitleDelay = subDelayMs * 1000 }
 
     private func delayLabel() -> String {
-        return "Atraso da legenda: " + (subDelayMs == 0 ? "0,0 s" : PlayerWindowController.signedSecs(Int64(subDelayMs)))
+        return "Atraso da legenda: " + (subDelayMs == 0 ? "0,0 s" : SubtitleSync.signedSecs(Int64(subDelayMs)))
     }
 
-    private func changeSubDelay(_ delta: Int, reset: Bool) {
-        subDelayMs = reset ? 0 : max(-60000, min(60000, subDelayMs + delta))
-        UserDefaults.standard.set(subDelayMs, forKey: delayKey())
-        applySubDelay()
-        delayValueLabel?.stringValue = delayLabel()
-        log("atraso da legenda: \(subDelayMs) ms")
-    }
-    /** o tag do botão é o passo em ms; 0 = repor */
-    @objc private func syncStep(_ sender: NSButton) { changeSubDelay(sender.tag, reset: sender.tag == 0) }
-
-    @objc private func showSyncSheet() {
-        guard let w = window else { return }
-        let value = NSTextField(labelWithString: delayLabel())
-        value.font = .boldSystemFont(ofSize: 18)
-        value.alignment = .center
-        delayValueLabel = value
-        func syncButton(_ title: String, _ step: Int) -> NSButton {
-            let b = NSButton(title: title, target: self, action: #selector(syncStep(_:)))
-            b.bezelStyle = .rounded
-            b.tag = step
-            return b
+    /** define o atraso da legenda ativa (limite ±600 s), guarda por fonte+legenda, aplica e atualiza o texto */
+    private func setSubDelay(_ ms: Int) {
+        let m = PlayerWindowController.maxDelayMs
+        subDelayMs = max(-m, min(m, ms))
+        let k = delayKeyFor(Int(player.currentVideoSubTitleIndex))
+        if let k = k {
+            lastSyncKey = k
+            UserDefaults.standard.set(subDelayMs, forKey: PlayerWindowController.delayPrefs + k)
         }
-        let cap1 = NSTextField(labelWithString: "A legenda aparece ANTES da fala:")
-        let row1 = NSStackView(views: [syncButton("Atrasar +0,5 s", 500), syncButton("Atrasar +5 s", 5000)])
-        let cap2 = NSTextField(labelWithString: "A legenda aparece DEPOIS da fala:")
-        let row2 = NSStackView(views: [syncButton("Adiantar −0,5 s", -500), syncButton("Adiantar −5 s", -5000)])
-        for r in [row1, row2] { r.orientation = .horizontal; r.spacing = 10 }
-        let stack = NSStackView(views: [value, cap1, row1, cap2, row2, syncButton("Repor", 0)])
+        applySubDelay()
+        syncValue?.stringValue = delayLabel()
+        log("atraso da legenda: \(subDelayMs) ms (\(k ?? "sem legenda ativa, não guardado"))")
+    }
+
+    private func changeSubDelay(_ delta: Int, reset: Bool) { setSubDelay(reset ? 0 : subDelayMs + delta) }
+
+    // ---------- painel "Sincronizar legenda" (por cima do vídeo; teclado: setas/Enter/Esc; mouse: clique, segurar repete) ----------
+    private func panelLabel(_ s: String, _ size: CGFloat, bold: Bool = false, color: NSColor = .white) -> NSTextField {
+        let t = NSTextField(wrappingLabelWithString: s)
+        t.font = bold ? .boldSystemFont(ofSize: size) : .systemFont(ofSize: size)
+        t.textColor = color
+        t.alignment = .center
+        t.maximumNumberOfLines = 0
+        t.preferredMaxLayoutWidth = 420
+        return t
+    }
+
+    private func syncButton(_ title: String) -> SyncButton {
+        let b = SyncButton(title: title, target: nil, action: nil)
+        b.setButtonType(.momentaryPushIn)
+        b.isBordered = false
+        b.wantsLayer = true
+        b.layer?.cornerRadius = 12
+        b.layer?.backgroundColor = NSColor(white: 1, alpha: 0.16).cgColor
+        b.layer?.borderWidth = 1
+        b.layer?.borderColor = NSColor(white: 1, alpha: 0.18).cgColor
+        b.attributedTitle = NSAttributedString(string: "  \(title)  ", attributes: [.foregroundColor: NSColor.white, .font: NSFont.boldSystemFont(ofSize: 15)])
+        b.refusesFirstResponder = true
+        return b
+    }
+
+    /** botão de passo: toque = um passo; segurar repete a cada ~150 ms e acelera (1×, 3×, 10×, 30×) */
+    private func stepButton(_ title: String, _ delta: Int) -> SyncButton {
+        let b = syncButton(title)
+        b.onTap = { [weak self] in self?.changeSubDelay(delta, reset: false) }
+        b.onHold = { [weak self] el in
+            let mult = el < 1.5 ? 1 : el < 3 ? 3 : el < 5 ? 10 : 30
+            self?.changeSubDelay(delta * mult, reset: false)
+        }
+        return b
+    }
+
+    private func makePanel() -> NSVisualEffectView {
+        let p = NSVisualEffectView()
+        p.material = .hudWindow
+        p.blendingMode = .withinWindow
+        p.state = .active
+        p.appearance = NSAppearance(named: .darkAqua)
+        p.wantsLayer = true
+        p.layer?.cornerRadius = 18
+        p.translatesAutoresizingMaskIntoConstraints = false
+        return p
+    }
+
+    private func place(_ p: NSView, in stack: NSStackView, width: CGFloat) {
+        stack.translatesAutoresizingMaskIntoConstraints = false
+        p.addSubview(stack)
+        root.addSubview(p)
+        NSLayoutConstraint.activate([
+            stack.leadingAnchor.constraint(equalTo: p.leadingAnchor, constant: 24),
+            stack.trailingAnchor.constraint(equalTo: p.trailingAnchor, constant: -24),
+            stack.topAnchor.constraint(equalTo: p.topAnchor, constant: 20),
+            stack.bottomAnchor.constraint(equalTo: p.bottomAnchor, constant: -20),
+            p.widthAnchor.constraint(equalToConstant: width),
+            p.centerXAnchor.constraint(equalTo: root.centerXAnchor),
+            p.centerYAnchor.constraint(equalTo: root.centerYAnchor),
+        ])
+    }
+
+    private func buttonRow(_ bs: [SyncButton]) -> NSStackView {
+        let r = NSStackView(views: bs)
+        r.orientation = .horizontal
+        r.spacing = 12
+        return r
+    }
+
+    private func setSyncFocus(_ r: Int, _ c: Int) {
+        guard !syncRows.isEmpty else { return }
+        let rr = max(0, min(syncRows.count - 1, r))
+        let cc = max(0, min(syncRows[rr].count - 1, c))
+        syncFocus = (rr, cc)
+        for (i, row) in syncRows.enumerated() { for (j, b) in row.enumerated() { b.focused = (i == rr && j == cc) } }
+    }
+
+    @objc private func showSyncPanel() {
+        closePanels()
+        let active = candForTrack(Int(player.currentVideoSubTitleIndex))
+        let value = panelLabel(delayLabel(), 20, bold: true)
+        syncValue = value
+        var views: [NSView] = [panelLabel("Sincronizar legenda", 22, bold: true)]
+        var rows: [[SyncButton]] = []
+        if let a = active, a.text != nil {
+            // principal: acertar pela fala (só com legenda baixada ativa: a embutida não tem texto acessível)
+            let sp = syncButton("Sincronizar pela fala")
+            sp.onTap = { [weak self] in self?.showSpeechPicker(a) }
+            rows.append([sp])
+            views.append(buttonRow([sp]))
+            views.append(panelLabel("Pause numa fala, escolha-a na lista e a legenda acerta sozinha.", 13, color: NSColor(white: 0.63, alpha: 1)))
+        } else {
+            views.append(panelLabel("Sincronizar pela fala: ative uma legenda baixada (a embutida não permite). Use os botões abaixo.", 13, color: NSColor(red: 1, green: 0.78, blue: 0.34, alpha: 1)))
+        }
+        views.append(value)
+        let m30 = stepButton("−30 s", -30000), m5 = stepButton("−5 s", -5000), m1 = stepButton("−1 s", -1000)
+        let p1 = stepButton("+1 s", 1000), p5 = stepButton("+5 s", 5000), p30 = stepButton("+30 s", 30000)
+        let m05 = stepButton("−0,5 s", -500), p05 = stepButton("+0,5 s", 500)
+        let reset = syncButton("Repor")
+        reset.onTap = { [weak self] in self?.changeSubDelay(0, reset: true) }
+        let close = syncButton("Fechar")
+        close.onTap = { [weak self] in self?.closePanels() }
+        views.append(panelLabel("Legenda DEPOIS da fala (adiantar):", 14))
+        views.append(buttonRow([m30, m5, m1]))
+        views.append(panelLabel("Legenda ANTES da fala (atrasar):", 14))
+        views.append(buttonRow([p1, p5, p30]))
+        views.append(buttonRow([m05, p05, reset]))
+        views.append(panelLabel("Segure o botão para repetir (acelera). Setas escolhem, Enter aplica, Esc fecha.", 12, color: NSColor(white: 0.63, alpha: 1)))
+        views.append(buttonRow([close]))
+        let startRow = rows.count
+        rows.append([m30, m5, m1])
+        rows.append([p1, p5, p30])
+        rows.append([m05, p05, reset])
+        rows.append([close])
+        let stack = NSStackView(views: views)
         stack.orientation = .vertical
         stack.alignment = .centerX
         stack.spacing = 8
-        stack.setFrameSize(NSSize(width: 340, height: 190))
-        let alert = NSAlert()
-        alert.messageText = "Sincronizar legenda"
-        alert.accessoryView = stack
-        alert.addButton(withTitle: "Fechar")
-        alert.beginSheetModal(for: w) { [weak self] _ in self?.delayValueLabel = nil }
+        let p = makePanel()
+        place(p, in: stack, width: 480)
+        syncPanel = p
+        syncRows = rows
+        setSyncFocus(startRow + 1, 0) // como no Android: o foco começa no +1 s
+        window?.makeFirstResponder(overlay)
         showControls()
+    }
+
+    private func closePanels() {
+        syncPanel?.removeFromSuperview(); syncPanel = nil
+        speechPanel?.removeFromSuperview(); speechPanel = nil
+        syncRows = []
+        syncValue = nil
+        speechTable = nil
+        if speechWasPlaying { speechWasPlaying = false; player.play() }
+        window?.makeFirstResponder(overlay)
+    }
+
+    /** teclas com um painel aberto (devolve true: a tecla foi usada) */
+    private func panelKey(_ e: NSEvent) -> Bool {
+        if speechPanel != nil {
+            guard let t = speechTable else { return true }
+            switch e.keyCode {
+            case 53: closePanels()
+            case 126: speechSelect(t.selectedRow - 1)
+            case 125: speechSelect(t.selectedRow + 1)
+            case 116: speechSelect(t.selectedRow - 8)
+            case 121: speechSelect(t.selectedRow + 8)
+            case 36, 76: speechChoose(t.selectedRow)
+            default: break
+            }
+            return true
+        }
+        switch e.keyCode {
+        case 53: closePanels()
+        case 123: setSyncFocus(syncFocus.0, syncFocus.1 - 1)
+        case 124: setSyncFocus(syncFocus.0, syncFocus.1 + 1)
+        case 126: setSyncFocus(syncFocus.0 - 1, syncFocus.1)
+        case 125: setSyncFocus(syncFocus.0 + 1, syncFocus.1)
+        case 36, 76, 49:
+            guard syncFocus.0 < syncRows.count, syncFocus.1 < syncRows[syncFocus.0].count else { return true }
+            let b = syncRows[syncFocus.0][syncFocus.1]
+            if !e.isARepeat { enterStart = Date(); enterLast = Date.distantPast; b.onTap?() }
+            else if let h = b.onHold, Date().timeIntervalSince(enterLast) >= 0.15 {
+                enterLast = Date()
+                h(Date().timeIntervalSince(enterStart))
+            }
+        default: break
+        }
+        return true
+    }
+
+    static func clockString(_ ms: Int64) -> String {
+        let s = max(0, ms) / 1000, h = s / 3600, m = (s % 3600) / 60, sec = s % 60
+        return h > 0 ? String(format: "%d:%02d:%02d", h, m, sec) : String(format: "%02d:%02d", m, sec)
+    }
+
+    /** "Sincronizar pela fala": pausa, lista as falas da legenda ativa em volta do momento (±180 s no tempo da legenda) e,
+        ao escolher a que estava sendo dita, o atraso passa a ser (tempo atual do vídeo − início dessa fala) */
+    private func showSpeechPicker(_ active: SubtitleSync.Cand) {
+        guard let text = active.text else { return }
+        let wasPlaying = player.isPlaying
+        closePanels()
+        if wasPlaying { player.pause() }
+        speechWasPlaying = wasPlaying
+        let now = Int64(player.time.intValue)
+        let center = now - Int64(subDelayMs) // onde estamos no tempo da legenda
+        var list: [SubtitleAlign.Cue] = []
+        var sel = 0
+        var bestD = Int64.max
+        for c in SubtitleAlign.cues(text) {
+            let d = abs(c.startMs - center)
+            if d > 180000 { continue }
+            if d < bestD { bestD = d; sel = list.count }
+            list.append(c)
+        }
+        if list.isEmpty {
+            notice("Esta legenda não tem falas perto deste momento (±3 min). Use os botões de ajuste.", seconds: 5)
+            closePanels()
+            return
+        }
+        speechCues = list
+        speechNow = now
+        let table = NSTableView()
+        let col = NSTableColumn(identifier: NSUserInterfaceItemIdentifier("fala"))
+        col.width = 560
+        table.addTableColumn(col)
+        table.headerView = nil
+        table.backgroundColor = .clear
+        table.rowHeight = 26
+        table.dataSource = self
+        table.delegate = self
+        table.target = self
+        table.action = #selector(speechClicked)
+        table.selectionHighlightStyle = .regular
+        let scroll = NSScrollView()
+        scroll.documentView = table
+        scroll.hasVerticalScroller = true
+        scroll.drawsBackground = false
+        scroll.translatesAutoresizingMaskIntoConstraints = false
+        scroll.heightAnchor.constraint(equalToConstant: 340).isActive = true
+        scroll.widthAnchor.constraint(equalToConstant: 580).isActive = true
+        let stack = NSStackView(views: [
+            panelLabel("Qual fala estava sendo dita?", 20, bold: true),
+            panelLabel("Pause numa fala, escolha-a na lista e a legenda acerta sozinha. Setas e Enter, ou clique; Esc cancela.", 13, color: NSColor(white: 0.63, alpha: 1)),
+            scroll,
+        ])
+        stack.orientation = .vertical
+        stack.alignment = .centerX
+        stack.spacing = 10
+        let p = makePanel()
+        place(p, in: stack, width: 630)
+        speechPanel = p
+        speechTable = table
+        table.reloadData()
+        speechSelect(sel)
+        window?.makeFirstResponder(overlay)
+        showControls()
+    }
+
+    private func speechSelect(_ i: Int) {
+        guard let t = speechTable, !speechCues.isEmpty else { return }
+        let r = max(0, min(speechCues.count - 1, i))
+        t.selectRowIndexes(IndexSet(integer: r), byExtendingSelection: false)
+        t.scrollRowToVisible(r)
+    }
+
+    @objc private func speechClicked() {
+        if let t = speechTable, t.clickedRow >= 0 { speechChoose(t.clickedRow) }
+    }
+
+    private func speechChoose(_ i: Int) {
+        guard i >= 0 && i < speechCues.count else { return }
+        let m = PlayerWindowController.maxDelayMs
+        let nd = Int(max(Int64(-m), min(Int64(m), speechNow - speechCues[i].startMs)))
+        setSubDelay(nd)
+        notice("Atraso da legenda: " + SubtitleSync.signedSecs(Int64(nd)))
+        closePanels() // retoma a reprodução
+    }
+
+    /** comandos do teste automático (só no GitHub) */
+    func testCommand(_ line: String) {
+        let w = line.split(separator: " ").map(String.init)
+        guard let cmd = w.first else { return }
+        let n = w.count > 1 ? Int(w[1]) ?? 0 : 0
+        log("comando de teste: \(line)")
+        switch cmd {
+        case "scale": setScaleMode(n)
+        case "sync": showSyncPanel()
+        case "speech":
+            showSyncPanel()
+            if let c = candForTrack(Int(player.currentVideoSubTitleIndex)) { showSpeechPicker(c) }
+        case "delay": setSubDelay(n)
+        case "close": closePanels()
+        case "key":
+            let ev = NSEvent.keyEvent(with: .keyDown, location: .zero, modifierFlags: [], timestamp: 0, windowNumber: window?.windowNumber ?? 0,
+                                      context: nil, characters: "", charactersIgnoringModifiers: "", isARepeat: false, keyCode: UInt16(n))
+            if let ev = ev { _ = handleKey(ev) }
+        case "state":
+            log("estado: faixa=\(player.currentVideoSubTitleIndex) atraso=\(subDelayMs) vlcDelay=\(player.currentVideoSubTitleDelay) legendas=\(subTracks()) escolhida=\(candForTrack(Int(player.currentVideoSubTitleIndex))?.rank ?? -1)")
+        default: break
+        }
+    }
+
+    // ---------- tela: Ajustar / Preencher / Esticar ----------
+    // O VLC desenha as legendas DENTRO da imagem do vídeo. Por isso os 3 modos usam sempre a mesma vista (fillScreen = false, sem ampliar a vista):
+    // Ajustar = como vem (barras pretas); Esticar = proporção do VLC igual à da vista (distorce até encher); Preencher = recorte
+    // (videoCropGeometry com a proporção da vista: corta o excesso, sem distorcer). Assim a legenda fica inteira e dentro da tela nos 3 modos.
+    private static let scaleNames = ["Ajustar", "Preencher", "Esticar"]
+
+    private func applyScale(force: Bool = false) {
+        let w = Int(videoView.bounds.width.rounded()), h = Int(videoView.bounds.height.rounded())
+        if w <= 0 || h <= 0 { return }
+        if !force && lastScale.0 == w && lastScale.1 == h && lastScale.2 == scaleMode { return }
+        lastScale = (w, h, scaleMode)
+        videoView.fillScreen = false
+        let ratio = "\(w):\(h)"
+        if scaleMode == 2 { ratio.withCString { player.videoAspectRatio = UnsafeMutablePointer(mutating: $0) } }
+        else { player.videoAspectRatio = nil }
+        if scaleMode == 1 { ratio.withCString { player.videoCropGeometry = UnsafeMutablePointer(mutating: $0) } }
+        else { player.videoCropGeometry = nil }
+        log("tela: \(PlayerWindowController.scaleNames[scaleMode]) \(ratio)")
+    }
+
+    @objc private func toggleScale(_ sender: NSButton) {
+        setScaleMode((scaleMode + 1) % 3)
+        showControls()
+    }
+
+    func setScaleMode(_ m: Int) {
+        scaleMode = max(0, min(2, m))
+        scaleButton?.attributedTitle = NSAttributedString(string: "  Tela: \(PlayerWindowController.scaleNames[scaleMode])  ", attributes: [
+            .foregroundColor: NSColor.white, .font: NSFont.boldSystemFont(ofSize: 13)])
+        applyScale(force: true)
     }
 
     private static func get(_ url: URL) -> Data? {
@@ -1281,7 +1430,8 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
     }
 
     private static func encodeComponent(_ s: String, keep: String = "") -> String {
-        s.addingPercentEncoding(withAllowedCharacters: CharacterSet.alphanumerics.union(CharacterSet(charactersIn: "-._~" + keep))) ?? s
+        // como o Uri.encode do Android: só letras e dígitos ASCII e _-!.~'()* ficam como estão (mais `keep`)
+        s.addingPercentEncoding(withAllowedCharacters: CharacterSet(charactersIn: "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-!.~'()*" + keep)) ?? s
     }
 
     /** extras no formato do Stremio (videoHash=...&videoSize=...&filename=...), só com o que temos */
@@ -1292,49 +1442,18 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
         return parts.joined(separator: "&")
     }
 
-    private static let ptLangs: Set<String> = ["pob", "pt-br", "ptb", "ptbr", "por", "pt", "pt-pt"]
-
-    /** legendas do OpenSubtitles do Stremio: português (na ordem do addon, hash primeiro) e candidatas a referência (outro idioma) */
-    private static func searchOpenSubtitles(type: String, id: String, extras: String) -> SearchResult {
-        var res = SearchResult()
+    private static func search(_ type: String, _ id: String, _ extras: String) -> SubtitleSync.SearchResult {
         let path = "https://opensubtitles-v3.strem.io/subtitles/\(encodeComponent(type))/\(encodeComponent(id, keep: ":"))"
             + (extras.isEmpty ? "" : "/" + extras) + ".json"
-        guard let api = URL(string: path),
-              let data = get(api),
-              let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-              let list = json["subtitles"] as? [[String: Any]] else { return res }
-        res.ok = true
-        res.total = list.count
-        var others: [FoundSub] = []
-        for s in list {
-            let lang = (s["lang"] as? String ?? "").lowercased()
-            guard let u = (s["url"] as? String).flatMap(URL.init(string:)) else { continue }
-            if s["m"] != nil { res.sawMatchField = true }
-            // o addon marca com m="f" as que casam com o hash do arquivo (m="i" = só o título)
-            let hash = (s["m"] as? String) == "f"
-            if ptLangs.contains(lang) { if res.pt.count < 10 { res.pt.append(FoundSub(url: u, hashMatch: hash, lang: lang)) } }
-            else { others.append(FoundSub(url: u, hashMatch: hash, lang: lang)) }
-        }
-        // referência: de preferência inglês (eng) com hash; até 3
-        for pass in 0..<2 {
-            for f in others where res.refs.count < 3 {
-                let eng = f.lang == "eng" || f.lang == "en"
-                if f.hashMatch && ((pass == 0) == eng) { res.refs.append(f) }
-            }
-        }
-        if res.refs.isEmpty && !res.sawMatchField {
-            // sem o campo "m" não dá para saber quem casa com o hash: usa as primeiras (inglês antes) e o alinhamento confere
-            res.refsAssumed = true
-            for f in others where (f.lang == "eng" || f.lang == "en") && res.refs.count < 2 { res.refs.append(f) }
-            for f in others where res.refs.count < 2 && !res.refs.contains(where: { $0.url == f.url }) { res.refs.append(f) }
-        }
-        return res
+        guard let api = URL(string: path) else { return SubtitleSync.SearchResult() }
+        return SubtitleSync.parseSearch(get(api))
     }
 
     // ---------- fechar ----------
     @objc func closePlayer() { window?.performClose(nil) }
 
     func windowWillClose(_ notification: Notification) { finish() }
+    func windowDidResize(_ notification: Notification) { applyScale() }
 
     override func close() {
         finish()
@@ -1364,146 +1483,62 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
 }
 
 
-/** Alinhamento de legendas por referência: procura t' = t * escala + deslocamento que põe os INÍCIOS das falas da
-    candidata em cima dos da legenda de referência (outro idioma, mesmo hash). Não usa nome, id nem duração do título. */
-enum SubtitleAlign {
-    static let scales: [Double] = [1.0, 25.0 / 23.976, 23.976 / 25.0, 24.0 / 23.976, 23.976 / 24.0, 25.0 / 24.0, 24.0 / 25.0]
-    static let coarseRange: Int64 = 120000
-    static let coarseBin: Int64 = 250
-    static let tolerance: Int64 = 300
-    static let minScore = 0.35
-    static let scaleMargin = 0.05
-
-    struct Fit {
-        var scale = 1.0
-        var offsetMs: Int64 = 0
-        var score = 0.0
-        var ok: Bool { return score >= SubtitleAlign.minScore }
+/** botão do painel de sincronização: clique = onTap; segurar (mouse) repete onHold a cada ~150 ms, depois de 0,4 s; borda branca = foco do teclado */
+final class SyncButton: NSButton {
+    var onTap: (() -> Void)?
+    /** segurando: segundos desde o começo do segurar */
+    var onHold: ((TimeInterval) -> Void)?
+    private var holdTimer: Timer?
+    private var holdStart = Date()
+    private var held = false
+    var focused = false {
+        didSet {
+            layer?.borderWidth = focused ? 3 : 1
+            layer?.borderColor = NSColor(white: 1, alpha: focused ? 1 : 0.18).cgColor
+            layer?.backgroundColor = NSColor(white: 1, alpha: focused ? 0.28 : 0.16).cgColor
+        }
     }
 
-    private static let startRegex = try? NSRegularExpression(
-        pattern: "^[ \\t]*(?:(\\d+):)?(\\d{1,2}):(\\d\\d)[,.](\\d{3})[ \\t]*-->", options: [.anchorsMatchLines])
+    override var acceptsFirstResponder: Bool { false }
 
-    /** início de cada fala (ms), em ordem crescente (SRT ou VTT); no máximo 6000 */
-    static func cueStarts(_ text: String) -> [Int64] {
-        guard let re = startRegex else { return [] }
-        let ns = text as NSString
-        var out: [Int64] = []
-        for m in re.matches(in: text, range: NSRange(location: 0, length: ns.length)) {
-            if out.count >= 6000 { break }
-            func g(_ i: Int) -> Int64 {
-                let r = m.range(at: i)
-                if r.location == NSNotFound || r.length == 0 { return 0 }
-                return Int64(ns.substring(with: r)) ?? 0
-            }
-            out.append(((g(1) * 60 + g(2)) * 60 + g(3)) * 1000 + g(4))
+    override func mouseDown(with event: NSEvent) {
+        held = false
+        holdStart = Date()
+        holdTimer?.invalidate()
+        if onHold != nil {
+            holdTimer = Timer.scheduledTimer(withTimeInterval: 0.4, repeats: false) { [weak self] _ in self?.startRepeat() }
         }
-        out.sort()
-        return out
+        layer?.backgroundColor = NSColor(white: 1, alpha: 0.34).cgColor
     }
 
-    private static let tsRegex = try? NSRegularExpression(pattern: "(?:(\\d+):)?(\\d{1,2}):(\\d\\d)([,.])(\\d{3})")
-
-    /** novo tempo = tempo * k + offsetMs em todas as linhas "a --> b" (SRT/VTT); o resto do texto não muda */
-    static func transform(_ text: String, _ k: Double, _ offsetMs: Int64) -> String {
-        let lines = text.components(separatedBy: "\n")
-        var out: [String] = []
-        out.reserveCapacity(lines.count)
-        for ln in lines { out.append(ln.contains("-->") ? transformLine(ln, k, offsetMs) : ln) }
-        return out.joined(separator: "\n")
+    private func startRepeat() {
+        held = true
+        fire()
+        holdTimer = Timer.scheduledTimer(withTimeInterval: 0.15, repeats: true) { [weak self] _ in self?.fire() }
     }
 
-    private static func transformLine(_ line: String, _ k: Double, _ offsetMs: Int64) -> String {
-        guard let re = tsRegex else { return line }
-        let ns = line as NSString
-        let result = NSMutableString(string: line)
-        let found = re.matches(in: line, range: NSRange(location: 0, length: ns.length))
-        for m in found.reversed() {
-            func grp(_ i: Int) -> String {
-                let r = m.range(at: i)
-                return r.location == NSNotFound ? "" : ns.substring(with: r)
-            }
-            let h = Int64(grp(1)) ?? 0
-            let mi = Int64(grp(2)) ?? 0
-            let se = Int64(grp(3)) ?? 0
-            let ms = ((h * 60 + mi) * 60 + se) * 1000 + (Int64(grp(5)) ?? 0)
-            let n = max(0, Int64((Double(ms) * k).rounded()) + offsetMs)
-            let rep = String(format: "%02lld:%02lld:%02lld%@%03lld", n / 3600000, (n / 60000) % 60, (n / 1000) % 60, grp(4), n % 1000)
-            result.replaceCharacters(in: m.range, with: rep)
-        }
-        return result as String
-    }
+    private func fire() { onHold?(Date().timeIntervalSince(holdStart)) }
 
-    /** índice do primeiro elemento >= v */
-    private static func lowerBound(_ a: [Int64], _ v: Int64) -> Int {
-        var lo = 0, hi = a.count
-        while lo < hi {
-            let mid = (lo + hi) / 2
-            if a[mid] < v { lo = mid + 1 } else { hi = mid }
-        }
-        return lo
+    override func mouseUp(with event: NSEvent) {
+        holdTimer?.invalidate()
+        holdTimer = nil
+        layer?.backgroundColor = NSColor(white: 1, alpha: focused ? 0.28 : 0.16).cgColor
+        if !held && bounds.contains(convert(event.locationInWindow, from: nil)) { onTap?() }
+        held = false
     }
+}
 
-    private static func countMatches(_ ref: [Int64], _ cand: [Int64], _ scale: Double, _ off: Int64) -> Int {
-        var hits = 0
-        for c in cand {
-            let t = Int64((Double(c) * scale).rounded()) + off
-            let i = lowerBound(ref, t)
-            var hit = false
-            if i < ref.count && ref[i] - t <= tolerance { hit = true }
-            if !hit && i > 0 && t - ref[i - 1] <= tolerance { hit = true }
-            if hit { hits += 1 }
-        }
-        return hits
-    }
+// lista de falas do "Sincronizar pela fala"
+extension PlayerWindowController: NSTableViewDataSource, NSTableViewDelegate {
+    func numberOfRows(in tableView: NSTableView) -> Int { return speechCues.count }
 
-    /** melhor deslocamento para uma escala: histograma grosso (-120..+120 s) e depois refino de ±1 s em passos de 50 ms */
-    private static func alignWithScale(_ ref: [Int64], _ cand: [Int64], _ scale: Double) -> Fit {
-        let bins = Int(2 * coarseRange / coarseBin) + 3
-        var hist = [Int](repeating: 0, count: bins)
-        for c in cand {
-            let t = Int64((Double(c) * scale).rounded())
-            var i = lowerBound(ref, t - coarseRange)
-            while i < ref.count && ref[i] <= t + coarseRange {
-                let off = ref[i] - t
-                let b = Int((off + coarseRange) / coarseBin) + 1
-                if b >= 0 && b < bins { hist[b] += 1 }
-                i += 1
-            }
-        }
-        var bestBin = 1, bestVal = -1
-        for b in 1..<(bins - 1) {
-            let v = hist[b - 1] + hist[b] + hist[b + 1] // 750 ms de largura
-            if v > bestVal { bestVal = v; bestBin = b }
-        }
-        let center = Int64(bestBin - 1) * coarseBin - coarseRange + coarseBin / 2
-        var bestCount = -1
-        var bestOffs: [Int64] = []
-        var off = center - 1000
-        while off <= center + 1000 {
-            let cnt = countMatches(ref, cand, scale, off)
-            if cnt > bestCount { bestCount = cnt; bestOffs = [off] }
-            else if cnt == bestCount { bestOffs.append(off) }
-            off += 50
-        }
-        var f = Fit()
-        f.scale = scale
-        f.offsetMs = bestOffs.isEmpty ? 0 : bestOffs[bestOffs.count / 2]
-        let denom = max(1, min(cand.count, ref.count))
-        f.score = Double(max(0, bestCount)) / Double(denom)
-        return f
-    }
-
-    /** melhor transformação (escala x deslocamento) que leva a candidata para cima da referência; score < minScore = não confiável */
-    static func align(_ ref: [Int64], _ cand: [Int64]) -> Fit {
-        if ref.count < 20 || cand.count < 20 { return Fit() }
-        var best = alignWithScale(ref, cand, scales[0])
-        var bestOther: Fit? = nil
-        for i in 1..<scales.count {
-            let f = alignWithScale(ref, cand, scales[i])
-            if bestOther == nil || f.score > (bestOther?.score ?? 0) { bestOther = f }
-        }
-        if let o = bestOther, o.score > best.score + scaleMargin { best = o }
-        return best
+    func tableView(_ tableView: NSTableView, viewFor tableColumn: NSTableColumn?, row: Int) -> NSView? {
+        let c = speechCues[row]
+        let one = c.text.replacingOccurrences(of: "\n", with: " ")
+        let t = NSTextField(labelWithString: PlayerWindowController.clockString(c.startMs) + "   " + one)
+        t.textColor = .white
+        t.font = .monospacedDigitSystemFont(ofSize: 14, weight: .regular)
+        t.lineBreakMode = .byTruncatingTail
+        return t
     }
 }
