@@ -104,9 +104,9 @@ jobs:
           sleep 30
           cmd "state"
           cmd "key 49"; sleep 1; cmd "key 49"
-          sleep 2; shot 01-ajustar; cmd "snap ajustar"
-          cmd "scale 1"; sleep 2; shot 02-preencher; cmd "snap preencher"
-          cmd "scale 2"; sleep 2; shot 03-esticar; cmd "snap esticar"
+          sleep 2; shot 01-ajustar
+          cmd "scale 1"; sleep 2; shot 02-preencher
+          cmd "scale 2"; sleep 2; shot 03-esticar
           cmd "scale 0"
           cmd "sync"; sleep 1; shot 04-painel-sync
           cmd "key 124"; cmd "key 36"; cmd "key 36"; cmd "key 36"; shot 05-painel-apos-enter
