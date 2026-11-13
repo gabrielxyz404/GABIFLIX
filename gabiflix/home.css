@@ -647,7 +647,9 @@ html[data-gf-app="mac"][data-gf-route="home"][data-gf-view="grid"] #gf-home .gf-
     padding: 0;
     overflow-x: auto;
     overflow-y: hidden;
+    scrollbar-width: none; /* em janela estreita a rolagem existe, mas sem a barra branca por baixo */
 }
+html[data-gf-app="mac"][data-gf-route="home"][data-gf-view="grid"] #gf-home .gf-mac-grid::-webkit-scrollbar { display: none; }
 html[data-gf-app="mac"][data-gf-route="home"][data-gf-view="grid"] #gf-home .gf-mac-grid .gf-card,
 html[data-gf-app="mac"][data-gf-route="home"][data-gf-view="grid"] #gf-home .gf-mac-grid .gf-card.is-wide {
     flex: 1 1 0;

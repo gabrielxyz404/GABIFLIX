@@ -71,7 +71,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, WKScriptMessageHandler
         web.load(URLRequest(url: APP_URL))
 
         // procura versão nova alguns segundos depois de abrir (não no teste automático)
-        if !CommandLine.arguments.contains("--gf-test-play") {
+        if !CommandLine.arguments.contains("--gf-test-play") && !CommandLine.arguments.contains("--gf-test-web") {
             DispatchQueue.main.asyncAfter(deadline: .now() + 6) { [weak self] in self?.checkForUpdates(silent: true) }
         }
 

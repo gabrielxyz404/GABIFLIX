@@ -119,6 +119,7 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
         w.titleVisibility = .hidden
         w.backgroundColor = .black
         w.collectionBehavior = [.fullScreenPrimary]
+        w.minSize = NSSize(width: 820, height: 460) // abaixo disso a linha de botões espremia a linha do tempo (29 px a 700 px de janela)
         w.isReleasedWhenClosed = false
         super.init(window: w)
         w.delegate = self
