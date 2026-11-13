@@ -258,6 +258,30 @@ public class Eval {
         out.println();
         stat("FP_outro_titulo", fpOther + "/" + negOther); stat("FP_mesma_serie", fpSame + "/" + negSame); stat("maior_nota_negativa", f2(maxNeg));
 
+        // --- margem sobre o acaso: que limiar separa os pares certos dos falsos positivos? ---
+        if (Variant.nullScore(pairs.get(0).f) >= 0 || pairs.stream().anyMatch(q -> Variant.nullScore(q.f) > 0)) {
+            double[] ms = {0, 0.05, 0.10, 0.15, 0.20, 0.25, 0.30};
+            out.println("### 3b. Margem da nota sobre o acaso (nota - nota com o deslocamento mudado 9-53 s)");
+            out.println("| margem mínima | pares certos mantidos | PT aceitas | falsos positivos (de " + neg.size() + ") |");
+            out.println("|---|---|---|---|");
+            int okPairs = (int) pairs.stream().filter(q -> q.f.ok()).count();
+            for (double mm : ms) {
+                int keep = 0, ptAcc = 0, fp = 0;
+                for (Pair q : pairs) if (q.f.ok() && q.f.score - Variant.nullScore(q.f) >= mm) keep++;
+                for (List<Pair> l : byPt.values()) if (l.stream().anyMatch(q -> q.f.ok() && q.f.score - Variant.nullScore(q.f) >= mm)) ptAcc++;
+                for (Pair q : neg) if (q.f.ok() && q.f.score - Variant.nullScore(q.f) >= mm) fp++;
+                out.println("| " + f2(mm) + " | " + keep + " de " + okPairs + " | " + ptAcc + " | " + fp + " |");
+                stat("margem_" + f2(mm), keep + "/" + ptAcc + "/" + fp);
+            }
+            StringBuilder lowM = new StringBuilder();
+            for (Pair q : pairs) if (q.f.ok() && q.f.score - Variant.nullScore(q.f) < 0.15 && lowM.length() < 1500) lowM.append("- ").append(q.id).append(": nota ").append(f2(q.f.score)).append(", acaso ").append(f2(Variant.nullScore(q.f))).append("\n");
+            out.print("Pares certos com margem < 0,15:\n" + lowM);
+            StringBuilder fpM = new StringBuilder();
+            for (Pair q : neg) if (q.f.ok() && fpM.length() < 1500) fpM.append("- FP ").append(q.pt.title).append(" pt").append(q.pt.idx).append(" x ").append(q.en.title).append(" en").append(q.en.idx).append(": nota ").append(f2(q.f.score)).append(", acaso ").append(f2(Variant.nullScore(q.f))).append(", PT ").append(q.pt.starts.length).append(" falas, EN ").append(q.en.starts.length).append("\n");
+            out.print(fpM);
+            out.println();
+        }
+
         // --- consistência entre referências ---
         final int[] cnt = new int[4]; // pares PT com >= 2 EN aceitas, comparáveis, inconsistentes, EN-EN sem casamento
         StringBuilder exInc = new StringBuilder();
@@ -336,6 +360,64 @@ public class Eval {
         stat("distorcoes_testes", nTest); stat("distorcoes_certas", nRight); stat("distorcoes_ERRADAS", nWrong); stat("distorcoes_nao_alinhadas", nRej);
         pool.shutdown();
         consensusReport(titles, out);
+        pipelineReport(titles, out);
+    }
+
+    // ---------- 7. pipeline do app (SubtitleSync.alignAll + rank) ----------
+    static SubtitleSync.Cand mk(Sub p, int rank, boolean hash) throws IOException {
+        SubtitleSync.Cand c = new SubtitleSync.Cand();
+        c.file = File.createTempFile("leg", ".srt"); c.file.deleteOnExit();
+        c.text = p.text; c.rank = rank; c.hashMatch = hash; c.url = "u" + rank; c.rel = p.name;
+        c.lastMs = Variant.lastEnd(p.text);
+        return c;
+    }
+    static double median(List<Integer> l) { Collections.sort(l); return l.isEmpty() ? 0 : l.get(l.size() / 2); }
+
+    static void pipelineReport(List<Title> titles, PrintStream out) throws Exception {
+        int nT = 0, cands = 0, alignedA = 0, top1AlignedA = 0, top1ThinA = 0, top1ThinB = 0, discord = 0, nB = 0, alignedB = 0, thinAnyAligned = 0;
+        StringBuilder ex = new StringBuilder();
+        for (Title t : titles) {
+            List<Sub> P = t.pt.stream().filter(s -> s.ptOk && s.starts != null && s.starts.length >= 20).limit(10).collect(Collectors.toList());
+            List<Sub> E = t.en.stream().filter(s -> s.starts != null && s.starts.length >= 20).limit(3).collect(Collectors.toList());
+            if (P.size() < 2 || E.isEmpty()) continue;
+            nT++;
+            List<Integer> enCnt = new ArrayList<>();
+            for (Sub e : t.en) if (e.starts != null) enCnt.add(e.starts.length);
+            double medEn = median(enCnt);
+            // A) com referências EN
+            List<SubtitleSync.Cand> all = new ArrayList<>();
+            for (int i = 0; i < P.size(); i++) all.add(mk(P.get(i), i, false));
+            List<long[]> refs = new ArrayList<>();
+            for (Sub e : E) refs.add(e.starts);
+            StringBuilder lg = new StringBuilder();
+            SubtitleSync.AlignReport ar = SubtitleSync.alignAll(all, refs, lg);
+            List<SubtitleSync.Cand> rk = SubtitleSync.rank(all, Math.round(Variant.lastEnd(E.get(0).text) / 0.95), lg);
+            cands += all.size(); alignedA += ar.aligned;
+            for (String ln : lg.toString().split("\n")) if (ln.contains("DISCORDAM")) { discord++; if (ex.length() < 900) ex.append("- ").append(t.label).append(":").append(ln).append("\n"); }
+            if (!rk.isEmpty()) {
+                SubtitleSync.Cand c0 = rk.get(0);
+                if (c0.aligned) top1AlignedA++;
+                int n0 = P.get(c0.rank).starts.length;
+                if (n0 < 0.3 * medEn) { top1ThinA++; if (ex.length() < 1800) ex.append("- ").append(t.label).append(": 1ª do ranking (com referência) tem só ").append(n0).append(" falas (EN ~").append(Math.round(medEn)).append("): ").append(P.get(c0.rank).name).append("\n"); }
+            }
+            // B) sem referência de outro idioma; a PT 0 "casa com o hash" (como o addon faz quando o hash existe)
+            List<SubtitleSync.Cand> allB = new ArrayList<>();
+            for (int i = 0; i < P.size(); i++) allB.add(mk(P.get(i), i, i == 0));
+            StringBuilder lgB = new StringBuilder();
+            SubtitleSync.AlignReport arB = SubtitleSync.alignAll(allB, new ArrayList<long[]>(), lgB);
+            List<SubtitleSync.Cand> rkB = SubtitleSync.rank(allB, Math.round(Variant.lastEnd(E.get(0).text) / 0.95), lgB);
+            nB++; alignedB += arB.aligned;
+            if (!rkB.isEmpty()) {
+                int n0 = P.get(rkB.get(0).rank).starts.length;
+                if (n0 < 0.3 * medEn) { top1ThinB++; if (ex.length() < 2600) ex.append("- ").append(t.label).append(": 1ª do ranking (sem referência) tem só ").append(n0).append(" falas (EN ~").append(Math.round(medEn)).append("): ").append(P.get(rkB.get(0).rank).name).append("\n"); }
+            }
+        }
+        out.println("### 7. Pipeline do app (SubtitleSync.alignAll + rank) com as EN do título como referências");
+        out.println("Títulos: " + nT + "; PT candidatas: " + cands + "; alinhadas: " + alignedA + "; títulos cuja 1ª do ranking está alinhada: " + top1AlignedA + "; 1ª do ranking com < 30% das falas das EN (forçada): **" + top1ThinA + "**; casos 'referências discordam': " + discord + ".");
+        out.println("Sem referência de outro idioma (a PT 0 vale como hash): alinhadas à PT do hash: " + alignedB + "; 1ª do ranking com < 30% das falas: **" + top1ThinB + "**.");
+        out.print(ex);
+        stat("pipe_alinhadas_com_ref", alignedA + "/" + cands); stat("pipe_top1_alinhada", top1AlignedA + "/" + nT); stat("pipe_top1_forcada_com_ref", top1ThinA);
+        stat("pipe_referencias_discordam", discord); stat("pipe_alinhadas_PT_hash", alignedB); stat("pipe_top1_forcada_sem_ref", top1ThinB);
     }
 
     // ---------- 6. consenso (sem referência de tempo) ----------

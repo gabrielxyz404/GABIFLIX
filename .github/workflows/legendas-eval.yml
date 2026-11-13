@@ -30,9 +30,13 @@ jobs:
       - name: Compilar ANTES (SubtitleAlign da versão base) e DEPOIS (deste branch)
         run: |
           mkdir -p /tmp/ev/base /tmp/ev/new /tmp/ev/basesrc /tmp/out
-          git show "${{ github.event.inputs.ref_base || 'origin/main' }}:$SRC/SubtitleAlign.java" > /tmp/ev/basesrc/SubtitleAlign.java
-          javac -d /tmp/ev/base /tmp/ev/basesrc/SubtitleAlign.java tools/legendas-eval/Eval.java tools/legendas-eval/Diff.java tools/legendas-eval/Fetch.java tools/legendas-eval/base/Variant.java
-          javac -d /tmp/ev/new $SRC/SubtitleAlign.java $SRC/SubtitleText.java tools/legendas-eval/Eval.java tools/legendas-eval/Diff.java tools/legendas-eval/Fetch.java tools/legendas-eval/new/Variant.java
+          B="${{ github.event.inputs.ref_base || 'origin/main' }}"
+          git show "$B:$SRC/SubtitleAlign.java" > /tmp/ev/basesrc/SubtitleAlign.java
+          git show "$B:$SRC/SubtitleSync.java" > /tmp/ev/basesrc/SubtitleSync.java
+          T=tools/legendas-eval
+          STUBS="$T/stubs/android/net/Uri.java $T/stubs/android/util/Log.java $T/stubs/org/json/JSONArray.java $T/stubs/org/json/JSONObject.java $T/stubs/PlayerActivity.java"
+          javac -d /tmp/ev/base /tmp/ev/basesrc/SubtitleAlign.java /tmp/ev/basesrc/SubtitleSync.java $STUBS $T/Eval.java $T/Diff.java $T/Fetch.java $T/base/Variant.java
+          javac -d /tmp/ev/new $SRC/SubtitleAlign.java $SRC/SubtitleText.java $SRC/SubtitleSync.java $STUBS $T/Eval.java $T/Diff.java $T/Fetch.java $T/new/Variant.java
       - name: Testes sintéticos do alinhamento (deste branch)
         run: |
           mkdir -p /tmp/ev/syn

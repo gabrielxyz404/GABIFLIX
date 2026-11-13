@@ -39,9 +39,11 @@ final class SubtitleAlign {
     /** cada metade das falas precisa de pelo menos esta nota com a transformação encontrada */
     static final double MIN_HALF_SCORE = 0.35;
     /** a candidata precisa ter pelo menos esta fração das falas da referência na janela que cobre (forçadas têm 5-20%) */
-    static final double MIN_CUE_RATIO = 0.45;
+    static final double MIN_CUE_RATIO = 0.25;
     /** a referência precisa ter pelo menos esta fração das falas da candidata (senão valida quase nada) */
     static final double MIN_REF_RATIO = 0.25;
+    /** margem mínima da nota sobre a nota por acaso (ver Fit.nullScore) */
+    static final double MIN_NULL_MARGIN = 0.0;
     /** só confere a razão de falas com referência de pelo menos isto (referências minúsculas já não passam de 20 falas) */
     static final int RATIO_MIN_REF = 60;
     /** uma escala diferente de 1 só vence se for melhor que a escala 1 por esta margem */
@@ -68,6 +70,8 @@ final class SubtitleAlign {
         boolean sparseRef = false;
         /** falas da candidata / falas da referência na janela coberta */
         double cueRatio = 1.0;
+        /** nota que a MESMA transformação tem quando deslocada de 9 a 53 s (o acaso: legendas densas casam com qualquer coisa); a nota real tem de estar bem acima */
+        double nullScore = 0;
         boolean halvesOk() { return scoreFirstHalf >= MIN_HALF_SCORE && scoreSecondHalf >= MIN_HALF_SCORE; }
         boolean singleOk() {
             if (!halvesOk()) return false;
@@ -75,10 +79,11 @@ final class SubtitleAlign {
             return score >= LOW_SCORE && Math.abs(scoreFirstHalf - scoreSecondHalf) <= 0.15;
         }
         /** aceito: transformação única com nota >= 0,5 e as duas metades batendo (ou 0,4-0,5 com metades parecidas), ou ajuste por partes validado */
-        boolean ok() { return !sparse && !sparseRef && (cuts != null ? pieceOk : singleOk()); }
+        boolean ok() { return !sparse && !sparseRef && score - nullScore >= MIN_NULL_MARGIN && (cuts != null ? pieceOk : singleOk()); }
         boolean piecewise() { return cuts != null && pieceOk; }
         /** bateu em parte (nota global >= WEAK_SCORE) mas foi rejeitado: outra versão/corte do filme */
         boolean differentVersion() { return !ok() && !sparse && !sparseRef && score >= WEAK_SCORE; }
+        boolean lowMargin() { return score - nullScore < MIN_NULL_MARGIN; }
         long offsetAt(long c) {
             if (cuts == null) return offsetMs;
             int k = 0;
@@ -664,7 +669,22 @@ final class SubtitleAlign {
             if (best.cueRatio < MIN_CUE_RATIO) best.sparse = true;
             if (refWin < MIN_REF_RATIO * cand.length) best.sparseRef = true;
         }
+        best.nullScore = nullScore(ref, cand, best);
         return best;
+    }
+
+    private static final long[] NULL_SHIFTS = {-53000, -31000, -17000, -9000, 9000, 17000, 31000, 53000};
+
+    /** maior nota que a mesma transformação (escala/partes) tem com o deslocamento mudado de 9 a 53 s: o nível do acaso */
+    static double nullScore(long[] ref, long[] cand, Fit f) {
+        int denom = Math.max(1, Math.min(cand.length, ref.length));
+        int bestHits = 0;
+        for (long d : NULL_SHIFTS) {
+            int hits = 0;
+            for (long c : cand) if (near(ref, f.map(c) + d, TOLERANCE_MS)) hits++;
+            bestHits = Math.max(bestHits, hits);
+        }
+        return bestHits / (double) denom;
     }
 
     /** fração das falas da candidata que as duas transformações levam para menos de tol ms uma da outra (a mesma legenda ajustada por duas referências) */

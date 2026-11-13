@@ -231,16 +231,20 @@ final class SubtitleText {
      * como desempate, os sinais que só o espanhol/galego têm (ñ, ¿, ¡) contra os que só o português tem (ã, õ, ç)
      */
     static boolean looksPortuguese(String text) {
-        int pt = 0, en = 0, es = 0;
+        int pt = 0, en = 0, es = 0, total = 0;
+        HashSet<String> distinct = new HashSet<>();
         String s = text.length() > 300000 ? text.substring(0, 300000) : text;
         Matcher m = WORD.matcher(s);
         while (m.find()) {
             String w = m.group().toLowerCase(Locale.ROOT);
-            if (PT_W.contains(w)) pt++;
+            total++;
+            if (PT_W.contains(w)) { pt++; distinct.add(w); }
             if (EN_W.contains(w)) en++;
             if (ES_W.contains(w)) es++;
         }
         if (!(pt >= 3 && pt > 2 * Math.max(en, es))) return false;
+        // italiano/galego têm "vai", "meu"... : português de verdade tem várias palavras típicas diferentes e em boa proporção (~10% das palavras)
+        if (distinct.size() < 6 || pt < 0.03 * total) return false;
         int ptMark = 0, esMark = 0;
         for (int i = 0; i < s.length(); i++) {
             char c = s.charAt(i);

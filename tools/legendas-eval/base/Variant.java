@@ -62,4 +62,5 @@ final class Variant {
         return max;
     }
     static long[] starts(String text) { return SubtitleAlign.cueStarts(text); }
+    static double nullScore(SubtitleAlign.Fit f) { return -1; }
 }

@@ -7,4 +7,5 @@ final class Variant {
     static boolean looksPt(String text) { return SubtitleText.looksPortuguese(text); }
     static long lastEnd(String text) { return SubtitleText.lastCueEnd(text); }
     static long[] starts(String text) { return SubtitleAlign.alignStarts(text); }
+    static double nullScore(SubtitleAlign.Fit f) { return f.nullScore; }
 }
