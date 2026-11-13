@@ -1,0 +1,63 @@
+name: Sonda áudio
+
+# Prova da fase 3 (acertar a legenda pelo áudio): testes JVM + emulador com "Tears of Steel" (filme aberto da Blender).
+# Só dispara à mão ou ao empurrar o branch audio-run; nunca publica o app.
+on:
+  workflow_dispatch:
+  push:
+    branches: [audio-probe]
+
+permissions:
+  contents: write
+
+jobs:
+  audio:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 17
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+      - name: APK de teste (x86)
+        env:
+          GABIFLIX_ABIS: x86,x86_64
+        run: gradle -p android assembleRelease --no-daemon -q
+      - name: Vídeo de varredura
+        run: |
+          timeout 300 sudo apt-get install -y -qq ffmpeg >/dev/null || (sudo apt-get update -qq && timeout 300 sudo apt-get install -y -qq ffmpeg >/dev/null)
+          pip install -q numpy
+          mkdir -p /tmp/media /tmp/dl
+          python3 tools/audio-test/mksweep.py /tmp/dl/sweep.wav
+          ffmpeg -loglevel error -f lavfi -i testsrc2=size=640x360:rate=24 -i /tmp/dl/sweep.wav -t 800 -c:v libx264 -preset veryfast -g 240 -b:v 1500k -c:a aac -b:a 128k /tmp/media/sweep.mkv
+          ls -la /tmp/media
+          nohup python3 tools/audio-test/server.py /tmp/media 8000 >/tmp/server.out 2>&1 &
+          sleep 2; curl -sI http://127.0.0.1:8000/sweep.mkv | head -3
+      - name: KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules && sudo udevadm trigger --name-match=kvm
+      - name: Emulador
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 30
+          target: android-tv
+          arch: x86
+          profile: tv_1080p
+          disable-animations: true
+          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
+          script: bash tools/audio-test/probe.sh
+      - name: Publicar resultados
+        if: always()
+        run: |
+          mkdir -p shots; cp out/jvm.txt shots/ 2>/dev/null || true
+          cp /tmp/server-bytes.log shots/ 2>/dev/null || true
+          cd shots || exit 0
+          [ -f resultado.md ] && cat resultado.md >> "$GITHUB_STEP_SUMMARY"
+          git init -q -b audio-probe-teste && git add -A
+          git -c user.name=ci -c user.email=ci@x commit -qm "resultados do teste de áudio"
+          git push -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" audio-probe-teste

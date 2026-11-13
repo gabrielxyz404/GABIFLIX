@@ -46,6 +46,12 @@ final class AudioCapture {
     /** captura [startMs, startMs+durMs) do vídeo; bloqueia até acabar, estourar o tempo ou cancelar (nunca lança) */
     static Out capture(Context ctx, String url, long startMs, long durMs, File dir, String name, String mode, int audioTrackId,
                        AtomicBoolean cancel, long timeoutMs, boolean verbose) {
+        return capture(ctx, url, startMs, durMs, dir, name, mode, audioTrackId, cancel, timeoutMs, verbose, "std");
+    }
+
+    /** variant: std (start-time/stop-time), fast (+input-fast-seek), seek (play e depois setTime), paused (começa pausado, setTime, play), runtime (start-time + run-time) */
+    static Out capture(Context ctx, String url, long startMs, long durMs, File dir, String name, String mode, int audioTrackId,
+                       AtomicBoolean cancel, long timeoutMs, boolean verbose, String variant) {
         final Out out = new Out();
         out.mode = mode;
         long t0 = System.currentTimeMillis();
@@ -83,8 +89,12 @@ final class AudioCapture {
             m.addOption(":no-spu");
             m.addOption(":no-sub-autodetect-file");
             m.addOption(":network-caching=600");
-            m.addOption(":start-time=" + String.format(Locale.ROOT, "%.3f", startMs / 1000.0));
-            m.addOption(":stop-time=" + String.format(Locale.ROOT, "%.3f", (startMs + durMs) / 1000.0));
+            boolean viaSetTime = variant.equals("seek") || variant.equals("paused");
+            if (!viaSetTime) m.addOption(":start-time=" + String.format(Locale.ROOT, "%.3f", startMs / 1000.0));
+            if (variant.equals("runtime")) m.addOption(":run-time=" + String.format(Locale.ROOT, "%.3f", durMs / 1000.0));
+            else if (!viaSetTime) m.addOption(":stop-time=" + String.format(Locale.ROOT, "%.3f", (startMs + durMs) / 1000.0));
+            if (variant.equals("fast")) m.addOption(":input-fast-seek");
+            if (variant.equals("paused")) m.addOption(":start-paused");
             if (audioTrackId >= 0) m.addOption(":audio-track-id=" + audioTrackId);
             if (!mode.equals("afile")) {
                 String mux = mode.equals("wav") ? "wav" : "dummy";
@@ -96,14 +106,19 @@ final class AudioCapture {
             mp.setMedia(m);
             m.release();
             mp.play();
+            if (viaSetTime) {
+                Thread.sleep(variant.equals("paused") ? 1500 : 300);
+                mp.setTime(startMs);
+                if (variant.equals("paused")) { Thread.sleep(500); mp.play(); }
+            }
             // espera: terminou (evento), erro, tamanho esperado alcançado, cancelado ou tempo esgotado
-            long expect = (long) (durMs / 1000.0 * (mode.equals("afile") ? 0 : RATE * 2));
+            long expect = (long) (durMs / 1000.0 * (mode.equals("afile") ? 0 : RATE * 2)) * (viaSetTime ? 4 : 1);
             long deadline = System.currentTimeMillis() + timeoutMs;
             long lastSize = -1, lastGrow = System.currentTimeMillis();
             boolean finished = false;
             while (System.currentTimeMillis() < deadline) {
                 if (cancel != null && cancel.get()) { out.err = "cancelado"; break; }
-                if (done.await(250, TimeUnit.MILLISECONDS)) { finished = true; break; }
+                if (done.await(25, TimeUnit.MILLISECONDS)) { finished = true; break; }
                 long sz = f.length();
                 if (sz != lastSize) { lastSize = sz; lastGrow = System.currentTimeMillis(); }
                 if (expect > 0 && sz >= expect + 4096) { finished = true; break; }

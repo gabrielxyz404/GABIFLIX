@@ -139,7 +139,7 @@ public class AudioTest {
         }
         // controles negativos: legenda de outro filme (cues independentes) e áudio só de música
         for (double music : new double[]{0.08, 0.2}) {
-            int wrong = 0, tot = 12;
+            int wrong = 0, tot = 40;
             for (int s = 1; s <= tot; s++) {
                 Random r = new Random(9000 + s);
                 ArrayList<long[]> truth = makeCues(r, dur);

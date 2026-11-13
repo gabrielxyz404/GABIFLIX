@@ -1394,25 +1394,30 @@ public class PlayerActivity extends Activity {
         }).start();
     }
 
-    /** só nos testes: tenta cada modo de captura num trecho de 10 s e registra no logcat */
+    /** só nos testes: tenta variantes de captura num trecho e registra no logcat (com decodificação do vídeo "varredura", se for ele) */
     private void probeAudioCapture() {
         final java.io.File dir = new java.io.File(getCacheDir(), "audiosync");
+        final long st = getIntent().getLongExtra("gfProbeStart", 300000);
+        final boolean sweep = url.contains("sweep");
         new Thread(() -> {
             try { Thread.sleep(4000); } catch (InterruptedException ignored) {}
-            for (String md : AudioCapture.MODES) {
-                AudioCapture.Out o = AudioCapture.capture(this, url, 60000, 10000, dir, "probe-" + md, md, -1, null, 60000, true);
+            String[][] cases = sweep ? new String[][]{{"wav", "std"}, {"wav", "fast"}, {"wav", "seek"}, {"wav", "paused"}, {"wav", "runtime"}, {"raw", "std"}, {"afile", "std"}}
+                    : new String[][]{{"wav", "std"}, {"raw", "std"}, {"afile", "std"}};
+            for (String[] c : cases) {
+                AudioCapture.Out o = AudioCapture.capture(this, url, st, 15000, dir, "probe-" + c[0] + "-" + c[1], c[0], -1, null, 90000, false, c[1]);
                 String extra = "";
                 if (o.ok()) {
-                    byte[] v = AudioAlign.vad(o.pcm.x, o.pcm.rate);
-                    double rms = 0;
-                    for (float x : o.pcm.x) rms += x * x;
-                    rms = Math.sqrt(rms / o.pcm.x.length);
-                    int sp = 0;
-                    for (byte b : v) sp += b;
-                    extra = String.format(Locale.ROOT, " rate=%d rms=%.4f fala=%.0f%% nota=%s", o.pcm.rate, rms, sp * 100.0 / Math.max(1, v.length), o.pcm.note);
+                    if (sweep) extra = " " + AudioProbe.describe(o.pcm.x, o.pcm.rate, st);
+                    else {
+                        byte[] v = AudioAlign.vad(o.pcm.x, o.pcm.rate);
+                        int sp = 0;
+                        for (byte b : v) sp += b;
+                        extra = String.format(Locale.ROOT, " rate=%d fala=%.0f%%", o.pcm.rate, sp * 100.0 / Math.max(1, v.length));
+                    }
                 }
-                glog("PROBE mode=" + md + " ok=" + o.ok() + " err=" + o.err + " tookMs=" + o.tookMs + " fileBytes=" + o.fileBytes + " pcmSec=" + o.pcmSec + " readBytes=" + o.readBytes + extra);
+                glog("PROBE mode=" + c[0] + " var=" + c[1] + " ok=" + o.ok() + " err=" + o.err + " tookMs=" + o.tookMs + " fileBytes=" + o.fileBytes + " pcmSec=" + o.pcmSec + " readBytes=" + o.readBytes + extra);
             }
+            glog("PROBE fim");
         }).start();
     }
 

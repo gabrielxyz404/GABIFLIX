@@ -368,7 +368,7 @@ final class AudioAlign {
         boolean accepted;
         String why = "";
         SubtitleAlign.Fit fit;
-        double score, second, ratio;
+        double score, second, ratio, stouffer;
         int agree, used;
         long[] ownOff;
         double[] ownScore;
@@ -409,6 +409,7 @@ final class AudioAlign {
         Result r = new Result();
         ArrayList<Win> ws = new ArrayList<>();
         for (Win w : all) if (w != null && w.n >= 500 && w.frac >= 0.03 && w.frac <= 0.97) ws.add(w);
+        ws.sort((p, q) -> Long.compare(p.startMs, q.startMs));
         r.used = ws.size();
         if (sp.n() < 8) { r.why = "legenda com poucas falas"; return r; }
         if (ws.size() < MIN_AGREE) { r.why = "só " + ws.size() + " de " + all.size() + " janelas com fala detectável"; return r; }
@@ -479,6 +480,9 @@ final class AudioAlign {
             if (zs[i] >= Z_MIN && at >= MIN_WIN_SCORE) agree++;
         }
         r.agree = agree;
+        double zsum = 0;
+        for (double z : zs) zsum += z;
+        r.stouffer = zsum / Math.sqrt(Math.max(1, zs.length));
         log.append(String.format(Locale.ROOT, "áudio: melhor escala %.4f, deslocamento %d ms, nota %.2f (média %.2f), segundo pico %.2f, razão %.2f, concordam %d/%d\n",
                 kb, ob, fine, fine / ws.size(), second, r.ratio, agree, ws.size()));
         for (int i = 0; i < ws.size(); i++)
@@ -524,7 +528,7 @@ final class AudioAlign {
             if (mA < MIN_MEAN_SCORE || mB < MIN_MEAN_SCORE) continue;
             if (agA < Math.max(2, a.size() - 1) || agB < Math.max(2, b.size() - 1)) continue;
             if (agA + agB < MIN_AGREE) continue;
-            if (groupRatio(a, sp, k, (long) oa[0]) < PIECE_RATIO || groupRatio(b, sp, k, (long) ob[0]) < PIECE_RATIO) continue;
+            if (!sideConvincing(a, sp, k, (long) oa[0]) || !sideConvincing(b, sp, k, (long) ob[0])) continue;
             // razão de cada lado contra o outro deslocamento: o grupo A tem de preferir oa a ob e vice-versa
             double aOwn = total(a, sp, k, (long) oa[0]), aOther = total(a, sp, k, (long) ob[0]);
             double bOwn = total(b, sp, k, (long) ob[0]), bOther = total(b, sp, k, (long) oa[0]);
@@ -576,6 +580,13 @@ final class AudioAlign {
             if ((at - mean) / sd >= zmin && at >= MIN_WIN_SCORE) c++;
         }
         return c;
+    }
+
+    /** um lado do corte: com 3+ janelas, pico claro (razão); com 2, as duas bem destacadas e fortes */
+    private static boolean sideConvincing(ArrayList<Win> g, Spans sp, double k, long off) {
+        if (g.size() >= 3) return groupRatio(g, sp, k, off) >= PIECE_RATIO;
+        for (Win w : g) if (winScore(w, sp, k, off) < 0.3) return false;
+        return groupRatio(g, sp, k, off) >= 1.2;
     }
 
     /** razão entre o pico do grupo (no deslocamento `off`) e o melhor deslocamento fora de +-EXCLUDE_MS dele (mesma escala) */
