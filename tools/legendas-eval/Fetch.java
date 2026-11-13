@@ -76,6 +76,7 @@ public class Fetch {
                 if (!text.contains("-->")) continue;
                 if (kind.startsWith("pt")) pt++; else en++;
                 Files.writeString(td.resolve(kind + ".srt"), text.replace("﻿", ""));
+                dump(label, kind, lang, mm, o, text);
                 meta.append(kind).append('\t').append(lang).append('\t').append(mm).append('\t').append(o.replace('\n', ' ')).append('\n');
             }
             Files.writeString(td.resolve("meta.txt"), meta.toString());
