@@ -4,6 +4,9 @@ name: Mac legendas medir (sem publicar)
 # toca um vídeo gerado com a legenda e grava com as legendas queimadas (transcode soverlay); depois mede os quadros.
 # NÃO publica nada; guarda os quadros no branch mac-legendas-fix-out.
 on:
+  push:
+    branches: [mac-legendas-fix]
+    paths: [mac-probe/**, .github/workflows/mac-legendas-medir.yml]
   workflow_dispatch:
     inputs:
       matriz:
