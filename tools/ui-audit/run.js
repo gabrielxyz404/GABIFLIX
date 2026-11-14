@@ -1,5 +1,8 @@
 // Auditoria visual/funcional do site (Mac e celular). Uso: BASE=http://localhost:8099/index.html OUT=out PROFILES=mac1440,and390 node run.js
-const { chromium } = require('playwright');
+const pw = require('playwright');
+const ENGINE = process.env.ENGINE || 'chromium';
+const MODE = process.env.MODE || 'guest';
+const chromium = pw[ENGINE];
 const fs = require('fs');
 const BASE = process.env.BASE || 'http://localhost:8099/index.html';
 const OUT = process.env.OUT || 'out';
@@ -52,6 +55,13 @@ async function run(name, P, browser) {
     viewport: { width: P.w, height: P.h }, userAgent: P.mac ? UA : UA_AND,
     deviceScaleFactor: P.mac ? 1 : 2, isMobile: !P.mac, hasTouch: !P.mac, locale: 'pt-BR'
   });
+  await ctx.addInitScript(() => {
+    // o app (Mac e Android) injeta esta ponte; sem ela o site age como no navegador comum
+    if (window.__noNative) return;
+    window.__native = [];
+    window.GabiFlixNative = { playSession: function () { window.__native.push([].slice.call(arguments)); }, version: function () { return 4; } };
+  });
+  if (process.env.INIT_FILE) await ctx.addInitScript({ path: process.env.INIT_FILE });
   const page = await ctx.newPage();
   const log = { name, console: [], failed: [], pageerrors: [], pages: {}, timing: {} };
   page.on('console', m => { if (m.type() === 'error' || m.type() === 'warning') log.console.push(m.type() + ': ' + m.text().slice(0, 220) + ' @' + page.url().split('#')[1]); });
