@@ -50,7 +50,6 @@ jobs:
           HHHHHHHHHHHH
           HHHHHHHHHHHH
           SRT
-          sed -i 's/^          //' leg.srt
           cat leg.srt | head -12
       - name: Medir
         env:
