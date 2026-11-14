@@ -75,6 +75,25 @@ async function run(name, P, browser) {
   const go = async (hash, wait = 3500) => { await page.evaluate(h => { location.hash = h; }, hash); await sleep(wait); };
   const step = async (id, fn) => { try { await fn(); } catch (e) { log.pages[id] = Object.assign(log.pages[id] || {}, { stepError: String(e).slice(0, 200) }); } };
 
+  if (MODE === 'user') {
+    // usuário falso: primeiro abre como visitante para o site gravar o perfil, depois põe login e biblioteca de teste e recarrega
+    await page.goto(BASE, { waitUntil: 'load' }); await sleep(7000);
+    await page.evaluate(() => {
+      const iso = d => new Date(Date.now() - d * 86400000).toISOString();
+      const it = (id, name, type, prog, day, vid) => ({ _id: id, name, type, poster: 'https://images.metahub.space/poster/small/' + id + '/img', posterShape: 'poster', removed: false, temp: false, _ctime: iso(day + 1), _mtime: iso(day),
+        state: { lastWatched: prog ? iso(day) : null, timeWatched: prog ? 3600000 : 0, timeOffset: prog ? 3600000 : 0, overallTimeWatched: prog ? 3600000 : 0, timesWatched: 0, flaggedWatched: 0, duration: prog ? 10140000 : 0, video_id: vid || id, watched: null, noNotif: false },
+        behaviorHints: { defaultVideoId: type === 'movie' ? id : null, featuredVideoId: null, hasScheduledVideos: type === 'series' } });
+      const items = {};
+      [it('tt0816692', 'Interstellar', 'movie', 1, 1), it('tt0944947', 'Game of Thrones', 'series', 1, 2, 'tt0944947:1:3'), it('tt0133093', 'The Matrix', 'movie', 0, 3), it('tt0903747', 'Breaking Bad', 'series', 0, 4),
+       it('tt1375666', 'Inception', 'movie', 1, 5), it('tt0111161', 'The Shawshank Redemption', 'movie', 0, 6), it('tt2861424', 'Rick and Morty', 'series', 1, 7, 'tt2861424:2:1')].forEach(i => items[i._id] = i);
+      const uid = 'fake-user-1';
+      const prof = JSON.parse(localStorage.getItem('profile'));
+      prof.auth = { key: 'fake-auth-key', user: { _id: uid, email: 'tester@example.com', fbId: null, avatar: null, gdpr_consent: { tos: true, privacy: true, marketing: false, from: 'web' }, premium_expire: null, trakt: null, lastModified: iso(0), dateRegistered: iso(30) } };
+      localStorage.setItem('profile', JSON.stringify(prof));
+      localStorage.setItem('library', JSON.stringify({ uid, items }));
+      localStorage.setItem('library_recent', JSON.stringify({ uid, items }));
+    });
+  }
   const t0 = Date.now();
   await page.goto(BASE, { waitUntil: 'load' });
   await page.waitForSelector('.gf-card', { timeout: 30000 }).catch(() => {});

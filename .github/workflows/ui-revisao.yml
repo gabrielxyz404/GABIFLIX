@@ -51,7 +51,7 @@ jobs:
           BASE: http://localhost:8099/index.html
           OUT: /tmp/out
           TAG: ${{ github.event.inputs.rotulo || github.ref_name }}
-          PROFILES: ${{ github.event.inputs.perfis || '' }}
+          PROFILES: ${{ github.event.inputs.perfis || (contains(github.ref_name, 'user') && 'mac1440,and390' || '') }}
           ENGINE: ${{ contains(github.ref_name, 'webkit') && 'webkit' || 'chromium' }}
           MODE: ${{ contains(github.ref_name, 'user') && 'user' || 'guest' }}
         run: node tools/ui-audit/${{ contains(github.ref_name, 'dump') && 'dump.js' || 'run.js' }}
