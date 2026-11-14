@@ -33,9 +33,11 @@ jobs:
           B="${{ github.event.inputs.ref_base || 'origin/main' }}"
           git show "$B:$SRC/SubtitleAlign.java" > /tmp/ev/basesrc/SubtitleAlign.java
           git show "$B:$SRC/SubtitleSync.java" > /tmp/ev/basesrc/SubtitleSync.java
+          # o SubtitleSync da versão base usa o SubtitleText (versões muito antigas não têm: cai para o do branch)
+          git show "$B:$SRC/SubtitleText.java" > /tmp/ev/basesrc/SubtitleText.java 2>/dev/null || cp $SRC/SubtitleText.java /tmp/ev/basesrc/SubtitleText.java
           T=tools/legendas-eval
           STUBS="$T/stubs/android/net/Uri.java $T/stubs/android/util/Log.java $T/stubs/org/json/JSONArray.java $T/stubs/org/json/JSONObject.java $T/stubs/PlayerActivity.java"
-          javac -d /tmp/ev/base /tmp/ev/basesrc/SubtitleAlign.java /tmp/ev/basesrc/SubtitleSync.java $STUBS $T/Eval.java $T/Diff.java $T/Fetch.java $T/base/Variant.java
+          javac -d /tmp/ev/base /tmp/ev/basesrc/SubtitleAlign.java /tmp/ev/basesrc/SubtitleText.java /tmp/ev/basesrc/SubtitleSync.java $STUBS $T/Eval.java $T/Diff.java $T/Fetch.java $T/base/Variant.java
           javac -d /tmp/ev/new $SRC/SubtitleAlign.java $SRC/SubtitleText.java $SRC/SubtitleSync.java $STUBS $T/Eval.java $T/Diff.java $T/Fetch.java $T/new/Variant.java
       - name: Testes sintéticos do alinhamento (deste branch)
         run: |
