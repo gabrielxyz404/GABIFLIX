@@ -754,3 +754,41 @@ html[data-gf-app="mac"][data-gf-route="home"][data-gf-view="grid"] #gf-home .gf-
 @media (prefers-reduced-motion: reduce) {
     html[data-gf-app="mac"][data-gf-route="home"][data-gf-view="grid"] #gf-home .gf-mac-grid .gf-card::after { transition: none; }
 }
+
+/* ---------- Mac: as barras só aparecem na forma da cápsula (por trás do vidro) e abaixo dela ----------
+   Antes a cor das barras aparecia na faixa acima da cápsula e nos cantos arredondados. A máscara abaixo
+   recorta o grid do mesmo formato da cápsula (topo 0.45rem, laterais 0.9rem, raio 2rem); o layout não muda. */
+html[data-gf-app="mac"][data-gf-route="home"][data-gf-view="grid"] #gf-home .gf-mac-grid {
+    --gf-cap-t: 0.45rem; --gf-cap-x: 0.9rem; --gf-cap-r: 2rem;
+    -webkit-mask-image:
+        linear-gradient(#000 0 0),
+        linear-gradient(#000 0 0),
+        radial-gradient(circle at 100% 100%, #000 calc(var(--gf-cap-r) - 0.5px), transparent var(--gf-cap-r)),
+        radial-gradient(circle at 0 100%, #000 calc(var(--gf-cap-r) - 0.5px), transparent var(--gf-cap-r));
+    mask-image:
+        linear-gradient(#000 0 0),
+        linear-gradient(#000 0 0),
+        radial-gradient(circle at 100% 100%, #000 calc(var(--gf-cap-r) - 0.5px), transparent var(--gf-cap-r)),
+        radial-gradient(circle at 0 100%, #000 calc(var(--gf-cap-r) - 0.5px), transparent var(--gf-cap-r));
+    -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat;
+    -webkit-mask-size:
+        100% 100%,
+        calc(100% - 2 * (var(--gf-cap-x) + var(--gf-cap-r))) var(--gf-cap-r),
+        var(--gf-cap-r) var(--gf-cap-r),
+        var(--gf-cap-r) var(--gf-cap-r);
+    mask-size:
+        100% 100%,
+        calc(100% - 2 * (var(--gf-cap-x) + var(--gf-cap-r))) var(--gf-cap-r),
+        var(--gf-cap-r) var(--gf-cap-r),
+        var(--gf-cap-r) var(--gf-cap-r);
+    -webkit-mask-position:
+        0 calc(var(--gf-cap-t) + var(--gf-cap-r)),
+        calc(var(--gf-cap-x) + var(--gf-cap-r)) var(--gf-cap-t),
+        var(--gf-cap-x) var(--gf-cap-t),
+        calc(100% - var(--gf-cap-x)) var(--gf-cap-t);
+    mask-position:
+        0 calc(var(--gf-cap-t) + var(--gf-cap-r)),
+        calc(var(--gf-cap-x) + var(--gf-cap-r)) var(--gf-cap-t),
+        var(--gf-cap-x) var(--gf-cap-t),
+        calc(100% - var(--gf-cap-x)) var(--gf-cap-t);
+}
