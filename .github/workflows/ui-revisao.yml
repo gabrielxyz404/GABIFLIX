@@ -39,7 +39,7 @@ jobs:
       - name: Playwright
         run: |
           mkdir -p /tmp/pw && cd /tmp/pw && npm init -y >/dev/null && npm i playwright@1.49.1 >/dev/null
-          npx playwright install --with-deps chromium >/dev/null
+          npx playwright install --with-deps chromium webkit >/dev/null
       - name: Servir o site
         run: |
           nohup python3 -m http.server 8099 >/tmp/srv.log 2>&1 &
@@ -50,8 +50,10 @@ jobs:
           BASE: http://localhost:8099/index.html
           OUT: /tmp/out
           TAG: ${{ github.event.inputs.rotulo || github.ref_name }}
-          PROFILES: ${{ github.event.inputs.perfis }}
-        run: node tools/ui-audit/run.js
+          PROFILES: ${{ github.event.inputs.perfis || '' }}
+          ENGINE: ${{ contains(github.ref_name, 'webkit') && 'webkit' || 'chromium' }}
+          MODE: ${{ contains(github.ref_name, 'user') && 'user' || 'guest' }}
+        run: node tools/ui-audit/${{ contains(github.ref_name, 'dump') && 'dump.js' || 'run.js' }}
       - name: Guardar
         if: always()
         run: |
