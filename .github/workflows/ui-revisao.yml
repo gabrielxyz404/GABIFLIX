@@ -15,11 +15,14 @@ on:
         description: branch ou commit a testar (vazio = o escolhido no disparo)
         default: ''
 
+  push:
+    branches: ['ui-run-**']
+
 permissions:
   contents: write
 
 concurrency:
-  group: ui-revisao-${{ github.event.inputs.rotulo }}
+  group: ui-revisao-${{ github.ref_name }}
   cancel-in-progress: true
 
 jobs:
@@ -46,7 +49,7 @@ jobs:
           NODE_PATH: /tmp/pw/node_modules
           BASE: http://localhost:8099/index.html
           OUT: /tmp/out
-          TAG: ${{ github.event.inputs.rotulo }}
+          TAG: ${{ github.event.inputs.rotulo || github.ref_name }}
           PROFILES: ${{ github.event.inputs.perfis }}
         run: node tools/ui-audit/run.js
       - name: Guardar
@@ -55,4 +58,4 @@ jobs:
           cd /tmp/out || exit 0
           git init -q -b x && git add -A
           git -c user.name=ci -c user.email=ci@x commit -qm fotos
-          git push -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" x:ui-revisao-out-${{ github.event.inputs.rotulo }}
+          git push -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" x:ui-out-${{ github.ref_name }}
