@@ -186,6 +186,11 @@ public class TvHomeActivity extends TvBase {
         }
         String url = i != null ? i.getStringExtra("gfTestUrl") : null;
         if (url == null) return;
+        String testSubs = i.getStringExtra("gfTestSubs"); // só para os testes: abre o player direto com legendas conhecidas (separadas por vírgula)
+        if (testSubs != null) {
+            startActivity(new Intent(this, io.github.gabrielxyz404.gabiflix.PlayerActivity.class).putExtra("url", url).putExtra("subs", testSubs.split(",")));
+            return;
+        }
         try {
             org.json.JSONObject meta = new org.json.JSONObject().put("id", "tt1254207").put("type", "movie").put("name", "Big Buck Bunny");
             Stremio.Source src = new Stremio.Source();
