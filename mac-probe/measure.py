@@ -4,7 +4,7 @@ import subprocess, sys, json
 import numpy as np
 path, H = sys.argv[1], int(sys.argv[2]); W = H*16//9
 def frame(t):
-    p = subprocess.run(["ffmpeg","-loglevel","error","-ss",str(t),"-i",path,"-frames:v","1","-f","rawvideo","-pix_fmt","gray","-"],capture_output=True)
+    p = subprocess.run(["ffmpeg","-nostdin","-loglevel","error","-ss",str(t),"-i",path,"-frames:v","1","-f","rawvideo","-pix_fmt","gray","-"],capture_output=True)
     d = np.frombuffer(p.stdout, np.uint8)
     return d.reshape(-1, W) if d.size else None
 def lines(img):

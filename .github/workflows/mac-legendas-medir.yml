@@ -72,10 +72,10 @@ jobs:
               o=../out/$nome-$r.ts
               rm -f $o
               echo "=== $nome ${r}p"
-              timeout 150 ../probe-work/subprobe "$modo" "$PWD/v$r.mp4" "$PWD/leg.srt" "$PWD/$o" "$escala" "$atraso" "$extras" 2>&1 | tail -25
+              ../probe-work/subprobe "$modo" "$PWD/v$r.mp4" "$PWD/leg.srt" "$PWD/$o" "$escala" "$atraso" "$extras" </dev/null 2>&1 | tail -25
               if [ -s $o ]; then
-                echo "RESULT $nome $r $(python3 ../mac-probe/measure.py $o $r 4.5 5.5 6.5 9 12.5 13.5 15.5 18)"
-                for t in 6.5 13.5; do ffmpeg -loglevel error -y -ss $t -i $o -frames:v 1 ../out/$nome-$r-t$t.png; done
+                echo "RESULT $nome $r $(python3 ../mac-probe/measure.py $o $r 4.5 5.5 6.5 9 12.5 13.5 15.5 18 </dev/null)"
+                for t in 6.5 13.5; do ffmpeg -nostdin -loglevel error -y -ss $t -i $o -frames:v 1 ../out/$nome-$r-t$t.png; done
               else echo "RESULT $nome $r SEM SAÍDA"; fi
             done
           done
