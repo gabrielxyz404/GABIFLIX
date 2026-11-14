@@ -1,0 +1,90 @@
+name: Mac legendas medir (sem publicar)
+
+# Mede o tamanho e o tempo das legendas renderizadas pelo VLCKit (a mesma biblioteca do app Mac), sem GPU:
+# toca um vídeo gerado com a legenda e grava com as legendas queimadas (transcode soverlay); depois mede os quadros.
+# NÃO publica nada; guarda os quadros no branch mac-legendas-fix-out.
+on:
+  workflow_dispatch:
+    inputs:
+      matriz:
+        description: "linhas 'nome|modo|escala|atrasoMs|extras' (vazio = padrão)"
+        required: false
+        default: ""
+
+permissions:
+  contents: write
+
+jobs:
+  medir:
+    runs-on: macos-15
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - name: VLCKit
+        run: ./mac-probe/getvlckit.sh "$PWD/probe-work" 2>&1 | tail -90
+      - name: Compilar a sonda
+        run: |
+          swiftc -O -target arm64-apple-macos11.0 -F probe-work/fw -framework VLCKit -framework Foundation \
+            -Xlinker -rpath -Xlinker "$PWD/probe-work/fw" mac-probe/subprobe.swift -o probe-work/subprobe 2>&1 | head -40
+          ls -la probe-work/subprobe
+      - name: Preparar vídeos e legenda
+        run: |
+          brew install ffmpeg > /dev/null 2>&1 || brew install ffmpeg
+          pip3 install --break-system-packages numpy >/dev/null 2>&1 || pip3 install numpy >/dev/null 2>&1 || true
+          mkdir -p work && cd work
+          for r in 720 1080; do
+            w=$((r*16/9))
+            ffmpeg -loglevel error -f lavfi -i "color=c=0x303030:size=${w}x${r}:rate=25:duration=22" -f lavfi -i "sine=frequency=440:duration=22" -c:v libx264 -preset ultrafast -pix_fmt yuv420p -g 25 -c:a aac -shortest v$r.mp4
+          done
+          cat > leg.srt <<'SRT'
+          1
+          00:00:05,000 --> 00:00:08,000
+          Não sei o que você quer, mas eu estou aqui.
+          Isso é tudo, então vai embora também.
+
+          2
+          00:00:12,000 --> 00:00:15,000
+          HHHHHHHHHHHH
+          HHHHHHHHHHHH
+          SRT
+          sed -i 's/^          //' leg.srt
+          cat leg.srt | head -12
+      - name: Medir
+        env:
+          MATRIZ: ${{ github.event.inputs.matriz }}
+        run: |
+          cd work
+          if [ -z "$MATRIZ" ]; then
+          MATRIZ='base|media|-|0|
+          media90|media|90|0|
+          lib90|lib|90|0|
+          slave90|slave|90|0|
+          media90-atraso2000|media|90|2000|
+          lib90-atraso2000|lib|90|2000|
+          slave90-atraso2000|slave|90|2000|'
+          fi
+          mkdir -p ../out
+          echo "$MATRIZ" | while IFS='|' read -r nome modo escala atraso extras; do
+            [ -z "$nome" ] && continue
+            for r in 720 1080; do
+              o=../out/$nome-$r.ts
+              rm -f $o
+              echo "=== $nome ${r}p"
+              timeout 150 ../probe-work/subprobe "$modo" "$PWD/v$r.mp4" "$PWD/leg.srt" "$PWD/$o" "$escala" "$atraso" "$extras" 2>&1 | tail -25
+              if [ -s $o ]; then
+                echo "RESULT $nome $r $(python3 ../mac-probe/measure.py $o $r 4.5 5.5 6.5 9 12.5 13.5 15.5 18)"
+                for t in 6.5 13.5; do ffmpeg -loglevel error -y -ss $t -i $o -frames:v 1 ../out/$nome-$r-t$t.png; done
+              else echo "RESULT $nome $r SEM SAÍDA"; fi
+            done
+          done
+      - name: Guardar
+        if: always()
+        env:
+          TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p /tmp/o && cp out/*.png /tmp/o/ 2>/dev/null || true
+          cd /tmp/o
+          git init -q && git checkout -q -b mac-legendas-fix-out
+          git config user.name "FramePlay CI"; git config user.email "ci@frameplay.local"
+          git add -A && git commit -qm "medidas das legendas (run ${{ github.run_number }})" || true
+          git push -q -f "https://x-access-token:${TOKEN}@github.com/${{ github.repository }}.git" mac-legendas-fix-out || echo "::warning::não guardou"
