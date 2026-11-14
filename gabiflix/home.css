@@ -673,9 +673,8 @@ html[data-gf-app="mac"][data-gf-route="home"][data-gf-view="grid"] #gf-home .gf-
     flex-grow: 1.5;
     transform: none;
     border-color: transparent;
-    box-shadow: inset 0 0 0 2px var(--gf-brand, rgba(255, 255, 255, 0.6)), inset 0 -90px 90px -60px color-mix(in srgb, var(--gf-brand, #fff) 35%, transparent);
+    box-shadow: inset 0 -90px 90px -60px color-mix(in srgb, var(--gf-brand, #fff) 35%, transparent);
 }
-html[data-gf-app="mac"][data-gf-route="home"][data-gf-view="grid"] #gf-home .gf-mac-grid .gf-card:focus-visible { outline: 2px solid var(--gf-brand, rgba(255, 255, 255, 0.6)); outline-offset: -6px; }
 html[data-gf-app="mac"][data-gf-route="home"][data-gf-view="grid"] #gf-home .gf-mac-grid .gf-card:active { transform: none; }
 html[data-gf-app="mac"][data-gf-route="home"][data-gf-view="grid"] #gf-home .gf-mac-grid .gf-card-name,
 html[data-gf-app="mac"][data-gf-route="home"][data-gf-view="grid"] #gf-home .gf-mac-grid .gf-card.is-wide .gf-card-name {
@@ -730,4 +729,28 @@ html[data-gf-app="mac"] #gf-home .gf-hero { max-width: 1360px; }
     -webkit-backdrop-filter: blur(40px) saturate(140%);
     backdrop-filter: blur(40px) saturate(140%);
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.16), 0 6px 18px rgba(0, 0, 0, 0.28);
+}
+
+/* ---------- Mac: o contorno da barra em foco/hover nunca passa do cabeçalho ----------
+   O contorno saía do próprio botão (inset box-shadow + outline), então a borda de cima aparecia na faixa acima da cápsula.
+   Agora é desenhado num ::after que só começa abaixo da cápsula (--gf-mac-cap = altura do cabeçalho), e o cabeçalho fica acima de qualquer estado de barra. */
+:root[data-gf-app="mac"] { --gf-mac-cap: 5.25rem; }
+:root[data-gf-app="mac"][data-gf-route="home"][data-gf-view="grid"] .horizontal-nav-bar-container-Y_zvK { z-index: 50; }
+html[data-gf-app="mac"][data-gf-route="home"][data-gf-view="grid"] #gf-home .gf-mac-grid .gf-card { position: relative; z-index: 0; }
+html[data-gf-app="mac"][data-gf-route="home"][data-gf-view="grid"] #gf-home .gf-mac-grid .gf-card:focus,
+html[data-gf-app="mac"][data-gf-route="home"][data-gf-view="grid"] #gf-home .gf-mac-grid .gf-card:focus-visible { outline: none; }
+html[data-gf-app="mac"][data-gf-route="home"][data-gf-view="grid"] #gf-home .gf-mac-grid .gf-card::after {
+    content: "";
+    position: absolute;
+    top: var(--gf-mac-cap, 5.25rem); right: 0; bottom: 0; left: 0;
+    pointer-events: none;
+    opacity: 0;
+    box-shadow: inset 0 0 0 2px var(--gf-brand, rgba(255, 255, 255, 0.6));
+    transition: opacity 0.2s ease;
+}
+html[data-gf-app="mac"][data-gf-route="home"][data-gf-view="grid"] #gf-home .gf-mac-grid .gf-card:hover::after,
+html[data-gf-app="mac"][data-gf-route="home"][data-gf-view="grid"] #gf-home .gf-mac-grid .gf-card:focus-visible::after { opacity: 1; }
+html[data-gf-app="mac"][data-gf-route="home"][data-gf-view="grid"] #gf-home .gf-mac-grid .gf-card:focus-visible::after { outline: 2px solid var(--gf-brand, rgba(255, 255, 255, 0.6)); outline-offset: -6px; }
+@media (prefers-reduced-motion: reduce) {
+    html[data-gf-app="mac"][data-gf-route="home"][data-gf-view="grid"] #gf-home .gf-mac-grid .gf-card::after { transition: none; }
 }
