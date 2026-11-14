@@ -27,9 +27,11 @@ jobs:
         run: ./mac-probe/getvlckit.sh "$PWD/probe-work" 2>&1 | tail -90
       - name: Compilar a sonda
         run: |
+          mkdir -p probe-work/bin
           swiftc -O -target arm64-apple-macos11.0 -F probe-work/fw -framework VLCKit -framework Foundation \
-            -Xlinker -rpath -Xlinker "$PWD/probe-work/fw" mac-probe/subprobe.swift -o probe-work/subprobe 2>&1 | head -40
-          ls -la probe-work/subprobe
+            -Xlinker -rpath -Xlinker "$PWD/probe-work/fw" mac-probe/subprobe.swift -o probe-work/bin/subprobe 2>&1 | head -40
+          ln -sfn "$PWD/probe-work/fw" probe-work/Frameworks
+          ls -la probe-work/bin/subprobe
       - name: Preparar vídeos e legenda
         run: |
           brew install ffmpeg > /dev/null 2>&1 || brew install ffmpeg
@@ -72,7 +74,7 @@ jobs:
               o=../out/$nome-$r.ts
               rm -f $o
               echo "=== $nome ${r}p"
-              ../probe-work/subprobe "$modo" "$PWD/v$r.mp4" "$PWD/leg.srt" "$PWD/$o" "$escala" "$atraso" "$extras" </dev/null 2>&1 | tail -25
+              ../probe-work/bin/subprobe "$modo" "$PWD/v$r.mp4" "$PWD/leg.srt" "$PWD/$o" "$escala" "$atraso" "$extras" </dev/null 2>&1 | tail -25
               if [ -s $o ]; then
                 echo "RESULT $nome $r $(python3 ../mac-probe/measure.py $o $r 4.5 5.5 6.5 9 12.5 13.5 15.5 18 </dev/null)"
                 for t in 6.5 13.5; do ffmpeg -nostdin -loglevel error -y -ss $t -i $o -frames:v 1 ../out/$nome-$r-t$t.png; done
