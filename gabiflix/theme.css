@@ -407,7 +407,9 @@ a[href="https://www.stremio.com/tos"] { display: none !important; }
 /* ---------- Configurações: só o que serve para o GabiFlix ---------- */
 a[href^="https://github.com/stremio/"] { display: none !important; }
 /* servidor de streaming local (não é usado no celular nem no app) */
-.sections-container-ZaZpD > .section-hcYuV:has(.header-epxi0) { display: none !important; }
+/* (fica com altura zero em vez de display:none: escondida de vez, ela contava como posição 0 e o menu da esquerda marcava "Streaming" em vez da seção em que se está) */
+.sections-container-ZaZpD > .section-hcYuV:has(.header-epxi0) { display: flex !important; height: 0; min-height: 0; margin: 0; padding: 0; border: 0; overflow: hidden; visibility: hidden; }
+.menu-xeE06 > .button-DNmYL:nth-child(4) { display: none; }
 /* código interno da versão */
 .info-nBG5H .option-vFOAS:nth-child(2) { display: none !important; }
 
@@ -481,3 +483,12 @@ html[data-gf-app="mac"][data-gf-route="search"] .search-bar-container-asfq1 .sea
 }
 html[data-gf-app="mac"][data-gf-route="search"] .search-bar-container-asfq1 .search-input-IQ0ZW::placeholder { color: rgba(255, 255, 255, 0.45); opacity: 1; }
 html[data-gf-app="mac"][data-gf-route="search"] .search-bar-container-asfq1 .search-input-IQ0ZW::-moz-placeholder { color: rgba(255, 255, 255, 0.45); opacity: 1; }
+
+/* Celular: o campo de busca ficava invisível (sem borda e sem dica) — a dica volta, discreta */
+html[data-gf-app="android"][data-gf-route="search"] .search-bar-container-asfq1 .search-input-IQ0ZW::placeholder { color: rgba(255, 255, 255, 0.45); opacity: 1; font-weight: 500; }
+html[data-gf-app="android"][data-gf-route="search"] .search-bar-container-asfq1 .search-input-IQ0ZW::-moz-placeholder { color: rgba(255, 255, 255, 0.45); opacity: 1; font-weight: 500; }
+/* Celular: "100%" do zoom da interface quebrava em duas linhas ("100" / "%") */
+html[data-gf-app="android"] .scale-Toufl .ticks-xenvh .label-RekzK { white-space: nowrap; font-size: 0.72rem; }
+
+/* Calendário: o mês ("2026 novembro", setas) ficava por baixo da cápsula do topo */
+.calendar-cH2jw .content-wBwrQ { padding-top: 1rem; box-sizing: border-box; }
