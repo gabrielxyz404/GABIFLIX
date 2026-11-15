@@ -57,7 +57,7 @@ setCallbacks(mp, lockCB, unlockCB, displayCB, nil)
 let media = VLCMedia(path: video)
 media.addOption(":avcodec-hw=none") // sem VideoToolbox: o desenho das legendas por cima de CVPX falha na vmem
 if mode == "media" || mode == "slave" { if scale != "-" { media.addOption(":sub-text-scale=\(scale)") } }
-if mode == "media" { media.addOption(":sub-file=\(srt)") }
+if mode == "media" || mode == "lib" { media.addOption(":sub-file=\(srt)") }
 for e in extra where e.hasPrefix(":") { media.addOption(e) }
 out("modo=\(mode) escala=\(scale) atraso=\(delayMs) tam=\(W)x\(H) lib=\(libOpts) extra=\(extra) alvos=\(targets)")
 player.media = media
