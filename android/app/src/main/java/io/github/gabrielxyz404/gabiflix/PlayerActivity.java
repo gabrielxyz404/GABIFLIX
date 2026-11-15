@@ -442,9 +442,12 @@ public class PlayerActivity extends Activity {
         boolean visible = controls.getVisibility() == View.VISIBLE;
         switch (k) {
             case android.view.KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE:
+                if (down) { togglePlay(); setControlsVisible(true); }
+                return true;
             case android.view.KeyEvent.KEYCODE_MEDIA_PLAY:
             case android.view.KeyEvent.KEYCODE_MEDIA_PAUSE:
-                if (down) { togglePlay(); setControlsVisible(true); }
+                // PLAY só toca e PAUSE só pausa (antes os dois alternavam: PLAY com o vídeo tocando pausava)
+                if (down) { if (player.isPlaying() == (k == android.view.KeyEvent.KEYCODE_MEDIA_PAUSE)) togglePlay(); setControlsVisible(true); }
                 return true;
             case android.view.KeyEvent.KEYCODE_MEDIA_FAST_FORWARD:
                 if (down) skip(30000);
