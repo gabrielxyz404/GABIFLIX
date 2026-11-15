@@ -37,7 +37,8 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
     private let metaId: String
     private let startMs: Int64
 
-    private let player = VLCMediaPlayer()
+    // o tamanho das legendas só vale se for passado aqui (opção da biblioteca), ver SubStyle
+    private let player = VLCMediaPlayer(options: SubStyle.libraryOptions)
     private let videoView = VLCVideoView()
     private let root = NSView()
     private let overlay = PlayerRootView()
@@ -295,7 +296,6 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
         media.addOption(":network-caching=3000")
         media.addOption(":http-reconnect")
         media.addOption(":sub-language=pob,por,pt")
-        media.addOption(":sub-text-scale=90") // como no Android (--sub-text-scale=90)
         player.media = media
         player.play()
         showControls()

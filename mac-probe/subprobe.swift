@@ -1,6 +1,7 @@
 // Sonda: toca um vídeo no VLCKit (mesma biblioteca do app) com saída de vídeo em memória (vmem, sem GPU; as legendas são
 // desenhadas pelo mesmo renderizador de texto do app) e grava quadros BGRA nos tempos pedidos.
 // uso: subprobe <modo> <video> <srt> <pasta-saida> <largura> <altura> <escala|-> <atrasoMs> <tempos-s separados por ,> [extras separados por ;]
+// modos extra: app (SubStyle.libraryOptions + sub-file), early (atraso antes da legenda existir), two (2 legendas baixadas + troca de faixa), emb (embutida + baixada)
 // modos: media (sub-file + :sub-text-scale na mídia), lib (sub-text-scale na biblioteca), slave (addPlaybackSlave depois do play, como o app)
 import Foundation
 import VLCKit
@@ -16,6 +17,8 @@ let extra = a.count > 10 ? a[10].split(separator: ";").map(String.init) : []
 let lgr = VLCConsoleLogger(); lgr.level = .debug; VLCLibrary.shared().loggers = [lgr]
 var libOpts: [String] = ["--codec=avcodec", "--avcodec-hw=none", "--no-videotoolbox"] // sem VideoToolbox: o desenho das legendas por cima de CVPX falha na vmem
 if mode == "lib" && scale != "-" { libOpts.append("--sub-text-scale=\(scale)") }
+let appModes = ["app", "early", "two", "emb"]
+if appModes.contains(mode) { libOpts += SubStyle.libraryOptions }
 for e in extra where e.hasPrefix("--") { libOpts.append(e) }
 let player = VLCMediaPlayer(options: libOpts)
 
@@ -57,24 +60,48 @@ setCallbacks(mp, lockCB, unlockCB, displayCB, nil)
 let media = VLCMedia(path: video)
 media.addOption(":avcodec-hw=none") // sem VideoToolbox: o desenho das legendas por cima de CVPX falha na vmem
 if mode == "media" || mode == "slave" { if scale != "-" { media.addOption(":sub-text-scale=\(scale)") } }
-if mode == "media" || mode == "lib" { media.addOption(":sub-file=\(srt)") }
+if mode == "media" || mode == "lib" || mode == "app" { media.addOption(":sub-file=\(srt)") }
 for e in extra where e.hasPrefix(":") { media.addOption(e) }
 out("modo=\(mode) escala=\(scale) atraso=\(delayMs) tam=\(W)x\(H) lib=\(libOpts) extra=\(extra) alvos=\(targets)")
 player.media = media
 player.play()
-var added = false, delayDone = false
+var added = false, added2 = false, delayDone = false, switched = false, embSet = false
+var embId: Int32 = -1
+let srtB = srt.replacingOccurrences(of: "legA.srt", with: "legB.srt")
 let t0 = Date()
 var lastLog = Date.distantPast
+func ids() -> [Int32] { ((player.videoSubTitlesIndexes as? [NSNumber]) ?? []).map { $0.int32Value }.filter { $0 != -1 } }
 while Date().timeIntervalSince(t0) < 90 {
     RunLoop.main.run(until: Date().addingTimeInterval(0.05))
     let el = Date().timeIntervalSince(t0)
     let pt = Int(getTime(mp))
-    if mode == "slave" && !added && pt > 2000 {
+    if mode == "emb" && embId == -1 && pt > 1200 { embId = ids().first ?? -2; out("embutida id=\(embId) nomes=\((player.videoSubTitlesNames as? [String]) ?? [])") }
+    let slaveAt = 2000
+    let slaveEnforce = (mode == "emb") ? false : true
+    if (mode == "slave" || mode == "early" || mode == "two" || mode == "emb") && !added && pt > slaveAt {
         added = true
-        let ok = player.addPlaybackSlave(URL(fileURLWithPath: srt), type: .subtitle, enforce: true)
-        out("addPlaybackSlave -> \(ok) em t=\(pt)")
+        let ok = player.addPlaybackSlave(URL(fileURLWithPath: srt), type: .subtitle, enforce: slaveEnforce)
+        out("addPlaybackSlave A -> \(ok) em t=\(pt) enforce=\(slaveEnforce)")
     }
-    if delayMs != 0 && !delayDone && (mode != "slave" || pt > 3500) {
+    if mode == "two" && added && !added2 && pt > 2400 {
+        added2 = true
+        let ok = player.addPlaybackSlave(URL(fileURLWithPath: srtB), type: .subtitle, enforce: false)
+        out("addPlaybackSlave B -> \(ok) em t=\(pt)")
+    }
+    if mode == "emb" && added && !embSet && pt > 2600 {
+        embSet = true
+        player.currentVideoSubTitleIndex = embId
+        out("selecionou embutida \(embId) em t=\(pt); atual=\(player.currentVideoSubTitleIndex)")
+    }
+    if mode == "two" && added2 && !switched && pt > 8500 {
+        switched = true
+        let l = ids()
+        out("faixas antes da troca (ids)=\(l) atual=\(player.currentVideoSubTitleIndex)")
+        if let b = l.last { player.currentVideoSubTitleIndex = b }
+        out("troca para \(l.last ?? -9) em t=\(pt); atual=\(player.currentVideoSubTitleIndex) atraso=\(player.currentVideoSubTitleDelay)")
+    }
+    let delayAt = (mode == "slave" || mode == "two" || mode == "emb") ? 3500 : (mode == "early" ? 800 : 0)
+    if delayMs != 0 && !delayDone && pt >= delayAt {
         delayDone = true
         player.currentVideoSubTitleDelay = delayMs * 1000
         out("delay aplicado=\(delayMs * 1000)us em t=\(pt) lido=\(player.currentVideoSubTitleDelay)")
