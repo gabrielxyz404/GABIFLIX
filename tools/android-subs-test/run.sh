@@ -71,7 +71,7 @@ snap 1-inicio
 note "log após anexar:"; glog | grep -E "ranking|escolhida|candidatas|válidas|consenso|atraso da legenda ativa|embutida" | tee -a $LOG
 show_controls; click "Legendas"; sleep 1; snap 2-menu-legendas; texts menu
 for i in 2 3 1; do
-  click "Português $i"; sleep 2; pause; snap 3-escolhe-$i; mark "escolheu item $i"
+  click "Português $i"; mark "escolheu item $i"; sleep 1; snap 3-escolhe-$i-1s; play; sleep 4; snap 3-escolhe-$i-5s; pause
   show_controls; click "Legendas"; sleep 1
 done
 glog | grep -E "atraso da legenda" | tee -a $LOG
