@@ -1090,10 +1090,11 @@ public class PlayerActivity extends Activity {
         LinearLayout box = new LinearLayout(this);
         box.setOrientation(LinearLayout.VERTICAL);
         box.setGravity(Gravity.CENTER_HORIZONTAL);
-        box.setPadding(dp(24), dp(12), dp(24), dp(8));
-        TextView value = text(delayLabel(), 20, true);
+        final boolean compact = !tv; // celular em paisagem (~412 dp de altura): versão compacta para caber sem rolar; a da TV não muda
+        box.setPadding(dp(24), dp(compact ? 0 : 12), dp(24), dp(compact ? 0 : 8));
+        TextView value = text(delayLabel(), compact ? 17 : 20, true);
         value.setGravity(Gravity.CENTER);
-        value.setPadding(0, dp(12), 0, dp(10));
+        value.setPadding(0, dp(compact ? 2 : 12), 0, dp(compact ? 2 : 10));
 
         // principal: acertar pela fala (só com legenda baixada ativa: a embutida não tem texto acessível)
         SubtitleSync.Cand active = player == null ? null : candForTrack(player.getSpuTrack(), player.getSpuTracks());
@@ -1103,7 +1104,7 @@ public class PlayerActivity extends Activity {
             final SubtitleSync.Cand fa = active;
             speech.setOnClickListener(v -> showSpeechPicker(fa, value));
             box.addView(syncRow(speech));
-            TextView help = text("Pause numa fala, escolha-a na lista e a legenda acerta sozinha.", 13, false);
+            TextView help = text("Pause numa fala, escolha-a na lista e a legenda acerta sozinha.", compact ? 12 : 13, false);
             help.setGravity(Gravity.CENTER);
             help.setTextColor(0xFFA0A0A0);
             box.addView(help);
@@ -1123,17 +1124,45 @@ public class PlayerActivity extends Activity {
         TextView m05 = stepButton("−0,5 s", -500, value), p05 = stepButton("+0,5 s", 500, value);
         TextView reset = syncButton("Repor");
         reset.setOnClickListener(v -> changeSubDelay(0, true, value));
-        TextView hold = text("Segure o botão para repetir (acelera).", 12, false);
+        TextView hold = text("Segure o botão para repetir (acelera).", compact ? 11 : 12, false);
         hold.setTextColor(0xFFA0A0A0);
         hold.setGravity(Gravity.CENTER);
         LinearLayout last = syncRow(m05, p05, reset);
         last.setPadding(0, dp(10), 0, 0);
-        box.addView(h1);
-        box.addView(syncRow(m30, m5, m1));
-        box.addView(h2);
-        box.addView(syncRow(p1, p5, p30));
-        box.addView(last);
-        box.addView(hold);
+        if (compact) {
+            for (TextView b : new TextView[]{m30, m5, m1, p1, p5, p30, m05, p05, reset, speech}) {
+                if (b == null) continue;
+                b.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14);
+                b.setPadding(dp(10), dp(5), dp(10), dp(5));
+            }
+            h1.setTextSize(TypedValue.COMPLEX_UNIT_SP, 12);
+            h2.setTextSize(TypedValue.COMPLEX_UNIT_SP, 12);
+            h2.setPadding(0, 0, 0, 0);
+            last.setPadding(0, 0, 0, 0);
+            // duas colunas: adiantar | atrasar
+            LinearLayout cols = new LinearLayout(this);
+            cols.setOrientation(LinearLayout.HORIZONTAL);
+            cols.setGravity(Gravity.CENTER_HORIZONTAL);
+            LinearLayout cl = new LinearLayout(this), cr = new LinearLayout(this);
+            cl.setOrientation(LinearLayout.VERTICAL); cr.setOrientation(LinearLayout.VERTICAL);
+            cl.setGravity(Gravity.CENTER_HORIZONTAL); cr.setGravity(Gravity.CENTER_HORIZONTAL);
+            cl.addView(h1); cl.addView(syncRow(m30, m5, m1));
+            cr.addView(h2); cr.addView(syncRow(p1, p5, p30));
+            cols.addView(cl, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+            LinearLayout.LayoutParams gap = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+            gap.leftMargin = dp(16);
+            cols.addView(cr, gap);
+            box.addView(cols);
+            box.addView(last);
+            box.addView(hold);
+        } else {
+            box.addView(h1);
+            box.addView(syncRow(m30, m5, m1));
+            box.addView(h2);
+            box.addView(syncRow(p1, p5, p30));
+            box.addView(last);
+            box.addView(hold);
+        }
         android.widget.ScrollView scroll = new android.widget.ScrollView(this);
         scroll.addView(box);
         AlertDialog dlg = new AlertDialog.Builder(this, android.R.style.Theme_DeviceDefault_Dialog_Alert)
