@@ -679,7 +679,7 @@
             wrap.appendChild(chips);
             requestAnimationFrame(function () {
                 var a = chips.querySelector('.is-active');
-                if (a) chips.scrollLeft = a.offsetLeft - 16;
+                if (a) chips.scrollLeft = Math.max(0, a.getBoundingClientRect().left - chips.getBoundingClientRect().left + chips.scrollLeft - 16); // offsetLeft contava a partir de outro elemento e cortava o 1º botão no Mac
             });
         }
 
