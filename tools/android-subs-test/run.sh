@@ -16,8 +16,8 @@ dump() { adb shell uiautomator dump /sdcard/u.xml >/dev/null 2>&1; adb shell cat
 key() { for k in "$@"; do adb shell input keyevent $k; sleep 0.7; done; }
 glog() { adb logcat -d -s GabiFlixPlayer:I | sed 's/^.*GabiFlixPlayer: //' ; }
 mark() { adb shell log -t GabiFlixPlayer "=== $* ==="; }
-W=1080; [ "$P" = tv ] && W=1920
-H=2400; [ "$P" = tv ] && H=1080
+W=2400; [ "$P" = tv ] && W=1920   # tela do player (celular em paisagem)
+H=1080
 
 launch() { # $1 = video, $2.. = legendas (nomes)
   v=$1; shift
@@ -31,15 +31,24 @@ launch() { # $1 = video, $2.. = legendas (nomes)
     else adb shell am start -n $PKG/.tv.TvHomeActivity --es gfTestUrl "http://10.0.2.2:8000/$v"; fi
   fi
 }
-show_controls() { if [ "$P" = tel ]; then adb shell input tap $((W/2)) $((H/3)); else key DPAD_DOWN; fi; sleep 1; }
+show_controls() {
+  if [ "$P" = tel ]; then
+    xy=$(dump | python3 tools/android-subs-test/ui.py xy "Voltar")
+    [ -z "$xy" ] && adb shell input tap $((W/2)) $((H/3))
+  else key DPAD_DOWN; fi
+  sleep 1
+}
 pause() { adb shell input keyevent KEYCODE_MEDIA_PAUSE; sleep 1.5; }
 play() { adb shell input keyevent KEYCODE_MEDIA_PLAY; sleep 1; }
 click() { # texto
   if [ "$P" = tel ]; then
-    for t in 1 2 3; do xy=$(dump | python3 tools/android-subs-test/ui.py xy "$1"); [ -n "$xy" ] && break; show_controls; done
+    for t in 1 2 3 4; do
+      xy=$(dump | python3 tools/android-subs-test/ui.py xy "$1"); [ -n "$xy" ] && break
+      case "$1" in Português*) adb shell input swipe $((W/2)) $((H*2/3)) $((W/2)) $((H/4)) 300;; *) show_controls;; esac
+    done
     [ -n "$xy" ] && adb shell input tap $xy || note "NÃO ACHEI: $1"
   else
-    for t in $(seq 1 25); do
+    for t in $(seq 1 12); do
       d=$(dump | python3 tools/android-subs-test/ui.py nav "$1")
       if [ "$d" = HERE ]; then adb shell input keyevent DPAD_CENTER; note "TV: OK em '$1' após $t passos"; sleep 1; return; fi
       if [ "$d" = NONE ]; then show_controls; continue; fi
@@ -65,7 +74,6 @@ for i in 2 3 1; do
   click "Português $i"; sleep 2; pause; snap 3-escolhe-$i; mark "escolheu item $i"
   show_controls; click "Legendas"; sleep 1
 done
-adb shell input keyevent BACK; sleep 1; [ "$P" = tel ] && true
 glog | grep -E "atraso da legenda" | tee -a $LOG
 
 # ================= 2. atraso: aplica, guarda =================
@@ -105,10 +113,14 @@ glog | sed -n '/=== EMB+BAIXADAS ===/,$p' | grep -E "embutida|escolhida|atraso" 
 launch teste.mkv a1.srt a2.srt b.srt
 mark "PLAYPLAY"
 wait_ready 30
-adb shell input keyevent KEYCODE_MEDIA_PLAY; sleep 1; adb shell input keyevent KEYCODE_MEDIA_PLAY; sleep 2
+adb shell input keyevent KEYCODE_MEDIA_PLAY; sleep 1
 snap 13-play-play-a
-sleep 3
+sleep 4
 snap 13-play-play-b
+adb shell input keyevent KEYCODE_MEDIA_PAUSE; sleep 1; adb shell input keyevent KEYCODE_MEDIA_PAUSE; sleep 1
+snap 13-pause-pause-c
+sleep 3
+snap 13-pause-pause-d
 
 # ================= 7. três modos de Tela (16:9 e 2,39:1) =================
 scales() { # rótulo

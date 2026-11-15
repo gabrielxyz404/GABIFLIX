@@ -44,12 +44,15 @@ final class SubtitleText {
         return readAll(new java.util.zip.GZIPInputStream(new ByteArrayInputStream(d)));
     }
 
-    private static byte[] readAll(InputStream in) throws IOException {
+    private static byte[] readAll(InputStream in) throws IOException { return readAll(in, true); }
+
+    /** close=false: para ler uma entrada de um ZipInputStream sem fechar o zip inteiro (close() do ZipInputStream fecha tudo e o getNextEntry seguinte dá "Stream closed") */
+    private static byte[] readAll(InputStream in, boolean close) throws IOException {
         ByteArrayOutputStream buf = new ByteArrayOutputStream();
         byte[] b = new byte[16384];
         int r;
         while ((r = in.read(b)) > 0) { buf.write(b, 0, r); if (buf.size() > MAX_BYTES) break; }
-        in.close();
+        if (close) in.close();
         return buf.toByteArray();
     }
 
@@ -61,7 +64,7 @@ final class SubtitleText {
         while ((e = z.getNextEntry()) != null) {
             if (e.isDirectory()) continue;
             String n = e.getName().toLowerCase(Locale.ROOT);
-            byte[] data = readAll(z);
+            byte[] data = readAll(z, false);
             if (n.endsWith(".srt") || n.endsWith(".vtt") || n.endsWith(".ass") || n.endsWith(".ssa")) return data;
             if (first == null) first = data;
         }

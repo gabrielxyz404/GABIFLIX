@@ -17,7 +17,7 @@ for n in root.iter('node'):
     m = re.match(r'\[(\d+),(\d+)\]\[(\d+),(\d+)\]', n.get('bounds', ''))
     if not m: continue
     x1, y1, x2, y2 = map(int, m.groups())
-    nodes.append((n.get('text', '') or n.get('content-desc', ''), (x1 + x2) // 2, (y1 + y2) // 2, n.get('focused') == 'true', n.get('clickable') == 'true' or n.get('focusable') == 'true'))
+    nodes.append((n.get('text', '') or n.get('content-desc', ''), (x1 + x2) // 2, (y1 + y2) // 2, n.get('focused') == 'true', n.get('class', '')))
 mode = sys.argv[1]
 def find(t):
     t = t.lower()
@@ -39,6 +39,8 @@ elif mode == 'nav':
     f = [n for n in nodes if n[3]]
     if not f: print('DPAD_DOWN'); sys.exit(0)
     f = f[-1]
+    if 'SeekBar' in f[4] and t[2] != f[2]:  # a barra do filme usa esquerda/direita para correr: sai dela por cima/baixo
+        print('DPAD_DOWN' if t[2] > f[2] else 'DPAD_UP'); sys.exit(0)
     if f[0].lower() == t[0].lower() and f[1] == t[1] and f[2] == t[2]: print('HERE'); sys.exit(0)
     dx, dy = t[1] - f[1], t[2] - f[2]
     if abs(dy) >= abs(dx) * 0.6 and abs(dy) > 8: print('DPAD_DOWN' if dy > 0 else 'DPAD_UP')
