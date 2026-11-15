@@ -14,10 +14,10 @@ var targets = a[9].split(separator: ",").map { Int((Double($0)! * 1000).rounded(
 let extra = a.count > 10 ? a[10].split(separator: ";").map(String.init) : []
 
 let lgr = VLCConsoleLogger(); lgr.level = .debug; VLCLibrary.shared().loggers = [lgr]
-var libOpts: [String] = []
+var libOpts: [String] = ["--codec=avcodec", "--avcodec-hw=none", "--no-videotoolbox"] // sem VideoToolbox: o desenho das legendas por cima de CVPX falha na vmem
 if mode == "lib" && scale != "-" { libOpts.append("--sub-text-scale=\(scale)") }
 for e in extra where e.hasPrefix("--") { libOpts.append(e) }
-let player: VLCMediaPlayer = libOpts.isEmpty ? VLCMediaPlayer() : VLCMediaPlayer(options: libOpts)
+let player = VLCMediaPlayer(options: libOpts)
 
 // ponteiro libvlc_media_player_t* do VLCMediaPlayer (ivar _playerInstance)
 guard let iv = class_getInstanceVariable(VLCMediaPlayer.self, "_playerInstance") else { out("sem _playerInstance"); exit(3) }
