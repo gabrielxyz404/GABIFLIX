@@ -382,9 +382,8 @@ enum Zip {
             pos = next
             if name.hasSuffix("/") { continue }
             if name.hasSuffix(".srt") || name.hasSuffix(".vtt") || name.hasSuffix(".ass") || name.hasSuffix(".ssa") { return data }
-            // o Java fecha o ZipInputStream em readAll(): o getNextEntry seguinte lança "Stream closed" e decode() devolve null
-            _ = data; firstData = nil
-            return nil
+            // o Java (readAll(z, false)) lê cada entrada sem fechar o zip: entradas que não são legenda são puladas; guarda a primeira como reserva
+            if firstData == nil { firstData = data }
         }
         return firstData
     }

@@ -189,6 +189,14 @@ public class Synth {
         return sb.toString();
     }
 
+    static byte[] zip3(String o1, String o2, String name, byte[] data) throws IOException {
+        ByteArrayOutputStream bo = new ByteArrayOutputStream();
+        try (java.util.zip.ZipOutputStream z = new java.util.zip.ZipOutputStream(bo)) {
+            for (String o : new String[]{o1, o2}) { z.putNextEntry(new java.util.zip.ZipEntry(o)); z.write(("sem legenda " + o).getBytes(StandardCharsets.UTF_8)); z.closeEntry(); }
+            z.putNextEntry(new java.util.zip.ZipEntry(name)); z.write(data); z.closeEntry();
+        }
+        return bo.toByteArray();
+    }
     static byte[] zip(String name, byte[] data, String other) throws IOException {
         ByteArrayOutputStream bo = new ByteArrayOutputStream();
         try (java.util.zip.ZipOutputStream z = new java.util.zip.ZipOutputStream(bo)) {
@@ -221,6 +229,8 @@ public class Synth {
         fixture(D, "oth-mojilatin-0", new String(u8, "ISO-8859-1").getBytes(StandardCharsets.UTF_8), "por");
         fixture(D, "oth-zipsrt-0", zip("legenda.srt", u8, null), "por");
         fixture(D, "oth-zipsecond-0", zip("Legenda.SRT", u8, "leia-me.txt"), "por");
+        fixture(D, "oth-zipthird-0", zip3("a.txt", "b.nfo", "Legenda.vtt", u8), "por");
+        fixture(D, "oth-zipnosrt2-0", zip("b.nfo", u8, "a.txt"), "por");
         fixture(D, "oth-zipnosrt-0", zip("dados.bin", u8, null), "por");
         fixture(D, "oth-gz-0", gz(u8), "por");
         fixture(D, "oth-gztrunc-0", Arrays.copyOf(gz(u8), gz(u8).length - 10), "por");
