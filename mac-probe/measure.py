@@ -9,7 +9,7 @@ def lines(img):
     if rows.size == 0: return []
     groups = []; s = p = rows[0]
     for r in rows[1:]:
-        if r - p > max(3, H // 90): groups.append((s, p)); s = r
+        if r - p > 1: groups.append((s, p)); s = r
         p = r
     groups.append((s, p))
     res = []

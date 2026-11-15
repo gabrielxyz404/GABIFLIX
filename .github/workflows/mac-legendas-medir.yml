@@ -59,14 +59,9 @@ jobs:
         run: |
           cd work
           if [ -z "$MATRIZ" ]; then
-          MATRIZ='lib90|lib|90|0|
-          lib50|lib|50|0|
-          media50|media|50|0|
-          rel20|lib|-|0|--freetype-rel-fontsize=20
-          rel24|lib|-|0|--freetype-rel-fontsize=24
-          mrel24|media|-|0|:freetype-rel-fontsize=24
-          rel32|lib|-|0|--freetype-rel-fontsize=32
-          lib60rel16|lib|60|0|--freetype-rel-fontsize=16'
+          MATRIZ='lib50|lib|50|0|
+          lib55|lib|55|0|
+          lib60|lib|60|0|'
           fi
           mkdir -p ../out
           echo "$MATRIZ" | while IFS='|' read -r nome modo escala atraso extras; do
