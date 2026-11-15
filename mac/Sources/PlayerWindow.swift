@@ -353,6 +353,9 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
         }
 
         attachReadySubs()
+        // a faixa só fica ativa uns instantes depois de addPlaybackSlave (medido: logo depois do add o índice ainda é -1):
+        // se a legenda ativa mudar por qualquer motivo, carrega o atraso guardado dela (sem efeito quando a chave é a mesma)
+        if subsAttached && !finished { syncDelayToTrack(Int(player.currentVideoSubTitleIndex)) }
         reportProgress(force: false)
         if scaleForce > 0 { scaleForce -= 1; applyScale(force: true) } else { applyScale() }
         if !noticeLabel.isHidden && Date() > noticeUntil { noticeLabel.isHidden = true }

@@ -64,8 +64,10 @@ jobs:
         run: |
           cd work
           if [ -z "$MATRIZ" ]; then
-          MATRIZ='slave-tempo|slave|-|0||6.5,9|legA.srt||720
-          emb-tempo|emb|-|0||6.5,11.5|legA.srt|v720e.mkv|720'
+          MATRIZ='antes|media|90|0|
+          depois|app|-|0|
+          depois-atraso2000|app|-|2000|
+          depois-atraso2000-faixas|two|-|2000||6.5,8,11.5,14,17|legA.srt||720'
           fi
           mkdir -p ../out
           echo "$MATRIZ" | while IFS='|' read -r nome modo escala atraso extras alvos srtf vid ress; do
