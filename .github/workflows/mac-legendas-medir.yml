@@ -64,12 +64,8 @@ jobs:
         run: |
           cd work
           if [ -z "$MATRIZ" ]; then
-          MATRIZ='app|app|-|0|
-          app-atraso2000|app|-|2000|
-          early-atraso2000|early|-|2000|
-          two|two|-|0||6.5,8,11.5,14,17|legA.srt||720
-          two-atraso2000|two|-|2000||6.5,8,11.5,14,17|legA.srt||720
-          emb|emb|-|0||6.5,11.5,14|legA.srt|v720e.mkv|720'
+          MATRIZ='slave-tempo|slave|-|0||6.5,9|legA.srt||720
+          emb-tempo|emb|-|0||6.5,11.5|legA.srt|v720e.mkv|720'
           fi
           mkdir -p ../out
           echo "$MATRIZ" | while IFS='|' read -r nome modo escala atraso extras alvos srtf vid ress; do
@@ -80,7 +76,7 @@ jobs:
               case "$vid" in v) vf=v$r.mp4;; *) vf=$vid;; esac
               echo "=== $nome ${r}p"
               ../probe-work/bin/subprobe "$modo" "$PWD/$vf" "$PWD/$srtf" "$PWD/$d" $w $r "$escala" "$atraso" "$alvos" "$extras" </dev/null > $d.log 2>&1
-              grep -v "^20.*debug.*\(core\|main\)" $d.log | grep -i -E "modo=|delay|slave|salvos=\[|troca|faixas antes|embutida|selecionou|freetype|ERR|fail" | cut -c1-330 | head -25
+              grep -v "^20.*debug.*\(core\|main\)" $d.log | grep -i -E "modo=|delay|slave|apos |salvos=\[|troca|faixas antes|embutida|selecionou|freetype|ERR|fail" | cut -c1-330 | head -25
               echo "RESULT $nome $r $(python3 ../mac-probe/measure.py $d $w $r </dev/null)"
               for f in $d/f*.bgra; do t=${f##*/f}; t=${t%.bgra}; ffmpeg -nostdin -loglevel error -y -f rawvideo -pix_fmt bgra -s ${w}x$r -i $f ../out/$nome-$r-t$t.png; done
               rm -f $d/*.bgra

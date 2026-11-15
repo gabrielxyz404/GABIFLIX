@@ -67,6 +67,8 @@ player.media = media
 player.play()
 var added = false, added2 = false, delayDone = false, switched = false, embSet = false
 var embId: Int32 = -1
+var slaveWatch: Date? = nil
+var watchLogged = Set<Int>()
 let srtB = srt.replacingOccurrences(of: "legA.srt", with: "legB.srt")
 let t0 = Date()
 var lastLog = Date.distantPast
@@ -81,7 +83,8 @@ while Date().timeIntervalSince(t0) < 90 {
     if (mode == "slave" || mode == "early" || mode == "two" || mode == "emb") && !added && pt > slaveAt {
         added = true
         let ok = player.addPlaybackSlave(URL(fileURLWithPath: srt), type: .subtitle, enforce: slaveEnforce)
-        out("addPlaybackSlave A -> \(ok) em t=\(pt) enforce=\(slaveEnforce)")
+        out("addPlaybackSlave A -> \(ok) em t=\(pt) enforce=\(slaveEnforce) atual-imediato=\(player.currentVideoSubTitleIndex) ids=\(ids())")
+        slaveWatch = Date()
     }
     if mode == "two" && added && !added2 && pt > 2400 {
         added2 = true
@@ -99,6 +102,13 @@ while Date().timeIntervalSince(t0) < 90 {
         out("faixas antes da troca (ids)=\(l) atual=\(player.currentVideoSubTitleIndex)")
         if let b = l.last { player.currentVideoSubTitleIndex = b }
         out("troca para \(l.last ?? -9) em t=\(pt); atual=\(player.currentVideoSubTitleIndex) atraso=\(player.currentVideoSubTitleDelay)")
+    }
+    if let w = slaveWatch {
+        let ms = Int(Date().timeIntervalSince(w) * 1000)
+        for mark in [100, 300, 600, 1000, 1500, 2500, 4000] where ms >= mark && !watchLogged.contains(mark) {
+            watchLogged.insert(mark)
+            out("apos \(mark) ms do addPlaybackSlave: atual=\(player.currentVideoSubTitleIndex) ids=\(ids()) nomes=\((player.videoSubTitlesNames as? [String]) ?? [])")
+        }
     }
     let delayAt = (mode == "slave" || mode == "two" || mode == "emb") ? 3500 : (mode == "early" ? 800 : 0)
     if delayMs != 0 && !delayDone && pt >= delayAt {
