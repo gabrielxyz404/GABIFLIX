@@ -71,14 +71,12 @@ jobs:
           echo "$MATRIZ" | while IFS='|' read -r nome modo escala atraso extras; do
             [ -z "$nome" ] && continue
             for r in 720 1080; do
-              o=../out/$nome-$r.ts
-              rm -f $o
+              w=$((r*16/9)); d=../out/$nome-$r; rm -rf $d
               echo "=== $nome ${r}p"
-              ../probe-work/bin/subprobe "$modo" "$PWD/v$r.mp4" "$PWD/leg.srt" "$PWD/$o" "$escala" "$atraso" "$extras" </dev/null 2>&1 | tail -25
-              if [ -s $o ]; then
-                echo "RESULT $nome $r $(python3 ../mac-probe/measure.py $o $r 4.5 5.5 6.5 9 12.5 13.5 15.5 18 </dev/null)"
-                for t in 6.5 13.5; do ffmpeg -nostdin -loglevel error -y -ss $t -i $o -frames:v 1 ../out/$nome-$r-t$t.png; done
-              else echo "RESULT $nome $r SEM SAÍDA"; fi
+              ../probe-work/bin/subprobe "$modo" "$PWD/v$r.mp4" "$PWD/leg.srt" "$PWD/$d" $w $r "$escala" "$atraso" 4.5,5.5,6.5,9,12.5,13.5,15.5,18 "$extras" </dev/null 2>&1 | tail -14
+              echo "RESULT $nome $r $(python3 ../mac-probe/measure.py $d $w $r </dev/null)"
+              for t in 6500 13500; do [ -f $d/f$t.bgra ] && ffmpeg -nostdin -loglevel error -y -f rawvideo -pix_fmt bgra -s ${w}x$r -i $d/f$t.bgra ../out/$nome-$r-t$t.png; done
+              rm -f $d/*.bgra
             done
           done
       - name: Guardar
