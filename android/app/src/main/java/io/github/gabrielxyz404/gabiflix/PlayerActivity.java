@@ -904,7 +904,12 @@ public class PlayerActivity extends Activity {
         head.addView(dg);
         new AlertDialog.Builder(this, android.R.style.Theme_DeviceDefault_Dialog_Alert)
                 .setCustomTitle(head)
-                .setSingleChoiceItems(names, checked, (d, which) -> { userPickedSub = true; player.setSpuTrack(ids[which]); syncDelayToTrack(ids[which]); d.dismiss(); scheduleHide(); })
+                .setSingleChoiceItems(names, checked, (d, which) -> {
+                    userPickedSub = true;
+                    boolean okSet = player.setSpuTrack(ids[which]);
+                    glog("menu: escolheu a faixa " + ids[which] + " (setSpuTrack=" + okSet + ", VLC diz agora faixa " + player.getSpuTrack() + ", tempo " + player.getTime() + " ms)");
+                    ui.postDelayed(() -> { if (player != null) glog("menu: 2 s depois o VLC está na faixa " + player.getSpuTrack() + ", tempo " + player.getTime() + " ms"); }, 2000);
+                    syncDelayToTrack(ids[which]); d.dismiss(); scheduleHide(); })
                 .setNeutralButton("Sincronizar legenda", (d, w) -> showSyncDialog())
                 .setNegativeButton("Cancelar", null)
                 .show();
