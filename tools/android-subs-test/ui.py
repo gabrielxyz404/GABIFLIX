@@ -17,7 +17,7 @@ for n in root.iter('node'):
     m = re.match(r'\[(\d+),(\d+)\]\[(\d+),(\d+)\]', n.get('bounds', ''))
     if not m: continue
     x1, y1, x2, y2 = map(int, m.groups())
-    nodes.append((n.get('text', '') or n.get('content-desc', ''), (x1 + x2) // 2, (y1 + y2) // 2, n.get('focused') == 'true', n.get('class', '')))
+    nodes.append((n.get('text', '') or n.get('content-desc', ''), (x1 + x2) // 2, (y1 + y2) // 2, n.get('focused') == 'true', n.get('class', ''), n.get('selected') == 'true'))
 mode = sys.argv[1]
 def find(t):
     t = t.lower()
@@ -36,7 +36,7 @@ elif mode == 'xy':
 elif mode == 'nav':
     t = find(sys.argv[2])
     if not t: print('NONE'); sys.exit(0)
-    f = [n for n in nodes if n[3]]
+    f = [n for n in nodes if n[3] and n[0]] or [n for n in nodes if n[5] and n[0] and 'CheckedTextView' in n[4]] or [n for n in nodes if n[3]]
     if not f: print('DPAD_DOWN'); sys.exit(0)
     f = f[-1]
     if 'SeekBar' in f[4] and t[2] != f[2]:  # a barra do filme usa esquerda/direita para correr: sai dela por cima/baixo

@@ -27,6 +27,7 @@ import android.widget.TextView;
 import org.videolan.libvlc.LibVLC;
 import org.videolan.libvlc.Media;
 import org.videolan.libvlc.MediaPlayer;
+import org.videolan.libvlc.interfaces.IMedia;
 import org.videolan.libvlc.util.VLCVideoLayout;
 
 import java.util.ArrayList;
@@ -112,6 +113,16 @@ public class PlayerActivity extends Activity {
         if (v instanceof ViewGroup) { ViewGroup g = (ViewGroup) v; for (int i = 0; i < g.getChildCount(); i++) collectVideoViews(g.getChildAt(i), out); }
     }
 
+    /** proporção real da imagem (largura x SAR / altura) da faixa de vídeo atual; 0 se ainda não se sabe */
+    private float videoAspect() {
+        try {
+            IMedia.VideoTrack vt = player == null ? null : player.getCurrentVideoTrack();
+            if (vt == null || vt.width <= 0 || vt.height <= 0) return 0f;
+            float sar = vt.sarNum > 0 && vt.sarDen > 0 ? (float) vt.sarNum / vt.sarDen : 1f;
+            return vt.width * sar / vt.height;
+        } catch (Throwable t) { glog("proporção: " + t); return 0f; }
+    }
+
     /** Preencher: amplia a imagem (centrada) até cobrir a tela inteira; nos outros modos volta a 1 */
     private void zoomVideo() {
         try {
@@ -123,7 +134,14 @@ public class PlayerActivity extends Activity {
             }
             float f = 1f;
             int tw = tex.getWidth(), th = tex.getHeight(), w = videoLayout.getWidth(), h = videoLayout.getHeight();
-            if (scaleIndex == 1 && tw > 0 && th > 0 && w > 0 && h > 0) f = Math.max((float) w / tw, (float) h / th);
+            if (scaleIndex == 1 && tw > 0 && th > 0 && w > 0 && h > 0) {
+                // a imagem real ocupa só um retângulo dentro da vista (na TV a TextureView é do tamanho da tela e o VLC desenha as barras pretas
+                // dentro dela: com vídeo 2,39:1 o zoom tinha de ser > 1 e dava 1). Retângulo = o vídeo (proporção real) ajustado dentro da vista.
+                float dw = tw, dh = th, va = videoAspect();
+                if (va > 0) { if ((float) tw / th > va) dw = th * va; else dh = tw / va; }
+                f = Math.max((float) w / dw, (float) h / dh);
+                glog(String.format(Locale.ROOT, "zoom Preencher: vista %dx%d, tela %dx%d, proporção do vídeo %.3f, fator %.3f", tw, th, w, h, va, f));
+            }
             tex.setPivotX(tw / 2f); tex.setPivotY(th / 2f);
             tex.setScaleX(f); tex.setScaleY(f);
         } catch (Throwable t) { glog("escala: " + t); }
