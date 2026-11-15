@@ -70,9 +70,11 @@ pause
 snap 1-inicio
 note "log após anexar:"; glog | grep -E "ranking|escolhida|candidatas|válidas|consenso|atraso da legenda ativa|embutida" | tee -a $LOG
 show_controls; click "Legendas"; sleep 1; snap 2-menu-legendas; texts menu
-for i in 2 3 1; do
-  click "Português $i"; mark "escolheu item $i"; sleep 1; snap 3-escolhe-$i-1s; play; sleep 11; snap 3-escolhe-$i-11s; pause
-  if [ $i != 1 ]; then show_controls; click "Legendas"; sleep 1; fi
+k=0
+for i in 3 1 2 3 1; do
+  k=$((k+1))
+  click "Português $i"; mark "escolheu item $i"; sleep 1; snap 3-escolhe-$i-1s; play; sleep 7; snap 3-escolhe-$i-8s; sleep 8; snap 3-escolhe-$i-16s; pause
+  if [ $k -lt 5 ]; then show_controls; click "Legendas"; sleep 1; fi
 done
 glog | grep -E "atraso da legenda" | tee -a $LOG
 
