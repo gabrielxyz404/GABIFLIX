@@ -8,6 +8,7 @@ UI=tools/android-subs-test/ui.py
 adb install -r "$APK"
 if [ "$P" = tel ]; then adb shell wm size 1080x2400; adb shell wm density 420; fi
 adb shell wm size > $OUT/wm.txt
+snap() { adb exec-out screencap -p > "$OUT/passo-$P-$1.png"; }
 dump() { adb shell uiautomator dump /sdcard/u.xml >/dev/null 2>&1; adb shell cat /sdcard/u.xml 2>/dev/null; }
 key() { for k in "$@"; do adb shell input keyevent $k; sleep 0.7; done; }
 W=2400; [ "$P" = tv ] && W=1920; H=1080
@@ -31,12 +32,24 @@ click() {
   sleep 1
 }
 subs="http://10.0.2.2:8000/a1.srt,http://10.0.2.2:8000/a2.srt,http://10.0.2.2:8000/b.srt"
+adb logcat -c
+if [ "$P" = tel ]; then adb root; sleep 3; fi
 adb shell am force-stop $PKG; sleep 1
 if [ "$P" = tel ]; then adb shell am start -n $PKG/.PlayerActivity --es url "http://10.0.2.2:8000/teste.mkv" --esa subs "$subs"
 else adb shell am start -n $PKG/.tv.TvHomeActivity --es gfTestUrl "http://10.0.2.2:8000/teste.mkv" --es gfTestSubs "$subs"; fi
 sleep 40
+snap inicio
 adb shell input keyevent KEYCODE_MEDIA_PAUSE; sleep 1.5
-show_controls; click "Legendas"; sleep 1; click "Sincronizar legenda"; sleep 2
+show_controls; snap controles
+click "Legendas"; sleep 1; snap menu
+if [ "$P" = tel ]; then click "Sincronizar legenda"; else
+  for i in $(seq 1 10); do
+    f=$(dump | python3 $UI focus | tr A-Z a-z)
+    case "$f" in *"sincronizar legenda"*) adb shell input keyevent DPAD_CENTER; break;; esac
+    adb shell input keyevent DPAD_DOWN; sleep 0.6
+  done
+fi
+sleep 2
 adb exec-out screencap -p > $OUT/dialogo-$P.png
 dump > $OUT/dialogo-$P.xml
 python3 - $OUT/dialogo-$P.xml > $OUT/dialogo-$P-bounds.txt <<'PY'
@@ -50,5 +63,5 @@ for n in r.iter('node'):
         print(n.get('class','').split('.')[-1],repr(t),n.get('bounds'),'scrollable='+n.get('scrollable',''))
 PY
 cat $OUT/dialogo-$P-bounds.txt
-adb logcat -d | grep -E "FATAL EXCEPTION" | head > $OUT/crash.txt
+adb logcat -d | grep -E "FATAL EXCEPTION|GabiFlix|ActivityManager.*Player" | tail -60 > $OUT/crash.txt
 exit 0
