@@ -13,6 +13,7 @@ let W = Int(a[5])!, H = Int(a[6])!, scale = a[7], delayMs = Int(a[8]) ?? 0
 var targets = a[9].split(separator: ",").map { Int((Double($0)! * 1000).rounded()) }.sorted()
 let extra = a.count > 10 ? a[10].split(separator: ";").map(String.init) : []
 
+let lgr = VLCConsoleLogger(); lgr.level = .debug; VLCLibrary.shared().loggers = [lgr]
 var libOpts: [String] = []
 if mode == "lib" && scale != "-" { libOpts.append("--sub-text-scale=\(scale)") }
 for e in extra where e.hasPrefix("--") { libOpts.append(e) }

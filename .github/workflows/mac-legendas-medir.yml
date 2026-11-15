@@ -59,13 +59,7 @@ jobs:
         run: |
           cd work
           if [ -z "$MATRIZ" ]; then
-          MATRIZ='base|media|-|0|
-          media90|media|90|0|
-          lib90|lib|90|0|
-          slave90|slave|90|0|
-          media90-atraso2000|media|90|2000|
-          lib90-atraso2000|lib|90|2000|
-          slave90-atraso2000|slave|90|2000|'
+          MATRIZ='base|media|-|0|'
           fi
           mkdir -p ../out
           echo "$MATRIZ" | while IFS='|' read -r nome modo escala atraso extras; do
@@ -73,7 +67,7 @@ jobs:
             for r in 720 1080; do
               w=$((r*16/9)); d=../out/$nome-$r; rm -rf $d
               echo "=== $nome ${r}p"
-              ../probe-work/bin/subprobe "$modo" "$PWD/v$r.mp4" "$PWD/leg.srt" "$PWD/$d" $w $r "$escala" "$atraso" 4.5,5.5,6.5,9,12.5,13.5,15.5,18 "$extras" </dev/null 2>&1 | tail -14
+              ../probe-work/bin/subprobe "$modo" "$PWD/v$r.mp4" "$PWD/leg.srt" "$PWD/$d" $w $r "$escala" "$atraso" 4.5,5.5,6.5,9,12.5,13.5,15.5,18 "$extras" </dev/null > $d.log 2>&1; grep -v "^20.*debug.*\(core\|main\)" $d.log | grep -i -E "modo=|delay|slave|salvos|freetype|text|font|spu|subpic|subsdec|sub-|rel-|scale|error|warn|fail" | cut -c1-260 | head -40
               echo "RESULT $nome $r $(python3 ../mac-probe/measure.py $d $w $r </dev/null)"
               for t in 6500 13500; do [ -f $d/f$t.bgra ] && ffmpeg -nostdin -loglevel error -y -f rawvideo -pix_fmt bgra -s ${w}x$r -i $d/f$t.bgra ../out/$nome-$r-t$t.png; done
               rm -f $d/*.bgra
