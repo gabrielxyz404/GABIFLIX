@@ -44,7 +44,7 @@ jobs:
               out=[]
               for i in range(30):
                   a=i*10000+shift
-                  out.append("%d\n%s --> %s\nVocê não sabe o que ela fez para nós, mas eu também estou aqui [%s %02d @%ds]\ne isso é uma linha de baixo que tem de ficar inteira, com você\n"%(i+1,ts(a),ts(a+8000),tag,i+1,a//1000))
+                  out.append("%d\n%s --> %s\nVocê não sabe o que ela fez para nós, mas eu também estou aqui [%s %02d @%ds]\ne isso é uma linha de baixo que tem de ficar inteira, com você\n"%(i+1,ts(a),ts(a+9600),tag,i+1,a//1000))
               open(name,"w").write("\n".join(out))
           mk("a1.srt","ALFA",0); mk("a2.srt","CHARLIE",0); mk("b.srt","BRAVO",4000); mk("emb.srt","EMB",0)
           PY
