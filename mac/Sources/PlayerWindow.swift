@@ -37,7 +37,8 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
     private let metaId: String
     private let startMs: Int64
 
-    private let player = VLCMediaPlayer()
+    // o tamanho das legendas só vale se for passado aqui (opção da biblioteca), ver SubStyle
+    private let player = VLCMediaPlayer(options: SubStyle.libraryOptions)
     private let videoView = VLCVideoView()
     private let root = NSView()
     private let overlay = PlayerRootView()
@@ -295,7 +296,6 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
         media.addOption(":network-caching=3000")
         media.addOption(":http-reconnect")
         media.addOption(":sub-language=pob,por,pt")
-        media.addOption(":sub-text-scale=90") // como no Android (--sub-text-scale=90)
         player.media = media
         player.play()
         showControls()
@@ -353,6 +353,9 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
         }
 
         attachReadySubs()
+        // a faixa só fica ativa uns instantes depois de addPlaybackSlave (medido: logo depois do add o índice ainda é -1):
+        // se a legenda ativa mudar por qualquer motivo, carrega o atraso guardado dela (sem efeito quando a chave é a mesma)
+        if subsAttached && !finished { syncDelayToTrack(Int(player.currentVideoSubTitleIndex)) }
         reportProgress(force: false)
         if scaleForce > 0 { scaleForce -= 1; applyScale(force: true) } else { applyScale() }
         if !noticeLabel.isHidden && Date() > noticeUntil { noticeLabel.isHidden = true }
