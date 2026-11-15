@@ -71,8 +71,8 @@ snap 1-inicio
 note "log após anexar:"; glog | grep -E "ranking|escolhida|candidatas|válidas|consenso|atraso da legenda ativa|embutida" | tee -a $LOG
 show_controls; click "Legendas"; sleep 1; snap 2-menu-legendas; texts menu
 for i in 2 3 1; do
-  click "Português $i"; mark "escolheu item $i"; sleep 1; snap 3-escolhe-$i-1s; play; sleep 4; snap 3-escolhe-$i-5s; pause
-  show_controls; click "Legendas"; sleep 1
+  click "Português $i"; mark "escolheu item $i"; sleep 1; snap 3-escolhe-$i-1s; play; sleep 11; snap 3-escolhe-$i-11s; pause
+  if [ $i != 1 ]; then show_controls; click "Legendas"; sleep 1; fi
 done
 glog | grep -E "atraso da legenda" | tee -a $LOG
 
@@ -106,7 +106,7 @@ launch emb.mkv a1.srt a2.srt b.srt
 mark "EMB+BAIXADAS"
 wait_ready 40; pause; snap 10-emb-inicio
 show_controls; click "Legendas"; sleep 1; snap 11-emb-menu; texts embmenu
-click "Português 2"; sleep 2; pause; snap 12-emb-escolhe-2
+click "Português 2"; sleep 1; play; sleep 11; pause; snap 12-emb-escolhe-2
 glog | sed -n '/=== EMB+BAIXADAS ===/,$p' | grep -E "embutida|escolhida|atraso" | tee -a $LOG
 
 # ================= 6. PLAY não pausa quando já está tocando =================
