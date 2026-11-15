@@ -55,6 +55,7 @@ setCallbacks(mp, lockCB, unlockCB, displayCB, nil)
 "RV32".withCString { setFormat(mp, $0, UInt32(W), UInt32(H), UInt32(pitch)) }
 
 let media = VLCMedia(path: video)
+media.addOption(":avcodec-hw=none") // sem VideoToolbox: o desenho das legendas por cima de CVPX falha na vmem
 if mode == "media" || mode == "slave" { if scale != "-" { media.addOption(":sub-text-scale=\(scale)") } }
 if mode == "media" { media.addOption(":sub-file=\(srt)") }
 for e in extra where e.hasPrefix(":") { media.addOption(e) }
