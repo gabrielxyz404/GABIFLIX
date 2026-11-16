@@ -96,12 +96,21 @@ public class Eval {
         return r;
     }
 
+    /** em modo clipe só as falas dentro do trecho analisado contam (extrapolar a escala de 20 min para 2 h amplifica o erro e não é o que o app faz: lá as janelas cobrem o filme) */
+    static long CLIPMS = Long.MAX_VALUE;
+
     static double[] errStats(Result r, Cue[] dist, long[] truthStart, boolean seg) {
         int n = Math.min(dist.length, truthStart.length);
         double[] e = new double[n];
-        for (int i = 0; i < n; i++) e[i] = Math.abs((seg ? r.applySegments(dist[i].startMs) : r.apply(dist[i].startMs)) - truthStart[i]);
+        int m = 0;
+        for (int i = 0; i < n; i++) {
+            if (truthStart[i] >= CLIPMS) continue;
+            e[m++] = Math.abs((seg ? r.applySegments(dist[i].startMs) : r.apply(dist[i].startMs)) - truthStart[i]);
+        }
+        if (m == 0) return new double[]{-1, -1, -1};
+        e = Arrays.copyOf(e, m);
         Arrays.sort(e);
-        return new double[]{e[n / 2], e[(int) (n * 0.9)], e[n - 1]};
+        return new double[]{e[m / 2], e[(int) (m * 0.9)], e[m - 1]};
     }
 
     // ---------------------------------------------------------------- saída
@@ -136,6 +145,7 @@ public class Eval {
         }
         AudioAligner.Params P = new AudioAligner.Params();
         Film f = new Film(fd);
+        CLIPMS = f.durationMs < f.fullDurationMs ? f.durationMs : Long.MAX_VALUE;
         System.err.printf("== %s: %.0f s, %d legendas (%d verdade)%n", f.slug, f.durationMs / 1000.0, f.subs.size(), countTruth(f));
         // legendas de verdade: até maxSubs (prefere 2 PT + 1 EN)
         ArrayList<Film.Sub> tsubs = new ArrayList<>();
@@ -201,8 +211,11 @@ public class Eval {
                         long t0 = System.nanoTime();
                         Result r = session(f, v, s.truthCues, ws, P, 3);
                         long took = (System.nanoTime() - t0) / 1000000;
-                        double[] sh = new double[s.truthCues.length];
-                        for (int i = 0; i < sh.length; i++) sh[i] = Math.abs(r.apply(s.truthCues[i].startMs) - s.truthCues[i].startMs);
+                        double[] sh0 = new double[s.truthCues.length];
+                        int sm = 0;
+                        for (int i = 0; i < sh0.length; i++) if (s.truthCues[i].startMs < CLIPMS) sh0[sm++] = Math.abs(r.apply(s.truthCues[i].startMs) - s.truthCues[i].startMs);
+                        if (sm == 0) continue;
+                        double[] sh = Arrays.copyOf(sh0, sm);
                         Arrays.sort(sh);
                         double[] e = {sh[sh.length / 2], sh[(int) (sh.length * 0.9)], sh[sh.length - 1]};
                         row(f, s, vname, cfg, "safe", "truth", r, e, e, took, String.format(Locale.ROOT, "shiftmed=%.0f shiftp90=%.0f ", e[0], e[1]));
@@ -218,9 +231,12 @@ public class Eval {
                         long took = (System.nanoTime() - t0) / 1000000;
                         double[] e = null;
                         String before = "";
-                        if (s.truth && s.pairs.length > 0) {
-                            double[] ee = new double[s.pairs.length], bb = new double[s.pairs.length];
-                            for (int i = 0; i < ee.length; i++) { ee[i] = Math.abs(r.apply(s.pairs[i][0]) - s.pairs[i][1]); bb[i] = Math.abs(s.pairs[i][0] - s.pairs[i][1]); }
+                        int npc = 0;
+                        if (s.truth) for (long[] pr : s.pairs) if (pr[1] < CLIPMS) npc++;
+                        if (s.truth && npc > 0) {
+                            double[] ee = new double[npc], bb = new double[npc];
+                            int ic = 0;
+                            for (long[] pr : s.pairs) if (pr[1] < CLIPMS) { ee[ic] = Math.abs(r.apply(pr[0]) - pr[1]); bb[ic] = Math.abs(pr[0] - pr[1]); ic++; }
                             Arrays.sort(ee); Arrays.sort(bb);
                             e = new double[]{ee[ee.length / 2], ee[(int) (ee.length * 0.9)], ee[ee.length - 1]};
                             before = String.format(Locale.ROOT, "before=%.0f beforep90=%.0f ", bb[bb.length / 2], bb[(int) (bb.length * 0.9)]);

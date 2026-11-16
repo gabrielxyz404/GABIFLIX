@@ -37,7 +37,7 @@ jobs:
   final:
     needs: subs
     runs-on: ubuntu-latest
-    timeout-minutes: 150
+    timeout-minutes: 240
     strategy:
       fail-fast: false
       matrix:
@@ -83,6 +83,8 @@ jobs:
           javac -Xlint:-options -d /tmp/cls -sourcepath android/app/src/main/java $JSRC/io/github/gabrielxyz404/gabiflix/audiosync/*.java $HARN/*.java $HARN/gabiflix/Baseline.java 2>&1 | grep -v "^Note" || true
           # verdade v1: tudo
           ORACLE=1 java -Xmx4g -cp /tmp/cls Eval corpus/${{ matrix.slug }} out/${{ matrix.slug }}/eval-o1.csv dsp,silero 3x90,4x90 offset,scale,combo,natural,safe,neg 3 subs 2>&1 | tail -5
+          # filme inteiro (janelas em qualquer ponto do filme, como no app): sem negativos
+          CLIP_S= ORACLE=1 java -Xmx4g -cp /tmp/cls Eval corpus/${{ matrix.slug }} out/${{ matrix.slug }}/eval-full-o1.csv dsp,silero 3x90,4x90 offset,scale,combo,natural,safe 3 2>&1 | tail -5
           # verdade v2: o que depende da verdade (natural, safe)
           ORACLE=2 java -Xmx4g -cp /tmp/cls Eval corpus/${{ matrix.slug }} out/${{ matrix.slug }}/eval-o2.csv dsp,silero 3x90,4x90 natural,safe 3 2>&1 | tail -5
       - uses: actions/upload-artifact@v4

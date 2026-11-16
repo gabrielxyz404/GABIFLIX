@@ -28,7 +28,8 @@ def pct(a, b): return "%.1f%%" % (100.0 * a / b) if b else "-"
 
 def main():
     root = sys.argv[1]; out = sys.argv[2] if len(sys.argv) > 2 else None
-    o1 = load(root, "eval-o1.csv"); o2 = load(root, "eval-o2.csv")
+    n1 = sys.argv[3] if len(sys.argv) > 3 else "eval-o1.csv"; n2 = sys.argv[4] if len(sys.argv) > 4 else "eval-o2.csv"
+    o1 = load(root, n1); o2 = load(root, n2) if n2 != "-" else []
     md = []
     keys = sorted({(r["vad"], r["cfg"]) for r in o1})
     md.append("### Tabela de decisão (clipes de 20 min, plano por densidade, regra final z>=9; %% sobre todos os casos)\n")
