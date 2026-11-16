@@ -61,7 +61,7 @@ jobs:
       - name: APK release com e sem ONNX Runtime
         run: |
           mkdir -p size
-          build() { gradle -p $S/android assembleRelease "$@" --no-daemon -x lintVitalRelease -x lintVitalAnalyzeRelease 2>&1 | tail -25; }
+          build() { gradle -p $S/android assembleRelease "$@" --no-daemon 2>&1 | tail -25; }
           keep() { rm -f size/$1.apk; cp $S/android/app/build/outputs/apk/release/app-release-unsigned.apk size/$1.apk; }
           rm -rf $S/android/app/build/outputs; build -Pnoort=1 -Pabis=arm64-v8a,armeabi-v7a; keep base
           rm -rf $S/android/app/build/outputs; build -Pabis=arm64-v8a,armeabi-v7a; keep ort-arm64-armv7
