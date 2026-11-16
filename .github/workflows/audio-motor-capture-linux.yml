@@ -1,0 +1,44 @@
+name: Audio motor captura (VLC Linux)
+
+# Experimentos rapidos de captura de audio com o VLC (mesmo nucleo do libVLC do app) numa maquina Linux: quais opcoes dao PCM mais rapido que o
+# tempo real, com tempo exato, de um MKV servido por HTTP. So publica numeros pequenos em audio-motor-out-cap.
+on:
+  push:
+    branches: [run-audio-cap]
+
+permissions:
+  contents: write
+
+jobs:
+  cap:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - name: Ferramentas
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq vlc ffmpeg python3-numpy >/dev/null
+          vlc --version | head -2; ffmpeg -version | head -1
+      - name: Fala real (Sintel) e videos de teste
+        run: |
+          mkdir -p /tmp/dl /tmp/media
+          curl -fL -sS --retry 5 -o /tmp/dl/sintel.ogv https://archive.org/download/Sintel/sintel-2048-stereo.ogv
+          bash tools/audio-sync/capture/linux/mkmedia.sh /tmp/media /tmp/dl/sintel.ogv 6M 1500 2>&1 | tail -30
+          nohup python3 tools/audio-sync/capture/server.py /tmp/media 8000 >/tmp/server.out 2>&1 &
+          sleep 2; curl -sI http://127.0.0.1:8000/ac3.mkv | head -3
+          for c in ac3 eac3 aac dts truehd flac; do ffprobe -v error -show_entries stream=codec_name,channels,bit_rate -of csv=p=0 /tmp/media/$c.mkv | tr '\n' ' '; echo; done
+      - name: Etapa 1 - variantes de captura (ac3)
+        run: |
+          mkdir -p out
+          python3 tools/audio-sync/capture/linux/matrix.py /tmp/media out 1 2>&1 | tee out/stage1.log
+      - name: Etapa 2 - codecs (variantes escolhidas)
+        if: hashFiles('tools/audio-sync/capture/linux/best.json') != ''
+        run: |
+          cp tools/audio-sync/capture/linux/best.json out/best.json
+          python3 tools/audio-sync/capture/linux/matrix.py /tmp/media out 2 2>&1 | tee out/stage2.log
+      - name: Publicar
+        if: always()
+        run: |
+          rm -f out/*.wav out/*.raw; cp /tmp/server-bytes.log out/ 2>/dev/null || true
+          cd out && git init -q -b audio-motor-out-cap && git config user.name "FramePlay CI" && git config user.email ci@frameplay.local
+          git add -A && git commit -qm "captura linux run ${{ github.run_number }}" && git push -q -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" audio-motor-out-cap

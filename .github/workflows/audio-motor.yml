@@ -15,7 +15,7 @@ permissions:
 env:
   JSRC: tools/audio-sync/java
   HARN: tools/audio-sync/harness
-  CORPUS_KEY: audio-film-v2
+  CORPUS_KEY: audio-film-v3
 
 jobs:
   subs:
@@ -61,6 +61,7 @@ jobs:
         with:
           path: corpus/${{ matrix.slug }}
           key: ${{ env.CORPUS_KEY }}-${{ matrix.slug }}
+          restore-keys: audio-film-v2-${{ matrix.slug }}
       - name: Ferramentas (ffsubsync, webrtcvad, onnxruntime, ffmpeg)
         if: steps.cache.outputs.cache-hit != 'true'
         run: |

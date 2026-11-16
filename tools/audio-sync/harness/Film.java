@@ -56,11 +56,11 @@ final class Film {
             String[] c = lines.get(i).split("\t");
             Sub s = new Sub();
             s.name = c[0]; s.lang = c[1]; s.truth = c[2].equals("1");
-            s.agreeMed = Double.parseDouble(c[7]); s.agreeP90 = Double.parseDouble(c[8]);
+            s.agreeMed = Double.parseDouble(c[5]); s.agreeP90 = Double.parseDouble(c[6]);
             File o = new File(dir, "subs/" + s.name + ".srt");
             if (!o.exists()) continue;
             s.orig = Cue.parseSrt(new String(Files.readAllBytes(o.toPath()), StandardCharsets.UTF_8));
-            File ff = new File(dir, "subs/" + s.name + ".ffs.srt");
+            File ff = new File(dir, "subs/" + s.name + ".truth.srt");
             if (ff.exists()) s.truthCues = Cue.parseSrt(new String(Files.readAllBytes(ff.toPath()), StandardCharsets.UTF_8));
             File pf = new File(dir, "subs/" + s.name + ".pairs.tsv");
             if (pf.exists()) {

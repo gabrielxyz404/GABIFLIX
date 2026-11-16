@@ -318,18 +318,21 @@ def theil_sen(pairs, maxn=400):
     return {"k": k, "off": b, "res_med": res[n // 2], "res_p90": res[int(n * 0.9)], "n": n}
 
 
-def run_ffsubsync(wav, srt_in, srt_out):
-    for extra in (["--gss"], []):
-        cmd = ["ffs", wav, "-i", srt_in, "-o", srt_out, "--max-offset-seconds", "600", "--encoding", "utf-8", "--output-encoding", "utf-8"] + extra
-        r = sh(cmd, check=False, timeout=1500, quiet=True)
-        if r.returncode == 0 and os.path.exists(srt_out):
-            return True, (r.stderr + r.stdout)[-600:]
-        print("  ffs falhou (%s): %s" % (extra, (r.stderr + r.stdout)[-400:].replace("\n", " | ")), flush=True)
+def run_ffsubsync(wav, srt_in, srt_out, vad=None, gss=False):
+    cmd = ["ffs", wav, "-i", srt_in, "-o", srt_out, "--max-offset-seconds", "600", "--encoding", "utf-8", "--output-encoding", "utf-8"]
+    if vad:
+        cmd += ["--vad", vad]
+    if gss:
+        cmd += ["--gss"]
+    r = sh(cmd, check=False, timeout=1800, quiet=True)
+    if r.returncode == 0 and os.path.exists(srt_out):
+        return True, (r.stderr + r.stdout)[-600:]
+    print("  ffs %s falhou: %s" % (vad or "", (r.stderr + r.stdout)[-300:].replace("\n", " | ")), flush=True)
     return False, ""
 
 
 def run_alass(alass, wav, srt_in, srt_out):
-    r = sh([alass, wav, srt_in, srt_out], check=False, timeout=1500, quiet=True)
+    r = sh([alass, wav, srt_in, srt_out], check=False, timeout=1800, quiet=True)
     if r.returncode == 0 and os.path.exists(srt_out):
         return True, (r.stderr + r.stdout)[-400:]
     print("  alass falhou: %s" % (r.stderr + r.stdout)[-400:].replace("\n", " | "), flush=True)
@@ -342,7 +345,7 @@ def agree(c_in, a_out, b_out):
     ds = sorted(abs(ma[k] - mb[k]) for k in ma if k in mb)
     if len(ds) < 10:
         return None
-    return {"n": len(ds), "med": ds[len(ds) // 2], "p90": ds[int(len(ds) * 0.9)], "p98": ds[int(len(ds) * 0.98)]}
+    return {"n": len(ds), "med": ds[len(ds) // 2], "p75": ds[int(len(ds) * 0.75)], "p90": ds[int(len(ds) * 0.9)], "p98": ds[int(len(ds) * 0.98)]}
 
 
 # ---------------------------------------------------------------- trilhas de VAD de referência
@@ -436,8 +439,9 @@ def cmd_film(slug, subs_dir, fdir):
     meta["duration_s"] = probe_duration(wav)
     json.dump(meta, open(os.path.join(fdir, "meta.json"), "w"), indent=1)
 
-    # VAD de referência
-    meta.update(vad_tracks(wav, fdir))
+    # VAD de referência (só se ainda não existe)
+    if not os.path.exists(os.path.join(fdir, "vad_silero.u8")) or not os.path.exists(os.path.join(fdir, "vad_webrtc_m3.u8")):
+        meta.update(vad_tracks(wav, fdir))
 
     # oráculos
     alass = os.path.join(HERE, "alass")
@@ -453,6 +457,7 @@ def cmd_film(slug, subs_dir, fdir):
     os.makedirs(odir, exist_ok=True)
     oracle = {}
     sm = json.load(open(os.path.join(sdir, "meta.json")))
+    have_silero_vad = [True]
     for s in sm["subs"]:
         name = s["name"]
         src = os.path.join(sdir, name + ".srt")
@@ -461,46 +466,69 @@ def cmd_film(slug, subs_dir, fdir):
         shutil.copy(src, os.path.join(odir, name + ".srt"))
         c_in = parse_srt(open(src, encoding="utf-8").read())
         res = {"name": name, "lang": s["lang"], "cues": len(c_in), "dur_ms": c_in[-1][1] if c_in else 0}
-        ffo = os.path.join(odir, name + ".ffs.srt")
-        alo = os.path.join(odir, name + ".alass.srt")
+        outs = {}
+        # oraculo 1: ffsubsync (VAD webrtc, razoes de fps discretas)
         t0 = time.time()
-        ok1, tail = run_ffsubsync(wav, src, ffo)
-        res["ffs_s"] = round(time.time() - t0, 1)
-        f_c = parse_srt(open(ffo, encoding="utf-8").read()) if ok1 else None
-        if f_c:
-            res["ffs"] = theil_sen(cue_map(c_in, f_c))
+        o1 = os.path.join(odir, name + ".ffs.srt")
+        ok, tail = run_ffsubsync(wav, src, o1)
+        if ok:
+            outs["ffs"] = parse_srt(open(o1, encoding="utf-8").read())
             res["ffs_tail"] = tail[-200:].replace("\n", " | ")
-        a_c = None
+        res["ffs_s"] = round(time.time() - t0, 1)
+        # oraculo 2: ffsubsync com VAD Silero (se esta versao tiver)
+        if have_silero_vad[0]:
+            o2 = os.path.join(odir, name + ".ffss.srt")
+            ok, tail = run_ffsubsync(wav, src, o2, vad="silero")
+            if ok:
+                outs["ffss"] = parse_srt(open(o2, encoding="utf-8").read())
+            elif "invalid choice" in tail or not tail:
+                have_silero_vad[0] = False
+        # oraculo 3: alass (aceita cortes)
         if alass:
             t0 = time.time()
-            ok2, tail2 = run_alass(alass, wav, src, alo)
+            o3 = os.path.join(odir, name + ".alass.srt")
+            ok, tail2 = run_alass(alass, wav, src, o3)
             res["alass_s"] = round(time.time() - t0, 1)
-            if ok2:
-                a_c = parse_srt(open(alo, encoding="utf-8").read())
-                res["alass"] = theil_sen(cue_map(c_in, a_c))
-        if f_c and a_c:
-            res["agree"] = agree(c_in, f_c, a_c)
-        if f_c:
-            fm = {a: b for a, b in cue_map(c_in, f_c)}
-            am = {a: b for a, b in cue_map(c_in, a_c)} if a_c else {}
+            if ok:
+                outs["alass"] = parse_srt(open(o3, encoding="utf-8").read())
+        fits = {}
+        for k, c in outs.items():
+            fits[k] = theil_sen(cue_map(c_in, c))
+        res["fits"] = fits
+        # acordos par a par; verdade = melhor par que concorda (mediana <= 250 ms e p75 <= 1 s)
+        names = list(outs.keys())
+        pairs_ag = {}
+        best = None
+        for i in range(len(names)):
+            for j in range(i + 1, len(names)):
+                a = agree(c_in, outs[names[i]], outs[names[j]])
+                pairs_ag["%s|%s" % (names[i], names[j])] = a
+                if a and a["med"] <= 250 and a["p75"] <= 1000:
+                    if best is None or a["med"] < best[2]["med"]:
+                        best = (names[i], names[j], a)
+        res["agree_all"] = pairs_ag
+        res["truth"] = best is not None
+        if best:
+            res["truth_src"] = best[0] + "+" + best[1]
+            res["agree"] = best[2]
+            tc = outs[best[0]]
+            write_srt(tc, os.path.join(odir, name + ".truth.srt"))
+            fm = {a: b for a, b in cue_map(c_in, tc)}
             with open(os.path.join(odir, name + ".pairs.tsv"), "w") as pf:
                 for a, b, t in c_in:
                     if a in fm:
-                        pf.write("%d\t%d\t%d\n" % (a, fm[a], am.get(a, -1)))
-        a = res.get("agree")
-        res["truth"] = bool(a and a["med"] <= 300 and a["p90"] <= 1500)
+                        pf.write("%d\t%d\n" % (a, fm[a]))
         oracle[name] = res
-        print("  %s: ffs=%s alass=%s agree=%s truth=%s" % (name, res.get("ffs"), res.get("alass"), a, res["truth"]), flush=True)
+        print("  %s: truth=%s %s agree=%s" % (name, res["truth"], res.get("truth_src", ""), {k: (v["med"], v["p75"]) if v else None for k, v in pairs_ag.items()}), flush=True)
     json.dump(oracle, open(os.path.join(fdir, "oracle.json"), "w"), indent=1)
     with open(os.path.join(fdir, "truth.tsv"), "w") as tf:
-        tf.write("name\tlang\ttruth\tcues\tffs_k\tffs_off\tffs_res_p90\tagree_med\tagree_p90\n")
+        tf.write("name\tlang\ttruth\tcues\tsrc\tagree_med\tagree_p90\n")
         for n, o in oracle.items():
-            ff = o.get("ffs") or {}
             ag = o.get("agree") or {}
-            tf.write("%s\t%s\t%d\t%d\t%.6f\t%.1f\t%.1f\t%.1f\t%.1f\n" % (n, o["lang"], 1 if o["truth"] else 0, o["cues"], ff.get("k", 0), ff.get("off", 0), ff.get("res_p90", -1), ag.get("med", -1), ag.get("p90", -1)))
+            tf.write("%s\t%s\t%d\t%d\t%s\t%.1f\t%.1f\n" % (n, o["lang"], 1 if o["truth"] else 0, o["cues"], o.get("truth_src", "-"), ag.get("med", -1), ag.get("p90", -1)))
     # confere cruzada PT x EN (só tempos): distância mediana do início de cada fala EN ao início PT mais próximo
     cross = {}
-    tr = {n: parse_srt(open(os.path.join(odir, n + ".ffs.srt"), encoding="utf-8").read()) for n, o in oracle.items() if o["truth"]}
+    tr = {n: parse_srt(open(os.path.join(odir, n + ".truth.srt"), encoding="utf-8").read()) for n, o in oracle.items() if o["truth"]}
     for pn in [n for n in tr if n.startswith("pt")]:
         for en in [n for n in tr if n.startswith("en")]:
             ps = sorted(c[0] for c in tr[pn])
