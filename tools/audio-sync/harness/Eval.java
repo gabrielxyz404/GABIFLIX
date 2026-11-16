@@ -240,6 +240,8 @@ public class Eval {
 
     /** Reverificação durante a reprodução: (1) legenda já certa, checagens a cada RCK_STEP_S s (padrão 600) com janela de RCK_LEN_S s (padrão 90): qualquer
      *  PROPOSED/CHANGE é "mudança falsa" (meta 0); (2) corte injetado no filme (a legenda seguiu o filme sem o trecho): detecção, latência e erro do novo deslocamento. */
+    static final int ACC = System.getenv("RCK_ACC") == null ? 1 : Integer.parseInt(System.getenv("RCK_ACC"));
+
     static void recheckEval(Film f, VadSrc v, Film.Sub s, String vad, AudioAligner.Params P, Cue[] truth, Result r0) throws IOException {
         if (!r0.accepted) return;
         String e1 = System.getenv("RCK_STEP_S"), e2 = System.getenv("RCK_LEN_S");
@@ -253,7 +255,7 @@ public class Eval {
         ArrayList<Window> acc = new ArrayList<>();
         for (long t : pts) {
             acc.add(new Window(t / 10 * 10, v.get(f, t / 10 * 10, len)));
-            while (acc.size() > 3) acc.remove(0);
+            while (acc.size() > ACC) acc.remove(0);
             Recheck.Out o = Recheck.check(truth, acc.toArray(new Window[0]), r0, t, full, false, prev, P, RP);
             if (o.verdict == Recheck.Verdict.KEEP && "ok".equals(o.reason)) acc.clear();
             prev = o;
@@ -276,7 +278,7 @@ public class Eval {
             long firstChange = -1;
             for (long t : pts) {
                 acc.add(new Window(t / 10 * 10, v.get(f, t / 10 * 10, len)));
-                while (acc.size() > 3) acc.remove(0);
+                while (acc.size() > ACC) acc.remove(0);
                 Recheck.Out o = Recheck.check(dc, acc.toArray(new Window[0]), cur, t, full, false, prev, P, RP);
                 if (o.verdict == Recheck.Verdict.KEEP && "ok".equals(o.reason)) acc.clear();
                 prev = o;

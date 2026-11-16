@@ -56,7 +56,8 @@ jobs:
         run: |
           mkdir -p /tmp/cls out/${{ matrix.slug }}
           javac -Xlint:-options -d /tmp/cls -sourcepath android/app/src/main/java $JSRC/io/github/gabrielxyz404/gabiflix/audiosync/*.java $HARN/*.java $HARN/gabiflix/Baseline.java 2>&1 | grep -v "^Note" || true
-          java -Xmx4g -cp /tmp/cls Eval corpus/${{ matrix.slug }} out/${{ matrix.slug }}/eval-recheck.csv dsp 3x60 recheck 3 2>&1 | tail -5
+          RCK_ACC=1 java -Xmx4g -cp /tmp/cls Eval corpus/${{ matrix.slug }} out/${{ matrix.slug }}/eval-recheck.csv dsp 3x90 recheck 3 2>&1 | tail -5
+          RCK_ACC=3 RCK_LEN_S=120 java -Xmx4g -cp /tmp/cls Eval corpus/${{ matrix.slug }} out/${{ matrix.slug }}/eval-recheck-acc3.csv dsp 3x90 recheck 3 2>&1 | tail -5
       - uses: actions/upload-artifact@v4
         if: always()
         with:
