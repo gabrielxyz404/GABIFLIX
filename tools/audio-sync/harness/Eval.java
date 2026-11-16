@@ -193,6 +193,21 @@ public class Eval {
                         }
                     }
                 }
+                // safe: a legenda JÁ está certa (alinhada à verdade): o motor não pode mexer mais que 150 ms
+                if (cats.contains("safe")) {
+                    for (Film.Sub s : f.subs) {
+                        if (!s.truth || s.truthCues == null || s.truthCues.length < 40) continue;
+                        Window[] ws = dens ? windows(f, v, AudioSyncSession.planDense(s.truthCues, f.durationMs, nwF, lenF)) : wsFixed;
+                        long t0 = System.nanoTime();
+                        Result r = session(f, v, s.truthCues, ws, P, 3);
+                        long took = (System.nanoTime() - t0) / 1000000;
+                        double[] sh = new double[s.truthCues.length];
+                        for (int i = 0; i < sh.length; i++) sh[i] = Math.abs(r.apply(s.truthCues[i].startMs) - s.truthCues[i].startMs);
+                        Arrays.sort(sh);
+                        double[] e = {sh[sh.length / 2], sh[(int) (sh.length * 0.9)], sh[sh.length - 1]};
+                        row(f, s, vname, cfg, "safe", "truth", r, e, e, took, String.format(Locale.ROOT, "shiftmed=%.0f shiftp90=%.0f ", e[0], e[1]));
+                    }
+                }
                 // natural: legendas originais (sem distorção) contra a verdade do oráculo
                 if (cats.contains("natural")) {
                     for (Film.Sub s : f.subs) {
@@ -202,13 +217,15 @@ public class Eval {
                         Result r = session(f, v, s.orig, ws, P, 3);
                         long took = (System.nanoTime() - t0) / 1000000;
                         double[] e = null;
-                        if (s.truth) {
-                            double[] ee = new double[s.pairs.length];
-                            for (int i = 0; i < ee.length; i++) ee[i] = Math.abs(r.apply(s.pairs[i][0]) - s.pairs[i][1]);
-                            Arrays.sort(ee);
+                        String before = "";
+                        if (s.truth && s.pairs.length > 0) {
+                            double[] ee = new double[s.pairs.length], bb = new double[s.pairs.length];
+                            for (int i = 0; i < ee.length; i++) { ee[i] = Math.abs(r.apply(s.pairs[i][0]) - s.pairs[i][1]); bb[i] = Math.abs(s.pairs[i][0] - s.pairs[i][1]); }
+                            Arrays.sort(ee); Arrays.sort(bb);
                             e = new double[]{ee[ee.length / 2], ee[(int) (ee.length * 0.9)], ee[ee.length - 1]};
+                            before = String.format(Locale.ROOT, "before=%.0f beforep90=%.0f ", bb[bb.length / 2], bb[(int) (bb.length * 0.9)]);
                         }
-                        row(f, s, vname, cfg, s.truth ? "natural" : "natural_nt", "orig", r, e, e, took, "");
+                        row(f, s, vname, cfg, s.truth ? "natural" : "natural_nt", "orig", r, e, e, took, before);
                     }
                 }
                 // negativos: legendas de OUTROS filmes (do diretório de legendas cruas)

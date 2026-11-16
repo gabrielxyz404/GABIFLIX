@@ -66,9 +66,12 @@ final class Film {
             File o = new File(dir, "subs/" + s.name + ".srt");
             if (!o.exists()) continue;
             s.orig = Cue.parseSrt(new String(Files.readAllBytes(o.toPath()), StandardCharsets.UTF_8));
-            File ff = new File(dir, "subs/" + s.name + ".truth.srt");
+            // ORACLE=2: verdade v2 (mediana de vários oráculos, corpus/oracle2.py); sem v2 a legenda fica sem verdade
+            final boolean v2 = "2".equals(System.getenv("ORACLE"));
+            if (v2 && !new File(dir, "subs/" + s.name + ".truth2.srt").exists()) s.truth = false;
+            File ff = new File(dir, "subs/" + s.name + (v2 ? ".truth2.srt" : ".truth.srt"));
             if (ff.exists()) s.truthCues = Cue.parseSrt(new String(Files.readAllBytes(ff.toPath()), StandardCharsets.UTF_8));
-            File pf = new File(dir, "subs/" + s.name + ".pairs.tsv");
+            File pf = new File(dir, "subs/" + s.name + (v2 ? ".pairs2.tsv" : ".pairs.tsv"));
             if (pf.exists()) {
                 List<String> pl = Files.readAllLines(pf.toPath());
                 s.pairs = new long[pl.size()][2];
