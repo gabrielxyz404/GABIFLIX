@@ -55,6 +55,7 @@ jobs:
           timeout 300 sudo apt-get install -y -qq ffmpeg >/dev/null || (sudo apt-get update -qq && timeout 300 sudo apt-get install -y -qq ffmpeg >/dev/null)
           mkdir -p /tmp/video && cd /tmp/video
           ffmpeg -loglevel error -f lavfi -i testsrc2=size=1280x720:rate=24 -f lavfi -i sine=frequency=440:sample_rate=48000 -t 600 -c:v libx264 -preset veryfast -pix_fmt yuv420p -c:a aac teste.mkv
+          ffmpeg -loglevel error -f lavfi -i testsrc2=size=1920x804:rate=24 -f lavfi -i sine=frequency=440:sample_rate=48000 -t 300 -c:v libx264 -preset veryfast -pix_fmt yuv420p -c:a aac wide.mkv
           nohup npx --yes http-server -p 8000 -s /tmp/video >/dev/null 2>&1 &
           sleep 8; curl -sI http://127.0.0.1:8000/teste.mkv | head -1
       - name: KVM
