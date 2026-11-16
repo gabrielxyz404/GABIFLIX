@@ -89,7 +89,7 @@ jobs:
         if: always() && hashFiles(format('corpus/{0}/audio16k.wav', matrix.slug)) != ''
         run: |
           mkdir -p /tmp/cls feat
-          javac -Xlint:-options -d /tmp/cls $JSRC/io/github/gabrielxyz404/gabiflix/audiosync/*.java $HARN/*.java
+          javac -Xlint:-options -d /tmp/cls -sourcepath android/app/src/main/java $JSRC/io/github/gabrielxyz404/gabiflix/audiosync/*.java $HARN/*.java $HARN/gabiflix/Baseline.java
           java -Xmx3g -cp /tmp/cls FeatDump corpus/${{ matrix.slug }} feat/${{ matrix.slug }}.feat 2>&1 | tail -3
           java -cp /tmp/cls Parity corpus/${{ matrix.slug }} 2>&1 | tee parity.txt | tail -5
       - name: Resumo do corpus (pequeno)
@@ -132,7 +132,7 @@ jobs:
       - name: Treinar o VAD DSP (validacao por grupos de filmes)
         run: |
           mkdir -p /tmp/cls dspw
-          javac -Xlint:-options -d /tmp/cls $JSRC/io/github/gabrielxyz404/gabiflix/audiosync/*.java $HARN/*.java
+          javac -Xlint:-options -d /tmp/cls -sourcepath android/app/src/main/java $JSRC/io/github/gabrielxyz404/gabiflix/audiosync/*.java $HARN/*.java $HARN/gabiflix/Baseline.java
           ls -la feat | head -40
           java -Xmx6g -cp /tmp/cls TrainVad feat dspw 5 8 2>&1 | tee train.log | tail -60
       - uses: actions/upload-artifact@v4
@@ -176,8 +176,14 @@ jobs:
           DSPW_DIR: dspw
         run: |
           mkdir -p /tmp/cls out/${{ matrix.slug }}
-          javac -Xlint:-options -d /tmp/cls $JSRC/io/github/gabrielxyz404/gabiflix/audiosync/*.java $HARN/*.java
+          javac -Xlint:-options -d /tmp/cls -sourcepath android/app/src/main/java $JSRC/io/github/gabrielxyz404/gabiflix/audiosync/*.java $HARN/*.java $HARN/gabiflix/Baseline.java 2>&1 | grep -v "^Note" || true
+          # principal: todos os VADs, 3 janelas de 60 s, todas as categorias
           java -Xmx4g -cp /tmp/cls Eval corpus/${{ matrix.slug }} out/${{ matrix.slug }}/eval.csv silero,pywebrtc3,webrtc3,webrtc2,dsp 3x60 offset,scale,combo,piece1,piece2,natural,neg 3 subs 2>&1 | tail -20
+          # quanto áudio é preciso: varredura do tamanho/numero de janelas (VAD DSP e Silero)
+          java -Xmx4g -cp /tmp/cls Eval corpus/${{ matrix.slug }} out/${{ matrix.slug }}/eval-sweep.csv dsp,silero 3x20,3x30,3x45,3x90,5x30,5x60,2x60 offset,scale,combo,piece1,natural,neg 3 subs 2>&1 | tail -5
+          # ranking de candidatas por áudio contra o consenso sem referência
+          for v in dsp silero pywebrtc3; do java -Xmx4g -cp /tmp/cls Rank corpus/${{ matrix.slug }} out/${{ matrix.slug }}/rank.csv $v 3x60 pt 2>&1 | tail -3; done
+          java -Xmx4g -cp /tmp/cls Rank corpus/${{ matrix.slug }} out/${{ matrix.slug }}/rank.csv dsp 3x60 en 2>&1 | tail -3
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -211,6 +217,7 @@ jobs:
       - name: Tabelas e publicacao de resultados pequenos
         run: |
           python3 tools/audio-sync/corpus/report.py res res/report.md 250 | tail -150 >> "$GITHUB_STEP_SUMMARY" || true
+          python3 tools/audio-sync/corpus/rank_report.py res >> "$GITHUB_STEP_SUMMARY" || true
           mkdir -p /tmp/o/run-${{ github.run_number }} && cp -r res corp dspw /tmp/o/run-${{ github.run_number }}/ 2>/dev/null || true
           cd /tmp/o && find . -name 'eval.csv' | head -3
           git init -q -b audio-motor-out && git config user.name "FramePlay CI" && git config user.email ci@frameplay.local
