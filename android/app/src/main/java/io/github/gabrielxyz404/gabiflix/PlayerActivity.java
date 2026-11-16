@@ -596,7 +596,7 @@ public class PlayerActivity extends Activity {
                 case android.view.KeyEvent.KEYCODE_DPAD_UP:
                 case android.view.KeyEvent.KEYCODE_DPAD_DOWN:
                     // cima/baixo: mostra os controles e seleciona o play (dali chega na linha do tempo, Legendas...)
-                    if (down) { setControlsVisible(true); playButton.requestFocus(); }
+                    if (down) { setControlsVisible(true); if (!playButton.requestFocus()) playButton.post(playButton::requestFocus); }
                     return true;
             }
         } else if (down) {
