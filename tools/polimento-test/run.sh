@@ -6,7 +6,7 @@ P=${1:-tel}; APK=${2:-android/app/build/outputs/apk/release/app-release.apk}
 OUT=shots; mkdir -p $OUT
 adb install -r "$APK"
 if [ "$P" = tel ]; then adb shell wm size 1080x2400; adb shell wm density 420; fi
-snap() { sleep "${2:-1}"; adb exec-out screencap -p > "$OUT/$P-$1.png"; }
+snap() { sleep "${2:-1}"; adb exec-out screencap -p > "$OUT/$P-$1.png"; if [ "$P" = tv ]; then adb shell uiautomator dump /sdcard/f.xml >/dev/null 2>&1; echo "$1: $(adb shell cat /sdcard/f.xml 2>/dev/null | python3 tools/android-subs-test/ui.py focus)" >> $OUT/tv-foco.txt; fi; }
 key() { for k in "$@"; do adb shell input keyevent $k; sleep 0.6; done; }
 tlpos() { adb shell uiautomator dump /sdcard/u.xml >/dev/null 2>&1; adb shell cat /sdcard/u.xml 2>/dev/null | python3 -c "
 import sys,re,xml.etree.ElementTree as ET
@@ -33,6 +33,7 @@ if [ "$P" = tel ]; then
   for i in 1 2 3 4; do adb shell input swipe 1000 600 300 600 180; sleep 0.5; done
   adb shell dumpsys gfxinfo $PKG | grep -E "Total frames|Janky|50th|90th|95th|99th" > $OUT/$P-fluidez-home.txt
   adb root; sleep 3
+  adb shell settings put secure immersive_mode_confirmations confirmed
   adb shell am force-stop $PKG; sleep 1
   adb shell am start -n $PKG/.PlayerActivity --es url "http://10.0.2.2:8000/teste.mkv"
   snap player-carregando 2
