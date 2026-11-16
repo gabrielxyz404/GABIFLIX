@@ -2,18 +2,16 @@ name: Mac polimento teste (sem publicar)
 
 # Compila o FramePlay.app do Mac e testa o player com um vídeo 4:3 e uma legenda de 2 linhas, tirando fotos da tela
 # (Ajustar / Preencher / Esticar, painel de sincronização, lista de falas, atraso guardado). NÃO publica nada.
+# Dispara ao enviar um branch chamado mac-pol-run-<nome>; as telas vão para o branch mac-pol-out-<nome>
 on:
-  workflow_dispatch:
-    inputs:
-      saida:
-        description: sufixo do branch das telas (mac-polimento-out-<saida>)
-        default: teste
+  push:
+    branches: ['mac-pol-run-**']
 
 permissions:
   contents: write
 
 concurrency:
-  group: mac-polimento-teste-${{ github.event.inputs.saida || 'teste' }}
+  group: mac-pol-${{ github.ref_name }}
   cancel-in-progress: true
 
 jobs:
@@ -170,14 +168,14 @@ jobs:
           grep -E "atraso|escolhida|tela:|estado:|comando" /tmp/telas/player1.log | cut -c1-400 | head -40 || true
           echo ---- segunda abertura
           grep -E "atraso|escolhida|estado:" /tmp/telas/player2.log | cut -c1-400 | head -20 || true
-      - name: Guardar as telas no branch mac-polimento-out-<saida>
+      - name: Guardar as telas no branch mac-pol-out-<nome>
         if: always()
         env:
           TOKEN: ${{ github.token }}
         run: |
           mkdir -p /tmp/telas && cp build.log /tmp/telas/ 2>/dev/null || true
           cd /tmp/telas
-          git init -q && git checkout -q -b mac-polimento-out-${{ github.event.inputs.saida || 'teste' }}
+          git init -q && git checkout -q -b mac-pol-out-${{ github.ref_name }}
           git config user.name "FramePlay CI"; git config user.email "ci@frameplay.local"
           git add -A && git commit -qm "telas do teste do Mac (paridade)" || true
-          git push -q -f "https://x-access-token:${TOKEN}@github.com/${{ github.repository }}.git" mac-polimento-out-${{ github.event.inputs.saida || 'teste' }} || echo "::warning::não guardou as telas"
+          git push -q -f "https://x-access-token:${TOKEN}@github.com/${{ github.repository }}.git" mac-pol-out-${{ github.ref_name }} || echo "::warning::não guardou as telas"
