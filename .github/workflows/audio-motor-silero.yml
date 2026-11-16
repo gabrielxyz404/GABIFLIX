@@ -61,20 +61,15 @@ jobs:
       - name: APK release com e sem ONNX Runtime
         run: |
           mkdir -p size
-          B() { gradle -p $S/android assembleRelease "$@" --no-daemon -q; }
-          cp_apk() { cp $S/android/app/build/outputs/apk/release/app-release-unsigned.apk size/$1.apk; }
-          B -Pnoort=1 -Pabis=arm64-v8a,armeabi-v7a && cp_apk base
-          B -Pabis=arm64-v8a,armeabi-v7a && cp_apk ort-arm64-armv7
-          B -Pabis=arm64-v8a && cp_apk ort-arm64
-          B -Pabis=armeabi-v7a && cp_apk ort-armv7
-          ls -l size | tee size/sizes.txt
-          for f in size/ort-arm64-armv7.apk; do unzip -lv $f | grep -E "\.so|classes" | tee size/ort-arm64-armv7.contents.txt; done
-          python3 - <<'PY' | tee size/summary.txt
-          import os
-          b=os.path.getsize('size/base.apk')
-          for n in ('ort-arm64-armv7','ort-arm64','ort-armv7'):
-              s=os.path.getsize('size/%s.apk'%n); print('%s: APK %.1f MB, +%.1f MB sobre o APK sem ORT (%.1f MB)'%(n,s/1e6,(s-b)/1e6,b/1e6))
-          PY
+          build() { gradle -p $S/android assembleRelease "$@" --no-daemon 2>&1 | tail -25; }
+          keep() { cp $S/android/app/build/outputs/apk/release/app-release-unsigned.apk size/$1.apk; }
+          build -Pnoort=1 -Pabis=arm64-v8a,armeabi-v7a; keep base
+          build -Pabis=arm64-v8a,armeabi-v7a; keep ort-arm64-armv7
+          build -Pabis=arm64-v8a; keep ort-arm64
+          build -Pabis=armeabi-v7a; keep ort-armv7
+          ls -l size
+          unzip -lv size/ort-arm64-armv7.apk | grep -E "\.so|classes" | tee size/ort-arm64-armv7.contents.txt
+          python3 $S/pc/sizes.py size | tee size/summary.txt
           rm -f size/*.apk
       - uses: actions/upload-artifact@v4
         with:
@@ -153,11 +148,8 @@ jobs:
           find $S/mac/.build -name "*.xcframework" -maxdepth 6 | head -3 | tee -a out-mac/bin.txt
           for x in $(find $S/mac/.build -name "*.xcframework" -maxdepth 6 | head -1); do du -sh $x/* | tee -a out-mac/bin.txt; done
           $BIN/sileroprobe ref/silero_vad.onnx ref/test.wav out-mac/silero.f32 2>&1 | tee out-mac/run.txt
-          python3 -c "
-          import numpy as np
-          r=np.fromfile('ref/ref.f32','<f4'); o=np.fromfile('out-mac/silero.f32','<f4'); n=min(len(r),len(o)); d=abs(r[:n]-o[:n])
-          print('PARIDADE mac: quadros ref=%d mac=%d maxdiff=%.5f meandiff=%.6f discordam(>0.5)=%d de %d'%(len(r),len(o),d.max(),d.mean(),int(((r[:n]>.5)!=(o[:n]>.5)).sum()),n))
-          " | tee out-mac/parity.txt
+          pip3 install -q numpy 2>&1 | tail -1 || true
+          python3 $S/pc/compare.py ref/ref.f32 out-mac/silero.f32 mac-arm64 | tee out-mac/parity.txt
       - uses: actions/upload-artifact@v4
         if: always()
         with:
