@@ -1,0 +1,81 @@
+name: Audio motor (reverificacao)
+
+# So a avaliacao da reverificacao durante a reproducao (Recheck): reaproveita os filmes em cache e os pesos do VAD DSP ja publicados em audio-motor-out.
+# Dispara so ao empurrar o branch run-audio-rck. Resultados pequenos vao para audio-motor-out-rck.
+on:
+  push:
+    branches: [run-audio-rck]
+
+permissions:
+  contents: write
+  actions: read
+
+env:
+  JSRC: tools/audio-sync/java
+  HARN: tools/audio-sync/harness
+  CORPUS_KEY: audio-film-v4
+
+jobs:
+  rck:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      matrix:
+        slug: [his_girl_friday, charade, night_of_the_living_dead, doa, detour, little_shop, meet_john_doe, carnival_of_souls, the_stranger, my_man_godfrey, brain_that_wouldnt_die, hitch_hiker, suddenly, dementia_13, house_on_haunted_hill, scarlet_street, reefer_madness, sherlock_secret_weapon, elephants_dream, freaks, manos]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 17
+      - name: Cache do filme
+        id: cache
+        uses: actions/cache/restore@v4
+        with:
+          path: corpus/${{ matrix.slug }}
+          key: ${{ env.CORPUS_KEY }}-${{ matrix.slug }}
+      - name: Pesos do VAD DSP e legendas
+        run: |
+          git clone -q --depth 1 -b audio-motor-out "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" /tmp/prev
+          R=$(ls -d /tmp/prev/run-* | sort -V | tail -1); cp -r $R/dspw dspw; ls dspw | head -3
+          pip install -q requests 2>&1 | tail -1 || true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Legendas (addon OpenSubtitles) para os negativos nao e preciso; so a verdade do filme
+        run: echo ok
+      - name: Reverificacao
+        if: steps.cache.outputs.cache-hit == 'true'
+        env:
+          DSPW_DIR: dspw
+          CLIP_S: '1200'
+          RCK_STEP_S: ${{ vars.RCK_STEP_S || '600' }}
+          RCK_LEN_S: ${{ vars.RCK_LEN_S || '90' }}
+        run: |
+          mkdir -p /tmp/cls out/${{ matrix.slug }}
+          javac -Xlint:-options -d /tmp/cls -sourcepath android/app/src/main/java $JSRC/io/github/gabrielxyz404/gabiflix/audiosync/*.java $HARN/*.java $HARN/gabiflix/Baseline.java 2>&1 | grep -v "^Note" || true
+          java -Xmx4g -cp /tmp/cls Eval corpus/${{ matrix.slug }} out/${{ matrix.slug }}/eval-recheck.csv dsp 3x60 recheck 3 2>&1 | tail -5
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: rck-${{ matrix.slug }}
+          path: out/${{ matrix.slug }}
+          retention-days: 3
+          if-no-files-found: ignore
+
+  report:
+    needs: rck
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: rck-*
+          path: res
+      - name: Publicar
+        run: |
+          mkdir -p /tmp/o && cp -r res /tmp/o/
+          cd /tmp/o && git init -q -b audio-motor-out-rck && git config user.name "FramePlay CI" && git config user.email ci@frameplay.local
+          git add -A && git commit -qm "audio-motor rck: run ${{ github.run_number }}" || true
+          git push -q -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" audio-motor-out-rck

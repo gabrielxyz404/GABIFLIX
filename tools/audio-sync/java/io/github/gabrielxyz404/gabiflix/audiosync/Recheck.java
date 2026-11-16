@@ -36,7 +36,7 @@ public final class Recheck {
         public double minCueCoverage = 0.05;
         /** evidência de salto: busca larga (±searchMs) com z >= minZ e NCC médio >= minNcc */
         public long searchMs = 300_000;
-        public double minZ = 7, minNcc = 0.25;
+        public double minZ = 6, minNcc = 0.20;
         /** evidência "muito forte" que dispensa a 2ª checagem */
         public double strongZ = 11, strongNcc = 0.40;
         /** salto mínimo para propor mudança (menor que isto é ruído) */
@@ -48,7 +48,8 @@ public final class Recheck {
 
     /**
      * @param cues        falas da legenda (tempo da legenda)
-     * @param wins        1-2 janelas capturadas agora (tempo do vídeo)
+     * @param wins        a janela capturada agora + as (até 2) janelas das últimas checagens que o modelo atual NÃO explicava (tempo do vídeo); janelas que foram
+     *                    explicadas pelo modelo atual são descartadas pelo app (a lista zera num KEEP "ok")
      * @param current     modelo em uso (global ou por partes; segmentos tratados pelo trecho que cobre a posição)
      * @param playMs      posição atual de reprodução (tempo do vídeo)
      * @param manualLocked o usuário definiu atraso manual para este vídeo: nunca mudar
@@ -102,11 +103,13 @@ public final class Recheck {
             double jump = r.offsetMs;
             if (Math.abs(jump) < P.minJumpMs) { o.reason = "desvio pequeno"; return o; }
             boolean strong = r.z >= P.strongZ && r.nccMean >= P.strongNcc;
+            // várias janelas (as que o modelo atual não explicava, acumuladas das últimas checagens) concordando no mesmo deslocamento
+            boolean multi = wins.length >= 2 && r.blocksValid >= 4 && r.blocksAgree >= 0.7 * r.blocksValid;
             boolean confirmed = prev != null && prev.verdict != Verdict.KEEP && Math.abs(prev.newOffsetMs - (b + r.offsetMs)) <= P.sameProposalMs;
             o.newOffsetMs = b + r.offsetMs;
             o.applyFromSubMs = nextGap(cues, a, b, playMs, P.minGapMs);
-            o.verdict = (strong || confirmed) ? Verdict.CHANGE : Verdict.PROPOSED;
-            o.reason = strong ? "evidência forte" : confirmed ? "confirmada em 2 checagens" : "aguardando confirmação";
+            o.verdict = (strong || confirmed || multi) ? Verdict.CHANGE : Verdict.PROPOSED;
+            o.reason = strong ? "evidência forte" : multi ? "várias janelas concordam" : confirmed ? "confirmada em 2 checagens" : "aguardando confirmação";
             return o;
         } finally {
             o.tookMs = (System.nanoTime() - t0) / 1_000_000;

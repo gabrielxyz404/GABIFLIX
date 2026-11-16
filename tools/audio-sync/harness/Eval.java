@@ -250,9 +250,12 @@ public class Eval {
         for (long t = step / 2; t + len <= full; t += step) pts.add(t);
         // (1) legenda certa
         Recheck.Out prev = null;
+        ArrayList<Window> acc = new ArrayList<>();
         for (long t : pts) {
-            Window[] w = {new Window(t / 10 * 10, v.get(f, t / 10 * 10, len))};
-            Recheck.Out o = Recheck.check(truth, w, r0, t, full, false, prev, P, RP);
+            acc.add(new Window(t / 10 * 10, v.get(f, t / 10 * 10, len)));
+            while (acc.size() > 3) acc.remove(0);
+            Recheck.Out o = Recheck.check(truth, acc.toArray(new Window[0]), r0, t, full, false, prev, P, RP);
+            if (o.verdict == Recheck.Verdict.KEEP && "ok".equals(o.reason)) acc.clear();
             prev = o;
             Result fr = new Result();
             fr.accepted = o.verdict != Recheck.Verdict.KEEP; fr.z = o.z; fr.nccMean = o.nccAtCurrent; fr.offsetMs = o.newOffsetMs;
@@ -269,10 +272,13 @@ public class Eval {
             Cue[] dc = (Cue[]) od[0];
             Result cur = r0;
             prev = null;
+            acc.clear();
             long firstChange = -1;
             for (long t : pts) {
-                Window[] w = {new Window(t / 10 * 10, v.get(f, t / 10 * 10, len))};
-                Recheck.Out o = Recheck.check(dc, w, cur, t, full, false, prev, P, RP);
+                acc.add(new Window(t / 10 * 10, v.get(f, t / 10 * 10, len)));
+                while (acc.size() > 3) acc.remove(0);
+                Recheck.Out o = Recheck.check(dc, acc.toArray(new Window[0]), cur, t, full, false, prev, P, RP);
+                if (o.verdict == Recheck.Verdict.KEEP && "ok".equals(o.reason)) acc.clear();
                 prev = o;
                 double exp = r0.offsetMs + d * 1000;
                 Result rr = new Result();
@@ -280,7 +286,7 @@ public class Eval {
                 rr.reason = o.verdict + " " + o.reason;
                 double[] err = rr.accepted ? new double[]{Math.abs(o.newOffsetMs - exp), 0, 0} : null;
                 row(f, s, vad, "rck" + len / 1000, "rck_cut", "cut@" + cut / 1000 + "s d=" + d + " t=" + t / 1000 + "s", rr, err, err, o.tookMs, t < cut ? "antes" : "depois");
-                if (o.verdict == Recheck.Verdict.CHANGE && firstChange < 0) { firstChange = t; cur = new Result(); cur.accepted = true; cur.scale = r0.scale; cur.offsetMs = o.newOffsetMs; prev = null; }
+                if (o.verdict == Recheck.Verdict.CHANGE && firstChange < 0) { firstChange = t; cur = new Result(); cur.accepted = true; cur.scale = r0.scale; cur.offsetMs = o.newOffsetMs; prev = null; acc.clear(); }
             }
         }
     }
