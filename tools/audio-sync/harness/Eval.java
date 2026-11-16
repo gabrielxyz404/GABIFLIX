@@ -66,7 +66,7 @@ public class Eval {
 
     /** como distort, mas torna realista o caso de deslocamento positivo (legenda de uma versão sem o trecho extra): remove da legenda as
      *  falas anteriores ao corte que passariam do primeiro tempo do trecho seguinte. Devolve {Cue[], long[] verdade}. */
-    static Object[] distortPieces(Cue[] truth, double a, long[] cuts, double[] offs) {
+    static Object[] distortPieces(Cue[] truth, double a, long[] cuts, double[] offs) {   // devolve {Cue[], int[] indices mantidos}
         Cue[] d = distort(truth, a, cuts, offs);
         boolean[] drop = new boolean[d.length];
         for (int k = 0; k < cuts.length; k++) {
@@ -77,11 +77,11 @@ public class Eval {
             for (int i = first - 1; i >= 0 && truth[i].startMs >= cuts[k] - 200_000; i--) if (d[i].startMs >= lim) drop[i] = true;
         }
         ArrayList<Cue> dc = new ArrayList<>();
-        ArrayList<Long> tt = new ArrayList<>();
-        for (int i = 0; i < d.length; i++) if (!drop[i]) { dc.add(d[i]); tt.add(truth[i].startMs); }
-        long[] t2 = new long[tt.size()];
-        for (int i = 0; i < t2.length; i++) t2[i] = tt.get(i);
-        return new Object[]{dc.toArray(new Cue[0]), t2};
+        ArrayList<Integer> keep = new ArrayList<>();
+        for (int i = 0; i < d.length; i++) if (!drop[i]) { dc.add(d[i]); keep.add(i); }
+        int[] k2 = new int[keep.size()];
+        for (int i = 0; i < k2.length; i++) k2[i] = keep.get(i);
+        return new Object[]{dc.toArray(new Cue[0]), k2};
     }
 
     /** resolve pedindo mais janelas enquanto o motor pedir (AudioSyncSession), como faria o app */
@@ -106,12 +106,14 @@ public class Eval {
 
     // ---------------------------------------------------------------- saída
     static PrintWriter out;
+    static long[] REL;
+    static boolean REL_OK;
 
-    static void row(Film f, Film.Sub s, String vad, String cfg, String cat, String param, Result r, double[] err, long tookMs, String extra) {
-        out.printf(Locale.ROOT, "%s,%s,%s,%s,%s,%s,%s,%d,%.0f,%.0f,%.1f,%.6f,%.2f,%.3f,%.3f,%.3f,%d,%d,%.3f,%.3f,%d,%d,%s%n",
-                f.slug, s == null ? "-" : s.name, vad, cfg, cat, param, "-", r.accepted ? 1 : 0,
+    static void row(Film f, Film.Sub s, String vad, String cfg, String cat, String param, Result r, double[] err, double[] rel, long tookMs, String extra) {
+        out.printf(Locale.ROOT, "%s,%s,%s,%s,%s,%s,%s,%d,%.0f,%.0f,%.1f,%.6f,%.2f,%.3f,%.3f,%.3f,%d,%d,%.3f,%.3f,%d,%d,%.0f,%.0f,%s%n",
+                f.slug, s == null ? "-" : s.name, vad, cfg, cat, param.replace(',', ';'), "-", r.accepted ? 1 : 0,
                 err == null ? -1 : err[0], err == null ? -1 : err[1], r.offsetMs, r.scale, r.z, r.margin, r.nccMean, r.nccMin, r.blocksAgree, r.blocksValid, r.f1, r.confidence,
-                r.audioMs, tookMs, (extra + " " + r.reason).trim().replace(',', ';'));
+                r.audioMs, tookMs, rel == null ? -1 : rel[0], rel == null ? -1 : rel[1], (extra + " " + r.reason).trim().replace(',', ';'));
         out.flush();
     }
 
@@ -156,6 +158,11 @@ public class Eval {
                     Cue[] truth = s.truthCues;
                     long[] ts = new long[truth.length];
                     for (int i = 0; i < ts.length; i++) ts[i] = truth[i].startMs;
+                    // alvo relativo: onde o próprio motor põe a legenda SEM distorção (tira o viés do oráculo; mede só a recuperação da distorção)
+                    Result r0 = session(f, v, truth, ws, P, 6);
+                    REL = new long[ts.length];
+                    for (int i = 0; i < ts.length; i++) REL[i] = r0.accepted ? Math.round(r0.applySegments(truth[i].startMs)) : ts[i];
+                    REL_OK = r0.accepted;
                     if (cats.contains("offset")) for (double o : OFFS) run(f, v, s, vname, cfg, "offset", String.valueOf(o), P, ws, truth, ts, 1.0, new long[0], new double[]{o * 1000}, false);
                     if (cats.contains("scale")) for (int k = 0; k < RATIOS.length; k++) run(f, v, s, vname, cfg, "scale", RNAME[k], P, ws, truth, ts, RATIOS[k][0], new long[0], new double[]{0}, false);
                     if (cats.contains("combo")) for (int k = 0; k < RATIOS.length; k++) {
@@ -195,7 +202,7 @@ public class Eval {
                             Arrays.sort(ee);
                             e = new double[]{ee[ee.length / 2], ee[(int) (ee.length * 0.9)], ee[ee.length - 1]};
                         }
-                        row(f, s, vname, cfg, s.truth ? "natural" : "natural_nt", "orig", r, e, took, "");
+                        row(f, s, vname, cfg, s.truth ? "natural" : "natural_nt", "orig", r, e, e, took, "");
                     }
                 }
                 // negativos: legendas de OUTROS filmes (do diretório de legendas cruas)
@@ -215,7 +222,7 @@ public class Eval {
                             long took = (System.nanoTime() - t0) / 1000000;
                             Film.Sub fake = new Film.Sub();
                             fake.name = od.getName() + "/" + nm;
-                            row(f, fake, vname, cfg, "neg", od.getName(), r, null, took, "");
+                            row(f, fake, vname, cfg, "neg", od.getName(), r, null, null, took, "");
                         }
                     }
                 }
@@ -229,12 +236,20 @@ public class Eval {
     static void run(Film f, VadSrc v, Film.Sub s, String vad, String cfg, String cat, String param, AudioAligner.Params P, Window[] ws,
                     Cue[] truth, long[] ts, double a, long[] cuts, double[] offs, boolean seg) throws IOException {
         Cue[] d;
-        long[] tsx = ts;
-        if (seg) { Object[] o = distortPieces(truth, a, cuts, offs); d = (Cue[]) o[0]; tsx = (long[]) o[1]; }
-        else d = distort(truth, a, cuts, offs);
+        long[] tsx = ts, trx = REL;
+        if (seg) {
+            Object[] o = distortPieces(truth, a, cuts, offs);
+            d = (Cue[]) o[0];
+            int[] keep = (int[]) o[1];
+            tsx = new long[keep.length]; trx = new long[keep.length];
+            for (int i = 0; i < keep.length; i++) { tsx[i] = ts[keep[i]]; trx[i] = REL[keep[i]]; }
+        } else d = distort(truth, a, cuts, offs);
         long t0 = System.nanoTime();
-        Result r = session(f, v, d, ws, P, 6);
+        Result r;
+        try { r = session(f, v, d, ws, P, 6); }
+        catch (RuntimeException e) { r = new Result(); r.reason = "EXCECAO " + e; e.printStackTrace(); }
         long took = (System.nanoTime() - t0) / 1000000;
-        row(f, s, vad, cfg, cat, param, r, errStats(r, d, tsx, seg), took, seg ? "segs=" + (r.segments == null ? 1 : r.segments.length) + " rounds=" + r.rounds : "");
+        double[] abs = r.reason.startsWith("EXCECAO") ? null : errStats(r, d, tsx, seg), rel = r.reason.startsWith("EXCECAO") ? null : errStats(r, d, trx, seg);
+        row(f, s, vad, cfg, cat, param, r, abs, rel, took, (REL_OK ? "" : "base_recusada ") + (seg ? "segs=" + (r.segments == null ? 1 : r.segments.length) + " rounds=" + r.rounds : ""));
     }
 }

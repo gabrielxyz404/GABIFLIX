@@ -512,7 +512,11 @@ public final class AudioAligner {
         for (double ks : P.knownScales) if (Math.abs(ks - a0) < 1e-9) R.scaleKnown = true;
         finalEvidence(windows, ps, fine, R, P);
         decide(R, P);
-        analyzeCuts(R, cues, windows, ps, bl, use, nu, P, mediaDurationMs, fine);
+        try {
+            analyzeCuts(R, cues, windows, ps, bl, use, nu, P, mediaDurationMs, fine);
+        } catch (RuntimeException e) {
+            R.segments = null; R.more = null; R.pieceSuspect = true;   // o ajuste global continua valendo
+        }
         if (!R.accepted) suggestMore(R, windows, P, mediaDurationMs);
         return R;
     }
@@ -745,6 +749,7 @@ public final class AudioAligner {
             Block b = bl[use[t]];
             bStart[q] = b.uMs; bEnd[q] = b.uMs + (long) b.n * P.frameMs; bLab[q] = lab[t]; q++;
         }
+        if (cnt == 0) { R.pieceSuspect = true; return; }
         ArrayList<Segment> segs = new ArrayList<>();
         ArrayList<long[]> more = new ArrayList<>();
         segs.add(new Segment(Long.MIN_VALUE / 4, a0, offs[bLab[0]]));
