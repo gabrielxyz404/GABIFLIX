@@ -149,13 +149,17 @@ public class Eval {
         for (String vname : vads) {
             VadSrc v = vadSrc(vname);
             if (vname.equals("silero") && !f.hasTrack("vad_silero")) continue;
-            for (String cfg : cfgs) {
-                String[] q = cfg.split("x");
+            for (String cfg0 : cfgs) {
+                String[] q = cfg0.split("x");
+                final String cfg = cfg0 + ("dens".equals(System.getenv("PLAN")) ? "d" : "");
                 int nw = Integer.parseInt(q[0]);
                 long len = Long.parseLong(q[1]) * 1000;
-                Window[] ws = windows(f, v, plan(f.durationMs, nw, len));
+                final boolean dens = "dens".equals(System.getenv("PLAN"));
+                final int nwF = nw; final long lenF = len;
+                Window[] wsFixed = dens ? null : windows(f, v, plan(f.durationMs, nw, len));
                 for (Film.Sub s : tsubs) {
                     Cue[] truth = s.truthCues;
+                    Window[] ws = dens ? windows(f, v, AudioSyncSession.planDense(s.orig, f.durationMs, nwF, lenF)) : wsFixed;
                     long[] ts = new long[truth.length];
                     for (int i = 0; i < ts.length; i++) ts[i] = truth[i].startMs;
                     // alvo relativo: onde o próprio motor põe a legenda SEM distorção (tira o viés do oráculo; mede só a recuperação da distorção)
@@ -194,6 +198,7 @@ public class Eval {
                     for (Film.Sub s : f.subs) {
                         if (s.pairs == null) continue;
                         long t0 = System.nanoTime();
+                        Window[] ws = dens ? windows(f, v, AudioSyncSession.planDense(s.orig, f.durationMs, nwF, lenF)) : wsFixed;
                         Result r = session(f, v, s.orig, ws, P, 3);
                         long took = (System.nanoTime() - t0) / 1000000;
                         double[] e = null;
@@ -218,6 +223,7 @@ public class Eval {
                             if (!sf.exists()) continue;
                             Cue[] c = Cue.parseSrt(new String(java.nio.file.Files.readAllBytes(sf.toPath()), java.nio.charset.StandardCharsets.UTF_8));
                             if (c.length < 40) continue;
+                            Window[] ws = dens ? windows(f, v, AudioSyncSession.planDense(c, f.durationMs, nwF, lenF)) : wsFixed;
                             long t0 = System.nanoTime();
                             Result r = session(f, v, c, ws, P, 3);
                             long took = (System.nanoTime() - t0) / 1000000;

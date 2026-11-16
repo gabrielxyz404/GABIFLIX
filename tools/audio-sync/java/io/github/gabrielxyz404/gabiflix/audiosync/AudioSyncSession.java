@@ -1,6 +1,7 @@
 package io.github.gabrielxyz404.gabiflix.audiosync;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 /**
  * Sessão progressiva de um alinhamento: o app captura as janelas do plano inicial, chama {@link #solve()}; se {@code Result.more} vier preenchido,
@@ -32,6 +33,50 @@ public final class AudioSyncSession {
             w[i][0] = st / 10 * 10;
             w[i][1] = lenMs;
         }
+        return w;
+    }
+
+    /**
+     * plano inicial guiado pela legenda: n janelas de lenMs nos trechos onde a legenda tem MAIS fala (densidade suavizada em +-2 min, para tolerar
+     * deslocamentos de alguns minutos), afastadas entre si, fora dos 4% iniciais e finais. Sem fala suficiente (legenda curta) cai no plano uniforme.
+     * Escolher onde ouvir é a maior alavanca de acerto: janelas em cenas sem diálogo (música, ação) não alinham nada.
+     */
+    public static long[][] planDense(Cue[] cues, long durMs, int n, long lenMs) {
+        final int bin = 5000;
+        int nb = (int) (durMs / bin) + 1;
+        double[] sp = new double[nb];
+        for (Cue c : cues) {
+            if (!c.speech) continue;
+            long e = c.speechEnd(true);
+            for (long t = c.startMs; t < e && t < durMs; t += bin) sp[(int) (t / bin)] += Math.min(bin, e - t) / (double) bin;
+        }
+        int half = 24;   // +-2 min
+        double[] pre = new double[nb + 1];
+        for (int i = 0; i < nb; i++) pre[i + 1] = pre[i] + sp[i];
+        int wb = (int) (lenMs / bin);
+        long lo = Math.max(0, durMs / 25), hi = durMs - durMs / 25;
+        if (hi - lo < lenMs * n) { lo = 0; hi = durMs; }
+        long spacing = Math.min(360000L, Math.max(lenMs, (hi - lo - lenMs) / Math.max(1, n)));
+        long[][] w = new long[n][2];
+        boolean[] used = new boolean[nb];
+        int got = 0;
+        for (; got < n; got++) {
+            double best = -1;
+            int bi = -1;
+            for (int i = (int) (lo / bin); (i + wb) * (long) bin <= hi && i + wb <= nb; i++) {
+                boolean bad = false;
+                for (int k = 0; k < got && !bad; k++) if (Math.abs(i * (long) bin - w[k][0]) < spacing) bad = true;
+                if (bad) continue;
+                int a = Math.max(0, i - half), b = Math.min(nb, i + wb + half);
+                double d = (pre[b] - pre[a]) / (b - a);
+                if (d > best) { best = d; bi = i; }
+            }
+            if (bi < 0 || best < 0.15) break;
+            w[got][0] = bi * (long) bin / 10 * 10;
+            w[got][1] = lenMs;
+        }
+        if (got < n) return plan(durMs, n, lenMs);
+        Arrays.sort(w, (x, y) -> Long.compare(x[0], y[0]));
         return w;
     }
 
