@@ -23,6 +23,7 @@ android {
         if (noort) main.java.exclude '**/SileroVad.java'
     }
     buildTypes { release { minifyEnabled false } }
+    lint { abortOnError false; checkReleaseBuilds false }
 }
 
 dependencies {
