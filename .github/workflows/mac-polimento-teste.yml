@@ -99,8 +99,15 @@ jobs:
           defaults delete FramePlay 2>/dev/null || true
           (cd "$GITHUB_WORKSPACE" && nohup python3 -m http.server 8099 --bind 127.0.0.1 > /tmp/site.log 2>&1 &)
           sleep 2
+          curl -s -o /dev/null http://127.0.0.1:8099/index.html || true
+          for k in 1 2 3 4 5; do
+            osascript -e 'tell application "System Events" to tell process "UserNotificationCenter" to click button "Allow" of window 1' >> /tmp/telas/allow.log 2>&1 && break
+            osascript -e 'tell application "System Events" to tell process "UserNotificationCenter" to click button 2 of window 1' >> /tmp/telas/allow.log 2>&1 && break
+            sleep 2
+          done
           $APP --gf-test-web --gf-test-url http://127.0.0.1:8099/index.html > /tmp/telas/web.log 2>&1 &
-          sleep 25
+          for k in 1 2 3 4 5 6; do osascript -e 'tell application "System Events" to tell process "UserNotificationCenter" to click button "Allow" of window 1' >> /tmp/telas/allow.log 2>&1 && break; sleep 3; done
+          sleep 20
           web "js document.documentElement.getAttribute('data-gf-app') + ' | ' + navigator.userAgent + ' | ' + innerWidth + 'x' + innerHeight"
           cat /tmp/gf-web.out | tee -a /tmp/telas/web-info.txt
           shot w01-home
