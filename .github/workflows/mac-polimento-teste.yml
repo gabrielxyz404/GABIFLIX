@@ -97,16 +97,18 @@ jobs:
           shot() { screencapture -x "/tmp/telas/$1.png" || true; }
           web() { echo "$1" > /tmp/gf-web; sleep "${2:-2.5}"; }
           defaults delete FramePlay 2>/dev/null || true
-          $APP --gf-test-web > /tmp/telas/web.log 2>&1 &
+          (cd "$GITHUB_WORKSPACE" && nohup python3 -m http.server 8099 --bind 127.0.0.1 > /tmp/site.log 2>&1 &)
+          sleep 2
+          $APP --gf-test-web --gf-test-url http://127.0.0.1:8099/index.html > /tmp/telas/web.log 2>&1 &
           sleep 25
           web "js document.documentElement.getAttribute('data-gf-app') + ' | ' + navigator.userAgent + ' | ' + innerWidth + 'x' + innerHeight"
           cat /tmp/gf-web.out | tee -a /tmp/telas/web-info.txt
           shot w01-home
-          W=$(grep -o '[0-9]*x[0-9]*' /tmp/telas/web-info.txt | head -1 | cut -dx -f1); echo "largura=$W" | tee -a /tmp/telas/web-info.txt
+          W=$(grep -o '[0-9][0-9]*x[0-9][0-9]*' /tmp/telas/web-info.txt | tail -1 | cut -dx -f1); echo "largura=$W" | tee -a /tmp/telas/web-info.txt
           rm -f /tmp/gf-web.out
           web "js window.__gfMacVersion + ' | fs=' + document.documentElement.getAttribute('data-gf-fs')"
           cat /tmp/gf-web.out | tee -a /tmp/telas/web-info.txt
-          for p in "40 44" "60 44" "150 44" "$((W-40)) 44" "$((W-110)) 44" "300 20" "300 120"; do web "hit $p" 1.2; done
+          for p in "30 44" "50 44" "70 44" "150 44" "$((W-40)) 44" "$((W-110)) 44" "300 20" "300 120"; do web "hit $p" 1.2; done
           cat /tmp/gf-web.out | tee -a /tmp/telas/web-info.txt
           web "resize 900 650"; shot w02-home-900
           web "resize 1000 700"; shot w03-home-1000

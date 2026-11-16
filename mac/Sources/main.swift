@@ -4,8 +4,10 @@ import Cocoa
 import WebKit
 import VLCKit
 
-let APP_URL = URL(string: "https://gabrielxyz404.github.io/GABIFLIX/")!
-let APP_HOST = "gabrielxyz404.github.io"
+// teste automático (só no GitHub): --gf-test-url <endereço> carrega o site da branch em vez do site publicado
+let TEST_URL: URL? = { let a = CommandLine.arguments; if let i = a.firstIndex(of: "--gf-test-url"), i + 1 < a.count { return URL(string: a[i + 1]) }; return nil }()
+let APP_URL = TEST_URL ?? URL(string: "https://gabrielxyz404.github.io/GABIFLIX/")!
+let APP_HOST = TEST_URL?.host ?? "gabrielxyz404.github.io"
 
 // versão do app (a mostrada nas Configurações do site, no lugar da versão do Stremio)
 let APP_VERSION: String = (Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String) ?? ""
