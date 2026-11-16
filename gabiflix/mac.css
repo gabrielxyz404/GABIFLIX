@@ -3,7 +3,7 @@
 /* ---------- cabeçalho: os botões vermelho/amarelo/verde da janela ficam DENTRO da cápsula de vidro ----------
    O app posiciona os 3 botões a ~22px da borda, no meio da cápsula; o conteúdo do cabeçalho começa depois deles.
    Em tela cheia os botões somem (o app liga data-gf-fs) e o recuo também. */
-html[data-gf-app="mac"]:not([data-gf-fs]) .horizontal-nav-bar-container-Y_zvK { padding-left: 4.5rem; }
+html[data-gf-app="mac"]:not([data-gf-fs]) .horizontal-nav-bar-container-Y_zvK { padding-left: 5.25rem; }
 /* o cabeçalho da Home no Mac chama-se "Início" (as outras telas já estão em português) */
 html[data-gf-app="mac"][data-gf-route="home"]:not([data-gf-view="catalog"]) .horizontal-nav-bar-container-Y_zvK .logo-container-jteMT::after { content: "Início"; }
 

@@ -59,6 +59,7 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
     private let overlay = PlayerRootView()
     private let controls = NSVisualEffectView()
     private let topBar = PassThroughView()
+    private var backLead: NSLayoutConstraint?
     private var playButton: IconButton!
     private let timeline = TimelineView()
     private let timeLabel = GF.label("0:00", size: 12, weight: .semibold, mono: true)
@@ -359,7 +360,7 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
             topScrim.trailingAnchor.constraint(equalTo: topBar.trailingAnchor),
             topScrim.topAnchor.constraint(equalTo: topBar.topAnchor),
             topScrim.bottomAnchor.constraint(equalTo: topBar.bottomAnchor),
-            back.leadingAnchor.constraint(equalTo: topBar.leadingAnchor, constant: 90),
+            { let c = back.leadingAnchor.constraint(equalTo: topBar.leadingAnchor, constant: 90); backLead = c; return c }(),
             back.centerYAnchor.constraint(equalTo: topBar.topAnchor, constant: 27),
             titleLabel.leadingAnchor.constraint(equalTo: back.trailingAnchor, constant: 12),
             titleLabel.centerYAnchor.constraint(equalTo: back.centerYAnchor),
@@ -1734,8 +1735,9 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
         applyScale()
         DispatchQueue.main.async { [weak self] in self?.placeTrafficLights() }
     }
-    func windowDidEnterFullScreen(_ notification: Notification) { fsButton.symbol = "arrow.down.right.and.arrow.up.left"; fsButton.toolTip = "Sair da tela cheia (F)" }
+    func windowDidEnterFullScreen(_ notification: Notification) { backLead?.constant = 28; fsButton.symbol = "arrow.down.right.and.arrow.up.left"; fsButton.toolTip = "Sair da tela cheia (F)" }
     func windowDidExitFullScreen(_ notification: Notification) {
+        backLead?.constant = 90
         fsButton.symbol = "arrow.up.left.and.arrow.down.right"
         fsButton.toolTip = "Tela cheia (F)"
         DispatchQueue.main.async { [weak self] in self?.placeTrafficLights() }
