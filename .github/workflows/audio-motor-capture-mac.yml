@@ -29,7 +29,8 @@ jobs:
           cp tools/audio-sync/capture/mac/capprobe.swift probe-work/main.swift
           swiftc -O -target arm64-apple-macos11.0 -F probe-work/fw -framework VLCKit -framework Foundation \
             -Xlinker -rpath -Xlinker "$PWD/probe-work/fw" probe-work/main.swift -o probe-work/bin/capprobe 2>&1 | head -40
-          ls -la probe-work/bin/capprobe
+          mkdir -p probe-work/Frameworks && cp -R probe-work/fw/VLCKit.framework probe-work/Frameworks/
+          ls -la probe-work/bin/capprobe probe-work/Frameworks/VLCKit.framework | head; otool -L probe-work/bin/capprobe | head
       - name: Fala real e videos de teste
         run: |
           brew install ffmpeg > /dev/null 2>&1 || brew install ffmpeg
