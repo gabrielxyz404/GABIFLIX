@@ -1,0 +1,44 @@
+package io.github.gabrielxyz404.gabiflix.audiosync;
+
+import java.util.Locale;
+
+/** Resultado do motor. Mapeamento: tempoCorrigido = scale * tempoLegenda + offsetMs (ms). */
+public final class Result {
+    public boolean accepted;
+    public double scale = 1.0, offsetMs = 0.0;
+    /** 0..1: confiança composta (só informativa; a decisão está em accepted) */
+    public double confidence;
+    public String reason = "";
+    // evidências
+    public double z, margin, nccMean, nccMin, f1, support;
+    public int blocksValid, blocksAgree, windows;
+    /** ajuste por partes (null = um só ajuste global); em ordem de fromMediaMs */
+    public Segment[] segments;
+    /** o motor pede mais áudio: janelas {inicioMs, duracaoMs} (null/vazio = não precisa) */
+    public long[][] more;
+    /** só há dúvida de corte: o ajuste global vale por enquanto */
+    public boolean pieceSuspect;
+    /** milissegundos de áudio usados */
+    public long audioMs;
+
+    /** aplica o mapeamento global a um tempo da legenda */
+    public double apply(double subMs) { return scale * subMs + offsetMs; }
+
+    /** aplica o ajuste (por partes se houver) a um tempo da legenda */
+    public double applySegments(double subMs) {
+        if (segments == null || segments.length == 0) return apply(subMs);
+        // escolhe o trecho cujo início (em tempo do vídeo) cabe no tempo corrigido
+        Segment cur = segments[0];
+        for (int i = 0; i < segments.length; i++) {
+            Segment sg = segments[i];
+            if (sg.scale * subMs + sg.offsetMs >= sg.fromMediaMs) cur = sg;
+        }
+        return cur.scale * subMs + cur.offsetMs;
+    }
+
+    @Override public String toString() {
+        return String.format(Locale.ROOT, "%s k=%.5f off=%+.0fms conf=%.2f z=%.1f marg=%.2f ncc=%.2f/%.2f agree=%d/%d f1=%.2f seg=%s %s",
+                accepted ? "ACEITA" : "recusada", scale, offsetMs, confidence, z, margin, nccMean, nccMin, blocksAgree, blocksValid, f1,
+                segments == null ? "-" : java.util.Arrays.toString(segments), reason);
+    }
+}

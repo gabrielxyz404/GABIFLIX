@@ -1,0 +1,205 @@
+import io.github.gabrielxyz404.gabiflix.audiosync.*;
+import java.io.*;
+import java.util.*;
+
+/**
+ * Avaliação do motor no corpus (um filme por execução; várias execuções formam a tabela final).
+ * Uso: Eval FILM_DIR OUT_CSV VADS CFGS [CATS]
+ *   VADS: lista separada por vírgula (silero, pywebrtc3, webrtc0..3, dsp)
+ *   CFGS: lista de NxLEN em segundos (3x60,3x90 ...)
+ *   CATS: offset,scale,combo,piece1,piece2,natural,neg (padrão: todas)
+ */
+public class Eval {
+    // ---------------------------------------------------------------- VAD
+    interface VadSrc { float[] get(Film f, long startMs, long durMs) throws IOException; }
+
+    static VadSrc vadSrc(String name) {
+        if (name.equals("silero")) return (f, s, d) -> f.track("vad_silero", s, d);
+        if (name.startsWith("pywebrtc")) { final String t = "vad_webrtc_m" + name.substring(8); return (f, s, d) -> f.track(t, s, d); }
+        if (name.startsWith("webrtc")) {
+            final int mode = Integer.parseInt(name.substring(6));
+            return (f, s, d) -> {
+                short[] p = f.pcm(s, d);
+                return new WebRtcVad(mode).speechProb(p, p.length, 16000);
+            };
+        }
+        if (name.startsWith("dsp")) {
+            return (f, s, d) -> {
+                short[] p = f.pcm(s, d);
+                return DspVad.forName(name).speechProb(p, p.length, 16000);
+            };
+        }
+        throw new IllegalArgumentException("VAD desconhecido: " + name);
+    }
+
+    // ---------------------------------------------------------------- janelas
+    static long[][] plan(long durMs, int n, long lenMs) {
+        long[][] w = new long[n][2];
+        for (int i = 0; i < n; i++) {
+            double fr = n == 1 ? 0.5 : 0.15 + 0.70 * i / (n - 1);
+            long st = (long) (durMs * fr - lenMs / 2.0);
+            st = Math.max(0, Math.min(st, durMs - lenMs));
+            w[i][0] = st / 10 * 10; w[i][1] = lenMs;
+        }
+        return w;
+    }
+
+    static Window[] windows(Film f, VadSrc v, long[][] pl) throws IOException {
+        Window[] ws = new Window[pl.length];
+        for (int i = 0; i < pl.length; i++) ws[i] = new Window(pl[i][0], v.get(f, pl[i][0], pl[i][1]));
+        return ws;
+    }
+
+    // ---------------------------------------------------------------- distorção
+    /** legenda tal que corrigi-la com (a, b por trecho) devolve a verdade: s = (u - b)/a */
+    static Cue[] distort(Cue[] truth, double a, long[] cuts, double[] offs) {
+        Cue[] o = new Cue[truth.length];
+        for (int i = 0; i < truth.length; i++) {
+            Cue c = truth[i];
+            int q = 0;
+            while (q < cuts.length && c.startMs >= cuts[q]) q++;
+            double b = offs[q];
+            o[i] = new Cue(Math.round((c.startMs - b) / a), Math.round((c.endMs - b) / a), c.chars, c.speech);
+        }
+        return o;
+    }
+
+    static double[] errStats(Result r, Cue[] dist, long[] truthStart, boolean seg) {
+        int n = Math.min(dist.length, truthStart.length);
+        double[] e = new double[n];
+        for (int i = 0; i < n; i++) e[i] = Math.abs((seg ? r.applySegments(dist[i].startMs) : r.apply(dist[i].startMs)) - truthStart[i]);
+        Arrays.sort(e);
+        return new double[]{e[n / 2], e[(int) (n * 0.9)], e[n - 1]};
+    }
+
+    // ---------------------------------------------------------------- saída
+    static PrintWriter out;
+
+    static void row(Film f, Film.Sub s, String vad, String cfg, String cat, String param, Result r, double[] err, long tookMs, String extra) {
+        out.printf(Locale.ROOT, "%s,%s,%s,%s,%s,%s,%s,%d,%.0f,%.0f,%.1f,%.6f,%.2f,%.3f,%.3f,%.3f,%d,%d,%.3f,%.3f,%d,%d,%s%n",
+                f.slug, s == null ? "-" : s.name, vad, cfg, cat, param, "-", r.accepted ? 1 : 0,
+                err == null ? -1 : err[0], err == null ? -1 : err[1], r.offsetMs, r.scale, r.z, r.margin, r.nccMean, r.nccMin, r.blocksAgree, r.blocksValid, r.f1, r.confidence,
+                r.audioMs, tookMs, (extra + " " + r.reason).trim().replace(',', ';'));
+        out.flush();
+    }
+
+    static final double[] OFFS = {-120, -45, -15, -5, -1.5, -0.5, 0.5, 1.5, 5, 15, 45, 120, -300, 300, -590, 590};
+    static final double[][] RATIOS = {{25 / 23.976, 0}, {23.976 / 25, 0}, {25 / 24.0, 0}, {24 / 25.0, 0}, {24 / 23.976, 0}, {23.976 / 24, 0}};
+    static final String[] RNAME = {"25/23.976", "23.976/25", "25/24", "24/25", "24/23.976", "23.976/24"};
+
+    public static void main(String[] args) throws Exception {
+        File fd = new File(args[0]);
+        out = new PrintWriter(new FileWriter(args[1], true));
+        String[] vads = args[2].split(",");
+        String[] cfgs = args[3].split(",");
+        Set<String> cats = new HashSet<>(Arrays.asList((args.length > 4 ? args[4] : "offset,scale,combo,piece1,piece2,natural").split(",")));
+        int maxSubs = args.length > 5 ? Integer.parseInt(args[5]) : 3;
+        String subsDir = args.length > 6 ? args[6] : "";
+        String dw = System.getenv("DSPW_DIR");
+        if (dw != null && !dw.isEmpty()) {
+            File w = new File(dw, fd.getName() + ".w");
+            System.setProperty("dsp.weights", (w.exists() ? w : new File(dw, "all.w")).getPath());
+        }
+        AudioAligner.Params P = new AudioAligner.Params();
+        Film f = new Film(fd);
+        System.err.printf("== %s: %.0f s, %d legendas (%d verdade)%n", f.slug, f.durationMs / 1000.0, f.subs.size(), countTruth(f));
+        // legendas de verdade: até maxSubs (prefere 2 PT + 1 EN)
+        ArrayList<Film.Sub> tsubs = new ArrayList<>();
+        int pt = 0, en = 0;
+        for (Film.Sub s : f.subs) {
+            if (!s.truth || s.truthCues == null) continue;
+            if (s.pt() && pt < Math.max(1, maxSubs - 1)) { tsubs.add(s); pt++; }
+            else if (!s.pt() && en < 1) { tsubs.add(s); en++; }
+        }
+        Random rnd = new Random(42 + f.slug.hashCode());
+        for (String vname : vads) {
+            VadSrc v = vadSrc(vname);
+            if (vname.equals("silero") && !f.hasTrack("vad_silero")) continue;
+            for (String cfg : cfgs) {
+                String[] q = cfg.split("x");
+                int nw = Integer.parseInt(q[0]);
+                long len = Long.parseLong(q[1]) * 1000;
+                Window[] ws = windows(f, v, plan(f.durationMs, nw, len));
+                for (Film.Sub s : tsubs) {
+                    Cue[] truth = s.truthCues;
+                    long[] ts = new long[truth.length];
+                    for (int i = 0; i < ts.length; i++) ts[i] = truth[i].startMs;
+                    if (cats.contains("offset")) for (double o : OFFS) run(f, s, vname, cfg, "offset", String.valueOf(o), P, ws, truth, ts, 1.0, new long[0], new double[]{o * 1000}, false);
+                    if (cats.contains("scale")) for (int k = 0; k < RATIOS.length; k++) run(f, s, vname, cfg, "scale", RNAME[k], P, ws, truth, ts, RATIOS[k][0], new long[0], new double[]{0}, false);
+                    if (cats.contains("combo")) for (int k = 0; k < RATIOS.length; k++) {
+                        for (int j = 0; j < 2; j++) {
+                            double o = OFFS[rnd.nextInt(OFFS.length)];
+                            run(f, s, vname, cfg, "combo", RNAME[k] + "@" + o, P, ws, truth, ts, RATIOS[k][0], new long[0], new double[]{o * 1000}, false);
+                        }
+                    }
+                    if (cats.contains("piece1")) {
+                        double[] fr = {0.35, 0.5, 0.65};
+                        double[] dl = {-40, -15, -4, 4, 15, 40};
+                        for (int j = 0; j < 6; j++) {
+                            long cut = (long) (f.durationMs * fr[j % 3]);
+                            double b0 = (rnd.nextInt(30) - 10) * 1000.0;
+                            run(f, s, vname, cfg, "piece1", "cut@" + cut / 1000 + "s d=" + dl[j], P, ws, truth, ts, 1.0, new long[]{cut}, new double[]{b0, b0 + dl[j] * 1000}, true);
+                        }
+                    }
+                    if (cats.contains("piece2")) {
+                        for (int j = 0; j < 3; j++) {
+                            long c1 = (long) (f.durationMs * (0.3 + 0.05 * j)), c2 = (long) (f.durationMs * (0.6 + 0.05 * j));
+                            double b0 = (rnd.nextInt(20) - 5) * 1000.0, d1 = (rnd.nextBoolean() ? 1 : -1) * (5 + rnd.nextInt(40)) * 1000.0, d2 = (rnd.nextBoolean() ? 1 : -1) * (5 + rnd.nextInt(40)) * 1000.0;
+                            run(f, s, vname, cfg, "piece2", "cuts " + c1 / 1000 + "," + c2 / 1000, P, ws, truth, ts, 1.0, new long[]{c1, c2}, new double[]{b0, b0 + d1, b0 + d1 + d2}, true);
+                        }
+                    }
+                }
+                // natural: legendas originais (sem distorção) contra a verdade do oráculo
+                if (cats.contains("natural")) {
+                    for (Film.Sub s : f.subs) {
+                        if (s.pairs == null) continue;
+                        long t0 = System.nanoTime();
+                        Result r = AudioAligner.solve(s.orig, ws, f.durationMs, P);
+                        long took = (System.nanoTime() - t0) / 1000000;
+                        double[] e = null;
+                        if (s.truth) {
+                            double[] ee = new double[s.pairs.length];
+                            for (int i = 0; i < ee.length; i++) ee[i] = Math.abs(r.apply(s.pairs[i][0]) - s.pairs[i][1]);
+                            Arrays.sort(ee);
+                            e = new double[]{ee[ee.length / 2], ee[(int) (ee.length * 0.9)], ee[ee.length - 1]};
+                        }
+                        row(f, s, vname, cfg, s.truth ? "natural" : "natural_nt", "orig", r, e, took, "");
+                    }
+                }
+                // negativos: legendas de OUTROS filmes (do diretório de legendas cruas)
+                if (cats.contains("neg") && !subsDir.isEmpty()) {
+                    File[] others = new File(subsDir).listFiles(File::isDirectory);
+                    Arrays.sort(others);
+                    for (File od : others) {
+                        if (od.getName().equals(f.slug)) continue;
+                        String[] names = {"pt-0", "pt-1", "en-0"};
+                        for (String nm : names) {
+                            File sf = new File(od, nm + ".srt");
+                            if (!sf.exists()) continue;
+                            Cue[] c = Cue.parseSrt(new String(java.nio.file.Files.readAllBytes(sf.toPath()), java.nio.charset.StandardCharsets.UTF_8));
+                            if (c.length < 40) continue;
+                            long t0 = System.nanoTime();
+                            Result r = AudioAligner.solve(c, ws, f.durationMs, P);
+                            long took = (System.nanoTime() - t0) / 1000000;
+                            Film.Sub fake = new Film.Sub();
+                            fake.name = od.getName() + "/" + nm;
+                            row(f, fake, vname, cfg, "neg", od.getName(), r, null, took, "");
+                        }
+                    }
+                }
+            }
+        }
+        out.close();
+    }
+
+    static int countTruth(Film f) { int n = 0; for (Film.Sub s : f.subs) if (s.truth) n++; return n; }
+
+    static void run(Film f, Film.Sub s, String vad, String cfg, String cat, String param, AudioAligner.Params P, Window[] ws,
+                    Cue[] truth, long[] ts, double a, long[] cuts, double[] offs, boolean seg) {
+        Cue[] d = distort(truth, a, cuts, offs);
+        long t0 = System.nanoTime();
+        Result r = AudioAligner.solve(d, ws, f.durationMs, P);
+        long took = (System.nanoTime() - t0) / 1000000;
+        row(f, s, vad, cfg, cat, param, r, errStats(r, d, ts, seg), took, "");
+    }
+}

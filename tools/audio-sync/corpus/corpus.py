@@ -99,13 +99,33 @@ def is_en(l):
 
 
 # ---------------------------------------------------------------- legendas
+def resolve_imdb(f):
+    q = urllib.parse.quote(f["title"])
+    raw = http_get("https://v3-cinemeta.strem.io/catalog/movie/top/search=%s.json" % q, binary=False)
+    try:
+        metas = json.loads(raw).get("metas", [])
+    except Exception:
+        metas = []
+    req = f.get("tok") or [t for t in norm_tokens(f["title"]) if t not in STOP]
+    for m in metas:
+        name = norm_tokens(m.get("name", ""))
+        yr = str(m.get("releaseInfo", ""))[:4]
+        if yr.isdigit() and abs(int(yr) - f["year"]) <= 1 and all(r in name or any(r in n for n in name) for r in req):
+            return m["id"]
+    return f["imdb"]
+
+
 def cmd_subs(out, ptmax=12, enmax=6):
     os.makedirs(out, exist_ok=True)
     for f in FILMS:
         d = os.path.join(out, f["slug"])
         os.makedirs(d, exist_ok=True)
-        meta = {"slug": f["slug"], "imdb": f["imdb"], "subs": []}
-        raw = http_get("https://opensubtitles-v3.strem.io/subtitles/movie/%s.json" % f["imdb"], binary=False)
+        imdb = resolve_imdb(f)
+        if imdb != f["imdb"]:
+            print("  imdb %s -> %s (cinemeta)" % (f["imdb"], imdb), flush=True)
+        f["imdb"] = imdb
+        meta = {"slug": f["slug"], "imdb": imdb, "subs": []}
+        raw = http_get("https://opensubtitles-v3.strem.io/subtitles/movie/%s.json" % imdb, binary=False)
         items = []
         if raw:
             try:
@@ -165,7 +185,26 @@ def ia_search(q):
         return []
 
 
-def ia_pick(ident, expect_min):
+STOP = {"the", "a", "an", "of", "from", "and", "in", "on", "to", "it", "its", "s"}
+
+
+def norm_tokens(s):
+    return [t for t in re.split(r"[^a-z0-9]+", s.lower().replace("'", "")) if t]
+
+
+def title_ok(f, md):
+    req = f.get("tok") or [t for t in norm_tokens(f["title"]) if t not in STOP]
+    meta = md.get("metadata", {})
+    t = meta.get("title", "")
+    if isinstance(t, list):
+        t = " ".join(t)
+    hay = set(norm_tokens(str(t) + " " + str(md.get("metadata", {}).get("identifier", ""))))
+    if not all(r in hay or any(r in h for h in hay) for r in req):
+        return False, str(t)
+    return True, str(t)
+
+
+def ia_pick(ident, expect_min, f=None):
     raw = http_get("https://archive.org/metadata/" + urllib.parse.quote(ident), binary=False)
     if not raw:
         return None
@@ -173,6 +212,11 @@ def ia_pick(ident, expect_min):
         md = json.loads(raw)
     except Exception:
         return None
+    if f is not None:
+        ok, t = title_ok(f, md)
+        if not ok:
+            print("  descartado %s (título '%s')" % (ident, t[:70]), flush=True)
+            return None
     best = None
     for fl in md.get("files", []):
         name = fl.get("name", "")
@@ -214,7 +258,7 @@ def acquire_video(f, wdir):
         if ident not in cands:
             cands.append(ident)
     for ident in cands:
-        pick = ia_pick(ident, f["min"])
+        pick = ia_pick(ident, f["min"], f)
         if not pick:
             continue
         name, size, length = pick
@@ -436,11 +480,24 @@ def cmd_film(slug, subs_dir, fdir):
                 res["alass"] = theil_sen(cue_map(c_in, a_c))
         if f_c and a_c:
             res["agree"] = agree(c_in, f_c, a_c)
+        if f_c:
+            fm = {a: b for a, b in cue_map(c_in, f_c)}
+            am = {a: b for a, b in cue_map(c_in, a_c)} if a_c else {}
+            with open(os.path.join(odir, name + ".pairs.tsv"), "w") as pf:
+                for a, b, t in c_in:
+                    if a in fm:
+                        pf.write("%d\t%d\t%d\n" % (a, fm[a], am.get(a, -1)))
         a = res.get("agree")
         res["truth"] = bool(a and a["med"] <= 300 and a["p90"] <= 1500)
         oracle[name] = res
         print("  %s: ffs=%s alass=%s agree=%s truth=%s" % (name, res.get("ffs"), res.get("alass"), a, res["truth"]), flush=True)
     json.dump(oracle, open(os.path.join(fdir, "oracle.json"), "w"), indent=1)
+    with open(os.path.join(fdir, "truth.tsv"), "w") as tf:
+        tf.write("name\tlang\ttruth\tcues\tffs_k\tffs_off\tffs_res_p90\tagree_med\tagree_p90\n")
+        for n, o in oracle.items():
+            ff = o.get("ffs") or {}
+            ag = o.get("agree") or {}
+            tf.write("%s\t%s\t%d\t%d\t%.6f\t%.1f\t%.1f\t%.1f\t%.1f\n" % (n, o["lang"], 1 if o["truth"] else 0, o["cues"], ff.get("k", 0), ff.get("off", 0), ff.get("res_p90", -1), ag.get("med", -1), ag.get("p90", -1)))
     # confere cruzada PT x EN (só tempos): distância mediana do início de cada fala EN ao início PT mais próximo
     cross = {}
     tr = {n: parse_srt(open(os.path.join(odir, n + ".ffs.srt"), encoding="utf-8").read()) for n, o in oracle.items() if o["truth"]}

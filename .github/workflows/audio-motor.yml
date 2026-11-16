@@ -1,8 +1,9 @@
 name: Audio motor (corpus + avaliacao)
 
 # Motor de sincronia de legenda pelo audio: monta o corpus (filmes de dominio publico do archive.org + legendas do addon),
-# gera a verdade de campo com ffsubsync/alass e roda a avaliacao do motor. NAO publica nada do app.
-# Dispara so ao empurrar o branch run-audio (os filmes/legendas ficam apenas no runner e no cache; so resultados pequenos vao para audio-motor-out).
+# gera a verdade de campo com ffsubsync/alass, treina o VAD DSP (validacao por grupos de filmes) e roda a avaliacao do motor.
+# NAO publica nada do app. Dispara so ao empurrar o branch run-audio; filmes/legendas ficam so no runner e no cache,
+# so resultados pequenos vao para o branch audio-motor-out.
 on:
   push:
     branches: [run-audio]
@@ -10,6 +11,11 @@ on:
 permissions:
   contents: write
   actions: read
+
+env:
+  JSRC: tools/audio-sync/java
+  HARN: tools/audio-sync/harness
+  CORPUS_KEY: audio-film-v2
 
 jobs:
   subs:
@@ -21,8 +27,7 @@ jobs:
         with:
           python-version: '3.11'
       - name: Legendas (addon OpenSubtitles)
-        run: |
-          python3 tools/audio-sync/corpus/corpus.py subs subs 2>&1 | tee subs.log
+        run: python3 tools/audio-sync/corpus/corpus.py subs subs 2>&1 | tee subs.log
       - uses: actions/upload-artifact@v4
         with:
           name: subs
@@ -36,7 +41,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        slug: [his_girl_friday, charade, night_of_the_living_dead, doa, detour, little_shop, plan9, meet_john_doe, carnival_of_souls, the_stranger, last_man_on_earth, my_man_godfrey, brain_that_wouldnt_die, hitch_hiker, suddenly, dementia_13, house_on_haunted_hill, scarlet_street, reefer_madness, sherlock_secret_weapon, sintel, tears_of_steel, elephants_dream]
+        slug: [his_girl_friday, charade, night_of_the_living_dead, doa, detour, little_shop, plan9, meet_john_doe, carnival_of_souls, the_stranger, last_man_on_earth, my_man_godfrey, brain_that_wouldnt_die, hitch_hiker, suddenly, dementia_13, house_on_haunted_hill, scarlet_street, reefer_madness, sherlock_secret_weapon, sintel, tears_of_steel, elephants_dream, its_a_wonderful_life, freaks, white_zombie, santa_claus_martians, manos]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -55,7 +60,7 @@ jobs:
         uses: actions/cache/restore@v4
         with:
           path: corpus/${{ matrix.slug }}
-          key: audio-film-v1-${{ matrix.slug }}
+          key: ${{ env.CORPUS_KEY }}-${{ matrix.slug }}
       - name: Ferramentas (ffsubsync, webrtcvad, onnxruntime, ffmpeg)
         if: steps.cache.outputs.cache-hit != 'true'
         run: |
@@ -74,33 +79,135 @@ jobs:
         uses: actions/cache/save@v4
         with:
           path: corpus/${{ matrix.slug }}
-          key: audio-film-v1-${{ matrix.slug }}
+          key: ${{ env.CORPUS_KEY }}-${{ matrix.slug }}
+      - name: Compilar motor e ferramentas
+        if: always() && hashFiles(format('corpus/{0}/audio16k.wav', matrix.slug)) != ''
+        run: |
+          mkdir -p /tmp/cls feat
+          javac -Xlint:-options -d /tmp/cls $JSRC/io/github/gabrielxyz404/gabiflix/audiosync/*.java $HARN/*.java
+          java -Xmx3g -cp /tmp/cls FeatDump corpus/${{ matrix.slug }} feat/${{ matrix.slug }}.feat 2>&1 | tail -3
+          java -cp /tmp/cls Parity corpus/${{ matrix.slug }} 2>&1 | tee parity.txt | tail -5
       - name: Resumo do corpus (pequeno)
         if: always()
         run: |
           mkdir -p out/${{ matrix.slug }}
-          cp corpus/${{ matrix.slug }}/meta.json corpus/${{ matrix.slug }}/oracle.json out/${{ matrix.slug }}/ 2>/dev/null || true
-          cp corpus-${{ matrix.slug }}.log out/${{ matrix.slug }}/ 2>/dev/null || true
+          cp corpus/${{ matrix.slug }}/meta.json corpus/${{ matrix.slug }}/oracle.json corpus/${{ matrix.slug }}/truth.tsv out/${{ matrix.slug }}/ 2>/dev/null || true
+          cp corpus-${{ matrix.slug }}.log parity.txt out/${{ matrix.slug }}/ 2>/dev/null || true
           du -sh corpus/${{ matrix.slug }} || true
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: res-${{ matrix.slug }}
+          name: corp-${{ matrix.slug }}
           path: out/${{ matrix.slug }}
           retention-days: 3
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: feat-${{ matrix.slug }}
+          path: feat
+          retention-days: 3
+          if-no-files-found: ignore
 
-  report:
+  train:
     needs: film
     if: always()
     runs-on: ubuntu-latest
+    timeout-minutes: 60
     steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 17
       - uses: actions/download-artifact@v4
         with:
-          pattern: res-*
-          path: res
-      - name: Publicar resultados pequenos
+          pattern: feat-*
+          path: feat
+          merge-multiple: true
+      - name: Treinar o VAD DSP (validacao por grupos de filmes)
         run: |
-          mkdir -p /tmp/o && cp -r res /tmp/o/ && cd /tmp/o
+          mkdir -p /tmp/cls dspw
+          javac -Xlint:-options -d /tmp/cls $JSRC/io/github/gabrielxyz404/gabiflix/audiosync/*.java $HARN/*.java
+          ls -la feat | head -40
+          java -Xmx6g -cp /tmp/cls TrainVad feat dspw 5 8 2>&1 | tee train.log | tail -60
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dspw
+          path: dspw
+          retention-days: 3
+
+  eval:
+    needs: train
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      matrix:
+        slug: [his_girl_friday, charade, night_of_the_living_dead, doa, detour, little_shop, plan9, meet_john_doe, carnival_of_souls, the_stranger, last_man_on_earth, my_man_godfrey, brain_that_wouldnt_die, hitch_hiker, suddenly, dementia_13, house_on_haunted_hill, scarlet_street, reefer_madness, sherlock_secret_weapon, sintel, tears_of_steel, elephants_dream, its_a_wonderful_life, freaks, white_zombie, santa_claus_martians, manos]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 17
+      - name: Cache do filme
+        id: cache
+        uses: actions/cache/restore@v4
+        with:
+          path: corpus/${{ matrix.slug }}
+          key: ${{ env.CORPUS_KEY }}-${{ matrix.slug }}
+      - uses: actions/download-artifact@v4
+        with:
+          name: subs
+          path: subs
+      - uses: actions/download-artifact@v4
+        with:
+          name: dspw
+          path: dspw
+      - name: Avaliar
+        if: steps.cache.outputs.cache-hit == 'true'
+        env:
+          DSPW_DIR: dspw
+        run: |
+          mkdir -p /tmp/cls out/${{ matrix.slug }}
+          javac -Xlint:-options -d /tmp/cls $JSRC/io/github/gabrielxyz404/gabiflix/audiosync/*.java $HARN/*.java
+          java -Xmx4g -cp /tmp/cls Eval corpus/${{ matrix.slug }} out/${{ matrix.slug }}/eval.csv silero,pywebrtc3,webrtc3,webrtc2,dsp 3x60 offset,scale,combo,piece1,piece2,natural,neg 3 subs 2>&1 | tail -20
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: eval-${{ matrix.slug }}
+          path: out/${{ matrix.slug }}
+          retention-days: 3
+          if-no-files-found: ignore
+
+  report:
+    needs: [eval, train]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: eval-*
+          path: res
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: corp-*
+          path: corp
+      - uses: actions/download-artifact@v4
+        with:
+          name: dspw
+          path: dspw
+        continue-on-error: true
+      - name: Tabelas e publicacao de resultados pequenos
+        run: |
+          python3 tools/audio-sync/corpus/report.py res res/report.md 250 | tail -150 >> "$GITHUB_STEP_SUMMARY" || true
+          mkdir -p /tmp/o/run-${{ github.run_number }} && cp -r res corp dspw /tmp/o/run-${{ github.run_number }}/ 2>/dev/null || true
+          cd /tmp/o && find . -name 'eval.csv' | head -3
           git init -q -b audio-motor-out && git config user.name "FramePlay CI" && git config user.email ci@frameplay.local
-          git add -A && git commit -qm "audio-motor: corpus run ${{ github.run_number }}" || true
+          git add -A && git commit -qm "audio-motor: run ${{ github.run_number }}" || true
           git push -q -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" audio-motor-out
