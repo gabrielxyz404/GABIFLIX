@@ -480,6 +480,8 @@ public class PlayerActivity extends Activity {
         opts.setOrientation(LinearLayout.HORIZONTAL);
         opts.setGravity(Gravity.END);
         opts.setPadding(0, dp(2), 0, 0);
+        opts.setClipChildren(false); // o botão selecionado cresce sem ser cortado
+        top.setClipChildren(false);
         PlayerUi.Btn syncB = new PlayerUi.Btn(this, PlayerUi.Icon.SYNC, "Sincronizar", 42, tv);
         syncB.setOnClickListener(v -> showSyncDialog());
         PlayerUi.Btn subsB = new PlayerUi.Btn(this, PlayerUi.Icon.SUBS, "Legendas", 42, tv);
@@ -537,6 +539,8 @@ public class PlayerActivity extends Activity {
         int k = e.getKeyCode();
         boolean down = e.getAction() == android.view.KeyEvent.ACTION_DOWN;
         boolean visible = controlsShown;
+        if (down && tv && (k == android.view.KeyEvent.KEYCODE_DPAD_DOWN || k == android.view.KeyEvent.KEYCODE_DPAD_UP))
+            android.util.Log.d("GFPlayer", "recebeu tecla " + k + "; foco em " + (getCurrentFocus() == null ? "nada" : getCurrentFocus().getContentDescription()) + "; controlFocused=" + controlFocused() + "; controles=" + controlsShown);
         switch (k) {
             case android.view.KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE:
                 if (down) { togglePlay(); setControlsVisible(true); }
@@ -603,7 +607,8 @@ public class PlayerActivity extends Activity {
                 boolean mid = cur == playButton || cur == rwBtn || cur == ffBtn;
                 if (k == android.view.KeyEvent.KEYCODE_DPAD_DOWN) nxt = cur == backBtn ? playButton : mid ? seek : cur == seek ? optBtns.get(1) : null;
                 else nxt = mid ? backBtn : cur == seek ? playButton : optBtns.contains(cur) ? seek : null;
-                if (nxt != null) nxt.requestFocus();
+                boolean got = nxt != null && nxt.requestFocus();
+                android.util.Log.d("GFPlayer", "tecla " + k + ": de " + (cur == null ? "nada" : cur.getContentDescription()) + " para " + (nxt == null ? "nada" : nxt.getContentDescription()) + " -> " + got + "; agora " + (getCurrentFocus() == null ? "nada" : getCurrentFocus().getContentDescription()));
                 return true;
             }
         }

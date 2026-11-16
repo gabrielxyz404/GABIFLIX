@@ -20,17 +20,31 @@ for n in r.iter('node'):
         print(x1,x2,y); break
 "; }
 startms() { for i in 1 2 3; do adb shell am force-stop $PKG; sleep 2; adb shell am start -W -n "$1" | grep -E "TotalTime|WaitTime" | tr '\n' ' ' >> $OUT/$P-abertura.txt; echo >> $OUT/$P-abertura.txt; sleep 4; done; }
-tapdesc() { adb shell uiautomator dump /sdcard/u2.xml >/dev/null 2>&1; xy=$(adb shell cat /sdcard/u2.xml 2>/dev/null | python3 tools/android-subs-test/ui.py xy "$1"); [ -n "$xy" ] && adb shell input tap $xy || echo "NAO ACHEI $1" >> $OUT/$P-escala.txt; }
-escala() {  # video largo (2,39:1): fotos limpas (sem controles) dos 3 modos de tela, para ver que o video aparece e enche a tela como antes
+UI=tools/android-subs-test/ui.py
+dump() { adb shell uiautomator dump /sdcard/u3.xml >/dev/null 2>&1; adb shell cat /sdcard/u3.xml 2>/dev/null; }
+tvclick() {  # TV: navega com o controle ate o elemento e aperta OK
+  for t in $(seq 1 14); do
+    d=$(dump | python3 $UI nav "$1")
+    if [ "$d" = HERE ]; then adb shell input keyevent DPAD_CENTER; sleep 1; return; fi
+    if [ "$d" = NONE ]; then adb shell input keyevent DPAD_DOWN; sleep 1; continue; fi
+    adb shell input keyevent $d; sleep 0.7
+  done
+  echo "TV: NAO CHEGUEI em $1" >> $OUT/$P-escala.txt
+}
+showc() { if [ "$P" = tel ]; then adb shell input tap 1200 360; else adb shell input keyevent DPAD_DOWN; fi; sleep 1.5; }
+hidec() { if [ "$P" = tel ]; then adb shell input tap 1200 300; else adb shell input keyevent BACK; fi; sleep 1.5; }
+escala() {  # video largo (2,39:1), pausado: fotos dos 3 modos de tela para ver que o video aparece e enche a tela como antes
   adb shell am force-stop $PKG; sleep 1
   if [ "$P" = tel ]; then adb shell am start -n $PKG/.PlayerActivity --es url "http://10.0.2.2:8000/wide.mkv"
   else adb shell am start -n $PKG/.tv.TvHomeActivity --es gfTestUrl "http://10.0.2.2:8000/wide.mkv"; fi
   sleep 25
-  [ "$P" = tel ] && adb shell input tap 1200 360 || key DPAD_DOWN
-  sleep 1.5; snap escala-0-controles 0.2; sleep 5; snap escala-1-ajustar 0.5
+  adb shell input keyevent KEYCODE_MEDIA_PAUSE; sleep 1
+  showc; snap escala-0-controles 0.2
+  hidec; snap escala-1-ajustar 0.3
   for m in 2-preencher 3-esticar; do
-    [ "$P" = tel ] && adb shell input tap 1200 360 || key DPAD_DOWN
-    sleep 1.5; tapdesc "Tela"; sleep 6; snap escala-$m 0.5
+    showc
+    if [ "$P" = tel ]; then adb shell input tap 2200 990; sleep 1; else tvclick "Tela"; fi
+    hidec; snap escala-$m 0.3
   done
 }
 adb logcat -c
@@ -98,6 +112,7 @@ else
   sleep 6; snap player-sem-controles2 1
 fi
 escala
+adb logcat -d | grep GFPlayer > $OUT/foco-log.txt
 adb logcat -d | grep -E "FATAL EXCEPTION|AndroidRuntime" | head -40 > $OUT/crash.txt
 cat $OUT/$P-abertura.txt $OUT/$P-fluidez-*.txt $OUT/crash.txt
 exit 0
