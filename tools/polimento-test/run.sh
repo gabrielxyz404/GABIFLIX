@@ -100,8 +100,8 @@ else
   snap player-carregando 3
   sleep 20
   snap player-sem-controles 1
-  key DPAD_DOWN; snap player-controles 0.3
-  adb shell input keyevent KEYCODE_MEDIA_PAUSE; sleep 1  # pausado, os controles não somem durante as fotos
+  adb shell input keyevent KEYCODE_MEDIA_PAUSE; sleep 2  # pausado antes de mostrar os controles: eles não somem durante as fotos
+  key DPAD_DOWN; snap player-controles 0.8
   key DPAD_DOWN; snap player-foco-linha 0.8
   adb shell input keyevent DPAD_RIGHT; adb shell input keyevent DPAD_RIGHT; adb shell input keyevent DPAD_RIGHT
   snap player-correndo 0.1
