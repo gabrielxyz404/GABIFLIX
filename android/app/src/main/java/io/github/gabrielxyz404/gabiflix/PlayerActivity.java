@@ -20,8 +20,6 @@ import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
-import android.widget.ProgressBar;
-import android.widget.SeekBar;
 import android.widget.TextView;
 
 import org.videolan.libvlc.LibVLC;
@@ -42,6 +40,9 @@ public class PlayerActivity extends Activity {
     /** tipo (movie/series) e código do título, para buscar legendas sozinho se o site não mandar nenhuma */
     static final String EXTRA_TYPE = "type";
     static final String EXTRA_ID = "id";
+    /** título mostrado no topo dos controles (se faltar, sai do nome do arquivo) */
+    static final String EXTRA_TITLE = "title";
+    private String titleText;
     /** onde começar (ms), vindo do Continuar assistindo do Stremio */
     static final String EXTRA_START = "start";
     /** última sessão (tempo/duração), lida pelo app ao voltar para devolver o progresso ao Stremio */
@@ -69,9 +70,12 @@ public class PlayerActivity extends Activity {
     private String url;
 
     private View controls;
-    private TextView playButton, timeLabel, lengthLabel, messageLabel;
-    private SeekBar seek;
-    private ProgressBar spinner;
+    private boolean controlsShown = false;
+    private PlayerUi.Btn playButton;
+    private TextView timeLabel, lengthLabel, messageLabel, titleLabel, loadingLabel;
+    private PlayerUi.Timeline seek;
+    private PlayerUi.Spinner spinner;
+    private PlayerUi.TapFx tapFx;
     private boolean userSeeking = false;
     private boolean resumeDone = false;
     private boolean ended = false;
@@ -159,6 +163,7 @@ public class PlayerActivity extends Activity {
         metaType = getIntent().getStringExtra(EXTRA_TYPE);
         metaId = getIntent().getStringExtra(EXTRA_ID);
         startMs = getIntent().getLongExtra(EXTRA_START, 0);
+        titleText = getIntent().getStringExtra(EXTRA_TITLE);
         getSharedPreferences(LAST_PREFS, MODE_PRIVATE).edit().clear().apply();
         if (url == null) { finish(); return; }
         subDelayMs = 0; // o atraso guardado só entra quando a legenda ativa é conhecida (syncDelayToTrack)
@@ -178,9 +183,16 @@ public class PlayerActivity extends Activity {
         videoLayout = new VLCVideoLayout(this);
         root.addView(videoLayout, match());
 
-        spinner = new ProgressBar(this);
-        FrameLayout.LayoutParams sp = new FrameLayout.LayoutParams(dp(56), dp(56), Gravity.CENTER);
+        spinner = new PlayerUi.Spinner(this);
+        FrameLayout.LayoutParams sp = new FrameLayout.LayoutParams(dp(60), dp(60), Gravity.CENTER);
         root.addView(spinner, sp);
+        loadingLabel = text("", 14, false);
+        loadingLabel.setTypeface(PlayerUi.font(this, 500));
+        loadingLabel.setGravity(Gravity.CENTER);
+        loadingLabel.setVisibility(View.GONE);
+        FrameLayout.LayoutParams lbp = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.CENTER);
+        lbp.topMargin = dp(52);
+        root.addView(loadingLabel, lbp);
 
         messageLabel = text("", 17, true);
         messageLabel.setGravity(Gravity.CENTER);
@@ -189,7 +201,10 @@ public class PlayerActivity extends Activity {
         root.addView(messageLabel, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.CENTER));
 
         controls = buildControls();
+        controls.setVisibility(View.GONE);
         root.addView(controls, match());
+        tapFx = new PlayerUi.TapFx(this);
+        root.addView(tapFx, match());
         noticeLabel = text("", 14, false);
         noticeLabel.setVisibility(View.GONE);
         noticeLabel.setPadding(dp(16), dp(8), dp(16), dp(8));
@@ -205,10 +220,11 @@ public class PlayerActivity extends Activity {
 
         // toque: mostra/esconde os controles; toque duplo nas laterais: volta ou avança 10 s
         GestureDetector gestures = new GestureDetector(this, new GestureDetector.SimpleOnGestureListener() {
-            @Override public boolean onSingleTapConfirmed(MotionEvent e) { setControlsVisible(controls.getVisibility() != View.VISIBLE); return true; }
+            @Override public boolean onSingleTapConfirmed(MotionEvent e) { setControlsVisible(!controlsShown); return true; }
             @Override public boolean onDoubleTap(MotionEvent e) {
                 boolean right = e.getX() > root.getWidth() / 2f;
-                skip(right ? 10000 : -10000);
+                skip(right ? 10000 : -10000, false);
+                tapFx.play(e.getX(), e.getY(), right);
                 return true;
             }
             @Override public boolean onDown(MotionEvent e) { return true; }
@@ -246,7 +262,8 @@ public class PlayerActivity extends Activity {
         switch (event.type) {
             case MediaPlayer.Event.Playing:
                 spinner.setVisibility(View.GONE);
-                playButton.setText("❚❚");
+                loadingLabel.setVisibility(View.GONE);
+                playButton.setIcon(PlayerUi.Icon.PAUSE);
                 if (!resumeDone) resume();
                 if (!playing) { playing = true; ui.postDelayed(this::attachReadySubs, 1500); selectEmbeddedPortugueseLater(); }
                 scheduleHide();
@@ -255,19 +272,24 @@ public class PlayerActivity extends Activity {
                 if (scaleIndex != 0) ui.post(this::applyScale);
                 break;
             case MediaPlayer.Event.Paused:
-                playButton.setText("▶");
+                playButton.setIcon(PlayerUi.Icon.PLAY);
                 savePosition(true);
                 break;
             case MediaPlayer.Event.Buffering:
-                spinner.setVisibility(event.getBuffering() < 100f ? View.VISIBLE : View.GONE);
+                boolean buf = event.getBuffering() < 100f;
+                spinner.setVisibility(buf ? View.VISIBLE : View.GONE);
+                loadingLabel.setVisibility(buf ? View.VISIBLE : View.GONE);
+                if (buf) loadingLabel.setText(String.format(Locale.ROOT, "Carregando %d%%", (int) event.getBuffering()));
                 break;
             case MediaPlayer.Event.LengthChanged:
                 lengthLabel.setText(format(player.getLength()));
+                seek.setSeekable(player.getLength() > 0);
                 break;
             case MediaPlayer.Event.TimeChanged:
                 long t = player.getTime(), len = player.getLength();
-                if (!userSeeking && len > 0) seek.setProgress((int) (t * 1000 / len));
-                timeLabel.setText(format(t));
+                if (len > 0) seek.setSeekable(true);
+                if (!userSeeking && len > 0 && SystemClock.uptimeMillis() >= seekHoldUntil) seek.setProgress(t / (float) len);
+                if (!userSeeking && SystemClock.uptimeMillis() >= seekHoldUntil) timeLabel.setText(format(t));
                 if (len > 0) lengthLabel.setText(format(len));
                 savePosition(false);
                 break;
@@ -279,6 +301,7 @@ public class PlayerActivity extends Activity {
                 break;
             case MediaPlayer.Event.EncounteredError:
                 spinner.setVisibility(View.GONE);
+                loadingLabel.setVisibility(View.GONE);
                 messageLabel.setText("Não foi possível reproduzir este vídeo.\nToque em voltar e escolha outra fonte.");
                 messageLabel.setVisibility(View.VISIBLE);
                 setControlsVisible(true);
@@ -321,108 +344,161 @@ public class PlayerActivity extends Activity {
     }
 
     // ---------- controles ----------
+    /** título do topo: o que veio do app, ou o nome do arquivo sem extensão, pontos e etiquetas (1080p, WEB-DL...) */
+    private String deriveTitle() {
+        if (titleText != null && !titleText.trim().isEmpty()) return titleText.trim();
+        String n = null;
+        try { n = SubtitleSync.fileNameOf(url, null); } catch (Exception ignored) {}
+        if (n == null || n.isEmpty()) return "";
+        String raw = n;
+        int dot = n.lastIndexOf('.');
+        if (dot > 0 && n.length() - dot <= 5) n = n.substring(0, dot);
+        n = n.replace('.', ' ').replace('_', ' ').trim();
+        java.util.regex.Matcher m = java.util.regex.Pattern.compile("(?i)[ \\[(](?:(?:19|20)\\d{2}|\\d{3,4}p|4k|uhd|web-?dl|webrip|blu-?ray|brrip|hdr|x26[45]|hevc|dual)(?=[ \\])]|$)").matcher(n);
+        if (m.find() && m.start() > 0) n = n.substring(0, m.start());
+        n = n.trim();
+        return n.isEmpty() ? raw : n;
+    }
+
     private View buildControls() {
         FrameLayout box = new FrameLayout(this);
+        box.setClipChildren(false);
+        // recortes da tela (notch) e barras: os controles ficam dentro da área segura
+        box.setOnApplyWindowInsetsListener((v, ins) -> {
+            int l = ins.getSystemWindowInsetLeft(), r = ins.getSystemWindowInsetRight();
+            if (android.os.Build.VERSION.SDK_INT >= 28 && ins.getDisplayCutout() != null) {
+                l = Math.max(l, ins.getDisplayCutout().getSafeInsetLeft());
+                r = Math.max(r, ins.getDisplayCutout().getSafeInsetRight());
+            }
+            v.setPadding(l, 0, r, 0);
+            return ins;
+        });
+        final int idPlay = View.generateViewId(), idSeek = View.generateViewId(), idSubs = View.generateViewId(), idBack = View.generateViewId();
 
-        // faixa de cima: voltar
+        // faixa de cima: voltar + título, com degradê suave
         LinearLayout top = new LinearLayout(this);
         top.setOrientation(LinearLayout.HORIZONTAL);
         top.setGravity(Gravity.CENTER_VERTICAL);
-        top.setPadding(dp(20), dp(16), dp(20), dp(28));
-        top.setBackground(gradient(new int[]{0xB3000000, 0x00000000}, GradientDrawable.Orientation.TOP_BOTTOM));
-        TextView back = pill("←  Voltar");
+        top.setPadding(dp(20), dp(14), dp(24), dp(44));
+        top.setBackground(gradient(new int[]{0xD9000000, 0x80000000, 0x00000000}, GradientDrawable.Orientation.TOP_BOTTOM));
+        PlayerUi.Btn back = new PlayerUi.Btn(this, PlayerUi.Icon.BACK, null, 46, tv);
+        back.setId(idBack);
+        back.setContentDescription("Voltar");
         back.setOnClickListener(v -> finish());
-        makeRemoteFriendly(back, 0);
-        top.addView(back);
+        remote(back);
+        back.setNextFocusDownId(idPlay);
+        top.addView(back, new LinearLayout.LayoutParams(dp(46), dp(46)));
+        titleLabel = text(deriveTitle(), 19, true);
+        titleLabel.setTypeface(PlayerUi.font(this, 600));
+        titleLabel.setSingleLine(true);
+        titleLabel.setEllipsize(android.text.TextUtils.TruncateAt.END);
+        LinearLayout.LayoutParams tlp = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f);
+        tlp.leftMargin = dp(16);
+        top.addView(titleLabel, tlp);
         box.addView(top, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.TOP));
 
         // centro: voltar 10 s, play/pausa, avançar 10 s
         LinearLayout mid = new LinearLayout(this);
         mid.setOrientation(LinearLayout.HORIZONTAL);
         mid.setGravity(Gravity.CENTER);
-        TextView rw = round("−10", 22);
+        PlayerUi.Btn rw = new PlayerUi.Btn(this, PlayerUi.Icon.REPLAY, null, 58, tv);
+        rw.setContentDescription("Retroceder 10 s");
         rw.setOnClickListener(v -> skip(-10000));
-        playButton = round("❚❚", 30);
+        playButton = new PlayerUi.Btn(this, PlayerUi.Icon.PAUSE, null, 78, tv);
+        playButton.setId(idPlay);
+        playButton.setContentDescription("Reproduzir ou pausar");
         playButton.setOnClickListener(v -> togglePlay());
-        TextView ff = round("+10", 22);
+        PlayerUi.Btn ff = new PlayerUi.Btn(this, PlayerUi.Icon.FORWARD, null, 58, tv);
+        ff.setContentDescription("Avançar 10 s");
         ff.setOnClickListener(v -> skip(10000));
-        makeRemoteFriendly(rw, 1);
-        makeRemoteFriendly(playButton, 1);
-        makeRemoteFriendly(ff, 1);
-        LinearLayout.LayoutParams small = new LinearLayout.LayoutParams(dp(64), dp(64));
-        LinearLayout.LayoutParams big = new LinearLayout.LayoutParams(dp(84), dp(84));
-        small.setMargins(dp(22), 0, dp(22), 0);
-        big.setMargins(dp(22), 0, dp(22), 0);
+        remote(rw); remote(playButton); remote(ff);
+        playButton.setNextFocusUpId(idBack);
+        for (View b : new View[]{rw, playButton, ff}) b.setNextFocusDownId(idSeek);
+        LinearLayout.LayoutParams small = new LinearLayout.LayoutParams(dp(58), dp(58));
+        LinearLayout.LayoutParams big = new LinearLayout.LayoutParams(dp(78), dp(78));
+        small.setMargins(dp(26), 0, dp(26), 0);
+        big.setMargins(dp(26), 0, dp(26), 0);
         mid.addView(rw, small);
         mid.addView(playButton, big);
-        mid.addView(ff, small);
+        mid.addView(ff, new LinearLayout.LayoutParams(small));
         box.addView(mid, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.CENTER));
 
-        // faixa de baixo: tempo, barra e opções
+        // faixa de baixo: linha do tempo vermelha e opções
         LinearLayout bottom = new LinearLayout(this);
         bottom.setOrientation(LinearLayout.VERTICAL);
-        bottom.setPadding(dp(24), dp(28), dp(24), dp(16));
-        bottom.setBackground(gradient(new int[]{0x00000000, 0xCC000000}, GradientDrawable.Orientation.TOP_BOTTOM));
+        bottom.setClipChildren(false);
+        bottom.setPadding(dp(24), dp(36), dp(24), dp(14));
+        bottom.setBackground(gradient(new int[]{0x00000000, 0x8C000000, 0xE6000000}, GradientDrawable.Orientation.TOP_BOTTOM));
 
         LinearLayout bar = new LinearLayout(this);
         bar.setOrientation(LinearLayout.HORIZONTAL);
-        bar.setGravity(Gravity.CENTER_VERTICAL);
+        bar.setClipChildren(false);
         timeLabel = text("0:00", 14, true);
         lengthLabel = text("0:00", 14, true);
-        seek = new SeekBar(this);
-        seek.setMax(1000);
-        seek.setFocusable(false);
-        if (tv) {
-            // na TV: selecione a barra e use esquerda/direita para correr o filme (segurar acelera)
-            seek.setFocusable(true);
-            remoteButtons.add(seek);
-            seek.setOnFocusChangeListener((view, has) -> {
-                GradientDrawable hl = new GradientDrawable();
-                hl.setColor(0x59FFFFFF);
-                hl.setCornerRadius(dp(12));
-                seek.setBackground(has ? hl : null);
-                if (has) setControlsVisible(true); else commitSeek.run();
-            });
+        for (TextView t : new TextView[]{timeLabel, lengthLabel}) {
+            t.setTypeface(PlayerUi.font(this, 500));
+            t.setMinWidth(dp(44));
         }
-        seek.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-            @Override public void onProgressChanged(SeekBar s, int p, boolean fromUser) {
-                if (fromUser && player != null && player.getLength() > 0) timeLabel.setText(format(player.getLength() * p / 1000));
+        timeLabel.setGravity(Gravity.START);
+        lengthLabel.setGravity(Gravity.END);
+        seek = new PlayerUi.Timeline(this, tv);
+        seek.setId(idSeek);
+        seek.setNextFocusUpId(idPlay);
+        seek.setNextFocusDownId(idSubs);
+        seek.listener = new PlayerUi.Timeline.Listener() {
+            @Override public void onStart() { userSeeking = true; ui.removeCallbacks(hideControls); }
+            @Override public String onMove(float frac) {
+                long len = player == null ? 0 : player.getLength();
+                String s = format((long) (len * (double) frac));
+                timeLabel.setText(s);
+                return s;
             }
-            @Override public void onStartTrackingTouch(SeekBar s) { userSeeking = true; ui.removeCallbacks(hideControls); }
-            @Override public void onStopTrackingTouch(SeekBar s) {
+            @Override public void onStop(float frac) {
                 userSeeking = false;
-                if (player != null && player.getLength() > 0) player.setTime(player.getLength() * s.getProgress() / 1000);
+                long len = player == null ? 0 : player.getLength();
+                if (frac >= 0 && len > 0) { seekHoldUntil = SystemClock.uptimeMillis() + 800; player.setTime((long) (len * (double) frac)); }
                 scheduleHide();
             }
-        });
-        bar.addView(timeLabel);
+        };
+        if (tv) {
+            // na TV: selecione a linha e use esquerda/direita para correr o filme (segurar acelera)
+            remote(seek);
+            seek.setOnFocusChangeListener((view, has) -> { if (has) setControlsVisible(true); else commitSeek.run(); });
+        }
+        LinearLayout.LayoutParams labelLp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        labelLp.gravity = Gravity.BOTTOM;
+        labelLp.bottomMargin = dp(12);
+        LinearLayout.LayoutParams labelLp2 = new LinearLayout.LayoutParams(labelLp);
+        bar.addView(timeLabel, labelLp);
         bar.addView(seek, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
-        bar.addView(lengthLabel);
+        bar.addView(lengthLabel, labelLp2);
         bottom.addView(bar);
 
         LinearLayout opts = new LinearLayout(this);
         opts.setOrientation(LinearLayout.HORIZONTAL);
         opts.setGravity(Gravity.END);
-        opts.setPadding(0, dp(8), 0, 0);
-        TextView audio = pill("Áudio");
-        audio.setOnClickListener(v -> chooseAudio());
-        TextView subs = pill("Legendas");
-        subs.setOnClickListener(v -> chooseSubtitles());
-        makeRemoteFriendly(audio, 0);
-        makeRemoteFriendly(subs, 0);
-        TextView scale = pill("Tela: " + SCALE_NAMES[0]);
-        makeRemoteFriendly(scale, 0);
-        scale.setOnClickListener(v -> {
+        opts.setPadding(0, dp(2), 0, 0);
+        PlayerUi.Btn syncB = new PlayerUi.Btn(this, PlayerUi.Icon.SYNC, "Sincronizar", 42, tv);
+        syncB.setOnClickListener(v -> showSyncDialog());
+        PlayerUi.Btn subsB = new PlayerUi.Btn(this, PlayerUi.Icon.SUBS, "Legendas", 42, tv);
+        subsB.setId(idSubs);
+        subsB.setOnClickListener(v -> chooseSubtitles());
+        PlayerUi.Btn audioB = new PlayerUi.Btn(this, PlayerUi.Icon.AUDIO, "Áudio", 42, tv);
+        audioB.setOnClickListener(v -> chooseAudio());
+        PlayerUi.Btn scaleB = new PlayerUi.Btn(this, PlayerUi.Icon.SCALE, "Tela: " + SCALE_NAMES[0], 42, tv);
+        scaleB.setOnClickListener(v -> {
             scaleIndex = (scaleIndex + 1) % SCALE_NAMES.length;
             applyScale();
-            scale.setText("Tela: " + SCALE_NAMES[scaleIndex]);
+            scaleB.setLabel("Tela: " + SCALE_NAMES[scaleIndex]);
             scheduleHide();
         });
-        LinearLayout.LayoutParams gap = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        gap.setMargins(dp(10), 0, 0, 0);
-        opts.addView(audio, gap);
-        opts.addView(subs, new LinearLayout.LayoutParams(gap));
-        opts.addView(scale, new LinearLayout.LayoutParams(gap));
+        for (PlayerUi.Btn b : new PlayerUi.Btn[]{syncB, subsB, audioB, scaleB}) {
+            remote(b);
+            b.setNextFocusUpId(idSeek);
+            LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, dp(42));
+            lp.leftMargin = dp(12);
+            opts.addView(b, lp);
+        }
         bottom.addView(opts);
 
         box.addView(bottom, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.BOTTOM));
@@ -434,17 +510,15 @@ public class PlayerActivity extends Activity {
     private boolean backEaten = false;
     private View focusSink; // recebe o foco quando nenhum botão está selecionado
     private final ArrayList<View> remoteButtons = new ArrayList<>();
+    /** depois de um salto, o VLC ainda avisa por um instante o tempo antigo: a barra ignora isso até esta hora */
+    private long seekHoldUntil = 0;
 
-    /** botões que o controle remoto alcança (na TV): ficam com borda branca quando selecionados */
-    private void makeRemoteFriendly(TextView v, int oval) {
+    /** botões que o controle remoto alcança (na TV): o próprio botão desenha o foco (branco, maior) */
+    private void remote(View v) {
         remoteButtons.add(v);
         if (!tv) return;
         v.setFocusable(true);
-        v.setOnFocusChangeListener((view, has) -> {
-            GradientDrawable g = (GradientDrawable) view.getBackground();
-            g.setStroke(dp(has ? 3 : 1), has ? 0xFFFFFFFF : (oval == 1 ? 0x33FFFFFF : 0x2EFFFFFF));
-            if (has) setControlsVisible(true);
-        });
+        v.setOnFocusChangeListener((view, has) -> { if (has) setControlsVisible(true); });
     }
 
     private boolean controlFocused() {
@@ -457,7 +531,7 @@ public class PlayerActivity extends Activity {
         if (player == null) return super.dispatchKeyEvent(e);
         int k = e.getKeyCode();
         boolean down = e.getAction() == android.view.KeyEvent.ACTION_DOWN;
-        boolean visible = controls.getVisibility() == View.VISIBLE;
+        boolean visible = controlsShown;
         switch (k) {
             case android.view.KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE:
                 if (down) { togglePlay(); setControlsVisible(true); }
@@ -499,7 +573,7 @@ public class PlayerActivity extends Activity {
                     return true;
             }
         }
-        // controles escondidos ou nenhum botão selecionado: OK pausa, esquerda/direita andam 10 s
+        // controles escondidos ou nenhum botão selecionado: OK pausa, esquerda/direita correm 10 s (segurar acelera)
         if (!controlFocused()) {
             switch (k) {
                 case android.view.KeyEvent.KEYCODE_DPAD_CENTER:
@@ -507,14 +581,12 @@ public class PlayerActivity extends Activity {
                     if (down && e.getRepeatCount() == 0) { togglePlay(); setControlsVisible(true); }
                     return true;
                 case android.view.KeyEvent.KEYCODE_DPAD_LEFT:
-                    if (down) skip(-10000);
-                    return true;
                 case android.view.KeyEvent.KEYCODE_DPAD_RIGHT:
-                    if (down) skip(10000);
+                    if (down) { setControlsVisible(true); scrub(k == android.view.KeyEvent.KEYCODE_DPAD_RIGHT ? 1 : -1, e.getRepeatCount()); }
                     return true;
                 case android.view.KeyEvent.KEYCODE_DPAD_UP:
                 case android.view.KeyEvent.KEYCODE_DPAD_DOWN:
-                    // cima/baixo: mostra os controles e seleciona o play (dali chega em Áudio, Legendas...)
+                    // cima/baixo: mostra os controles e seleciona o play (dali chega na linha do tempo, Legendas...)
                     if (down) { setControlsVisible(true); playButton.requestFocus(); }
                     return true;
             }
@@ -524,29 +596,37 @@ public class PlayerActivity extends Activity {
         return super.dispatchKeyEvent(e);
     }
 
-    // ---------- correr a barra com o controle (TV) ----------
-    private long pendingSeek = -1;
+    // ---------- correr a linha do tempo com o controle (TV) ----------
+    private long pendingSeek = -1, scrubBase = 0;
     private final Runnable commitSeek = () -> {
         if (pendingSeek < 0 || player == null) return;
+        seekHoldUntil = SystemClock.uptimeMillis() + 800;
         player.setTime(pendingSeek);
         pendingSeek = -1;
         userSeeking = false;
+        seek.setScrub(false, 0f, null);
         scheduleHide();
     };
+
+    private static String signedClock(long ms) {
+        long s = Math.abs(ms) / 1000;
+        String v = s >= 60 ? (s / 60) + " min" + (s % 60 != 0 ? " " + (s % 60) + " s" : "") : s + " s";
+        return (ms >= 0 ? "+" : "−") + v;
+    }
 
     private void scrub(int dir, int repeat) {
         if (player == null) return;
         long len = player.getLength();
         if (len <= 0) return;
         long step = repeat < 6 ? 10000 : repeat < 20 ? 30000 : 60000;
-        if (pendingSeek < 0) pendingSeek = player.getTime();
+        if (pendingSeek < 0) { pendingSeek = player.getTime(); scrubBase = pendingSeek; }
         pendingSeek = Math.max(0, Math.min(len - 1000, pendingSeek + dir * step));
         userSeeking = true;
         ui.removeCallbacks(hideControls);
-        seek.setProgress((int) (pendingSeek * 1000 / len));
+        seek.setScrub(true, pendingSeek / (float) len, format(pendingSeek) + "   " + signedClock(pendingSeek - scrubBase));
         timeLabel.setText(format(pendingSeek));
         ui.removeCallbacks(commitSeek);
-        ui.postDelayed(commitSeek, 700);
+        ui.postDelayed(commitSeek, 600);
     }
 
     private void togglePlay() {
@@ -555,13 +635,17 @@ public class PlayerActivity extends Activity {
         scheduleHide();
     }
 
-    private void skip(long ms) {
+    private void skip(long ms) { skip(ms, true); }
+
+    private void skip(long ms, boolean showControls) {
         if (player == null) return;
         long len = player.getLength();
         long t = Math.max(0, player.getTime() + ms);
         if (len > 0) t = Math.min(t, len - 1000);
+        seekHoldUntil = SystemClock.uptimeMillis() + 800;
         player.setTime(t);
-        setControlsVisible(true);
+        if (len > 0) { seek.setProgress(t / (float) len); timeLabel.setText(format(t)); }
+        if (showControls) setControlsVisible(true);
     }
 
     private void chooseAudio() {
@@ -1275,8 +1359,19 @@ public class PlayerActivity extends Activity {
 
     private void setControlsVisible(boolean show) {
         if (!show && controlFocused() && focusSink != null) focusSink.requestFocus();
-        controls.setVisibility(show ? View.VISIBLE : View.GONE);
         ui.removeCallbacks(hideControls);
+        if (show != controlsShown || (show && controls.getAlpha() < 1f)) {
+            controlsShown = show;
+            controls.animate().cancel();
+            if (show) {
+                if (controls.getVisibility() != View.VISIBLE) { controls.setAlpha(0f); controls.setVisibility(View.VISIBLE); }
+                controls.animate().alpha(1f).setDuration(180).setInterpolator(new android.view.animation.DecelerateInterpolator())
+                        .start();
+            } else {
+                controls.animate().alpha(0f).setDuration(240).setInterpolator(new android.view.animation.AccelerateInterpolator())
+                        .withEndAction(() -> { if (!controlsShown) controls.setVisibility(View.GONE); }).start();
+            }
+        }
         if (show) scheduleHide();
         immersive();
     }
@@ -1307,18 +1402,6 @@ public class PlayerActivity extends Activity {
         g.setColor(0x73141416);
         g.setCornerRadius(dp(22));
         g.setStroke(dp(1), 0x2EFFFFFF);
-        t.setBackground(g);
-        t.setClickable(true);
-        return t;
-    }
-
-    private TextView round(String s, int sp) {
-        TextView t = text(s, sp, true);
-        t.setGravity(Gravity.CENTER);
-        GradientDrawable g = new GradientDrawable();
-        g.setShape(GradientDrawable.OVAL);
-        g.setColor(0x80141416);
-        g.setStroke(dp(1), 0x33FFFFFF);
         t.setBackground(g);
         t.setClickable(true);
         return t;
