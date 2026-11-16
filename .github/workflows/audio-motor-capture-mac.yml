@@ -1,0 +1,57 @@
+name: Audio motor captura (VLCKit Mac)
+
+# Prova no macOS (VLCKit, a mesma biblioteca do app Mac) da captura de audio: segundo VLCMediaPlayer sem video com callbacks de audio
+# (libvlc_audio_set_callbacks via dlsym) ou aout afile, em janelas de um MKV servido por HTTP. So publica numeros pequenos em audio-motor-out-capmac.
+on:
+  push:
+    branches: [run-audio-capmac]
+
+permissions:
+  contents: write
+
+jobs:
+  cap:
+    runs-on: macos-15
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - name: VLCKit
+        run: ./mac-probe/getvlckit.sh "$PWD/probe-work" 2>&1 | tail -70
+      - name: Cabecalhos do VLCKit relacionados a libvlc
+        run: |
+          FW=probe-work/fw/VLCKit.framework
+          ls $FW/Headers | tr '\n' ' '; echo
+          grep -l -i "libvlc" $FW/Headers/* | head; grep -n "instance\|libVLC" $FW/Headers/VLCLibVLCBridging.h 2>/dev/null | head -30
+          nm -gU $FW/VLCKit 2>/dev/null | grep -E "libvlc_audio_set_callbacks|libvlc_audio_set_format|libvlc_new$|libvlc_media_player_new" | head
+      - name: Compilar a sonda
+        run: |
+          mkdir -p probe-work/bin
+          cp tools/audio-sync/capture/mac/capprobe.swift probe-work/main.swift
+          swiftc -O -target arm64-apple-macos11.0 -F probe-work/fw -framework VLCKit -framework Foundation \
+            -Xlinker -rpath -Xlinker "$PWD/probe-work/fw" probe-work/main.swift -o probe-work/bin/capprobe 2>&1 | head -40
+          ls -la probe-work/bin/capprobe
+      - name: Fala real e videos de teste
+        run: |
+          brew install ffmpeg > /dev/null 2>&1 || brew install ffmpeg
+          pip3 install --break-system-packages numpy >/dev/null 2>&1 || pip3 install numpy >/dev/null 2>&1 || true
+          mkdir -p /tmp/dl /tmp/media
+          curl -fL -sS --retry 5 -o /tmp/dl/sintel.ogv https://archive.org/download/Sintel/sintel-2048-stereo.ogv
+          bash tools/audio-sync/capture/linux/mkmedia.sh /tmp/media /tmp/dl/sintel.ogv 6M 1500 2>&1 | tail -20
+          nohup python3 tools/audio-sync/capture/server.py /tmp/media 8000 >/tmp/server.out 2>&1 &
+          sleep 2; curl -sI http://127.0.0.1:8000/ac3.mkv | head -2
+      - name: Etapa 1 - metodos
+        run: |
+          mkdir -p out
+          xattr -cr probe-work/fw || true
+          python3 tools/audio-sync/capture/mac/matrix.py /tmp/media out "$PWD/probe-work/bin/capprobe" 1 2>&1 | tee out/stage1.log
+      - name: Etapa 2 - codecs
+        if: hashFiles('tools/audio-sync/capture/mac/best.json') != ''
+        run: |
+          cp tools/audio-sync/capture/mac/best.json out/best.json
+          python3 tools/audio-sync/capture/mac/matrix.py /tmp/media out "$PWD/probe-work/bin/capprobe" 2 2>&1 | tee out/stage2.log
+      - name: Publicar
+        if: always()
+        run: |
+          rm -f out/*.wav out/*.raw; cp /tmp/server-bytes.log out/ 2>/dev/null || true
+          cd out && git init -q -b audio-motor-out-capmac && git config user.name "FramePlay CI" && git config user.email ci@frameplay.local
+          git add -A && git commit -qm "captura mac run ${{ github.run_number }}" && git push -q -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" audio-motor-out-capmac
