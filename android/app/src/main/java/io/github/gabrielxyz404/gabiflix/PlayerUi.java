@@ -358,9 +358,9 @@ final class PlayerUi {
             // balão com o tempo
             if (amt > 0.01f && (dragging || scrubbing) && !bubble.isEmpty()) {
                 float tw = tp.measureText(bubble);
-                float bw = tw + dp(getContext(), 22), bh = d26;
+                float bw = tw + dp(getContext(), 22), bh = dp(getContext(), 24);
                 float bx = Math.max(bw / 2f, Math.min(w - bw / 2f, px));
-                float bb = y - tr - dp(getContext(), 12);
+                float bb = y - tr - dp(getContext(), 6);
                 int a = (int) (255 * amt);
                 p.setColor(a << 24 | 0x1C1C1E);
                 c.drawRoundRect(bx - bw / 2f, bb - bh, bx + bw / 2f, bb, bh / 2f, bh / 2f, p);
