@@ -69,6 +69,8 @@ var endedBy = "?"
 while Date().timeIntervalSince1970 < deadline {
     RunLoop.current.run(until: Date().addingTimeInterval(0.05))
     if method == "cb" && sink.data.count >= need { endedBy = "bytes"; break }
+    // sout: o jogador não chega a "ended" quando a saída é um arquivo; o WAV de 16 kHz mono s16 (32000 B/s) completo marca o fim
+    if method == "sout", let at = try? FileManager.default.attributesOfItem(atPath: outPath), let sz = at[.size] as? Int, sz >= Int(durS * 32000 * 0.985) { endedBy = "arquivo"; break }
     let st = player.state
     if st == .ended || st == .stopped || st == .error {
         if Date().timeIntervalSince1970 - t0 > 1.0 { endedBy = "estado \(st.rawValue)"; break }
