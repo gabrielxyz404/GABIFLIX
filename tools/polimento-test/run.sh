@@ -32,6 +32,7 @@ if [ "$P" = tel ]; then
   adb shell dumpsys gfxinfo $PKG reset >/dev/null
   for i in 1 2 3 4; do adb shell input swipe 1000 600 300 600 180; sleep 0.5; done
   adb shell dumpsys gfxinfo $PKG | grep -E "Total frames|Janky|50th|90th|95th|99th" > $OUT/$P-fluidez-home.txt
+  adb root; sleep 3
   adb shell am force-stop $PKG; sleep 1
   adb shell am start -n $PKG/.PlayerActivity --es url "http://10.0.2.2:8000/teste.mkv"
   snap player-carregando 2
@@ -71,14 +72,15 @@ else
   snap player-carregando 3
   sleep 20
   snap player-sem-controles 1
-  key DPAD_DOWN; snap player-controles 1.5
-  key DPAD_DOWN; snap player-foco-linha 1.5
+  key DPAD_DOWN; snap player-controles 0.3
+  adb shell input keyevent KEYCODE_MEDIA_PAUSE; sleep 1  # pausado, os controles não somem durante as fotos
+  key DPAD_DOWN; snap player-foco-linha 0.8
   adb shell input keyevent DPAD_RIGHT; adb shell input keyevent DPAD_RIGHT; adb shell input keyevent DPAD_RIGHT
-  snap player-correndo 0.15
+  snap player-correndo 0.1
   sleep 3; snap player-depois-de-correr 0.5
-  key DPAD_DOWN; snap player-foco-opcoes 1.5
-  key DPAD_RIGHT; snap player-foco-opcoes2 1.5
-  key DPAD_UP DPAD_UP; snap player-foco-play 1.5
+  key DPAD_DOWN; snap player-foco-opcoes 0.8
+  key DPAD_RIGHT; snap player-foco-opcoes2 0.8
+  key DPAD_UP DPAD_UP; snap player-foco-play 0.8
   sleep 6; snap player-sem-controles2 1
 fi
 adb logcat -d | grep -E "FATAL EXCEPTION|AndroidRuntime" | head -40 > $OUT/crash.txt
