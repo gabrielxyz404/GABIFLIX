@@ -20,6 +20,19 @@ for n in r.iter('node'):
         print(x1,x2,y); break
 "; }
 startms() { for i in 1 2 3; do adb shell am force-stop $PKG; sleep 2; adb shell am start -W -n "$1" | grep -E "TotalTime|WaitTime" | tr '\n' ' ' >> $OUT/$P-abertura.txt; echo >> $OUT/$P-abertura.txt; sleep 4; done; }
+tapdesc() { adb shell uiautomator dump /sdcard/u2.xml >/dev/null 2>&1; xy=$(adb shell cat /sdcard/u2.xml 2>/dev/null | python3 tools/android-subs-test/ui.py xy "$1"); [ -n "$xy" ] && adb shell input tap $xy || echo "NAO ACHEI $1" >> $OUT/$P-escala.txt; }
+escala() {  # video largo (2,39:1): fotos limpas (sem controles) dos 3 modos de tela, para ver que o video aparece e enche a tela como antes
+  adb shell am force-stop $PKG; sleep 1
+  if [ "$P" = tel ]; then adb shell am start -n $PKG/.PlayerActivity --es url "http://10.0.2.2:8000/wide.mkv"
+  else adb shell am start -n $PKG/.tv.TvHomeActivity --es gfTestUrl "http://10.0.2.2:8000/wide.mkv"; fi
+  sleep 25
+  [ "$P" = tel ] && adb shell input tap 1200 360 || key DPAD_DOWN
+  sleep 1.5; snap escala-0-controles 0.2; sleep 5; snap escala-1-ajustar 0.5
+  for m in 2-preencher 3-esticar; do
+    [ "$P" = tel ] && adb shell input tap 1200 360 || key DPAD_DOWN
+    sleep 1.5; tapdesc "Tela"; sleep 6; snap escala-$m 0.5
+  done
+}
 adb logcat -c
 if [ "$P" = tel ]; then
   adb shell am force-stop $PKG; sleep 1
@@ -84,6 +97,7 @@ else
   key DPAD_UP DPAD_UP; snap player-foco-play 0.8
   sleep 6; snap player-sem-controles2 1
 fi
+escala
 adb logcat -d | grep -E "FATAL EXCEPTION|AndroidRuntime" | head -40 > $OUT/crash.txt
 cat $OUT/$P-abertura.txt $OUT/$P-fluidez-*.txt $OUT/crash.txt
 exit 0
