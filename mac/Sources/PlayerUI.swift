@@ -50,6 +50,14 @@ final class ScrimView: NSView {
     override func hitTest(_ point: NSPoint) -> NSView? { nil }
 }
 
+/** vista que deixa passar os cliques onde não há nada dentro (a barra de cima não bloqueia o vídeo) */
+final class PassThroughView: NSView {
+    override func hitTest(_ point: NSPoint) -> NSView? {
+        let v = super.hitTest(point)
+        return v === self ? nil : v
+    }
+}
+
 /** botão redondo com ícone (SF Symbol); mostra um fundo claro ao passar o mouse; sem o símbolo usa o texto de reserva */
 final class IconButton: NSButton {
     private var hovering = false { didSet { refresh() } }

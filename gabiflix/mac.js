@@ -22,12 +22,23 @@
         send(e.detail >= 2 ? 'zoom' : 'drag');
     }, true);
 
-    // ---------- botão de tela cheia do cabeçalho: usa a tela cheia do Mac ----------
+    // ---------- tela cheia (botão do cabeçalho e item do menu ☰): usa a tela cheia do Mac ----------
+    var FS_TITLE = /tela cheia|full ?screen/i;
+    var FS_TEXT = /^(entrar em|sair do) modo de tela cheia$|^(enter|exit) full ?screen$/i;
+    function isFullscreenControl(t) {
+        var b = t.closest('[class*="horizontal-nav-bar-container"] [class*="button-container"][title]');
+        if (b && FS_TITLE.test(b.getAttribute('title') || '')) return true;
+        var menu = t.closest('[class*="nav-menu-container"]');
+        if (menu) {
+            for (var n = t, i = 0; n && n !== menu && i < 5; n = n.parentElement, i++) {
+                if (FS_TEXT.test((n.textContent || '').trim())) return true;
+            }
+        }
+        return false;
+    }
     document.addEventListener('click', function (e) {
         var t = e.target;
-        if (!t || !t.closest) return;
-        var b = t.closest('[class*="horizontal-nav-bar-container"] [class*="button-container"][title]');
-        if (!b || !/tela cheia|full ?screen/i.test(b.getAttribute('title') || '')) return;
+        if (!t || !t.closest || !isFullscreenControl(t)) return;
         e.preventDefault();
         e.stopPropagation();
         e.stopImmediatePropagation();

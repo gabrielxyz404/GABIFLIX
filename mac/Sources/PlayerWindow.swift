@@ -58,7 +58,7 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
     private let root = NSView()
     private let overlay = PlayerRootView()
     private let controls = NSVisualEffectView()
-    private let topBar = NSView()
+    private let topBar = PassThroughView()
     private var playButton: IconButton!
     private let timeline = TimelineView()
     private let timeLabel = GF.label("0:00", size: 12, weight: .semibold, mono: true)

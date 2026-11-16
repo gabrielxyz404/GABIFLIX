@@ -56,3 +56,12 @@ html[data-gf-app="mac"] .gf-src-tabs[data-more="1"][data-less="1"] {
     -webkit-mask-image: linear-gradient(90deg, transparent, #000 3rem, #000 calc(100% - 3rem), transparent);
     mask-image: linear-gradient(90deg, transparent, #000 3rem, #000 calc(100% - 3rem), transparent);
 }
+
+/* ---------- jeito de app do Mac: texto da interface não se seleciona por engano e as imagens não "arrastam" ---------- */
+html[data-gf-app="mac"] body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+html[data-gf-app="mac"] input,
+html[data-gf-app="mac"] textarea,
+html[data-gf-app="mac"] [contenteditable="true"],
+html[data-gf-app="mac"] .gf-d-desc,
+html[data-gf-app="mac"] .gf-sheet-d { -webkit-user-select: text; user-select: text; }
+html[data-gf-app="mac"] img { -webkit-user-drag: none; user-drag: none; }
