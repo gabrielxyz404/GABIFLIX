@@ -17,7 +17,9 @@ T=900 inst -e variants afile -e codecs ac3 -e starts 120 -e win 60
 inst -e variants sout -e codecs eac3,aac,dts,truehd,flac
 inst -e variants extractor -e codecs aac,ac3,flac -e starts 120,600 -e win 60
 adb logcat -d -s CAPRES:I > $OUT/capres.log
-cat $OUT/capres.log | head -80
+PKG=io.github.gabrielxyz404.audiocap
+adb exec-out run-as $PKG cat files/results.jsonl > $OUT/results.jsonl
+cat $OUT/results.jsonl | cut -c1-260 | head -120
 mkdir -p $OUT/wav
-adb pull /sdcard/Android/data/io.github.gabrielxyz404.audiocap/files/cap/. $OUT/wav/ || true
+for f in $(adb shell run-as $PKG ls files/cap | tr -d '\r'); do adb exec-out run-as $PKG cat files/cap/$f > $OUT/wav/$f; done
 ls -la $OUT/wav | head -60

@@ -18,7 +18,7 @@ import java.util.Locale;
 
 /**
  * Medição da captura de áudio no libVLC 3.6.0 (Android). Resultados em linhas JSON no logcat (tag CAPRES); os WAVs ficam em
- * /sdcard/Android/data/io.github.gabrielxyz404.audiocap/files/cap para o analisador do host (analyze.py) conferir o instante exato.
+ * files/cap do app (adb exec-out run-as ...) para o analisador do host (analyze.py) conferir o instante exato.
  *
  * Argumentos (am instrument -e): base (padrão http://10.0.2.2:8000), codecs (ac3,eac3,...), variants (sout,sout+novideo,afile,extractor),
  * starts (s, separados por vírgula), win (s), conc (1 = teste de convivência com a reprodução).
@@ -33,7 +33,11 @@ public class CaptureBenchTest {
         return v == null || v.isEmpty() ? d : v;
     }
 
-    static void res(String json) { Log.i(TAG, json); System.out.println(TAG + " " + json); }
+    static File resFile;
+    static void res(String json) {
+        Log.i(TAG, json);
+        try (java.io.FileWriter w = new java.io.FileWriter(resFile, true)) { w.write(json + "\n"); } catch (Exception ignored) { }
+    }
 
     @Test
     public void bench() throws Exception {
@@ -43,8 +47,9 @@ public class CaptureBenchTest {
         String[] variants = arg("variants", "sout").split(",");
         String[] starts = arg("starts", "120,600,1100").split(",");
         int win = Integer.parseInt(arg("win", "90"));
-        File dir = new File(ctx.getExternalFilesDir(null), "cap");
+        File dir = new File(ctx.getFilesDir(), "cap");
         dir.mkdirs();
+        resFile = new File(ctx.getFilesDir(), "results.jsonl");
         res("{\"info\":\"start\",\"abi\":\"" + android.os.Build.SUPPORTED_ABIS[0] + "\",\"sdk\":" + android.os.Build.VERSION.SDK_INT + ",\"cpus\":" + Runtime.getRuntime().availableProcessors() + "}");
         for (String variant : variants) {
             for (String codec : codecs) {
@@ -99,7 +104,7 @@ public class CaptureBenchTest {
 
     /** convivência: toca o vídeo (instância 1, só áudio) por ~24 s sem e com captura na instância 2; compara o avanço do relógio e as paradas (buffering) */
     void conc(Context ctx, String base) throws Exception {
-        File dir = new File(ctx.getExternalFilesDir(null), "cap");
+        File dir = new File(ctx.getFilesDir(), "cap");
         for (int pass = 0; pass < 2; pass++) {
             boolean withCap = pass == 1;
             java.util.ArrayList<String> o = new java.util.ArrayList<>();
