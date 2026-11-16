@@ -84,19 +84,14 @@ public class Eval {
         return new Object[]{dc.toArray(new Cue[0]), t2};
     }
 
-    /** resolve pedindo mais janelas enquanto o motor pedir (até maxRounds), como faria a sessão no app */
+    /** resolve pedindo mais janelas enquanto o motor pedir (AudioSyncSession), como faria o app */
     static Result session(Film f, VadSrc v, Cue[] cues, Window[] ws0, AudioAligner.Params P, int maxRounds) throws IOException {
-        Window[] ws = ws0;
-        Result r = AudioAligner.solve(cues, ws, f.durationMs, P);
+        AudioSyncSession ss = new AudioSyncSession(cues, f.durationMs, P);
+        for (Window w : ws0) ss.addWindow(w);
+        Result r = ss.solve();
         for (int round = 0; round < maxRounds && r.more != null && r.more.length > 0; round++) {
-            Window[] n2 = Arrays.copyOf(ws, ws.length + r.more.length);
-            for (int i = 0; i < r.more.length; i++) {
-                long st = r.more[i][0], ln = r.more[i][1];
-                n2[ws.length + i] = new Window(st, v.get(f, st, ln));
-            }
-            ws = n2;
-            r = AudioAligner.solve(cues, ws, f.durationMs, P);
-            r.rounds = round + 1;
+            for (long[] m : r.more) ss.addWindow(new Window(m[0], v.get(f, m[0], m[1])));
+            r = ss.solve();
         }
         return r;
     }

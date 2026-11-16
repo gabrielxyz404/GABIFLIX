@@ -46,6 +46,9 @@ public final class AudioAligner {
         public double minNcc = 0.10;
         public double minMargin = 0.15;
         public double minF1 = 0.0;
+        /** escala livre (fora das razões de fps): exige muito mais evidência (todos os falsos aceites medidos tinham escala livre) */
+        public double minZFree = 12.0;
+        public double minNccFree = 0.35;
         /** encaixe da escala: distância máxima (em alpha) até uma escala conhecida e resíduo máximo (ms) que o encaixe pode deixar */
         public double snapAlpha = 3e-3;
         public double snapResMs = 120;
@@ -506,6 +509,7 @@ public final class AudioAligner {
         a0 = model[0]; b0 = model[1];
         R.scale = a0;
         R.offsetMs = b0;
+        for (double ks : P.knownScales) if (Math.abs(ks - a0) < 1e-9) R.scaleKnown = true;
         finalEvidence(windows, ps, fine, R, P);
         decide(R, P);
         analyzeCuts(R, cues, windows, ps, bl, use, nu, P, mediaDurationMs, fine);
@@ -604,6 +608,7 @@ public final class AudioAligner {
     private static void decide(Result R, Params P) {
         double agreeFrac = R.blocksValid > 0 ? R.blocksAgree / (double) R.blocksValid : 0;
         boolean ok = R.z >= P.minZ && agreeFrac >= P.minAgreeFrac && R.nccMean >= P.minNcc && R.margin >= P.minMargin && R.f1 >= P.minF1;
+        if (!R.scaleKnown && (R.z < P.minZFree || R.nccMean < P.minNccFree)) ok = false;
         R.accepted = ok;
         double c = Math.min(1.0, Math.max(0.0, (R.z - 3.0) / 12.0)) * 0.4 + Math.min(1.0, agreeFrac) * 0.3
                 + Math.min(1.0, R.nccMean / 0.4) * 0.2 + Math.min(1.0, R.margin) * 0.1;
@@ -615,6 +620,7 @@ public final class AudioAligner {
             if (R.nccMean < P.minNcc) sb.append("correlação fraca; ");
             if (R.margin < P.minMargin) sb.append("pico ambíguo; ");
             if (R.f1 < P.minF1) sb.append("cobertura baixa; ");
+            if (!R.scaleKnown && (R.z < P.minZFree || R.nccMean < P.minNccFree)) sb.append("escala fora das razões de fps; ");
             R.reason = sb.toString();
         }
     }

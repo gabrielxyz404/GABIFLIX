@@ -138,8 +138,6 @@ public final class DspVad implements Vad {
         int nb = BANDS_HZ.length;
         double[][] logE = new double[nb][T];
         double[] spLog = new double[T], loLog = new double[T], flat = new double[T], cent = new double[T], lohi = new double[T], zcr = new double[T], harm = new double[T], lowRatio = new double[T];
-        double[][] logSpec = new double[2][];
-        double[] prevSpec = new double[0];
         double[] flux = new double[T];
         int kLo = (int) Math.round(300 / binHz), kHi = (int) Math.round(3400 / binHz), kFlat0 = (int) Math.round(200 / binHz), kFlat1 = (int) Math.round(4000 / binHz);
         int k1k = (int) Math.round(1000 / binHz), k100 = (int) Math.round(100 / binHz);
@@ -225,7 +223,6 @@ public final class DspVad implements Vad {
         }
         // piso de ruído por banda (percentil 15 em ±3 s, passo 0,5 s, interpolado)
         double[][] floor = new double[nb + 1][T];
-        double[] spSnrBase = spLog;
         for (int b = 0; b <= nb; b++) {
             double[] src = b < nb ? logE[b] : spLog;
             floor[b] = percentileFloor(src, 300, 50, 0.15);

@@ -6,6 +6,8 @@ import java.util.Locale;
 public final class Result {
     public boolean accepted;
     public double scale = 1.0, offsetMs = 0.0;
+    /** a escala é uma razão de fps conhecida (a resposta confiável: escalas livres exigem evidência bem maior) */
+    public boolean scaleKnown;
     /** 0..1: confiança composta (só informativa; a decisão está em accepted) */
     public double confidence;
     public String reason = "";
