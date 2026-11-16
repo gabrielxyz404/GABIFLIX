@@ -58,7 +58,10 @@ public final class AudioAligner {
         /** alfa ajustado a menos disto de 0 => escala 1,0 (ver fineRefine) */
         public double unitAlpha = 6e-4;
         /** correção de escala 1,0 com |offset| menor que isto => a legenda já está sincronizada: não mexe (Result.inSync) */
-        public double deadbandMs = 400;
+        public double deadbandMs = 600;
+        /** escalas fora das razões de fps conhecidas: ajuste dentro de unitSnap de 1,0 vira 1,0 (reajusta o offset); fora disso é recusado (allowFreeScale=false) */
+        public double unitSnap = 0.0035;
+        public boolean allowFreeScale = false;
         public int minBlocks = 3;
         public double minSpeechFrac = 0.03;
         public long maxCueGapForCut = 20_000;
@@ -513,15 +516,33 @@ public final class AudioAligner {
         for (int w = 0; w < windows.length; w++) ps[w] = smooth(windows[w].p, P.smoothMs);
         double[] model = fineRefine(windows, ps, fine, a0, b0, P, R);
         a0 = model[0]; b0 = model[1];
+        for (double ks : P.knownScales) if (Math.abs(ks - a0) < 1e-9) R.scaleKnown = true;
+        if (!R.scaleKnown && Math.abs(a0 - 1.0) < P.unitSnap) {
+            // escala "livre" muito perto de 1: é ruído (a legenda quase certa não tem escala); fixa 1,0 e reajusta só o deslocamento
+            double uc = 0;
+            for (Window w : windows) uc += w.startMs + w.p.length * 5.0;
+            uc /= windows.length;
+            double sc = (uc - b0) / a0;
+            double[] m1 = fineRefine(windows, ps, fine, 1.0, uc - sc, P, R, true);
+            a0 = 1.0; b0 = m1[1];
+            R.scaleKnown = true;
+        }
         R.scale = a0;
         R.offsetMs = b0;
-        for (double ks : P.knownScales) if (Math.abs(ks - a0) < 1e-9) R.scaleKnown = true;
         finalEvidence(windows, ps, fine, R, P);
         decide(R, P);
         try {
             analyzeCuts(R, cues, windows, ps, bl, use, nu, P, mediaDurationMs, fine);
         } catch (RuntimeException e) {
             R.segments = null; R.more = null; R.pieceSuspect = true;   // o ajuste global continua valendo
+        }
+        if (R.segments != null && R.segments.length > 1) {
+            // cortes: só AVISO (a precisão medida do ajuste por partes é baixa); não se aplica nada
+            R.cutsWarning = true;
+            R.accepted = false;
+            R.reason = (R.reason + " possíveis cortes na legenda (só aviso);").trim();
+        } else if (R.segments != null) {
+            R.segments = null;
         }
         if (R.accepted && R.segments == null && R.z < P.acceptMinZ) {
             R.accepted = false;
@@ -536,7 +557,9 @@ public final class AudioAligner {
     }
 
     /** refina (scale, offset) com a NCC fina por janela; encaixa a escala em valores conhecidos quando os resíduos permitem */
-    private static double[] fineRefine(Window[] ws, float[][] ps, float[] fine, double a, double b, Params P, Result R) {
+    private static double[] fineRefine(Window[] ws, float[][] ps, float[] fine, double a, double b, Params P, Result R) { return fineRefine(ws, ps, fine, a, b, P, R, false); }
+
+    private static double[] fineRefine(Window[] ws, float[][] ps, float[] fine, double a, double b, Params P, Result R, boolean lock) {
         double bestA = a, bestB = b;
         int W = ws.length;
         for (int it = 0; it < 3; it++) {
@@ -557,7 +580,7 @@ public final class AudioAligner {
             int used = 0;
             for (int w = 0; w < W; w++) { wt[w] = nc[w] >= thr ? nc[w] : 0; if (wt[w] > 0) used++; }
             if (used == 0) break;
-            double[] fit = lsFit(sS, uU, wt, bestA, bestB, used >= 2);
+            double[] fit = lsFit(sS, uU, wt, bestA, bestB, used >= 2 && !lock);
             // descarta janelas com resíduo grande e ajusta de novo
             int kept = 0;
             for (int w = 0; w < W; w++) {
@@ -565,7 +588,7 @@ public final class AudioAligner {
                 if (Math.abs(uU[w] - (fit[0] * sS[w] + fit[1])) > 250) wt[w] = 0; else kept++;
             }
             if (kept == 0) break;
-            if (kept != used) fit = lsFit(sS, uU, wt, bestA, bestB, kept >= 2);
+            if (kept != used) fit = lsFit(sS, uU, wt, bestA, bestB, kept >= 2 && !lock);
             double na = fit[0], nb = fit[1];
             // encaixe: usa a escala conhecida mais próxima se os resíduos continuam pequenos
             double sa = alphaOf(na), bestRes = Double.MAX_VALUE, snapA = na, snapB = nb;
@@ -632,7 +655,7 @@ public final class AudioAligner {
     private static void decide(Result R, Params P) {
         double agreeFrac = R.blocksValid > 0 ? R.blocksAgree / (double) R.blocksValid : 0;
         boolean ok = R.z >= P.minZ && agreeFrac >= P.minAgreeFrac && R.nccMean >= P.minNcc && R.margin >= P.minMargin && R.f1 >= P.minF1;
-        if (!R.scaleKnown && (R.z < P.minZFree || R.nccMean < P.minNccFree)) ok = false;
+        if (!R.scaleKnown && (!P.allowFreeScale || R.z < P.minZFree || R.nccMean < P.minNccFree)) ok = false;
         R.accepted = ok;
         double c = Math.min(1.0, Math.max(0.0, (R.z - 3.0) / 12.0)) * 0.4 + Math.min(1.0, agreeFrac) * 0.3
                 + Math.min(1.0, R.nccMean / 0.4) * 0.2 + Math.min(1.0, R.margin) * 0.1;

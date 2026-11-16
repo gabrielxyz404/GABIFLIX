@@ -77,7 +77,7 @@ public class SelfTest {
             double[] err = new double[dist.length];
             for (int i = 0; i < dist.length; i++) err[i] = Math.abs(res.apply(dist[i].startMs) - truth[i].startMs);
             Arrays.sort(err);
-            boolean good = res.accepted && err[err.length / 2] <= 250;
+            boolean good = res.accepted && (err[err.length / 2] <= 250 || (res.inSync && Math.abs(b) < P.deadbandMs));   // dentro da banda morta: não mexe
             tot++;
             if (good) ok++;
             System.out.printf("off=%8.0f k=%.5f -> %s medErr=%.0f p90=%.0f (%d ms)%n", b, k, good ? "OK  " : "FALHA", err[err.length / 2], err[(int) (err.length * 0.9)], ms);
@@ -137,7 +137,7 @@ public class SelfTest {
             for (int i = 0; i < dist.length; i++) if (Math.abs(res.applySegments(dist[i].startMs) - t2.get(i)) <= 250) good++;
             double frac = good / (double) dist.length;
             ptot++;
-            if (res.accepted && frac >= 0.97) pok++;
+            if (res.cutsWarning && !res.accepted) pok++;   // cortes: só aviso (nada é aplicado)
             System.out.printf("PARTES d=%7.0f cut=%.0fs -> %s %.1f%% das falas certas, rodadas=%d, janelas=%d, segs=%s%n", dd, cut / 1000.0, res.accepted ? "aceita" : "RECUSADA", frac * 100, rounds, wl.size(), Arrays.toString(res.segments));
         }
         // reverificação: legenda certa (offset/escala conhecidos) -> 0 mudanças; corte injetado -> detecta
