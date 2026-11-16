@@ -41,24 +41,22 @@ def envelope(x, hop=160):
 
 
 def start_error(cap, ref, searchs=6.0):
-    """atraso (ms) do PCM capturado em relação à referência (positivo = capturado começa mais tarde no conteúdo) e correlação"""
+    """deslocamento (ms) do conteudo capturado em relacao a referencia: positivo = a captura comeca mais TARDE no filme; e a correlacao (0..1)"""
     if cap is None or len(cap) < 16000 * 3:
         return None, None
     a = envelope(cap); b = envelope(ref)
     a = a - a.mean(); b = b - b.mean()
     L = int(searchs * 100)
-    best, bl = -2, 0
-    n = min(len(a), len(b)) - L - 1
-    if n < 100:
-        return None, None
-    seg = a[L:L + n]
-    for lag in range(-L, L + 1):
-        s = b[L + lag:L + lag + n]
-        c = float(np.dot(seg, s) / (np.linalg.norm(seg) * np.linalg.norm(s) + 1e-9))
+    best, bd = -2, 0
+    for d in range(-L, L + 1):
+        i0 = max(0, -d); i1 = min(len(a), len(b) - d)
+        if i1 - i0 < 200:
+            continue
+        x = a[i0:i1]; y = b[i0 + d:i1 + d]
+        c = float(np.dot(x, y) / (np.linalg.norm(x) * np.linalg.norm(y) + 1e-9))
         if c > best:
-            best, bl = c, lag
-    return -bl * 10.0, best
-
+            best, bd = c, d
+    return bd * 10.0, best
 
 def run_variant(name, codec, start, dur, extra_opts, sout=None, rate=None):
     out = os.path.join(OUT, "cap_%s_%s_%d.wav" % (name, codec, start))
