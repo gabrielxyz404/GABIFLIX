@@ -15,7 +15,7 @@ def load(root, name):
             if len(r) < 24: continue
             d = dict(zip(COLS, r))
             for k in ("acc", "agree", "valid"): d[k] = int(float(d[k])) if d[k] not in ("", "-") else 0
-            for k in ("med", "p90", "z", "relmed", "relp90"):
+            for k in ("med", "p90", "z", "relmed", "relp90", "audioms"):
                 try: d[k] = float(d[k])
                 except ValueError: d[k] = float("nan")
             m = re.search(r"before=(\d+)", d["reason"]); d["before"] = float(m.group(1)) if m else None

@@ -5,6 +5,8 @@ import java.util.Locale;
 /** Resultado do motor. Mapeamento: tempoCorrigido = scale * tempoLegenda + offsetMs (ms). */
 public final class Result {
     public boolean accepted;
+    /** aceito e a correção estimada é < deadbandMs com escala 1: a legenda já está sincronizada (offset zerado: não mexer) */
+    public boolean inSync;
     public double scale = 1.0, offsetMs = 0.0;
     /** a escala é uma razão de fps conhecida (a resposta confiável: escalas livres exigem evidência bem maior) */
     public boolean scaleKnown;

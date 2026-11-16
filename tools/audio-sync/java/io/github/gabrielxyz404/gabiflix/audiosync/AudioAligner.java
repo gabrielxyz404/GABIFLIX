@@ -55,6 +55,10 @@ public final class AudioAligner {
         /** mínimo de blocos com fala para tentar */
         /** limiar final de z para ACEITAR o ajuste global (sem partes). Medido: z >= 9 deu 0 falsos aceites em 1823 negativos em todas as configurações; z >= 6 deu 3-9. */
         public double acceptMinZ = 9.0;
+        /** alfa ajustado a menos disto de 0 => escala 1,0 (ver fineRefine) */
+        public double unitAlpha = 6e-4;
+        /** correção de escala 1,0 com |offset| menor que isto => a legenda já está sincronizada: não mexe (Result.inSync) */
+        public double deadbandMs = 400;
         public int minBlocks = 3;
         public double minSpeechFrac = 0.03;
         public long maxCueGapForCut = 20_000;
@@ -523,6 +527,10 @@ public final class AudioAligner {
             R.accepted = false;
             R.reason = (R.reason + " z abaixo do limiar de aceitação (" + P.acceptMinZ + ");").trim();
         }
+        if (R.accepted && R.segments == null && Math.abs(R.scale - 1.0) < 1e-9 && Math.abs(R.offsetMs) < P.deadbandMs) {
+            R.inSync = true;
+            R.offsetMs = 0;
+        }
         if (!R.accepted) suggestMore(R, windows, P, mediaDurationMs);
         return R;
     }
@@ -563,11 +571,17 @@ public final class AudioAligner {
             double sa = alphaOf(na), bestRes = Double.MAX_VALUE, snapA = na, snapB = nb;
             double sw = 0, sx = 0, sy = 0;
             for (int w = 0; w < W; w++) { if (wt[w] <= 0) continue; sw += wt[w]; sx += wt[w] * sS[w]; sy += wt[w] * uU[w]; }
+            // entre as escalas conhecidas viáveis (resíduo máximo <= snapResMs) vence a de alfa mais próximo da ajustada; a escala 1,0 vence se a ajustada está
+            // a menos de unitAlpha de 1 (o ruído dos resíduos não pode trocar 1,000 por 1,001 ou 24/23,976 numa legenda que já está certa)
+            double bestDist = Double.MAX_VALUE;
             for (int s = 0; s < P.knownScales.length; s++) {
-                if (Math.abs(alphaOf(P.knownScales[s]) - sa) > P.snapAlpha) continue;
-                double kb = (sy - P.knownScales[s] * sx) / sw, mx = 0;
-                for (int w = 0; w < W; w++) if (wt[w] > 0) mx = Math.max(mx, Math.abs(uU[w] - (P.knownScales[s] * sS[w] + kb)));
-                if (mx <= P.snapResMs && mx < bestRes) { bestRes = mx; snapA = P.knownScales[s]; snapB = kb; }
+                double ks = P.knownScales[s];
+                if (Math.abs(alphaOf(ks) - sa) > P.snapAlpha) continue;
+                double kb = (sy - ks * sx) / sw, mx = 0;
+                for (int w = 0; w < W; w++) if (wt[w] > 0) mx = Math.max(mx, Math.abs(uU[w] - (ks * sS[w] + kb)));
+                if (mx > P.snapResMs) continue;
+                double dist = ks == 1.0 && Math.abs(sa) <= P.unitAlpha ? -1.0 : Math.abs(alphaOf(ks) - sa);
+                if (dist < bestDist) { bestDist = dist; bestRes = mx; snapA = ks; snapB = kb; }
             }
             bestA = snapA; bestB = snapB;
             if (snapA == na) { bestA = na; bestB = nb; }
