@@ -1,0 +1,47 @@
+name: Audio motor refs
+
+# Busca material de referencia (codigo-fonte do WebRTC VAD, modelo/tamanhos do Silero e do ONNX Runtime) dentro do runner e publica
+# so textos/numeros pequenos em audio-motor-out (o sandbox do agente nao alcanca esses hosts).
+on:
+  push:
+    branches: [run-audio-refs]
+
+permissions:
+  contents: write
+
+jobs:
+  refs:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Baixar fontes e medir tamanhos
+        run: |
+          mkdir -p /tmp/o/refsrc /tmp/w && cd /tmp/w
+          pip download -q webrtcvad --no-binary :all: --no-deps -d wr 2>&1 | tail -2
+          tar xzf wr/webrtcvad-*.tar.gz -C wr
+          D=$(ls -d wr/webrtcvad-*)
+          find $D -type f | head -100 > /tmp/o/refsrc/webrtcvad-files.txt
+          mkdir -p /tmp/o/refsrc/webrtc && cp -r $D/cbits/webrtc/common_audio /tmp/o/refsrc/webrtc/ 2>/dev/null || true
+          cp $D/cbits/webrtc/typedefs.h /tmp/o/refsrc/webrtc/ 2>/dev/null || true
+          find /tmp/o/refsrc/webrtc -type f | xargs wc -l > /tmp/o/refsrc/webrtc-wc.txt
+          # Silero
+          pip download -q silero-vad --no-deps -d sv 2>&1 | tail -2
+          mkdir -p sv/x && cd sv && unzip -o -q *.whl -d x && cd ..
+          find sv/x -type f | xargs ls -la > /tmp/o/refsrc/silero-files.txt
+          cp sv/x/silero_vad/utils_vad.py /tmp/o/refsrc/ 2>/dev/null || true
+          cp sv/x/silero_vad/model.py /tmp/o/refsrc/ 2>/dev/null || true
+          # ONNX Runtime (tamanhos): Android AAR, JVM jar, nativos
+          M=https://repo1.maven.org/maven2/com/microsoft/onnxruntime
+          for v in 1.17.3 1.20.0; do
+            curl -fsSL -o ortand-$v.aar $M/onnxruntime-android/$v/onnxruntime-android-$v.aar || true
+            curl -fsSL -o ortjvm-$v.jar $M/onnxruntime/$v/onnxruntime-$v.jar || true
+          done
+          { echo "== tamanhos"; ls -la *.aar *.jar 2>/dev/null; for a in ortand-*.aar; do echo "== $a"; unzip -l $a | grep -E "\.so|classes.jar"; done;
+            for j in ortjvm-*.jar; do echo "== $j"; unzip -l $j | grep -E "\.so|\.dylib|\.dll" ; done; } > /tmp/o/refsrc/ort-sizes.txt 2>&1
+          cat /tmp/o/refsrc/ort-sizes.txt | head -60
+          cd /tmp/o && git init -q -b audio-motor-out-refs && git config user.name "FramePlay CI" && git config user.email ci@frameplay.local
+          git add -A && git commit -qm "refs" && git push -q -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" audio-motor-out-refs
