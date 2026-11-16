@@ -45,6 +45,9 @@ final class Film {
             pos += 8 + sz + (sz & 1);
         }
         durationMs = dataLen / 2 * 1000 / 16000;
+        // CLIP_S: avalia só os primeiros N segundos do filme (iteração rápida); a legenda e a verdade seguem no tempo do filme inteiro
+        String clip = System.getenv("CLIP_S");
+        if (clip != null && !clip.isEmpty()) durationMs = Math.min(durationMs, Long.parseLong(clip) * 1000L);
         loadSubs();
     }
 

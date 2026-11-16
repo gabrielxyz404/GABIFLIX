@@ -3,7 +3,7 @@ import java.util.*;
 
 /** Teste sintético do alinhador (sem áudio real): fala = máscara das falas + ruído + trechos de "música". */
 public class SelfTest {
-    static Cue[] makeCues(Random r, long durMs) {
+    public static Cue[] makeCues(Random r, long durMs) {
         ArrayList<Cue> l = new ArrayList<>();
         long t = 20000;
         while (t < durMs - 30000) {
@@ -15,7 +15,7 @@ public class SelfTest {
     }
 
     /** VAD sintético: 100 Hz sobre a verdade (cues já na hora certa) */
-    static float[] truthTrack(Cue[] truth, long durMs, Random r, double quality) {
+    public static float[] truthTrack(Cue[] truth, long durMs, Random r, double quality) {
         int n = (int) (durMs / 10);
         float[] p = new float[n];
         for (Cue c : truth) {
