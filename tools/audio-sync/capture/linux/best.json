@@ -1,0 +1,4 @@
+[
+ {"name":"sout-wav","opts":[],"sout":"#transcode{acodec=s16l,channels=1,samplerate=16000}:std{access=file,mux=wav,dst=@OUT@}","rate":null},
+ {"name":"sout-wav+fastseek","opts":["--input-fast-seek"],"sout":"#transcode{acodec=s16l,channels=1,samplerate=16000}:std{access=file,mux=wav,dst=@OUT@}","rate":null}
+]
