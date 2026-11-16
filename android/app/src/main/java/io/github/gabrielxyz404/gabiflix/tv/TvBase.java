@@ -68,8 +68,17 @@ public abstract class TvBase extends Activity {
         i.putExtra("url", src.url);
         i.putExtra("type", meta.optString("type"));
         i.putExtra("id", videoId);
+        i.putExtra("title", titleFor(meta, videoId));
         i.putExtra("start", Stremio.resumeFor(this, meta.optString("id"), videoId));
         startActivity(i);
+    }
+
+    /** título do player: o nome, e nas séries o episódio (id no formato tt123:1:2) */
+    private static String titleFor(JSONObject meta, String videoId) {
+        String n = meta.optString("name", "");
+        String[] p = videoId == null ? new String[0] : videoId.split(":");
+        if (p.length == 3 && n.length() > 0) return n + "  ·  T" + p[1] + " E" + p[2];
+        return n;
     }
 
     @Override

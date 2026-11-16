@@ -492,3 +492,8 @@ html[data-gf-app="android"] .scale-Toufl .ticks-xenvh .label-RekzK { white-space
 
 /* Calendário: o mês ("2026 novembro", setas) ficava por baixo da cápsula do topo */
 .calendar-cH2jw .content-wBwrQ { padding-top: 1rem; box-sizing: border-box; }
+
+/* Android: toque mais rápido e limpo (sem espera de 300 ms, sem retângulo cinza ao tocar, sem "puxar" a página) */
+html[data-gf-app="android"] { -webkit-tap-highlight-color: transparent; overscroll-behavior: none; -webkit-font-smoothing: antialiased; }
+html[data-gf-app="android"] a, html[data-gf-app="android"] button, html[data-gf-app="android"] [role="button"], html[data-gf-app="android"] .gf-card { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+html[data-gf-app="android"] img { -webkit-user-drag: none; }

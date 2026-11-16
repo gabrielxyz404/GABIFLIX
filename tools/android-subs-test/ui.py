@@ -39,7 +39,7 @@ elif mode == 'nav':
     f = [n for n in nodes if n[3] and n[0]] or [n for n in nodes if n[5] and n[0] and 'CheckedTextView' in n[4]] or [n for n in nodes if n[3]]
     if not f: print('DPAD_DOWN'); sys.exit(0)
     f = f[-1]
-    if 'SeekBar' in f[4] and t[2] != f[2]:  # a barra do filme usa esquerda/direita para correr: sai dela por cima/baixo
+    if ('SeekBar' in f[4] or 'Timeline' in f[4]) and t[2] != f[2]:  # a barra do filme usa esquerda/direita para correr: sai dela por cima/baixo
         print('DPAD_DOWN' if t[2] > f[2] else 'DPAD_UP'); sys.exit(0)
     if f[0].lower() == t[0].lower() and f[1] == t[1] and f[2] == t[2]: print('HERE'); sys.exit(0)
     dx, dy = t[1] - f[1], t[2] - f[2]

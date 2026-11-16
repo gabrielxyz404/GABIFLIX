@@ -50,9 +50,10 @@ public class MainActivity extends Activity {
         w.setNavigationBarColor(Color.BLACK);
 
         root = new FrameLayout(this);
-        root.setBackgroundColor(Color.BLACK);
+        // transparentes: enquanto o site não desenha, aparece a tela de abertura da marca (preto + cubo), nunca um flash branco
+        root.setBackgroundColor(Color.TRANSPARENT);
         web = new WebView(this);
-        web.setBackgroundColor(Color.BLACK);
+        web.setBackgroundColor(Color.TRANSPARENT);
         root.addView(web, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
         setContentView(root);
 
@@ -118,7 +119,11 @@ public class MainActivity extends Activity {
         });
 
         if (savedInstanceState != null) web.restoreState(savedInstanceState);
-        else web.loadUrl(APP_URL);
+        else {
+            // só para os testes automáticos: carrega o site de outro endereço (a cópia da branch, servida pelo runner)
+            String testWeb = getIntent().getStringExtra("gfTestWeb");
+            web.loadUrl(testWeb != null && testWeb.startsWith("http://10.0.2.2") ? testWeb : APP_URL);
+        }
     }
 
     /** Decide o que fazer com cada link aberto pelo site. true = o app cuidou do link. */
