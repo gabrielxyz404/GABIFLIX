@@ -13,10 +13,15 @@ def load(root):
                 if len(r) < 22:
                     continue
                 d = dict(zip(COLS, r))
+                def num(v):
+                    try:
+                        return float(v)
+                    except ValueError:
+                        return float("nan")
                 for k in ("acc", "agree", "valid", "audioms", "tookms"):
-                    d[k] = int(float(d[k]))
+                    d[k] = int(num(d[k])) if num(d[k]) == num(d[k]) else 0
                 for k in ("med", "p90", "off", "scale", "z", "margin", "nccm", "nccmin", "f1", "conf"):
-                    d[k] = float(d[k])
+                    d[k] = num(d[k])
                 rows.append(d)
     return rows
 
@@ -62,4 +67,5 @@ def main():
     print("\n".join(md))
 
 
-main()
+if __name__ == "__main__":
+    main()
