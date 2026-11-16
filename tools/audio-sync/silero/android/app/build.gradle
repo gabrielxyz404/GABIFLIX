@@ -1,0 +1,32 @@
+plugins { id 'com.android.application' }
+
+// -Pabis=arm64-v8a,armeabi-v7a (padrão do app) ; -Pnoort=1 mede o APK SEM o ONNX Runtime (linha de base)
+def abis = (project.findProperty('abis') ?: 'arm64-v8a,armeabi-v7a').split(',')
+def noort = project.hasProperty('noort')
+
+android {
+    namespace 'io.github.gabrielxyz404.sileroprobe'
+    compileSdk 34
+    defaultConfig {
+        applicationId 'io.github.gabrielxyz404.sileroprobe'
+        minSdk 21
+        targetSdk 30
+        versionCode 1
+        versionName '1'
+        testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
+        ndk { abiFilters(*abis) }
+    }
+    compileOptions { sourceCompatibility JavaVersion.VERSION_17; targetCompatibility JavaVersion.VERSION_17 }
+    packagingOptions { jniLibs { useLegacyPackaging = true } }
+    sourceSets {
+        main.java.srcDirs += ['../../../java', '../../java']   // motor (Java puro) + SileroVad
+        if (noort) main.java.exclude '**/SileroVad.java'
+    }
+    buildTypes { release { minifyEnabled false } }
+}
+
+dependencies {
+    if (!noort) implementation 'com.microsoft.onnxruntime:onnxruntime-android:1.20.0'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.5'
+    androidTestImplementation 'androidx.test:runner:1.5.2'
+}
