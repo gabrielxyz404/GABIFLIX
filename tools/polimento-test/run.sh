@@ -68,6 +68,7 @@ if [ "$P" = tel ]; then
   snap player-sem-controles 1
   adb shell input tap 1200 360; snap player-controles 2
   read X1 X2 Y <<< "$(tlpos)"; echo "linha: $X1 $X2 $Y" > $OUT/$P-linha.txt
+  [ -z "$Y" ] && { X1=204; X2=2196; Y=870; echo "linha: posicao fixa" >> $OUT/$P-linha.txt; }
   if [ -n "$Y" ]; then
     XA=$((X1 + (X2 - X1) * 35 / 100)); XB=$((X1 + (X2 - X1) * 60 / 100))
     adb shell input motionevent DOWN $XA $Y; sleep 0.3
