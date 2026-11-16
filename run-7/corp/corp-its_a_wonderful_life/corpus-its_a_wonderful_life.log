@@ -1,0 +1,20 @@
+  descartado ItsAWonderfulLife1946 (título '')
+  descartado its_a_wonderful_life (título '')
+  descartado impact (título 'Impact')
+  descartado akira-kurosawa-collection_20260211 (título 'Akira Kurosawa Collection')
+  descartado que-bello-es-vivir-1946-720-p-subtitulos (título '¡QUÉ BELLO ES VIVIR!  -  (1946)  [VOSE]')
+  descartado wonderful-main-title (título 'Even More Wonderful (1946)')
+  descartado 20151217NavigatingNetflix004 (título '20151217NavigatingNetflix004')
+  descartado mediatqc-Contre_Champ_S01E10 (título 'Contre Champ S01E10')
+  descartado tcv7a1qc-Contre_Champ_S01E10 (título 'Contre Champ S01E10')
+  descartado CSPAN2_20261109_090300_QA_Kelly_Stewart-Harcourt__Aaron_Burns_Discuss_Their_Movie_Jimmy (título 'Q&A Kelly Stewart-Harcourt & Aaron Burns Discuss Their Movie "Jimmy" :')
+  descartado CSPAN_20261102_005900_QA_Kelly_Stewart-Harcourt__Aaron_Burns_Discuss_Their_Movie_Jimmy (título 'Q&A Kelly Stewart-Harcourt & Aaron Burns Discuss Their Movie "Jimmy" :')
+Traceback (most recent call last):
+  File "/home/runner/work/GABIFLIX/GABIFLIX/tools/audio-sync/corpus/corpus.py", line 558, in <module>
+    cmd_film(sys.argv[2], sys.argv[3], sys.argv[4])
+  File "/home/runner/work/GABIFLIX/GABIFLIX/tools/audio-sync/corpus/corpus.py", line 427, in cmd_film
+    src, info = acquire_video(f, wdir)
+                ^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/work/GABIFLIX/GABIFLIX/tools/audio-sync/corpus/corpus.py", line 272, in acquire_video
+    raise RuntimeError("sem filme para %s: %s" % (f["slug"], log[-1:]))
+RuntimeError: sem filme para its_a_wonderful_life: []
