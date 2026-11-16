@@ -297,7 +297,7 @@ public final class AudioAligner {
     }
 
     /** NCC fina de uma janela com o modelo (a, b), pesquisando deslocamentos de ±R*10 ms */
-    private static Fine fineWindow(float[] pSmooth, long startMs, float[] fine, double a, double b, int R) {
+    static Fine fineWindow(float[] pSmooth, long startMs, float[] fine, double a, double b, int R) {
         int n = pSmooth.length;
         double mean = 0;
         for (int i = 0; i < n; i++) mean += pSmooth[i];

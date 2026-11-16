@@ -163,6 +163,7 @@ public class Eval {
                     REL = new long[ts.length];
                     for (int i = 0; i < ts.length; i++) REL[i] = r0.accepted ? Math.round(r0.applySegments(truth[i].startMs)) : ts[i];
                     REL_OK = r0.accepted;
+                    if (cats.contains("recheck")) recheckEval(f, v, s, vname, P, truth, r0);
                     if (cats.contains("offset")) for (double o : OFFS) run(f, v, s, vname, cfg, "offset", String.valueOf(o), P, ws, truth, ts, 1.0, new long[0], new double[]{o * 1000}, false);
                     if (cats.contains("scale")) for (int k = 0; k < RATIOS.length; k++) run(f, v, s, vname, cfg, "scale", RNAME[k], P, ws, truth, ts, RATIOS[k][0], new long[0], new double[]{0}, false);
                     if (cats.contains("combo")) for (int k = 0; k < RATIOS.length; k++) {
@@ -229,6 +230,53 @@ public class Eval {
             }
         }
         out.close();
+    }
+
+    /** Reverificação durante a reprodução: (1) legenda já certa, checagens a cada RCK_STEP_S s (padrão 600) com janela de RCK_LEN_S s (padrão 90): qualquer
+     *  PROPOSED/CHANGE é "mudança falsa" (meta 0); (2) corte injetado no filme (a legenda seguiu o filme sem o trecho): detecção, latência e erro do novo deslocamento. */
+    static void recheckEval(Film f, VadSrc v, Film.Sub s, String vad, AudioAligner.Params P, Cue[] truth, Result r0) throws IOException {
+        if (!r0.accepted) return;
+        String e1 = System.getenv("RCK_STEP_S"), e2 = System.getenv("RCK_LEN_S");
+        long step = (e1 == null || e1.isEmpty() ? 600 : Long.parseLong(e1)) * 1000L, len = (e2 == null || e2.isEmpty() ? 90 : Long.parseLong(e2)) * 1000L;
+        long full = f.fullDurationMs;
+        Recheck.Params RP = new Recheck.Params();
+        ArrayList<Long> pts = new ArrayList<>();
+        for (long t = step / 2; t + len <= full; t += step) pts.add(t);
+        // (1) legenda certa
+        Recheck.Out prev = null;
+        for (long t : pts) {
+            Window[] w = {new Window(t / 10 * 10, v.get(f, t / 10 * 10, len))};
+            Recheck.Out o = Recheck.check(truth, w, r0, t, full, false, prev, P, RP);
+            prev = o;
+            Result fr = new Result();
+            fr.accepted = o.verdict != Recheck.Verdict.KEEP; fr.z = o.z; fr.nccMean = o.nccAtCurrent; fr.offsetMs = o.newOffsetMs;
+            fr.reason = o.verdict + " " + o.reason;
+            row(f, s, vad, "rck" + len / 1000, "rck_keep", "t=" + t / 1000 + "s", fr, null, null, o.tookMs, "");
+        }
+        // (2) corte injetado: depois do corte a legenda fica d segundos fora
+        double[] fr = {0.35, 0.6};
+        double[] dl = {-40, 15};
+        for (int k = 0; k < fr.length; k++) {
+            long cut = (long) (full * fr[k]);   // tempo da legenda (verdade); a mídia do corte ~ cut
+            double d = dl[k];
+            Object[] od = distortPieces(truth, 1.0, new long[]{cut}, new double[]{0, d * 1000});
+            Cue[] dc = (Cue[]) od[0];
+            Result cur = r0;
+            prev = null;
+            long firstChange = -1;
+            for (long t : pts) {
+                Window[] w = {new Window(t / 10 * 10, v.get(f, t / 10 * 10, len))};
+                Recheck.Out o = Recheck.check(dc, w, cur, t, full, false, prev, P, RP);
+                prev = o;
+                double exp = r0.offsetMs + d * 1000;
+                Result rr = new Result();
+                rr.accepted = o.verdict != Recheck.Verdict.KEEP; rr.z = o.z; rr.nccMean = o.nccAtCurrent; rr.offsetMs = o.newOffsetMs;
+                rr.reason = o.verdict + " " + o.reason;
+                double[] err = rr.accepted ? new double[]{Math.abs(o.newOffsetMs - exp), 0, 0} : null;
+                row(f, s, vad, "rck" + len / 1000, "rck_cut", "cut@" + cut / 1000 + "s d=" + d + " t=" + t / 1000 + "s", rr, err, err, o.tookMs, t < cut ? "antes" : "depois");
+                if (o.verdict == Recheck.Verdict.CHANGE && firstChange < 0) { firstChange = t; cur = new Result(); cur.accepted = true; cur.scale = r0.scale; cur.offsetMs = o.newOffsetMs; prev = null; }
+            }
+        }
     }
 
     static int countTruth(Film f) { int n = 0; for (Film.Sub s : f.subs) if (s.truth) n++; return n; }

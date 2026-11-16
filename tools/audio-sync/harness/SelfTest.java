@@ -140,6 +140,44 @@ public class SelfTest {
             if (res.accepted && frac >= 0.97) pok++;
             System.out.printf("PARTES d=%7.0f cut=%.0fs -> %s %.1f%% das falas certas, rodadas=%d, janelas=%d, segs=%s%n", dd, cut / 1000.0, res.accepted ? "aceita" : "RECUSADA", frac * 100, rounds, wl.size(), Arrays.toString(res.segments));
         }
+        // reverificação: legenda certa (offset/escala conhecidos) -> 0 mudanças; corte injetado -> detecta
+        int falseCh = 0, nChecks = 0, det = 0, nCut = 0;
+        Recheck.Params RP = new Recheck.Params();
+        for (int rep = 0; rep < 6; rep++) {
+            Cue[] truth = makeCues(r, dur);
+            float[] track = truthTrack(truth, dur, r, 0.75);
+            double b0 = 3000 * (rep % 3), k0 = rep < 3 ? 1.0 : 25 / 23.976;
+            Cue[] sub = new Cue[truth.length];
+            for (int i = 0; i < truth.length; i++) { Cue c = truth[i]; sub[i] = new Cue(Math.round((c.startMs - b0) / k0), Math.round((c.endMs - b0) / k0), c.chars, true); }
+            Result cur = new Result(); cur.accepted = true; cur.scale = k0; cur.offsetMs = b0;
+            // (1) legenda certa
+            Recheck.Out prev = null;
+            for (long t = 300000; t + 90000 <= dur; t += 600000) {
+                Window[] w = {new Window(t, Arrays.copyOfRange(track, (int) (t / 10), (int) (t / 10) + 9000))};
+                Recheck.Out o = Recheck.check(sub, w, cur, t, dur, false, prev, P, RP);
+                prev = o; nChecks++;
+                if (o.verdict != Recheck.Verdict.KEEP) { falseCh++; System.out.println("MUDANCA FALSA t=" + t / 1000 + "s " + o.verdict + " " + o.reason); }
+            }
+            // (2) corte: depois de cut o filme tem d ms a mais/menos
+            double d = rep % 2 == 0 ? 15000 : -40000;
+            long cut = (long) (dur * 0.5);
+            Cue[] sub2 = new Cue[truth.length];
+            for (int i = 0; i < truth.length; i++) { Cue c = truth[i]; double bb = c.startMs >= cut ? b0 + d : b0; sub2[i] = new Cue(Math.round((c.startMs - bb) / k0), Math.round((c.endMs - bb) / k0), c.chars, true); }
+            prev = null; Result c2 = cur; long first = -1; double newOff = 0; long applyFrom = 0;
+            for (long t = 300000; t + 90000 <= dur; t += 600000) {
+                Window[] w = {new Window(t, Arrays.copyOfRange(track, (int) (t / 10), (int) (t / 10) + 9000))};
+                Recheck.Out o = Recheck.check(sub2, w, c2, t, dur, false, prev, P, RP);
+                prev = o;
+                if (t < cut && o.verdict != Recheck.Verdict.KEEP) { falseCh++; System.out.println("MUDANCA FALSA (antes do corte) t=" + t / 1000 + "s " + o.verdict + " " + o.reason); }
+                if (System.getProperty("dbg") != null && t > cut) System.err.println("  t=" + t / 1000 + " " + o.verdict + " " + o.reason + " ncc=" + o.nccAtCurrent + " z=" + o.z);
+                if (t > cut && first < 0 && o.verdict == Recheck.Verdict.CHANGE) { first = t; newOff = o.newOffsetMs; applyFrom = o.applyFromSubMs; }
+            }
+            nCut++;
+            boolean good = first >= 0 && Math.abs(newOff - (b0 + d)) <= 300;
+            if (good) det++;
+            System.out.printf("RECHECK corte d=%.0f s: %s, 1a mudanca em t=%ds, novo=%.0f esperado=%.0f, aplica a partir de sub=%ds%n", d / 1000, good ? "OK" : "FALHA", first / 1000, newOff, b0 + d, applyFrom / 1000);
+        }
+        System.out.println("recheck: checagens " + nChecks + ", mudancas falsas " + falseCh + ", cortes detectados " + det + "/" + nCut);
         System.out.println("partes " + pok + "/" + ptot);
         System.out.println("positivos " + ok + "/" + tot + ", falsos aceites " + fa + "/30");
     }

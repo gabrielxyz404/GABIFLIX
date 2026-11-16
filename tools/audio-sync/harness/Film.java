@@ -9,6 +9,8 @@ final class Film {
     final String slug;
     final File dir;
     long durationMs;
+    /** duração do filme inteiro (durationMs pode ser limitado por CLIP_S) */
+    long fullDurationMs;
     private RandomAccessFile wav;
     private long dataOff, dataLen;
     final ArrayList<Sub> subs = new ArrayList<>();
@@ -45,6 +47,7 @@ final class Film {
             pos += 8 + sz + (sz & 1);
         }
         durationMs = dataLen / 2 * 1000 / 16000;
+        fullDurationMs = durationMs;
         // CLIP_S: avalia só os primeiros N segundos do filme (iteração rápida); a legenda e a verdade seguem no tempo do filme inteiro
         String clip = System.getenv("CLIP_S");
         if (clip != null && !clip.isEmpty()) durationMs = Math.min(durationMs, Long.parseLong(clip) * 1000L);
