@@ -14,7 +14,7 @@ tela_xy() { # centro do botão "Tela: ..."
   dump | python3 -c "
 import sys,re
 x=sys.stdin.read()
-m=re.search(r'text=\"(Tela: [^\"]*)\"[^>]*bounds=\"\[(\d+),(\d+)\]\[(\d+),(\d+)\]\"',x)
+m=re.search(r'(?:text|content-desc)=\"(Tela: [^\"]*)\"[^>]*bounds=\"\[(\d+),(\d+)\]\[(\d+),(\d+)\]\"',x)
 print('%d %d %s'%((int(m.group(2))+int(m.group(4)))//2,(int(m.group(3))+int(m.group(5)))//2,m.group(1).replace(' ','_')) if m else '')"
 }
 adb shell am force-stop $PKG
