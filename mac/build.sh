@@ -34,7 +34,7 @@ fi
 lipo -info "$FW/VLCKit" || true
 
 # 2) compila o app
-swiftc -O -target arm64-apple-macos11.0 \
+swiftc -O -target "${FRAMEPLAY_ARCH:-arm64}-apple-macos11.0" \
   -F "$WORK/fw" -framework VLCKit -framework WebKit -framework Cocoa \
   -Xlinker -rpath -Xlinker @executable_path/../Frameworks \
   Sources/*.swift -o "$WORK/FramePlay"

@@ -16,7 +16,7 @@ concurrency:
 
 jobs:
   app:
-    runs-on: macos-14
+    runs-on: macos-15-intel
     timeout-minutes: 40
     steps:
       - uses: actions/checkout@v4
@@ -24,6 +24,7 @@ jobs:
         env:
           FRAMEPLAY_VERSION: 0.0.${{ github.run_number }}
           FRAMEPLAY_BUILD: ${{ github.run_number }}
+          FRAMEPLAY_ARCH: x86_64
         run: |
           set -o pipefail
           ./mac/build.sh 2>&1 | tee build.log
