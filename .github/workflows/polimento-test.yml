@@ -65,9 +65,9 @@ jobs:
         if: matrix.perfil == 'tel'
         uses: reactivecircus/android-emulator-runner@v2
         with:
-          api-level: 30
+          api-level: 34
           target: google_apis
-          arch: x86
+          arch: x86_64
           profile: pixel_4
           disable-animations: false
           emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
