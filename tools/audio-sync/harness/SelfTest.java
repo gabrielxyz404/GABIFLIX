@@ -99,6 +99,48 @@ public class SelfTest {
             Result res = AudioAligner.solve(other, ws, dur, P);
             if (res.accepted) { fa++; System.out.println("FALSO ACEITE " + res); }
         }
+        // ajuste por partes: um corte (d positivo e negativo), com sessão de janelas extras
+        int pok = 0, ptot = 0;
+        double[] ds = {-40000, -15000, 5000, 15000, 40000};
+        for (int rep = 0; rep < 2; rep++) for (double dd : ds) {
+            Cue[] truth = makeCues(r, dur);
+            float[] track = truthTrack(truth, dur, r, 0.75);
+            long cut = (long) (dur * (0.35 + 0.3 * rep));
+            double b0 = 4000, b1 = b0 + dd;
+            ArrayList<Cue> dl = new ArrayList<>();
+            ArrayList<Long> tl = new ArrayList<>();
+            long firstAfter = -1;
+            for (Cue c : truth) {
+                boolean after = c.startMs >= cut;
+                double b = after ? b1 : b0;
+                if (after && firstAfter < 0) firstAfter = Math.round(c.startMs - b);
+                dl.add(new Cue(Math.round(c.startMs - b), Math.round(c.endMs - b), c.chars, true));
+                tl.add(c.startMs);
+            }
+            // remove da legenda as falas anteriores que passam do começo do trecho seguinte
+            ArrayList<Cue> d2 = new ArrayList<>(); ArrayList<Long> t2 = new ArrayList<>();
+            for (int i = 0; i < dl.size(); i++) if (tl.get(i) < cut && dl.get(i).startMs >= firstAfter - 1000) continue; else { d2.add(dl.get(i)); t2.add(tl.get(i)); }
+            Cue[] dist = d2.toArray(new Cue[0]);
+            ArrayList<Window> wl = new ArrayList<>();
+            double[] fr = {0.2, 0.5, 0.8};
+            for (double f : fr) { long st = (long) (dur * f); wl.add(new Window(st, Arrays.copyOfRange(track, (int) (st / 10), (int) (st / 10) + 6000))); }
+            Result res = AudioAligner.solve(dist, wl.toArray(new Window[0]), dur, P);
+            int rounds = 0;
+            if (System.getProperty("dbg") != null) System.err.println("  ronda 0: " + res);
+            while (res.more != null && res.more.length > 0 && rounds < 6) {
+                for (long[] m : res.more) wl.add(new Window(m[0], Arrays.copyOfRange(track, (int) (m[0] / 10), (int) (m[0] / 10) + (int) (m[1] / 10))));
+                res = AudioAligner.solve(dist, wl.toArray(new Window[0]), dur, P);
+                rounds++;
+                if (System.getProperty("dbg") != null) System.err.println("  ronda " + rounds + ": " + res);
+            }
+            int good = 0;
+            for (int i = 0; i < dist.length; i++) if (Math.abs(res.applySegments(dist[i].startMs) - t2.get(i)) <= 250) good++;
+            double frac = good / (double) dist.length;
+            ptot++;
+            if (res.accepted && frac >= 0.97) pok++;
+            System.out.printf("PARTES d=%7.0f cut=%.0fs -> %s %.1f%% das falas certas, rodadas=%d, janelas=%d, segs=%s%n", dd, cut / 1000.0, res.accepted ? "aceita" : "RECUSADA", frac * 100, rounds, wl.size(), Arrays.toString(res.segments));
+        }
+        System.out.println("partes " + pok + "/" + ptot);
         System.out.println("positivos " + ok + "/" + tot + ", falsos aceites " + fa + "/30");
     }
 }

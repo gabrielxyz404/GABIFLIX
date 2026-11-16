@@ -483,6 +483,11 @@ def cmd_film(slug, subs_dir, fdir):
                 outs["ffss"] = parse_srt(open(o2, encoding="utf-8").read())
             elif "invalid choice" in tail or not tail:
                 have_silero_vad[0] = False
+        # oraculo 2b: ffsubsync com VAD auditok (detector de energia, independente do webrtc)
+        o2b = os.path.join(odir, name + ".ffsa.srt")
+        ok, tail = run_ffsubsync(wav, src, o2b, vad="auditok")
+        if ok:
+            outs["ffsa"] = parse_srt(open(o2b, encoding="utf-8").read())
         # oraculo 3: alass (aceita cortes)
         if alass:
             t0 = time.time()

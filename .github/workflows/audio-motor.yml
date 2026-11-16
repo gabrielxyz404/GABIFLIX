@@ -15,7 +15,7 @@ permissions:
 env:
   JSRC: tools/audio-sync/java
   HARN: tools/audio-sync/harness
-  CORPUS_KEY: audio-film-v3
+  CORPUS_KEY: audio-film-v4
 
 jobs:
   subs:
@@ -61,12 +61,16 @@ jobs:
         with:
           path: corpus/${{ matrix.slug }}
           key: ${{ env.CORPUS_KEY }}-${{ matrix.slug }}
-          restore-keys: audio-film-v2-${{ matrix.slug }}
+          restore-keys: |
+            audio-film-v3-${{ matrix.slug }}
+            audio-film-v2-${{ matrix.slug }}
       - name: Ferramentas (ffsubsync, webrtcvad, onnxruntime, ffmpeg)
         if: steps.cache.outputs.cache-hit != 'true'
         run: |
           sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg >/dev/null
           pip install -q "numpy<2" "setuptools<81" webrtcvad-wheels onnxruntime ffsubsync 2>&1 | tail -3
+          pip install -q auditok 2>&1 | tail -1
+          pip install -q torch torchaudio --index-url https://download.pytorch.org/whl/cpu 2>&1 | tail -1
           mkdir -p /tmp/sv && pip download -q silero-vad --no-deps -d /tmp/sv 2>&1 | tail -1
           cd /tmp/sv && unzip -o -q -j *.whl '*silero_vad.onnx' -d /tmp/sv/m && ls -la /tmp/sv/m
           echo "SILERO_ONNX=/tmp/sv/m/silero_vad.onnx" >> $GITHUB_ENV

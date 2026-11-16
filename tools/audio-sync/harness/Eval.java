@@ -64,6 +64,43 @@ public class Eval {
         return o;
     }
 
+    /** como distort, mas torna realista o caso de deslocamento positivo (legenda de uma versão sem o trecho extra): remove da legenda as
+     *  falas anteriores ao corte que passariam do primeiro tempo do trecho seguinte. Devolve {Cue[], long[] verdade}. */
+    static Object[] distortPieces(Cue[] truth, double a, long[] cuts, double[] offs) {
+        Cue[] d = distort(truth, a, cuts, offs);
+        boolean[] drop = new boolean[d.length];
+        for (int k = 0; k < cuts.length; k++) {
+            int first = -1;
+            for (int i = 0; i < truth.length; i++) if (truth[i].startMs >= cuts[k]) { first = i; break; }
+            if (first < 0) continue;
+            long lim = d[first].startMs - 1000;
+            for (int i = first - 1; i >= 0 && truth[i].startMs >= cuts[k] - 200_000; i--) if (d[i].startMs >= lim) drop[i] = true;
+        }
+        ArrayList<Cue> dc = new ArrayList<>();
+        ArrayList<Long> tt = new ArrayList<>();
+        for (int i = 0; i < d.length; i++) if (!drop[i]) { dc.add(d[i]); tt.add(truth[i].startMs); }
+        long[] t2 = new long[tt.size()];
+        for (int i = 0; i < t2.length; i++) t2[i] = tt.get(i);
+        return new Object[]{dc.toArray(new Cue[0]), t2};
+    }
+
+    /** resolve pedindo mais janelas enquanto o motor pedir (até maxRounds), como faria a sessão no app */
+    static Result session(Film f, VadSrc v, Cue[] cues, Window[] ws0, AudioAligner.Params P, int maxRounds) throws IOException {
+        Window[] ws = ws0;
+        Result r = AudioAligner.solve(cues, ws, f.durationMs, P);
+        for (int round = 0; round < maxRounds && r.more != null && r.more.length > 0; round++) {
+            Window[] n2 = Arrays.copyOf(ws, ws.length + r.more.length);
+            for (int i = 0; i < r.more.length; i++) {
+                long st = r.more[i][0], ln = r.more[i][1];
+                n2[ws.length + i] = new Window(st, v.get(f, st, ln));
+            }
+            ws = n2;
+            r = AudioAligner.solve(cues, ws, f.durationMs, P);
+            r.rounds = round + 1;
+        }
+        return r;
+    }
+
     static double[] errStats(Result r, Cue[] dist, long[] truthStart, boolean seg) {
         int n = Math.min(dist.length, truthStart.length);
         double[] e = new double[n];
@@ -124,12 +161,12 @@ public class Eval {
                     Cue[] truth = s.truthCues;
                     long[] ts = new long[truth.length];
                     for (int i = 0; i < ts.length; i++) ts[i] = truth[i].startMs;
-                    if (cats.contains("offset")) for (double o : OFFS) run(f, s, vname, cfg, "offset", String.valueOf(o), P, ws, truth, ts, 1.0, new long[0], new double[]{o * 1000}, false);
-                    if (cats.contains("scale")) for (int k = 0; k < RATIOS.length; k++) run(f, s, vname, cfg, "scale", RNAME[k], P, ws, truth, ts, RATIOS[k][0], new long[0], new double[]{0}, false);
+                    if (cats.contains("offset")) for (double o : OFFS) run(f, v, s, vname, cfg, "offset", String.valueOf(o), P, ws, truth, ts, 1.0, new long[0], new double[]{o * 1000}, false);
+                    if (cats.contains("scale")) for (int k = 0; k < RATIOS.length; k++) run(f, v, s, vname, cfg, "scale", RNAME[k], P, ws, truth, ts, RATIOS[k][0], new long[0], new double[]{0}, false);
                     if (cats.contains("combo")) for (int k = 0; k < RATIOS.length; k++) {
                         for (int j = 0; j < 2; j++) {
                             double o = OFFS[rnd.nextInt(OFFS.length)];
-                            run(f, s, vname, cfg, "combo", RNAME[k] + "@" + o, P, ws, truth, ts, RATIOS[k][0], new long[0], new double[]{o * 1000}, false);
+                            run(f, v, s, vname, cfg, "combo", RNAME[k] + "@" + o, P, ws, truth, ts, RATIOS[k][0], new long[0], new double[]{o * 1000}, false);
                         }
                     }
                     if (cats.contains("piece1")) {
@@ -138,14 +175,14 @@ public class Eval {
                         for (int j = 0; j < 6; j++) {
                             long cut = (long) (f.durationMs * fr[j % 3]);
                             double b0 = (rnd.nextInt(30) - 10) * 1000.0;
-                            run(f, s, vname, cfg, "piece1", "cut@" + cut / 1000 + "s d=" + dl[j], P, ws, truth, ts, 1.0, new long[]{cut}, new double[]{b0, b0 + dl[j] * 1000}, true);
+                            run(f, v, s, vname, cfg, "piece1", "cut@" + cut / 1000 + "s d=" + dl[j], P, ws, truth, ts, 1.0, new long[]{cut}, new double[]{b0, b0 + dl[j] * 1000}, true);
                         }
                     }
                     if (cats.contains("piece2")) {
                         for (int j = 0; j < 3; j++) {
                             long c1 = (long) (f.durationMs * (0.3 + 0.05 * j)), c2 = (long) (f.durationMs * (0.6 + 0.05 * j));
                             double b0 = (rnd.nextInt(20) - 5) * 1000.0, d1 = (rnd.nextBoolean() ? 1 : -1) * (5 + rnd.nextInt(40)) * 1000.0, d2 = (rnd.nextBoolean() ? 1 : -1) * (5 + rnd.nextInt(40)) * 1000.0;
-                            run(f, s, vname, cfg, "piece2", "cuts " + c1 / 1000 + "," + c2 / 1000, P, ws, truth, ts, 1.0, new long[]{c1, c2}, new double[]{b0, b0 + d1, b0 + d1 + d2}, true);
+                            run(f, v, s, vname, cfg, "piece2", "cuts " + c1 / 1000 + "," + c2 / 1000, P, ws, truth, ts, 1.0, new long[]{c1, c2}, new double[]{b0, b0 + d1, b0 + d1 + d2}, true);
                         }
                     }
                 }
@@ -154,7 +191,7 @@ public class Eval {
                     for (Film.Sub s : f.subs) {
                         if (s.pairs == null) continue;
                         long t0 = System.nanoTime();
-                        Result r = AudioAligner.solve(s.orig, ws, f.durationMs, P);
+                        Result r = session(f, v, s.orig, ws, P, 3);
                         long took = (System.nanoTime() - t0) / 1000000;
                         double[] e = null;
                         if (s.truth) {
@@ -179,7 +216,7 @@ public class Eval {
                             Cue[] c = Cue.parseSrt(new String(java.nio.file.Files.readAllBytes(sf.toPath()), java.nio.charset.StandardCharsets.UTF_8));
                             if (c.length < 40) continue;
                             long t0 = System.nanoTime();
-                            Result r = AudioAligner.solve(c, ws, f.durationMs, P);
+                            Result r = session(f, v, c, ws, P, 3);
                             long took = (System.nanoTime() - t0) / 1000000;
                             Film.Sub fake = new Film.Sub();
                             fake.name = od.getName() + "/" + nm;
@@ -194,12 +231,15 @@ public class Eval {
 
     static int countTruth(Film f) { int n = 0; for (Film.Sub s : f.subs) if (s.truth) n++; return n; }
 
-    static void run(Film f, Film.Sub s, String vad, String cfg, String cat, String param, AudioAligner.Params P, Window[] ws,
-                    Cue[] truth, long[] ts, double a, long[] cuts, double[] offs, boolean seg) {
-        Cue[] d = distort(truth, a, cuts, offs);
+    static void run(Film f, VadSrc v, Film.Sub s, String vad, String cfg, String cat, String param, AudioAligner.Params P, Window[] ws,
+                    Cue[] truth, long[] ts, double a, long[] cuts, double[] offs, boolean seg) throws IOException {
+        Cue[] d;
+        long[] tsx = ts;
+        if (seg) { Object[] o = distortPieces(truth, a, cuts, offs); d = (Cue[]) o[0]; tsx = (long[]) o[1]; }
+        else d = distort(truth, a, cuts, offs);
         long t0 = System.nanoTime();
-        Result r = AudioAligner.solve(d, ws, f.durationMs, P);
+        Result r = session(f, v, d, ws, P, 6);
         long took = (System.nanoTime() - t0) / 1000000;
-        row(f, s, vad, cfg, cat, param, r, errStats(r, d, ts, seg), took, "");
+        row(f, s, vad, cfg, cat, param, r, errStats(r, d, tsx, seg), took, seg ? "segs=" + (r.segments == null ? 1 : r.segments.length) + " rounds=" + r.rounds : "");
     }
 }

@@ -20,6 +20,8 @@ public final class Result {
     public boolean pieceSuspect;
     /** milissegundos de áudio usados */
     public long audioMs;
+    /** rodadas de janelas extras já usadas (preenchido pela sessão) */
+    public int rounds;
 
     /** aplica o mapeamento global a um tempo da legenda */
     public double apply(double subMs) { return scale * subMs + offsetMs; }
@@ -27,12 +29,8 @@ public final class Result {
     /** aplica o ajuste (por partes se houver) a um tempo da legenda */
     public double applySegments(double subMs) {
         if (segments == null || segments.length == 0) return apply(subMs);
-        // escolhe o trecho cujo início (em tempo do vídeo) cabe no tempo corrigido
         Segment cur = segments[0];
-        for (int i = 0; i < segments.length; i++) {
-            Segment sg = segments[i];
-            if (sg.scale * subMs + sg.offsetMs >= sg.fromMediaMs) cur = sg;
-        }
+        for (int i = 1; i < segments.length; i++) if (subMs >= segments[i].fromSubMs) cur = segments[i];
         return cur.scale * subMs + cur.offsetMs;
     }
 

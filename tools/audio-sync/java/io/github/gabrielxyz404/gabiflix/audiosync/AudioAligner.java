@@ -46,11 +46,26 @@ public final class AudioAligner {
         public double minNcc = 0.10;
         public double minMargin = 0.15;
         public double minF1 = 0.0;
-        public double snapTol = 2.5e-4;
+        /** encaixe da escala: distância máxima (em alpha) até uma escala conhecida e resíduo máximo (ms) que o encaixe pode deixar */
+        public double snapAlpha = 3e-3;
+        public double snapResMs = 120;
         /** mínimo de blocos com fala para tentar */
         public int minBlocks = 3;
         public double minSpeechFrac = 0.03;
         public long maxCueGapForCut = 20_000;
+        // ajuste por partes
+        /** reta com escala de fps vence a reta livre se tem z >= minZ e explica pelo menos esta fração dos blocos */
+        public double knownMinFrac = 0.4;
+        public double pieceFitNcc = 0.25;
+        public double pieceMinZ = 5.0;
+        public double pieceExplained = 0.8;
+        /** um bloco só é explicado por um modelo se a correlação nele chega a esta fração do maior pico do bloco */
+        public double pieceRelPeak = 0.7;
+        public int maxPieces = 4;
+        public long cutResolutionMs = 50_000;
+        public long bisectLenMs = 30_000;
+        public double moreMinZ = 4.5;
+        public int maxWindows = 9;
     }
 
     // ------------------------------------------------------------------ estruturas
@@ -362,6 +377,7 @@ public final class AudioAligner {
 
         // ---- hipóteses
         ArrayList<double[]> hyps = new ArrayList<>();
+        ArrayList<Boolean> known = new ArrayList<>();
         for (int a = 0; a < nu; a++) {
             Block A = bl[use[a]];
             for (int s = 0; s < P.knownScales.length; s++) {
@@ -370,7 +386,7 @@ public final class AudioAligner {
                 for (int pk = 0; pk < A.peakIdx.length; pk++) {
                     double L = (A.peakIdx[pk] - P.lagFrames) * (double) P.frameMs;
                     double beta = L - al * A.centerMs;
-                    if (Math.abs(beta) <= P.maxOffsetMs * 1.2) hyps.add(new double[]{al, beta});
+                    if (Math.abs(beta) <= P.maxOffsetMs * 1.2) { hyps.add(new double[]{al, beta}); known.add(Boolean.TRUE); }
                 }
             }
             for (int b2 = a + 1; b2 < nu; b2++) {
@@ -386,7 +402,7 @@ public final class AudioAligner {
                         if (Math.abs(al) > P.maxAlpha) continue;
                         double beta = La - al * A.centerMs;
                         if (Math.abs(beta) > P.maxOffsetMs * 1.2) continue;
-                        hyps.add(new double[]{al, beta});
+                        hyps.add(new double[]{al, beta}); known.add(Boolean.FALSE);
                     }
                 }
             }
@@ -399,6 +415,33 @@ public final class AudioAligner {
             double[] hh = hyps.get(h);
             hs[h] = score(bl, use, nu, hh[0], hh[1], P);
             if (hs[h] > hs[bestH]) bestH = h;
+        }
+        // nulo: retas aleatórias (não depende da hipótese)
+        Random rnd = new Random(P.seed);
+        double sum = 0, sum2 = 0;
+        int nr = P.randomHyps;
+        for (int r = 0; r < nr; r++) {
+            double al = (rnd.nextDouble() * 2 - 1) * Math.min(P.maxAlpha, 0.1);
+            if (rnd.nextInt(3) == 0) al = 0;
+            double beta = (rnd.nextDouble() * 2 - 1) * P.maxOffsetMs;
+            double s = score(bl, use, nu, al, beta, P);
+            sum += s; sum2 += s * s;
+        }
+        double mu = sum / nr, sd = Math.sqrt(Math.max(1e-9, sum2 / nr - mu * mu));
+        // preferência (Occam): se a melhor reta com escala "de fps" já é convincente (z alto e explica boa parte dos blocos), ela vence a reta livre
+        int bestK = -1;
+        for (int h = 0; h < H; h++) if (known.get(h) && (bestK < 0 || hs[h] > hs[bestK])) bestK = h;
+        if (bestK >= 0 && bestK != bestH && (hs[bestK] - mu) / sd >= P.minZ) {
+            double[] hk = hyps.get(bestK);
+            int ex = 0;
+            for (int t = 0; t < nu; t++) {
+                Block b = bl[use[t]];
+                float v = support(b, hk[0] * b.centerMs + hk[1], P);
+                float thr = (float) P.pieceFitNcc;
+                if (b.peakVal.length > 0) thr = Math.max(thr, (float) (P.pieceRelPeak * b.peakVal[0]));
+                if (v >= thr) ex++;
+            }
+            if (ex >= P.knownMinFrac * nu) bestH = bestK;
         }
         double[] h1 = hyps.get(bestH);
         double best = hs[bestH];
@@ -415,18 +458,6 @@ public final class AudioAligner {
             }
             if (diff >= 0.6 * nu) second = hs[h];
         }
-        // nulo: retas aleatórias
-        Random rnd = new Random(P.seed);
-        double sum = 0, sum2 = 0;
-        int nr = P.randomHyps;
-        for (int r = 0; r < nr; r++) {
-            double al = (rnd.nextDouble() * 2 - 1) * Math.min(P.maxAlpha, 0.1);
-            if (rnd.nextInt(3) == 0) al = 0;
-            double beta = (rnd.nextDouble() * 2 - 1) * P.maxOffsetMs;
-            double s = score(bl, use, nu, al, beta, P);
-            sum += s; sum2 += s * s;
-        }
-        double mu = sum / nr, sd = Math.sqrt(Math.max(1e-9, sum2 / nr - mu * mu));
         R.z = (best - mu) / sd;
         R.margin = best > 0 ? (best - second) / best : 0;
         R.support = best / nu;
@@ -477,59 +508,75 @@ public final class AudioAligner {
         R.offsetMs = b0;
         finalEvidence(windows, ps, fine, R, P);
         decide(R, P);
-        analyzeCuts(R, cues, windows, ps, bl, use, nu, alpha, P, mediaDurationMs, fine);
+        analyzeCuts(R, cues, windows, ps, bl, use, nu, P, mediaDurationMs, fine);
+        if (!R.accepted) suggestMore(R, windows, P, mediaDurationMs);
         return R;
     }
 
-    /** refina (scale, offset) com a NCC fina por janela; encaixa a escala em valores conhecidos quando serve */
+    /** refina (scale, offset) com a NCC fina por janela; encaixa a escala em valores conhecidos quando os resíduos permitem */
     private static double[] fineRefine(Window[] ws, float[][] ps, float[] fine, double a, double b, Params P, Result R) {
         double bestA = a, bestB = b;
-        double[] cand = new double[]{a};
+        int W = ws.length;
         for (int it = 0; it < 3; it++) {
-            // deslocamentos locais por janela com o modelo atual
-            int W = ws.length;
-            double[] sS = new double[W], uU = new double[W], wt = new double[W];
-            int used = 0;
+            double[] sS = new double[W], uU = new double[W], wt = new double[W], nc = new double[W];
             for (int w = 0; w < W; w++) {
                 Fine f = fineWindow(ps[w], ws[w].startMs, fine, bestA, bestB, 150);
                 double bw = bestB + f.bestDelta;
                 double uc = ws[w].startMs + ws[w].p.length * 5.0;
                 sS[w] = (uc - bw) / bestA;
                 uU[w] = uc;
-                wt[w] = Math.max(0.0, f.ncc) * (f.speechFrac > 0.03 ? 1 : 0);
-                if (f.ncc >= P.minNcc * 0.8 && Math.abs(f.bestDelta) < 1450) used++;
-                else wt[w] = 0;
+                nc[w] = f.speechFrac > 0.03 ? Math.max(0.0, f.ncc) : 0.0;
             }
+            // só entram janelas bem explicadas pelo modelo (as de outro trecho/ruído ficam de fora)
+            double[] sorted = nc.clone();
+            Arrays.sort(sorted);
+            double med = sorted[W / 2];
+            double thr = Math.max(P.minNcc * 0.8, 0.5 * med);
+            int used = 0;
+            for (int w = 0; w < W; w++) { wt[w] = nc[w] >= thr ? nc[w] : 0; if (wt[w] > 0) used++; }
             if (used == 0) break;
-            // ajuste u = a' s + b' ponderado
-            double sw = 0, sx = 0, sy = 0, sxx = 0, sxy = 0;
+            double[] fit = lsFit(sS, uU, wt, bestA, bestB, used >= 2);
+            // descarta janelas com resíduo grande e ajusta de novo
+            int kept = 0;
             for (int w = 0; w < W; w++) {
                 if (wt[w] <= 0) continue;
-                sw += wt[w]; sx += wt[w] * sS[w]; sy += wt[w] * uU[w]; sxx += wt[w] * sS[w] * sS[w]; sxy += wt[w] * sS[w] * uU[w];
+                if (Math.abs(uU[w] - (fit[0] * sS[w] + fit[1])) > 250) wt[w] = 0; else kept++;
             }
-            double den = sw * sxx - sx * sx;
-            double na = bestA, nb;
-            double spread = den / (sw * sw); // variância ponderada de s
-            if (used >= 2 && spread > 600.0 * 600.0) {
-                na = (sw * sxy - sx * sy) / den;
-                if (Math.abs(na - bestA) > 0.01) na = bestA;
-                nb = (sy - na * sx) / sw;
-            } else {
-                nb = (sy - bestA * sx) / sw;
-            }
-            // encaixe: se a escala está perto de uma conhecida, usa a conhecida (reajustando o deslocamento)
-            double snap = na;
-            double sa = alphaOf(na);
+            if (kept == 0) break;
+            if (kept != used) fit = lsFit(sS, uU, wt, bestA, bestB, kept >= 2);
+            double na = fit[0], nb = fit[1];
+            // encaixe: usa a escala conhecida mais próxima se os resíduos continuam pequenos
+            double sa = alphaOf(na), bestRes = Double.MAX_VALUE, snapA = na, snapB = nb;
+            double sw = 0, sx = 0, sy = 0;
+            for (int w = 0; w < W; w++) { if (wt[w] <= 0) continue; sw += wt[w]; sx += wt[w] * sS[w]; sy += wt[w] * uU[w]; }
             for (int s = 0; s < P.knownScales.length; s++) {
-                if (Math.abs(alphaOf(P.knownScales[s]) - sa) < P.snapTol) { snap = P.knownScales[s]; break; }
+                if (Math.abs(alphaOf(P.knownScales[s]) - sa) > P.snapAlpha) continue;
+                double kb = (sy - P.knownScales[s] * sx) / sw, mx = 0;
+                for (int w = 0; w < W; w++) if (wt[w] > 0) mx = Math.max(mx, Math.abs(uU[w] - (P.knownScales[s] * sS[w] + kb)));
+                if (mx <= P.snapResMs && mx < bestRes) { bestRes = mx; snapA = P.knownScales[s]; snapB = kb; }
             }
-            if (snap != na) {
-                nb = (sy - snap * sx) / sw;
-                na = snap;
-            }
-            bestA = na; bestB = nb;
+            bestA = snapA; bestB = snapB;
+            if (snapA == na) { bestA = na; bestB = nb; }
         }
         return new double[]{bestA, bestB};
+    }
+
+    /** mínimos quadrados ponderados de u = a*s + b; com um só ponto (ou pouca dispersão em s) mantém a escala a0 */
+    private static double[] lsFit(double[] s, double[] u, double[] w, double a0, double b0, boolean free) {
+        double sw = 0, sx = 0, sy = 0, sxx = 0, sxy = 0;
+        for (int i = 0; i < s.length; i++) {
+            if (w[i] <= 0) continue;
+            sw += w[i]; sx += w[i] * s[i]; sy += w[i] * u[i]; sxx += w[i] * s[i] * s[i]; sxy += w[i] * s[i] * u[i];
+        }
+        if (sw <= 0) return new double[]{a0, b0};
+        double den = sw * sxx - sx * sx;
+        double spread = den / (sw * sw);
+        double na = a0;
+        if (free && spread > 600.0 * 600.0) {
+            na = (sw * sxy - sx * sy) / den;
+            if (Math.abs(na - a0) > 0.01) na = a0;
+        }
+        return new double[]{na, (sy - na * sx) / sw};
     }
 
     private static void finalEvidence(Window[] ws, float[][] ps, float[] fine, Result R, Params P) {
@@ -573,17 +620,234 @@ public final class AudioAligner {
     }
 
     // ------------------------------------------------------------------ cortes (por partes)
-    private static void analyzeCuts(Result R, Cue[] cues, Window[] ws, float[][] ps, Block[] bl, int[] use, int nu, double alpha, Params P,
+    /**
+     * Ajuste por partes. Parte do modelo global aceito (escala comum, deslocamento por trecho): rotula cada bloco de 30 s com o modelo que o explica,
+     * procura novos deslocamentos entre os blocos que ninguém explica (mesma escala), e coloca cada corte no maior intervalo sem falas
+     * entre o último bloco de um trecho e o primeiro do próximo. Se o intervalo ainda é largo, pede janelas extras (Result.more) no meio dele.
+     */
+    private static void analyzeCuts(Result R, Cue[] cues, Window[] ws, float[][] ps, Block[] bl, int[] use, int nu, Params P,
                                     long durMs, float[] fine) {
-        // reservado para a fase de cortes (AudioSyncSession.refineCuts); aqui só sinaliza janelas que discordam
-        if (!R.accepted && R.z < 3) return;
-        int off = 0, tot = 0;
-        for (int w = 0; w < ws.length; w++) {
-            Fine f = fineWindow(ps[w], ws[w].startMs, fine, R.scale, R.offsetMs, 150);
-            if (f.speechFrac < P.minSpeechFrac) continue;
-            tot++;
-            if (f.ncc < P.minNcc || Math.abs(f.bestDelta) > 600) off++;
+        if (!R.accepted && R.z < P.minZ) return;
+        final double a0 = R.scale, alpha = alphaOf(a0);
+        double[] offs = new double[P.maxPieces];
+        int nm = 1;
+        offs[0] = R.offsetMs;
+        int[] lab = new int[nu];
+        relabel(bl, use, nu, alpha, offs, nm, a0, P, lab);
+        Random rnd = new Random(P.seed + 7);
+        while (nm < P.maxPieces) {
+            int no = 0;
+            for (int t = 0; t < nu; t++) if (lab[t] < 0) no++;
+            if (no < 2) break;
+            int[] oi = new int[no];
+            int q = 0;
+            for (int t = 0; t < nu; t++) if (lab[t] < 0) oi[q++] = t;
+            double bestS = -1, bestBeta = 0;
+            for (int k = 0; k < no; k++) {
+                Block A = bl[use[oi[k]]];
+                for (int pk = 0; pk < A.peakIdx.length; pk++) {
+                    double L = (A.peakIdx[pk] - P.lagFrames) * (double) P.frameMs;
+                    double beta = L - alpha * A.centerMs;
+                    if (Math.abs(beta * a0) > P.maxOffsetMs * 1.2) continue;
+                    double sc = 0;
+                    for (int j = 0; j < no; j++) {
+                        Block B = bl[use[oi[j]]];
+                        sc += support(B, alpha * B.centerMs + beta, P);
+                    }
+                    if (sc > bestS) { bestS = sc; bestBeta = beta; }
+                }
+            }
+            if (bestS <= 0) break;
+            int nfit = 0;
+            for (int j = 0; j < no; j++) {
+                Block B = bl[use[oi[j]]];
+                if (support(B, alpha * B.centerMs + bestBeta, P) >= P.pieceFitNcc) nfit++;
+            }
+            if (nfit < 2) break;
+            double s1 = 0, s2 = 0;
+            int nr = 300;
+            for (int r = 0; r < nr; r++) {
+                double beta = (rnd.nextDouble() * 2 - 1) * P.maxOffsetMs / a0;
+                double sc = 0;
+                for (int j = 0; j < no; j++) {
+                    Block B = bl[use[oi[j]]];
+                    sc += support(B, alpha * B.centerMs + beta, P);
+                }
+                s1 += sc; s2 += sc * sc;
+            }
+            double mu = s1 / nr, sd = Math.sqrt(Math.max(1e-9, s2 / nr - mu * mu));
+            if ((bestS - mu) / sd < P.pieceMinZ) break;
+            double off2 = bestBeta * a0;
+            boolean dup = false;
+            for (int m = 0; m < nm; m++) if (Math.abs(offs[m] - off2) < 600) dup = true;
+            if (dup) break;
+            // refino fino com as janelas inteiramente explicadas pelo novo modelo
+            offs[nm] = off2;
+            nm++;
+            relabel(bl, use, nu, alpha, offs, nm, a0, P, lab);
+            for (int it = 0; it < 2; it++) {
+                double sw = 0, sd2 = 0;
+                for (int w = 0; w < ws.length; w++) {
+                    boolean all = false, mixed = false;
+                    for (int t = 0; t < nu; t++) {
+                        if (bl[use[t]].win != w) continue;
+                        if (lab[t] == nm - 1) all = true; else mixed = true;
+                    }
+                    if (!all || mixed) continue;
+                    Fine f = fineWindow(ps[w], ws[w].startMs, fine, a0, offs[nm - 1], 150);
+                    if (f.ncc < P.minNcc) continue;
+                    sw += f.ncc; sd2 += f.ncc * f.bestDelta;
+                }
+                if (sw <= 0) break;
+                offs[nm - 1] += sd2 / sw;
+            }
+            relabel(bl, use, nu, alpha, offs, nm, a0, P, lab);
         }
-        R.pieceSuspect = tot >= 2 && off > 0;
+        int no = 0;
+        for (int t = 0; t < nu; t++) if (lab[t] < 0) no++;
+        if (nm == 1) {
+            R.pieceSuspect = no >= 1;
+            // um único bloco forte sem explicação: pede uma janela colada nele para confirmar um possível 2º trecho
+            if (no == 1 && R.accepted && ws.length < P.maxWindows) {
+                for (int t = 0; t < nu; t++) {
+                    if (lab[t] >= 0) continue;
+                    Block b = bl[use[t]];
+                    if (b.peakVal.length == 0 || b.peakVal[0] < 0.25f) continue;
+                    long st = ws[b.win].startMs + ws[b.win].durationMs() + 5_000;
+                    if (st + P.bisectLenMs > durMs) st = Math.max(0, ws[b.win].startMs - 5_000 - P.bisectLenMs);
+                    boolean covered = false;
+                    for (Window w : ws) if (st < w.startMs + w.durationMs() && st + P.bisectLenMs > w.startMs) covered = true;
+                    if (!covered) R.more = new long[][]{{st / 10 * 10, P.bisectLenMs}};
+                }
+            }
+            return;
+        }
+
+        // blocos rotulados em ordem de tempo
+        int cnt = 0;
+        for (int t = 0; t < nu; t++) if (lab[t] >= 0) cnt++;
+        long[] bStart = new long[cnt], bEnd = new long[cnt];
+        int[] bLab = new int[cnt];
+        Integer[] ord = new Integer[nu];
+        for (int t = 0; t < nu; t++) ord[t] = t;
+        final Block[] blf = bl; final int[] usef = use;
+        Arrays.sort(ord, (x, y) -> Long.compare(blf[usef[x]].uMs, blf[usef[y]].uMs));
+        int q = 0;
+        for (int k = 0; k < nu; k++) {
+            int t = ord[k];
+            if (lab[t] < 0) continue;
+            Block b = bl[use[t]];
+            bStart[q] = b.uMs; bEnd[q] = b.uMs + (long) b.n * P.frameMs; bLab[q] = lab[t]; q++;
+        }
+        ArrayList<Segment> segs = new ArrayList<>();
+        ArrayList<long[]> more = new ArrayList<>();
+        segs.add(new Segment(Long.MIN_VALUE / 4, a0, offs[bLab[0]]));
+        long lastCut = Long.MIN_VALUE / 4;
+        boolean bad = false;
+        for (int k = 1; k < cnt; k++) {
+            if (bLab[k] == bLab[k - 1]) continue;
+            long tL = bEnd[k - 1], tR = bStart[k];
+            double oL = offs[bLab[k - 1]], oR = offs[bLab[k]];
+            double lo = (tL - oL) / a0, hi = (tR - oR) / a0;
+            if (hi < lo) { double tmp = lo; lo = hi; hi = tmp; }
+            long cut = pickCut(cues, lo, hi);
+            if (cut <= lastCut) { bad = true; break; }
+            lastCut = cut;
+            segs.add(new Segment(cut, a0, oR));
+            long span = tR - tL;
+            if (span > P.cutResolutionMs && span > P.bisectLenMs * 8 / 5) {
+                long mid = (tL + tR) / 2;
+                // meio do intervalo; se já há janela ali (p.ex. sem fala aproveitável), tenta posições vizinhas dentro do intervalo
+                long pick = -1;
+                for (int kk = 0; kk < 8 && pick < 0; kk++) {
+                    long d = ((kk + 1) / 2) * (P.bisectLenMs + 5_000) * ((kk & 1) == 1 ? 1 : -1);
+                    long c = mid + d;
+                    long st = c - P.bisectLenMs / 2;
+                    if (st < tL || st + P.bisectLenMs > tR || st < 0 || st + P.bisectLenMs > durMs) continue;
+                    boolean covered = false;
+                    for (Window w : ws) if (st < w.startMs + w.durationMs() && st + P.bisectLenMs > w.startMs) covered = true;
+                    for (long[] m : more) if (st < m[0] + m[1] && st + P.bisectLenMs > m[0]) covered = true;
+                    if (!covered) pick = st / 10 * 10;
+                }
+                if (pick >= 0) more.add(new long[]{pick, P.bisectLenMs});
+            }
+        }
+        if (bad) { R.pieceSuspect = true; return; }
+        if (!R.accepted) {
+            // o pico "ambíguo" pode ser só o outro trecho: aceita se os trechos achados explicam a grande maioria dos blocos
+            int[] per = new int[nm];
+            for (int t = 0; t < nu; t++) if (lab[t] >= 0) per[lab[t]]++;
+            boolean okp = (nu - no) >= P.pieceExplained * nu;
+            for (int m = 0; m < nm; m++) if (per[m] < 2) okp = false;
+            if (!okp) return;
+            R.accepted = true;
+            R.reason = "";
+            R.confidence = Math.min(R.confidence, 0.6);
+        }
+        R.segments = segs.toArray(new Segment[0]);
+        if (!more.isEmpty()) R.more = more.toArray(new long[0][]);
+    }
+
+    /** rotula cada bloco com o modelo (mesma escala, deslocamento por trecho) que melhor o explica; -1 se nenhum */
+    private static void relabel(Block[] bl, int[] use, int nu, double alpha, double[] offs, int nm, double a0, Params P, int[] lab) {
+        for (int t = 0; t < nu; t++) {
+            Block b = bl[use[t]];
+            int best = -1;
+            float bv = (float) P.pieceFitNcc;
+            if (b.peakVal.length > 0) bv = Math.max(bv, (float) (P.pieceRelPeak * b.peakVal[0]));
+            for (int m = 0; m < nm; m++) {
+                float v = support(b, alpha * b.centerMs + offs[m] / a0, P);
+                if (v >= bv) { bv = v; best = m; }
+            }
+            lab[t] = best;
+        }
+    }
+
+    /** corte (tempo da legenda) no maior intervalo entre falas dentro de [lo, hi]; no meio do intervalo se não houver falas */
+    private static long pickCut(Cue[] cues, double lo, double hi) {
+        int n = cues.length;
+        long[] st = new long[n], en = new long[n];
+        for (int i = 0; i < n; i++) { st[i] = cues[i].startMs; en[i] = cues[i].endMs; }
+        Integer[] ord = new Integer[n];
+        for (int i = 0; i < n; i++) ord[i] = i;
+        Arrays.sort(ord, (x, y) -> Long.compare(st[x], st[y]));
+        long bestGap = -1, best = (long) ((lo + hi) / 2);
+        long maxEnd = Long.MIN_VALUE;
+        for (int k = 0; k + 1 < n; k++) {
+            int i = ord[k], j = ord[k + 1];
+            if (en[i] > maxEnd) maxEnd = en[i];
+            long gap = st[j] - maxEnd;
+            if (gap <= 0) continue;
+            long mid = (maxEnd + st[j]) / 2;
+            if (mid < lo - 1000 || mid > hi + 1000) continue;
+            if (gap > bestGap) { bestGap = gap; best = mid; }
+        }
+        return best;
+    }
+
+    /** recusada mas promissora: sugere janelas extras nos maiores vãos entre as já capturadas */
+    private static void suggestMore(Result R, Window[] ws, Params P, long durMs) {
+        if (R.z < P.moreMinZ || R.blocksAgree < 2 || ws.length >= P.maxWindows) return;
+        int n = ws.length;
+        long[][] w = new long[n][2];
+        long len = 0;
+        for (int i = 0; i < n; i++) { w[i][0] = ws[i].startMs; w[i][1] = ws[i].startMs + ws[i].durationMs(); len += ws[i].durationMs(); }
+        len = Math.max(20_000, Math.min(60_000, len / n));
+        Arrays.sort(w, (x, y) -> Long.compare(x[0], y[0]));
+        ArrayList<long[]> gaps = new ArrayList<>();
+        long prev = 0;
+        for (int i = 0; i <= n; i++) {
+            long nxt = i < n ? w[i][0] : durMs;
+            gaps.add(new long[]{nxt - prev, (prev + nxt) / 2});
+            if (i < n) prev = w[i][1];
+        }
+        gaps.sort((x, y) -> Long.compare(y[0], x[0]));
+        ArrayList<long[]> more = new ArrayList<>();
+        for (int i = 0; i < gaps.size() && more.size() < 2; i++) {
+            if (gaps.get(i)[0] < 2 * len) break;
+            long st = Math.max(0, Math.min(gaps.get(i)[1] - len / 2, durMs - len)) / 10 * 10;
+            more.add(new long[]{st, len});
+        }
+        if (!more.isEmpty()) R.more = more.toArray(new long[0][]);
     }
 }
