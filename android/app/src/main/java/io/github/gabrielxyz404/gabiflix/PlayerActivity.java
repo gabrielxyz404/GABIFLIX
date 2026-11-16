@@ -387,6 +387,7 @@ public class PlayerActivity extends Activity {
         back.setOnClickListener(v -> finish());
         remote(back);
         back.setNextFocusDownId(idPlay);
+        backBtn = back;
         top.addView(back, new LinearLayout.LayoutParams(dp(46), dp(46)));
         titleLabel = text(deriveTitle(), 19, true);
         titleLabel.setTypeface(PlayerUi.font(this, 600));
@@ -412,6 +413,7 @@ public class PlayerActivity extends Activity {
         ff.setContentDescription("Avançar 10 s");
         ff.setOnClickListener(v -> skip(10000));
         remote(rw); remote(playButton); remote(ff);
+        rwBtn = rw; ffBtn = ff;
         playButton.setNextFocusUpId(idBack);
         for (View b : new View[]{rw, playButton, ff}) b.setNextFocusDownId(idSeek);
         LinearLayout.LayoutParams small = new LinearLayout.LayoutParams(dp(58), dp(58));
@@ -494,6 +496,7 @@ public class PlayerActivity extends Activity {
         });
         for (PlayerUi.Btn b : new PlayerUi.Btn[]{syncB, subsB, audioB, scaleB}) {
             remote(b);
+            optBtns.add(b);
             b.setNextFocusUpId(idSeek);
             LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, dp(42));
             lp.leftMargin = dp(12);
@@ -510,6 +513,8 @@ public class PlayerActivity extends Activity {
     private boolean backEaten = false;
     private View focusSink; // recebe o foco quando nenhum botão está selecionado
     private final ArrayList<View> remoteButtons = new ArrayList<>();
+    private View backBtn, rwBtn, ffBtn;
+    private final ArrayList<View> optBtns = new ArrayList<>();
     /** depois de um salto, o VLC ainda avisa por um instante o tempo antigo: a barra ignora isso até esta hora */
     private long seekHoldUntil = 0;
 
@@ -592,6 +597,15 @@ public class PlayerActivity extends Activity {
             }
         } else if (down) {
             scheduleHide();
+            if (k == android.view.KeyEvent.KEYCODE_DPAD_DOWN || k == android.view.KeyEvent.KEYCODE_DPAD_UP) {
+                // ordem fixa: voltar / (-10, play, +10) / linha do tempo / opções
+                View cur = getCurrentFocus(), nxt = null;
+                boolean mid = cur == playButton || cur == rwBtn || cur == ffBtn;
+                if (k == android.view.KeyEvent.KEYCODE_DPAD_DOWN) nxt = cur == backBtn ? playButton : mid ? seek : cur == seek ? optBtns.get(1) : null;
+                else nxt = mid ? backBtn : cur == seek ? playButton : optBtns.contains(cur) ? seek : null;
+                if (nxt != null) nxt.requestFocus();
+                return true;
+            }
         }
         return super.dispatchKeyEvent(e);
     }
