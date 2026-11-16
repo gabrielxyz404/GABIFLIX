@@ -1439,7 +1439,7 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
             var parts: [String] = []
             if let row = controls.subviews.first as? NSStackView {
                 for v in row.arrangedSubviews { parts.append("\(NSStringFromClass(type(of: v)).split(separator: ".").last ?? "")@\(Int(v.frame.minX))-\(Int(v.frame.maxX))") }
-                log("layout: janela=\(Int(root.bounds.width))x\(Int(root.bounds.height)) barra=\(Int(controls.frame.width)) linha=\(Int(row.frame.width)) fitting=\(Int(row.fittingSize.width)) slider=\(Int(slider.frame.width)) itens=\(parts.joined(separator: " "))")
+                log("layout: janela=\(Int(root.bounds.width))x\(Int(root.bounds.height)) barra=\(Int(controls.frame.width)) linha=\(Int(row.frame.width)) fitting=\(Int(row.fittingSize.width)) timeline=\(Int(timeline.frame.width)) itens=\(parts.joined(separator: " "))")
             }
         case "hold":
             // simula segurar o botão da fila N,M do painel (mouse apertado por 1,3 s) e solta
