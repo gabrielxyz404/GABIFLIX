@@ -101,11 +101,18 @@ jobs:
           web "js document.documentElement.getAttribute('data-gf-app') + ' | ' + navigator.userAgent + ' | ' + innerWidth + 'x' + innerHeight"
           cat /tmp/gf-web.out | tee -a /tmp/telas/web-info.txt
           shot w01-home
+          W=$(grep -o '[0-9]*x[0-9]*' /tmp/telas/web-info.txt | head -1 | cut -dx -f1); echo "largura=$W" | tee -a /tmp/telas/web-info.txt
+          rm -f /tmp/gf-web.out
+          web "js window.__gfMacVersion + ' | fs=' + document.documentElement.getAttribute('data-gf-fs')"
+          cat /tmp/gf-web.out | tee -a /tmp/telas/web-info.txt
+          for p in "40 44" "60 44" "150 44" "$((W-40)) 44" "$((W-110)) 44" "300 20" "300 120"; do web "hit $p" 1.2; done
+          cat /tmp/gf-web.out | tee -a /tmp/telas/web-info.txt
           web "resize 900 650"; shot w02-home-900
           web "resize 1000 700"; shot w03-home-1000
           web "js location.hash='#/search'; 'ok'"; sleep 2; shot w04-busca
           web "js location.hash='#/settings'; 'ok'"; sleep 2; shot w05-config
           web "js location.hash='#/library'; 'ok'"; sleep 2; shot w06-mais-tarde
+          web "js location.hash='#/search'; 'ok'"; sleep 1; web "esc"; sleep 1.5; web "js location.hash"; cat /tmp/gf-web.out | tee -a /tmp/telas/web-info.txt
           web "js location.hash='#/'; 'ok'"; sleep 2
           web "js (function(){var c=document.querySelectorAll('.gf-card');if(c[0])c[0].click();return c.length})()" 6; cat /tmp/gf-web.out | tee -a /tmp/telas/web-info.txt
           shot w07-netflix
@@ -113,6 +120,9 @@ jobs:
           web "resize 1000 700"
           web "js (function(){var a=document.querySelector('.gf-poster, [class*=meta-item-container] , .gf-row a');if(a)a.click();return !!a})()" 7; cat /tmp/gf-web.out | tee -a /tmp/telas/web-info.txt
           shot w09-titulo
+          web "fs" 5; shot w10-tela-cheia
+          web "js document.documentElement.getAttribute('data-gf-fs')"; cat /tmp/gf-web.out | tee -a /tmp/telas/web-info.txt
+          web "fs" 5; shot w11-saiu-da-tela-cheia
           pkill -x FramePlay || true
           sleep 2
       - name: Testar o player (telas)
@@ -141,8 +151,14 @@ jobs:
           cmd "delay 2500"
           cmd "state"
           sleep 3; shot 09-atraso-2500
-          echo "show" > /tmp/gf-cmd; sleep 1; cmd "dump"; shot 11-controles
+          cmd "stats"
+          echo "show" > /tmp/gf-cmd; sleep 1; cmd "dump"; cmd "hover 40"; sleep 1; shot 11a-controles-hover-linha; cmd "hover 0"; shot 11-controles
           cmd "showforce"; sleep 1; cmd "dump"; shot 11b-controles-forcados
+          cmd "subs"; sleep 1; shot 14-popover-legendas; cmd "popclose"
+          cmd "audio"; sleep 1; shot 15-popover-audio; cmd "popclose"
+          cmd "vol 40"; cmd "key 126"; cmd "key 125"; cmd "key 125"; sleep 0.5; shot 16-volume
+          cmd "vol 100"; cmd "key 46"; sleep 0.5; shot 17-mudo; cmd "key 46"
+          cmd "stats"
           cmd "layout"
           cmd "sync"; cmd "hold 2 0"; sleep 3; cmd "state"
           cmd "hold 1 2"; sleep 3; cmd "state"

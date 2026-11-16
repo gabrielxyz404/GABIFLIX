@@ -7,9 +7,21 @@ import VLCKit
 let APP_URL = URL(string: "https://gabrielxyz404.github.io/GABIFLIX/")!
 let APP_HOST = "gabrielxyz404.github.io"
 
+// versão do app (a mostrada nas Configurações do site, no lugar da versão do Stremio)
+let APP_VERSION: String = (Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String) ?? ""
+
 // O site chama window.GabiFlixNative.playSession(...) (o mesmo nome usado no Android).
 let BRIDGE_JS = """
 (function () {
+  window.__gfMacVersion = "\(APP_VERSION)";
+  // o WebKit não tem a API do Chromecast: o aviso "window.cast api not available" é só ruído no console
+  try {
+    var oe = console.error;
+    console.error = function () {
+      try { if (/cast api not available/i.test(Array.prototype.join.call(arguments, ' '))) return; } catch (e) {}
+      return oe.apply(console, arguments);
+    };
+  } catch (e) {}
   if (window.GabiFlixNative) return;
   window.GabiFlixNative = {
     playSession: function (url, subs, type, id, start) {
@@ -30,6 +42,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, WKScriptMessageHandler
     var lastOpen = Date.distantPast
     var checkingUpdate = false
     var leftoverTried = false
+    var overlay: LoadingOverlay?
+    var keyMonitor: Any?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         NSApp.appearance = NSAppearance(named: .darkAqua)
@@ -42,6 +56,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, WKScriptMessageHandler
         let content = WKUserContentController()
         content.addUserScript(WKUserScript(source: BRIDGE_JS, injectionTime: .atDocumentStart, forMainFrameOnly: true))
         content.add(self, name: "gabiflix")
+        content.add(self, name: "gfmac") // comandos do site (arrastar a janela pelo cabeçalho, tela cheia)
         config.userContentController = content
         config.preferences.setValue(true, forKey: "developerExtrasEnabled")
 
@@ -59,16 +74,41 @@ final class AppDelegate: NSObject, NSApplicationDelegate, WKScriptMessageHandler
         window.title = "FramePlay"
         window.titlebarAppearsTransparent = true
         window.titleVisibility = .hidden
-        window.backgroundColor = .black
-        window.minSize = NSSize(width: 420, height: 600)
-        window.contentView = web
+        if #available(macOS 11.0, *) { window.titlebarSeparatorStyle = .none }
+        window.backgroundColor = .black // sem clarão branco enquanto o site abre
+        window.collectionBehavior = [.fullScreenPrimary]
+        window.minSize = NSSize(width: 860, height: 560) // abaixo disso as 9 barras dos serviços não cabem direito
+        window.isReleasedWhenClosed = false
+
+        // o site ocupa a janela toda; por cima fica a tela de abertura (logo + carregando) até o site desenhar
+        let container = NSView()
+        container.wantsLayer = true
+        container.layer?.backgroundColor = NSColor.black.cgColor
+        web.frame = container.bounds
+        web.autoresizingMask = [.width, .height]
+        container.addSubview(web)
+        let ov = LoadingOverlay()
+        ov.frame = container.bounds
+        ov.autoresizingMask = [.width, .height]
+        ov.onRetry = { [weak self] in self?.retryLoad() }
+        container.addSubview(ov)
+        overlay = ov
+        window.contentView = container
         window.delegate = self
         window.setFrameAutosaveName("GabiFlixMain")
         if !window.setFrameUsingName("GabiFlixMain") { window.center() }
         window.makeKeyAndOrderFront(nil)
         NSApp.activate(ignoringOtherApps: true)
+        DispatchQueue.main.async { [weak self] in self?.placeTrafficLights() }
 
         web.load(URLRequest(url: APP_URL))
+
+        // Esc volta uma tela (como o botão Voltar do site); só na janela do site, nunca no player
+        keyMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { [weak self] e in
+            guard let self = self, e.keyCode == 53, e.window === self.window, self.player == nil else { return e }
+            self.goBackInApp(blurFirst: true)
+            return nil
+        }
 
         // procura versão nova alguns segundos depois de abrir (não no teste automático)
         if !CommandLine.arguments.contains("--gf-test-play") && !CommandLine.arguments.contains("--gf-test-web") {
@@ -90,6 +130,20 @@ final class AppDelegate: NSObject, NSApplicationDelegate, WKScriptMessageHandler
                             self.window.setContentSize(NSSize(width: n[0], height: n[1]))
                             self.window.center()
                         }
+                    } else if l == "fs" {
+                        self.window.toggleFullScreen(nil)
+                    } else if l == "esc" {
+                        self.goBackInApp(blurFirst: true)
+                    } else if l.hasPrefix("hit ") {
+                        // qual vista recebe o clique neste ponto (x, y a partir do topo da janela)? usado para conferir os botões do cabeçalho
+                        let n = l.split(separator: " ").compactMap { Double($0) }
+                        if n.count == 2, let frameView = self.window.contentView?.superview {
+                            let p = NSPoint(x: n[0], y: Double(self.window.frame.height) - n[1])
+                            let v = frameView.hitTest(frameView.convert(p, from: nil))
+                            let out = "hit \(n[0]),\(n[1]) -> \(v.map { NSStringFromClass(type(of: $0)) } ?? "nil")\n"
+                            if let h = try? FileHandle(forWritingTo: URL(fileURLWithPath: "/tmp/gf-web.out")) { h.seekToEndOfFile(); h.write(out.data(using: .utf8)!); h.closeFile() }
+                            else { try? out.write(toFile: "/tmp/gf-web.out", atomically: true, encoding: .utf8) }
+                        }
                     } else if l.hasPrefix("js ") {
                         self.web.evaluateJavaScript(String(l.dropFirst(3))) { r, e in
                             let out = "\(r ?? "nil") \(e?.localizedDescription ?? "")\n"
@@ -108,7 +162,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, WKScriptMessageHandler
             var subs: [URL] = []
             if let k = args.firstIndex(of: "--gf-test-sub"), k + 1 < args.count, let su = URL(string: args[k + 1]) { subs.append(su) }
             DispatchQueue.main.asyncAfter(deadline: .now() + 6) {
-                let p = id == "-" ? PlayerWindowController(url: u, subtitles: subs, type: "", id: "", startMs: 0)
+                let p = id == "-" ? PlayerWindowController(url: u, subtitles: subs, type: "", id: "", startMs: 0, title: "Filme de teste  ·  T1 E3")
                                   : PlayerWindowController(url: u, subtitles: subs, type: "movie", id: id, startMs: 0)
                 self.player = p
                 p.showWindow(nil)
@@ -128,7 +182,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, WKScriptMessageHandler
         player?.close() // entrega o progresso antes de sair
     }
 
-    // ---------- menu (Copiar/Colar no login, Atualizar, Tela cheia, Sair) ----------
+    // ---------- menu (Copiar/Colar no login, Navegar, Atualizar, Tela cheia, Sair) ----------
     func buildMenu() {
         let main = NSMenu()
 
@@ -137,7 +191,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate, WKScriptMessageHandler
         appMenu.addItem(withTitle: "Sobre o FramePlay", action: #selector(NSApplication.orderFrontStandardAboutPanel(_:)), keyEquivalent: "")
         appMenu.addItem(withTitle: "Procurar atualizações…", action: #selector(checkUpdatesMenu), keyEquivalent: "")
         appMenu.addItem(.separator())
+        appMenu.addItem(menuItem("Configurações…", #selector(goSettings), ","))
+        appMenu.addItem(.separator())
         appMenu.addItem(withTitle: "Ocultar FramePlay", action: #selector(NSApplication.hide(_:)), keyEquivalent: "h")
+        let hideOthers = NSMenuItem(title: "Ocultar Outros", action: #selector(NSApplication.hideOtherApplications(_:)), keyEquivalent: "h")
+        hideOthers.keyEquivalentModifierMask = [.command, .option]
+        appMenu.addItem(hideOthers)
+        appMenu.addItem(withTitle: "Mostrar Tudo", action: #selector(NSApplication.unhideAllApplications(_:)), keyEquivalent: "")
         appMenu.addItem(.separator())
         appMenu.addItem(withTitle: "Sair do FramePlay", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")
         appItem.submenu = appMenu
@@ -155,10 +215,24 @@ final class AppDelegate: NSObject, NSApplicationDelegate, WKScriptMessageHandler
         editItem.submenu = edit
         main.addItem(editItem)
 
+        // Navegar: as telas do site e voltar/avançar
+        let navItem = NSMenuItem()
+        let nav = NSMenu(title: "Navegar")
+        nav.addItem(menuItem("Início", #selector(goHome), "1"))
+        nav.addItem(menuItem("Mais Tarde", #selector(goLibrary), "2"))
+        nav.addItem(menuItem("Calendário", #selector(goCalendar), "3"))
+        nav.addItem(menuItem("Addons", #selector(goAddons), "4"))
+        nav.addItem(.separator())
+        nav.addItem(menuItem("Pesquisar", #selector(goSearch), "f"))
+        nav.addItem(.separator())
+        nav.addItem(menuItem("Voltar", #selector(goBack), "["))
+        nav.addItem(menuItem("Avançar", #selector(goForward), "]"))
+        navItem.submenu = nav
+        main.addItem(navItem)
+
         let viewItem = NSMenuItem()
         let view = NSMenu(title: "Visualizar")
-        view.addItem(withTitle: "Atualizar", action: #selector(reloadSite), keyEquivalent: "r")
-        view.addItem(withTitle: "Voltar", action: #selector(goBack), keyEquivalent: "[")
+        view.addItem(menuItem("Atualizar", #selector(reloadSite), "r"))
         view.addItem(.separator())
         let fs = NSMenuItem(title: "Tela Cheia", action: #selector(NSWindow.toggleFullScreen(_:)), keyEquivalent: "f")
         fs.keyEquivalentModifierMask = [.command, .control]
@@ -169,12 +243,46 @@ final class AppDelegate: NSObject, NSApplicationDelegate, WKScriptMessageHandler
         let winItem = NSMenuItem()
         let win = NSMenu(title: "Janela")
         win.addItem(withTitle: "Minimizar", action: #selector(NSWindow.performMiniaturize(_:)), keyEquivalent: "m")
+        win.addItem(withTitle: "Ampliar", action: #selector(NSWindow.performZoom(_:)), keyEquivalent: "")
         win.addItem(withTitle: "Fechar", action: #selector(NSWindow.performClose(_:)), keyEquivalent: "w")
+        win.addItem(.separator())
+        win.addItem(withTitle: "Trazer Tudo para a Frente", action: #selector(NSApplication.arrangeInFront(_:)), keyEquivalent: "")
         winItem.submenu = win
         main.addItem(winItem)
         NSApp.windowsMenu = win
 
+        let helpItem = NSMenuItem()
+        let help = NSMenu(title: "Ajuda")
+        help.addItem(menuItem("Atalhos do teclado", #selector(showShortcuts), ""))
+        helpItem.submenu = help
+        main.addItem(helpItem)
+        NSApp.helpMenu = help
+
         NSApp.mainMenu = main
+    }
+
+    private func menuItem(_ title: String, _ action: Selector, _ key: String) -> NSMenuItem {
+        let it = NSMenuItem(title: title, action: action, keyEquivalent: key)
+        it.target = self
+        return it
+    }
+
+    /** vai para uma tela do site (o site usa o endereço depois do # como rota) */
+    private func goRoute(_ hash: String) {
+        if player != nil { return } // com o player aberto os atalhos do site não valem
+        web.evaluateJavaScript("location.hash = '\(hash)'; true")
+        window.makeKeyAndOrderFront(nil)
+    }
+    @objc func goHome() { goRoute("#/") }
+    @objc func goLibrary() { goRoute("#/library") }
+    @objc func goCalendar() { goRoute("#/calendar") }
+    @objc func goAddons() { goRoute("#/addons") }
+    @objc func goSettings() { goRoute("#/settings") }
+    @objc func goSearch() {
+        goRoute("#/search")
+        // põe o cursor no campo de busca assim que a tela abre
+        let js = "(function f(n){var i=document.querySelector('[class*=\"search-input\"] input, input[type=\"text\"]');if(i){i.focus();return true;}if(n<15)setTimeout(function(){f(n+1)},150);return false;})(0)"
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) { [weak self] in self?.web.evaluateJavaScript(js) }
     }
 
     @objc func reloadSite() {
@@ -184,10 +292,37 @@ final class AppDelegate: NSObject, NSApplicationDelegate, WKScriptMessageHandler
         }
     }
 
-    @objc func goBack() { if web.canGoBack { web.goBack() } }
+    /** volta uma tela como o botão Voltar do site (fecha janelas abertas, serviço -> início, título -> anterior) */
+    func goBackInApp(blurFirst: Bool) {
+        let blur = blurFirst ? "var a=document.activeElement;if(a&&(a.tagName==='INPUT'||a.tagName==='TEXTAREA')){a.blur();return true;}" : ""
+        web.evaluateJavaScript("(function(){" + blur + "return window.gfBack ? window.gfBack() : false;})()")
+    }
+
+    @objc func goBack() { if player == nil { goBackInApp(blurFirst: false) } }
+    @objc func goForward() { if player == nil && web.canGoForward { web.goForward() } }
+
+    @objc func showShortcuts() {
+        let a = NSAlert()
+        a.messageText = "Atalhos do FramePlay"
+        a.informativeText = """
+        No site
+        ⌘1  Início     ⌘2  Mais Tarde     ⌘3  Calendário     ⌘4  Addons
+        ⌘F  Pesquisar     ⌘,  Configurações
+        Esc ou ⌘[  Voltar     ⌘]  Avançar     ⌘R  Atualizar
+
+        No player
+        Espaço  Pausar/continuar     ←  →  10 s para trás/frente
+        ↑  ↓  Volume     M  Silenciar     F  Tela cheia
+        S  Legendas     A  Áudio     L  Sincronizar legenda
+        Esc  Fechar o painel ou sair da tela cheia/do player
+        """
+        a.addButton(withTitle: "OK")
+        a.runModal()
+    }
 
     // ---------- ponte do site ----------
     func userContentController(_ controller: WKUserContentController, didReceive message: WKScriptMessage) {
+        if message.name == "gfmac" { handleMacCommand(message.body); return }
         guard message.name == "gabiflix", let body = message.body as? [String: Any],
               let link = body["url"] as? String, link.hasPrefix("http://") || link.hasPrefix("https://"),
               let url = URL(string: link) else { return }
@@ -202,12 +337,45 @@ final class AppDelegate: NSObject, NSApplicationDelegate, WKScriptMessageHandler
             subs = arr.compactMap { URL(string: $0) }.filter { $0.scheme == "http" || $0.scheme == "https" }
         }
         player?.close()
-        let p = PlayerWindowController(url: url, subtitles: subs, type: type, id: id, startMs: start)
-        p.onProgress = { time, length in AppDelegate.saveLast(time: time, length: length, ended: false, url: link) }
-        p.onFinish = { [weak self] time, length, ended in self?.deliverProgress(time: time, length: length, ended: ended, url: link) }
-        player = p
-        p.showWindow(nil)
-        p.window?.makeKeyAndOrderFront(nil)
+        // o título que está na tela do site (a página do filme/série) vai para o topo do player
+        let js = "(function(){var t=document.querySelector('.gf-d-title');return t?String(t.textContent||'').trim():'';})()"
+        web.evaluateJavaScript(js) { [weak self] result, _ in
+            guard let self = self else { return }
+            let title = AppDelegate.playerTitle(site: (result as? String) ?? "", id: id, link: url)
+            let p = PlayerWindowController(url: url, subtitles: subs, type: type, id: id, startMs: start, title: title)
+            p.onProgress = { time, length in AppDelegate.saveLast(time: time, length: length, ended: false, url: link) }
+            p.onFinish = { [weak self] time, length, ended in self?.deliverProgress(time: time, length: length, ended: ended, url: link) }
+            self.player = p
+            p.showWindow(nil)
+            p.window?.makeKeyAndOrderFront(nil)
+        }
+    }
+
+    /** "Nome do filme" ou "Nome da série · T1 E3"; sem nome no site, usa o nome do arquivo do link */
+    static func playerTitle(site: String, id: String, link: URL) -> String {
+        var base = site
+        if base.isEmpty {
+            var f = (link.lastPathComponent.removingPercentEncoding ?? link.lastPathComponent)
+            if let dot = f.lastIndex(of: "."), f.distance(from: dot, to: f.endIndex) <= 5 { f = String(f[f.startIndex..<dot]) }
+            base = f.replacingOccurrences(of: ".", with: " ").replacingOccurrences(of: "_", with: " ")
+        }
+        let parts = id.split(separator: ":")
+        if parts.count >= 3, let s = Int(parts[parts.count - 2]), let e = Int(parts[parts.count - 1]) { base += "  ·  T\(s) E\(e)" }
+        return base
+    }
+
+    /** comandos que o site manda (gabiflix/mac.js): arrastar a janela pelo cabeçalho, zoom, tela cheia */
+    private func handleMacCommand(_ body: Any) {
+        guard let d = body as? [String: Any], let cmd = d["cmd"] as? String else { return }
+        switch cmd {
+        case "drag":
+            // só enquanto o botão do mouse ainda está apertado (a mensagem chega um instante depois do clique)
+            if NSEvent.pressedMouseButtons & 1 != 0, let e = NSApp.currentEvent,
+               e.type == .leftMouseDown || e.type == .leftMouseDragged { window.performDrag(with: e) }
+        case "zoom": window.performZoom(nil)
+        case "fullscreen": window.toggleFullScreen(nil)
+        default: break
+        }
     }
 
     /** devolve ao site onde o vídeo parou (o site salva no Continuar assistindo do Stremio) */
@@ -253,7 +421,60 @@ final class AppDelegate: NSObject, NSApplicationDelegate, WKScriptMessageHandler
         sendToSite(time: t, length: len, ended: ended, url: url)
     }
 
+    // ---------- tela de abertura ----------
+    /** tira a tela de abertura quando o site já desenhou algo (ou depois de uns 8 s, para nunca ficar presa) */
+    private func waitForSiteThenReveal(_ attempt: Int = 0) {
+        guard overlay != nil else { return }
+        web.evaluateJavaScript("window.gfMacReady ? window.gfMacReady() : false") { [weak self] result, _ in
+            guard let self = self else { return }
+            if (result as? Bool) == true || attempt >= 40 { self.revealSite() }
+            else { DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) { self.waitForSiteThenReveal(attempt + 1) } }
+        }
+    }
+
+    private func revealSite() {
+        guard let ov = overlay else { return }
+        overlay = nil
+        NSAnimationContext.runAnimationGroup({ ctx in
+            ctx.duration = 0.4
+            ov.animator().alphaValue = 0
+        }, completionHandler: { ov.removeFromSuperview() })
+    }
+
+    private func retryLoad() {
+        overlay?.showLoading()
+        web.load(URLRequest(url: APP_URL))
+    }
+
+    func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: Error) {
+        overlay?.showError("Não consegui abrir o FramePlay.\nVerifique a ligação à internet.")
+    }
+
+    func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
+        overlay?.showError("Não consegui abrir o FramePlay.\nVerifique a ligação à internet.")
+    }
+
+    // ---------- janela ----------
+    /** os botões vermelho/amarelo/verde ficam no meio da cápsula de vidro do cabeçalho */
+    func placeTrafficLights() {
+        Chrome.positionTrafficLights(window, centerY: 44, leading: 24)
+    }
+    func windowDidResize(_ notification: Notification) {
+        DispatchQueue.main.async { [weak self] in self?.placeTrafficLights() }
+    }
+    func windowDidBecomeKey(_ notification: Notification) {
+        DispatchQueue.main.async { [weak self] in self?.placeTrafficLights() }
+    }
+    func windowWillEnterFullScreen(_ notification: Notification) {
+        web.evaluateJavaScript("window.gfMacFullscreen && window.gfMacFullscreen(true)")
+    }
+    func windowDidExitFullScreen(_ notification: Notification) {
+        web.evaluateJavaScript("window.gfMacFullscreen && window.gfMacFullscreen(false)")
+        DispatchQueue.main.async { [weak self] in self?.placeTrafficLights() }
+    }
+
     func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
+        waitForSiteThenReveal()
         if !leftoverTried {
             leftoverTried = true
             deliverLeftover()
@@ -438,6 +659,102 @@ final class AppDelegate: NSObject, NSApplicationDelegate, WKScriptMessageHandler
     }
 
     func webViewWebContentProcessDidTerminate(_ webView: WKWebView) { webView.reload() }
+}
+
+/** tela de abertura: o logo do app e "carregando"; se o site não abrir mostra o erro e um botão para tentar de novo */
+final class LoadingOverlay: NSView {
+    var onRetry: (() -> Void)?
+    private let icon = NSImageView()
+    private let spinner = NSProgressIndicator()
+    private let label = NSTextField(labelWithString: "")
+    private let retry = NSButton()
+
+    override init(frame frameRect: NSRect) {
+        super.init(frame: frameRect)
+        wantsLayer = true
+        layer?.backgroundColor = NSColor.black.cgColor
+        icon.image = NSApp.applicationIconImage
+        icon.imageScaling = .scaleProportionallyUpOrDown
+        icon.translatesAutoresizingMaskIntoConstraints = false
+        icon.widthAnchor.constraint(equalToConstant: 112).isActive = true
+        icon.heightAnchor.constraint(equalToConstant: 112).isActive = true
+        spinner.style = .spinning
+        spinner.controlSize = .small
+        spinner.appearance = NSAppearance(named: .darkAqua)
+        spinner.startAnimation(nil)
+        label.textColor = NSColor(white: 1, alpha: 0.72)
+        label.font = .systemFont(ofSize: 14)
+        label.alignment = .center
+        label.maximumNumberOfLines = 0
+        label.isHidden = true
+        retry.title = "Tentar de novo"
+        retry.bezelStyle = .rounded
+        retry.target = self
+        retry.action = #selector(retryTapped)
+        retry.isHidden = true
+        let stack = NSStackView(views: [icon, spinner, label, retry])
+        stack.orientation = .vertical
+        stack.alignment = .centerX
+        stack.spacing = 20
+        stack.translatesAutoresizingMaskIntoConstraints = false
+        addSubview(stack)
+        NSLayoutConstraint.activate([
+            stack.centerXAnchor.constraint(equalTo: centerXAnchor),
+            stack.centerYAnchor.constraint(equalTo: centerYAnchor, constant: -10),
+        ])
+    }
+
+    required init?(coder: NSCoder) { fatalError("não usado") }
+
+    override var mouseDownCanMoveWindow: Bool { true }
+
+    func showError(_ text: String) {
+        spinner.stopAnimation(nil)
+        spinner.isHidden = true
+        label.stringValue = text
+        label.isHidden = false
+        retry.isHidden = false
+    }
+
+    func showLoading() {
+        label.isHidden = true
+        retry.isHidden = true
+        spinner.isHidden = false
+        spinner.startAnimation(nil)
+    }
+
+    @objc private func retryTapped() { onRetry?() }
+}
+
+/** ajustes da janela (botões vermelho/amarelo/verde) usados pela janela do site e pelo player */
+enum Chrome {
+    /** põe os 3 botões da janela com o centro a `centerY` pontos do topo e o primeiro a `leading` pontos da esquerda.
+        O contêiner da barra de título cresce junto (senão os botões ficam cortados e sem clique). */
+    static func positionTrafficLights(_ w: NSWindow, centerY: CGFloat, leading: CGFloat) {
+        if w.styleMask.contains(.fullScreen) { return }
+        guard let close = w.standardWindowButton(.closeButton),
+              let mini = w.standardWindowButton(.miniaturizeButton),
+              let zoom = w.standardWindowButton(.zoomButton),
+              let titlebar = close.superview, let container = titlebar.superview else { return }
+        let h = max(centerY * 2, 28)
+        var f = container.frame
+        f.size.height = h
+        f.origin.y = w.frame.height - h
+        container.frame = f
+        titlebar.frame = NSRect(x: 0, y: 0, width: container.frame.width, height: h)
+        let step = max(mini.frame.origin.x - close.frame.origin.x, 18)
+        for (i, b) in [close, mini, zoom].enumerated() {
+            b.setFrameOrigin(NSPoint(x: leading + CGFloat(i) * step, y: (h - b.frame.height) / 2))
+        }
+    }
+
+    /** esmaece/mostra os 3 botões junto com os controles do player */
+    static func setTrafficLightsAlpha(_ w: NSWindow, _ a: CGFloat, animated: Bool) {
+        for t in [NSWindow.ButtonType.closeButton, .miniaturizeButton, .zoomButton] {
+            guard let b = w.standardWindowButton(t) else { continue }
+            if animated { b.animator().alphaValue = a } else { b.alphaValue = a }
+        }
+    }
 }
 
 let app = NSApplication.shared

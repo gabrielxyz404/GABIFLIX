@@ -3,10 +3,11 @@
 import Cocoa
 import VLCKit
 
-/** Vista principal do player: recebe teclado e mouse */
+/** Vista principal do player: recebe teclado e mouse (clique = pausar/continuar, duplo clique = tela cheia) */
 final class PlayerRootView: NSView {
     var onKey: ((NSEvent) -> Bool)?
     var onMouseMove: (() -> Void)?
+    var onClick: (() -> Void)?
     var onDoubleClick: (() -> Void)?
     private var tracking: NSTrackingArea?
 
@@ -15,14 +16,28 @@ final class PlayerRootView: NSView {
     override func mouseMoved(with event: NSEvent) { onMouseMove?() }
     override func mouseDown(with event: NSEvent) {
         onMouseMove?()
-        if event.clickCount == 2 { onDoubleClick?() }
+        NSObject.cancelPreviousPerformRequests(withTarget: self, selector: #selector(fireClick), object: nil)
+        if event.clickCount >= 2 { onDoubleClick?() }
+        else { perform(#selector(fireClick), with: nil, afterDelay: NSEvent.doubleClickInterval) } // espera para saber se é duplo clique
     }
+    @objc private func fireClick() { onClick?() }
     override func updateTrackingAreas() {
         super.updateTrackingAreas()
         if let t = tracking { removeTrackingArea(t) }
         let t = NSTrackingArea(rect: bounds, options: [.mouseMoved, .activeAlways, .inVisibleRect], owner: self, userInfo: nil)
         addTrackingArea(t)
         tracking = t
+    }
+}
+
+/** fundo escurecido atrás dos painéis (sincronizar legenda, lista de falas): clicar fora fecha o painel */
+final class PanelHost: NSView {
+    var onOutsideClick: (() -> Void)?
+    override var acceptsFirstResponder: Bool { false }
+    override func mouseDown(with event: NSEvent) {
+        let p = convert(event.locationInWindow, from: nil)
+        if let panel = subviews.first, panel.frame.contains(p) { return }
+        onOutsideClick?()
     }
 }
 
@@ -43,11 +58,23 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
     private let root = NSView()
     private let overlay = PlayerRootView()
     private let controls = NSVisualEffectView()
-    private let topBar = NSVisualEffectView()
-    private let playButton = NSButton()
-    private let slider = NSSlider()
-    private let timeLabel = NSTextField(labelWithString: "0:00")
-    private let lengthLabel = NSTextField(labelWithString: "0:00")
+    private let topBar = NSView()
+    private var playButton: IconButton!
+    private let timeline = TimelineView()
+    private let timeLabel = GF.label("0:00", size: 12, weight: .semibold, mono: true)
+    private let lengthLabel = GF.label("-0:00", size: 12, weight: .semibold, color: GF.dim, mono: true)
+    private let titleLabel = GF.label("", size: 15, weight: .semibold)
+    private var volumeButton: IconButton!
+    private let volumeSlider = NSSlider(value: 100, minValue: 0, maxValue: 100, target: nil, action: nil)
+    private var subsButton: IconButton!
+    private var audioButton: IconButton!
+    private var fsButton: IconButton!
+    private var popover: NSPopover?
+    private var panelHost: PanelHost?
+    private var volumeLevel = 100
+    private var volumeMuted = false
+    private var volumeApplied = false
+    private let displayTitle: String
     private let spinner = NSProgressIndicator()
     private let message = NSTextField(labelWithString: "")
 
@@ -83,10 +110,11 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
     private var lastSyncKey = "\u{0}"
     private var announcedKey = ""
     private var scaleMode = 0
-    private var scaleButton: NSButton?
+    private var scaleButton: IconButton?
     private var lastScale = (-1, -1, -1)
     private var scaleForce = 0
-    private let noticeLabel = NSTextField(labelWithString: "")
+    private let noticeLabel = NSTextField(wrappingLabelWithString: "")
+    private let noticeBox = NSVisualEffectView()
     private var noticeUntil = Date.distantPast
     private var syncPanel: NSView?
     private var syncRows: [[SyncButton]] = []
@@ -106,7 +134,8 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
     private var diagId = "Procurando legendas…"
     private var diagRef = ""
 
-    init(url: URL, subtitles: [URL], type: String, id: String, startMs: Int64) {
+    init(url: URL, subtitles: [URL], type: String, id: String, startMs: Int64, title: String = "") {
+        self.displayTitle = title
         self.url = url
         self.subtitleURLs = subtitles
         self.metaType = type
@@ -115,9 +144,10 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
         let screen = NSScreen.main?.visibleFrame ?? NSRect(x: 0, y: 0, width: 1440, height: 900)
         let w = NSWindow(contentRect: screen, styleMask: [.titled, .closable, .miniaturizable, .resizable, .fullSizeContentView],
                          backing: .buffered, defer: false)
-        w.title = "FramePlay"
+        w.title = title.isEmpty ? "FramePlay" : title
         w.titlebarAppearsTransparent = true
         w.titleVisibility = .hidden
+        if #available(macOS 11.0, *) { w.titlebarSeparatorStyle = .none }
         w.backgroundColor = .black
         w.collectionBehavior = [.fullScreenPrimary]
         w.minSize = NSSize(width: 820, height: 460) // abaixo disso a linha de botões espremia a linha do tempo (29 px a 700 px de janela)
@@ -137,6 +167,7 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
         root.wantsLayer = true
         root.layer?.backgroundColor = NSColor.black.cgColor
         w.contentView = root
+        if let saved = UserDefaults.standard.object(forKey: "fp-volume") as? Int { volumeLevel = max(0, min(100, saved)) }
 
         videoView.translatesAutoresizingMaskIntoConstraints = false
         videoView.fillScreen = false
@@ -156,65 +187,142 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
         message.translatesAutoresizingMaskIntoConstraints = false
         root.addSubview(message)
 
-        noticeLabel.textColor = .white
-        noticeLabel.font = .boldSystemFont(ofSize: 15)
-        noticeLabel.alignment = .center
-        noticeLabel.drawsBackground = true
-        noticeLabel.backgroundColor = NSColor(white: 0, alpha: 0.7)
-        noticeLabel.isHidden = true
-        noticeLabel.translatesAutoresizingMaskIntoConstraints = false
-        root.addSubview(noticeLabel)
-
         // camada transparente por cima do vídeo: recebe cliques, movimento do mouse e teclado
         overlay.translatesAutoresizingMaskIntoConstraints = false
         root.addSubview(overlay)
 
-        // barra de cima: voltar
-        topBar.material = .hudWindow
-        topBar.blendingMode = .withinWindow
-        topBar.state = .active
-        topBar.translatesAutoresizingMaskIntoConstraints = false
-        root.addSubview(topBar)
-        let back = pill("←  Voltar", #selector(closePlayer))
-        topBar.addSubview(back)
+        // aviso curto (volume, atraso da legenda, tela...) em vidro escuro, no alto
+        noticeLabel.textColor = .white
+        noticeLabel.font = .systemFont(ofSize: 14, weight: .semibold)
+        noticeLabel.alignment = .center
+        noticeLabel.maximumNumberOfLines = 2
+        noticeLabel.preferredMaxLayoutWidth = 520
+        noticeLabel.isHidden = true
+        noticeLabel.translatesAutoresizingMaskIntoConstraints = false
+        noticeBox.material = .hudWindow
+        noticeBox.blendingMode = .withinWindow
+        noticeBox.state = .active
+        noticeBox.appearance = NSAppearance(named: .darkAqua)
+        noticeBox.wantsLayer = true
+        noticeBox.layer?.cornerRadius = 14
+        noticeBox.isHidden = true
+        noticeBox.translatesAutoresizingMaskIntoConstraints = false
+        noticeBox.addSubview(noticeLabel)
+        root.addSubview(noticeBox)
 
-        // barra de baixo: play, -10/+10, tempo, linha do tempo, áudio, legendas, tela cheia
+        // degradês escuros: o topo e o fundo do vídeo ficam legíveis em qualquer cena
+        let bottomScrim = ScrimView(top: false, strength: 0.72)
+        bottomScrim.translatesAutoresizingMaskIntoConstraints = false
+        root.addSubview(bottomScrim)
+
+        // barra de cima: voltar + título
+        topBar.translatesAutoresizingMaskIntoConstraints = false
+        let topScrim = ScrimView(top: true, strength: 0.7)
+        topScrim.translatesAutoresizingMaskIntoConstraints = false
+        topBar.addSubview(topScrim)
+        let back = IconButton(symbol: "chevron.left", fallback: "←", tip: "Voltar (Esc)", size: 36, pointSize: 15)
+        back.target = self
+        back.action = #selector(closePlayer)
+        titleLabel.stringValue = displayTitle
+        titleLabel.lineBreakMode = .byTruncatingTail
+        titleLabel.translatesAutoresizingMaskIntoConstraints = false
+        topBar.addSubview(back)
+        topBar.addSubview(titleLabel)
+        root.addSubview(topBar)
+
+        // barra de baixo (vidro escuro): linha do tempo e, embaixo, volume | pausar/10 s | legendas, áudio, sincronizar, tela, tela cheia
         controls.material = .hudWindow
         controls.blendingMode = .withinWindow
         controls.state = .active
+        controls.appearance = NSAppearance(named: .darkAqua)
         controls.wantsLayer = true
-        controls.layer?.cornerRadius = 16
+        controls.layer?.cornerRadius = 20
+        controls.layer?.borderWidth = 1
+        controls.layer?.borderColor = NSColor(white: 1, alpha: 0.08).cgColor
         controls.translatesAutoresizingMaskIntoConstraints = false
         root.addSubview(controls)
 
-        playButton.title = "❚❚"
-        styleButton(playButton, #selector(togglePlay))
-        playButton.font = .boldSystemFont(ofSize: 18)
-        let rw = button("−10", #selector(rewind))
-        let ff = button("+10", #selector(forward))
-        for l in [timeLabel, lengthLabel] {
-            l.textColor = .white
-            l.font = .monospacedDigitSystemFont(ofSize: 13, weight: .semibold)
+        timeline.timeText = { [weak self] f in
+            guard let self = self else { return "" }
+            let len = Int64(self.player.media?.length.intValue ?? 0)
+            return self.format(Int64(f * Double(len)))
         }
-        slider.minValue = 0
-        slider.maxValue = 1000
-        slider.target = self
-        slider.action = #selector(sliderMoved)
-        slider.isContinuous = false
-        let audio = button("Áudio", #selector(chooseAudio))
-        let subs = button("Legendas", #selector(chooseSubtitles))
-        let scale = button("Tela: Ajustar", #selector(toggleScale(_:)))
+        timeline.onScrub = { [weak self] f, done in self?.scrub(f, done: done) }
+        timeline.translatesAutoresizingMaskIntoConstraints = false
+        timeline.setContentHuggingPriority(.defaultLow, for: .horizontal)
+        timeLabel.alignment = .right
+        lengthLabel.alignment = .left
+        for l in [timeLabel, lengthLabel] {
+            l.translatesAutoresizingMaskIntoConstraints = false
+            l.widthAnchor.constraint(equalToConstant: 60).isActive = true
+        }
+        let trow = NSStackView(views: [timeLabel, timeline, lengthLabel])
+        trow.orientation = .horizontal
+        trow.spacing = 8
+        trow.alignment = .centerY
+        trow.translatesAutoresizingMaskIntoConstraints = false
+        controls.addSubview(trow)
+
+        let play = IconButton(symbol: "pause.fill", fallback: "❚❚", tip: "Pausar (espaço)", size: 52, pointSize: 22, solid: true)
+        play.target = self
+        play.action = #selector(togglePlay)
+        playButton = play
+        let rw = IconButton(symbol: "gobackward.10", fallback: "−10", tip: "Voltar 10 s (←)", size: 42, pointSize: 21)
+        rw.target = self
+        rw.action = #selector(rewind)
+        let ff = IconButton(symbol: "goforward.10", fallback: "+10", tip: "Avançar 10 s (→)", size: 42, pointSize: 21)
+        ff.target = self
+        ff.action = #selector(forward)
+        let vol = IconButton(symbol: "speaker.wave.3.fill", fallback: "Vol", tip: "Silenciar (M)", size: 34, pointSize: 14)
+        vol.target = self
+        vol.action = #selector(toggleMute)
+        volumeButton = vol
+        volumeSlider.target = self
+        volumeSlider.action = #selector(volumeChanged)
+        volumeSlider.controlSize = .small
+        volumeSlider.trackFillColor = .white
+        volumeSlider.translatesAutoresizingMaskIntoConstraints = false
+        volumeSlider.widthAnchor.constraint(equalToConstant: 84).isActive = true
+        volumeSlider.refusesFirstResponder = true
+        let subs = IconButton(symbol: "captions.bubble", fallback: "CC", tip: "Legendas (S)", size: 38, pointSize: 17)
+        subs.target = self
+        subs.action = #selector(chooseSubtitles(_:))
+        subsButton = subs
+        let audio = IconButton(symbol: "waveform", fallback: "Áudio", tip: "Áudio (A)", size: 38, pointSize: 17)
+        audio.target = self
+        audio.action = #selector(chooseAudio(_:))
+        audioButton = audio
+        let sync = IconButton(symbol: "clock.arrow.circlepath", fallback: "Sinc.", tip: "Sincronizar legenda (L)", size: 38, pointSize: 17)
+        sync.target = self
+        sync.action = #selector(showSyncPanel)
+        let scale = IconButton(symbol: "aspectratio", fallback: "Tela", tip: "Tela: Ajustar (clique para trocar)", size: 38, pointSize: 17)
+        scale.target = self
+        scale.action = #selector(toggleScale(_:))
         scaleButton = scale
-        let fs = button("Tela cheia", #selector(toggleFullScreen))
+        let fs = IconButton(symbol: "arrow.up.left.and.arrow.down.right", fallback: "⤢", tip: "Tela cheia (F)", size: 38, pointSize: 16)
+        fs.target = self
+        fs.action = #selector(toggleFullScreen)
+        fsButton = fs
 
-        let row = NSStackView(views: [playButton, rw, ff, timeLabel, slider, lengthLabel, audio, subs, scale, fs])
-        row.orientation = .horizontal
-        row.spacing = 12
-        row.alignment = .centerY
-        row.translatesAutoresizingMaskIntoConstraints = false
-        slider.setContentHuggingPriority(.defaultLow, for: .horizontal)
-        controls.addSubview(row)
+        let left = NSStackView(views: [vol, volumeSlider])
+        left.orientation = .horizontal
+        left.spacing = 6
+        left.alignment = .centerY
+        let center = NSStackView(views: [rw, play, ff])
+        center.orientation = .horizontal
+        center.spacing = 18
+        center.alignment = .centerY
+        let right = NSStackView(views: [subs, audio, sync, scale, fs])
+        right.orientation = .horizontal
+        right.spacing = 4
+        right.alignment = .centerY
+        for g in [left, center, right] {
+            g.translatesAutoresizingMaskIntoConstraints = false
+            controls.addSubview(g)
+        }
 
+        let wide = controls.widthAnchor.constraint(equalTo: root.widthAnchor, constant: -48)
+        wide.priority = .defaultHigh
         NSLayoutConstraint.activate([
             videoView.leadingAnchor.constraint(equalTo: root.leadingAnchor),
             videoView.trailingAnchor.constraint(equalTo: root.trailingAnchor),
@@ -229,64 +337,66 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
             message.centerXAnchor.constraint(equalTo: root.centerXAnchor),
             message.centerYAnchor.constraint(equalTo: root.centerYAnchor),
             message.widthAnchor.constraint(lessThanOrEqualTo: root.widthAnchor, constant: -80),
-            noticeLabel.centerXAnchor.constraint(equalTo: root.centerXAnchor),
-            noticeLabel.topAnchor.constraint(equalTo: root.topAnchor, constant: 84),
-            noticeLabel.widthAnchor.constraint(lessThanOrEqualTo: root.widthAnchor, constant: -80),
+
+            noticeBox.centerXAnchor.constraint(equalTo: root.centerXAnchor),
+            noticeBox.topAnchor.constraint(equalTo: root.topAnchor, constant: 84),
+            noticeBox.widthAnchor.constraint(lessThanOrEqualTo: root.widthAnchor, constant: -80),
+            noticeLabel.leadingAnchor.constraint(equalTo: noticeBox.leadingAnchor, constant: 18),
+            noticeLabel.trailingAnchor.constraint(equalTo: noticeBox.trailingAnchor, constant: -18),
+            noticeLabel.topAnchor.constraint(equalTo: noticeBox.topAnchor, constant: 10),
+            noticeLabel.bottomAnchor.constraint(equalTo: noticeBox.bottomAnchor, constant: -10),
+
+            bottomScrim.leadingAnchor.constraint(equalTo: root.leadingAnchor),
+            bottomScrim.trailingAnchor.constraint(equalTo: root.trailingAnchor),
+            bottomScrim.bottomAnchor.constraint(equalTo: root.bottomAnchor),
+            bottomScrim.heightAnchor.constraint(equalToConstant: 230),
 
             topBar.leadingAnchor.constraint(equalTo: root.leadingAnchor),
             topBar.trailingAnchor.constraint(equalTo: root.trailingAnchor),
             topBar.topAnchor.constraint(equalTo: root.topAnchor),
-            topBar.heightAnchor.constraint(equalToConstant: 64),
-            back.leadingAnchor.constraint(equalTo: topBar.leadingAnchor, constant: 84),
-            back.bottomAnchor.constraint(equalTo: topBar.bottomAnchor, constant: -12),
+            topBar.heightAnchor.constraint(equalToConstant: 100),
+            topScrim.leadingAnchor.constraint(equalTo: topBar.leadingAnchor),
+            topScrim.trailingAnchor.constraint(equalTo: topBar.trailingAnchor),
+            topScrim.topAnchor.constraint(equalTo: topBar.topAnchor),
+            topScrim.bottomAnchor.constraint(equalTo: topBar.bottomAnchor),
+            back.leadingAnchor.constraint(equalTo: topBar.leadingAnchor, constant: 90),
+            back.centerYAnchor.constraint(equalTo: topBar.topAnchor, constant: 27),
+            titleLabel.leadingAnchor.constraint(equalTo: back.trailingAnchor, constant: 12),
+            titleLabel.centerYAnchor.constraint(equalTo: back.centerYAnchor),
+            titleLabel.trailingAnchor.constraint(lessThanOrEqualTo: topBar.trailingAnchor, constant: -90),
 
-            controls.leadingAnchor.constraint(equalTo: root.leadingAnchor, constant: 24),
-            controls.trailingAnchor.constraint(equalTo: root.trailingAnchor, constant: -24),
-            controls.bottomAnchor.constraint(equalTo: root.bottomAnchor, constant: -20),
-            controls.heightAnchor.constraint(equalToConstant: 56),
-            row.leadingAnchor.constraint(equalTo: controls.leadingAnchor, constant: 16),
-            row.trailingAnchor.constraint(equalTo: controls.trailingAnchor, constant: -16),
-            row.centerYAnchor.constraint(equalTo: controls.centerYAnchor),
+            controls.centerXAnchor.constraint(equalTo: root.centerXAnchor),
+            controls.bottomAnchor.constraint(equalTo: root.bottomAnchor, constant: -24),
+            controls.heightAnchor.constraint(equalToConstant: 108),
+            controls.widthAnchor.constraint(lessThanOrEqualToConstant: 1000),
+            controls.leadingAnchor.constraint(greaterThanOrEqualTo: root.leadingAnchor, constant: 24),
+            wide,
+            trow.leadingAnchor.constraint(equalTo: controls.leadingAnchor, constant: 16),
+            trow.trailingAnchor.constraint(equalTo: controls.trailingAnchor, constant: -16),
+            trow.topAnchor.constraint(equalTo: controls.topAnchor, constant: 8),
+            trow.heightAnchor.constraint(equalToConstant: 40),
+            left.leadingAnchor.constraint(equalTo: controls.leadingAnchor, constant: 16),
+            left.centerYAnchor.constraint(equalTo: controls.bottomAnchor, constant: -36),
+            center.centerXAnchor.constraint(equalTo: controls.centerXAnchor),
+            center.centerYAnchor.constraint(equalTo: controls.bottomAnchor, constant: -36),
+            right.trailingAnchor.constraint(equalTo: controls.trailingAnchor, constant: -16),
+            right.centerYAnchor.constraint(equalTo: controls.bottomAnchor, constant: -36),
         ])
 
         overlay.onMouseMove = { [weak self] in self?.showControls() }
+        overlay.onClick = { [weak self] in self?.togglePlay() }
         overlay.onDoubleClick = { [weak self] in self?.toggleFullScreen() }
         overlay.onKey = { [weak self] e in self?.handleKey(e) ?? false }
         w.makeFirstResponder(overlay)
         w.acceptsMouseMovedEvents = true
+        updateVolumeUI()
+        DispatchQueue.main.async { [weak self] in self?.placeTrafficLights() }
     }
 
-    private func button(_ title: String, _ action: Selector) -> NSButton {
-        let b = NSButton(title: title, target: self, action: action)
-        styleButton(b, action)
-        return b
-    }
-
-    private func styleButton(_ b: NSButton, _ action: Selector) {
-        b.target = self
-        b.action = action
-        b.bezelStyle = .rounded
-        b.isBordered = false
-        b.wantsLayer = true
-        b.layer?.cornerRadius = 10
-        b.layer?.backgroundColor = NSColor(white: 1, alpha: 0.12).cgColor
-        b.contentTintColor = .white
-        b.attributedTitle = NSAttributedString(string: "  \(b.title)  ", attributes: [
-            .foregroundColor: NSColor.white, .font: b.font ?? NSFont.boldSystemFont(ofSize: 13)])
-        b.setContentHuggingPriority(.required, for: .horizontal)
-        b.refusesFirstResponder = true
-    }
-
-    private func setTitle(_ b: NSButton, _ t: String) {
-        b.attributedTitle = NSAttributedString(string: "  \(t)  ", attributes: [
-            .foregroundColor: NSColor.white, .font: NSFont.boldSystemFont(ofSize: 18)])
-    }
-
-    private func pill(_ title: String, _ action: Selector) -> NSButton {
-        let b = button(title, action)
-        b.font = .boldSystemFont(ofSize: 14)
-        b.translatesAutoresizingMaskIntoConstraints = false
-        return b
+    /** os 3 botões da janela alinhados com o botão Voltar da barra de cima */
+    private func placeTrafficLights() {
+        guard let w = window else { return }
+        Chrome.positionTrafficLights(w, centerY: 27, leading: 20)
     }
 
     // ---------- reprodução ----------
@@ -329,6 +439,7 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
             if !startedPlaying {
                 startedPlaying = true
                 playingSince = Date()
+                applyVolume()
                 scaleForce = 6
                 DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) { [weak self] in self?.selectEmbeddedPortuguese() }
             }
@@ -358,22 +469,44 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
         if subsAttached && !finished { syncDelayToTrack(Int(player.currentVideoSubTitleIndex)) }
         reportProgress(force: false)
         if scaleForce > 0 { scaleForce -= 1; applyScale(force: true) } else { applyScale() }
-        if !noticeLabel.isHidden && Date() > noticeUntil { noticeLabel.isHidden = true }
+        if !noticeLabel.isHidden && Date() > noticeUntil { noticeLabel.isHidden = true; noticeBox.isHidden = true }
 
-        setTitle(playButton, player.isPlaying ? "❚❚" : "▶")
-        if !userSeeking && len > 0 { slider.doubleValue = Double(t) * 1000 / Double(len) }
-        timeLabel.stringValue = format(t)
-        lengthLabel.stringValue = format(len)
+        let playing = player.isPlaying
+        let wantIcon = playing ? "pause.fill" : "play.fill"
+        if playButton.symbol != wantIcon { playButton.symbol = wantIcon; playButton.toolTip = playing ? "Pausar (espaço)" : "Reproduzir (espaço)" }
+        subsButton.accent = Int(player.currentVideoSubTitleIndex) != -1
+        if !userSeeking && len > 0 {
+            timeline.progress = Double(t) / Double(len)
+            timeline.buffered = bufferedFraction(len: len)
+            timeLabel.stringValue = format(t)
+            lengthLabel.stringValue = "-" + format(max(0, len - t))
+        } else if len <= 0 {
+            timeLabel.stringValue = format(t)
+        }
 
-        // esconde os controles e o cursor depois de 2,5 s parado (só tocando)
-        if player.isPlaying && Date() > hideAt && controls.alphaValue > 0 {
+        // esconde os controles e o cursor depois de 2,5 s parado (só tocando, e nunca com o mouse em cima dos controles ou um painel aberto)
+        if playing && Date() > hideAt && controls.alphaValue > 0 && !userSeeking && !uiBusy() {
             NSAnimationContext.runAnimationGroup { ctx in
                 ctx.duration = 0.25
                 controls.animator().alphaValue = 0
                 topBar.animator().alphaValue = 0
+                if let w = window { Chrome.setTrafficLightsAlpha(w, 0, animated: true) }
             }
             NSCursor.setHiddenUntilMouseMoves(true)
         }
+    }
+
+    /** painel, lista ou o mouse em cima dos controles: os controles ficam */
+    private func uiBusy() -> Bool {
+        if panelHost != nil || popover?.isShown == true { return true }
+        guard let w = window else { return false }
+        let p = root.convert(w.mouseLocationOutsideOfEventStream, from: nil)
+        return controls.frame.contains(p) || (topBar.frame.contains(p) && p.y > root.bounds.height - 64 && p.x < 400)
+    }
+
+    /** quanto do vídeo já foi carregado (0...1), se o VLC disser; senão 0 (a faixa "carregada" não aparece) */
+    private func bufferedFraction(len: Int64) -> Double {
+        return 0
     }
 
     private func endNow() {
@@ -415,6 +548,7 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
                 ctx.duration = 0.15
                 controls.animator().alphaValue = 1
                 topBar.animator().alphaValue = 1
+                if let w = window { Chrome.setTrafficLightsAlpha(w, 1, animated: true) }
             }
         }
     }
@@ -429,29 +563,88 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
         var t = max(0, Int64(player.time.intValue) + ms)
         if len > 0 { t = min(t, len - 1000) }
         player.time = VLCTime(int: Int32(truncatingIfNeeded: t))
+        notice((ms < 0 ? "−" : "+") + "\(abs(ms) / 1000) s", seconds: 0.8)
         showControls()
     }
     @objc private func rewind() { skip(-10000) }
     @objc private func forward() { skip(10000) }
 
-    @objc private func sliderMoved() {
+    /** arrastar/clicar na linha do tempo: mostra a hora enquanto arrasta e salta ao soltar */
+    private func scrub(_ f: Double, done: Bool) {
         let len = Int64(player.media?.length.intValue ?? 0)
-        guard len > 0 else { return }
-        let target = Int64(slider.doubleValue / 1000 * Double(len))
+        guard len > 0 else { userSeeking = false; return }
+        let target = Int64(f * Double(len))
+        userSeeking = !done
         timeLabel.stringValue = format(target)
-        player.time = VLCTime(int: Int32(truncatingIfNeeded: target))
+        lengthLabel.stringValue = "-" + format(max(0, len - target))
+        if done { player.time = VLCTime(int: Int32(truncatingIfNeeded: target)) }
         showControls()
     }
 
     @objc private func toggleFullScreen() { window?.toggleFullScreen(nil) }
 
+    // ---------- volume (0...100 %, lembrado entre sessões) ----------
+    /** o objeto de áudio do VLC (pelo nome, para não depender do tipo exato do cabeçalho do VLCKit) */
+    private func vlcAudio() -> NSObject? {
+        guard player.responds(to: NSSelectorFromString("audio")) else { return nil }
+        return player.value(forKey: "audio") as? NSObject
+    }
+
+    private func applyVolume() {
+        let v = volumeMuted ? 0 : volumeLevel
+        if let a = vlcAudio(), a.responds(to: NSSelectorFromString("setVolume:")) {
+            a.setValue(NSNumber(value: v), forKey: "volume")
+            volumeApplied = true
+        }
+        log("volume: \(v)% (mudo=\(volumeMuted))")
+        updateVolumeUI()
+    }
+
+    private func updateVolumeUI() {
+        volumeSlider.doubleValue = volumeMuted ? 0 : Double(volumeLevel)
+        volumeButton.symbol = volumeMuted || volumeLevel == 0 ? "speaker.slash.fill" : volumeLevel < 34 ? "speaker.wave.1.fill" : volumeLevel < 67 ? "speaker.wave.2.fill" : "speaker.wave.3.fill"
+        volumeButton.toolTip = volumeMuted ? "Ligar o som (M)" : "Silenciar (M)"
+    }
+
+    @objc private func volumeChanged() {
+        volumeLevel = Int(volumeSlider.doubleValue.rounded())
+        volumeMuted = false
+        UserDefaults.standard.set(volumeLevel, forKey: "fp-volume")
+        applyVolume()
+        showControls()
+    }
+
+    @objc private func toggleMute() {
+        volumeMuted.toggle()
+        applyVolume()
+        notice(volumeMuted ? "Som desligado" : "Volume \(volumeLevel)%", seconds: 1.2)
+        showControls()
+    }
+
+    private func nudgeVolume(_ d: Int) {
+        volumeLevel = max(0, min(100, volumeLevel + d))
+        volumeMuted = false
+        UserDefaults.standard.set(volumeLevel, forKey: "fp-volume")
+        applyVolume()
+        notice("Volume \(volumeLevel)%", seconds: 1.2)
+        showControls()
+    }
+
     private func handleKey(_ e: NSEvent) -> Bool {
+        if e.modifierFlags.contains(.command) { return false } // atalhos do menu (⌘W, ⌘M...) seguem o caminho normal
         if syncPanel != nil || speechPanel != nil { return panelKey(e) }
+        if e.keyCode == 53, popover?.isShown == true { popover?.performClose(nil); return true }
         switch e.keyCode {
         case 49: togglePlay(); return true                 // espaço
-        case 123: skip(-10000); return true                // ←
-        case 124: skip(10000); return true                 // →
+        case 123: skip(e.modifierFlags.contains(.shift) ? -30000 : -10000); return true   // ←
+        case 124: skip(e.modifierFlags.contains(.shift) ? 30000 : 10000); return true     // →
+        case 126: nudgeVolume(5); return true              // ↑
+        case 125: nudgeVolume(-5); return true             // ↓
         case 3: toggleFullScreen(); return true            // F
+        case 46: toggleMute(); return true                 // M
+        case 1: showControls(); showSubtitlePopover(); return true   // S
+        case 0: showControls(); showAudioPopover(); return true      // A
+        case 37: showControls(); showSyncPanel(); return true        // L
         case 53:                                           // Esc
             if window?.styleMask.contains(.fullScreen) == true { toggleFullScreen() } else { closePlayer() }
             return true
@@ -460,22 +653,27 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
     }
 
     // ---------- áudio ----------
-    @objc private func chooseAudio(_ sender: NSButton) {
+    @objc private func chooseAudio(_ sender: Any?) { showControls(); showAudioPopover() }
+
+    private func showAudioPopover() {
         let names = (player.audioTrackNames as? [String]) ?? []
         let ids = (player.audioTrackIndexes as? [NSNumber])?.map { $0.intValue } ?? []
-        let menu = NSMenu()
+        var items: [PopItem] = []
         for (i, id) in ids.enumerated() where i < names.count {
-            let item = NSMenuItem(title: id == -1 ? "Desativado" : names[i], action: #selector(pickAudio(_:)), keyEquivalent: "")
-            item.target = self
-            item.tag = id
-            item.state = Int(player.currentAudioTrackIndex) == id ? .on : .off
-            menu.addItem(item)
+            items.append(PopItem(title: id == -1 ? "Desativado" : names[i], checked: Int(player.currentAudioTrackIndex) == id,
+                                 action: { [weak self] in self?.player.currentAudioTrackIndex = Int32(id) }))
         }
-        if menu.items.isEmpty { menu.addItem(withTitle: "Sem opções de áudio", action: nil, keyEquivalent: "") }
-        menu.popUp(positioning: nil, at: NSPoint(x: 0, y: sender.bounds.height + 4), in: sender)
+        if items.isEmpty { items.append(PopItem(title: "Sem opções de áudio", enabled: false)) }
+        present(PopList.make(title: "Áudio", items: items, notes: [], close: { [weak self] in self?.popover?.performClose(nil) }), from: audioButton)
+    }
+
+    /** mostra a lista (popover) por cima do botão; a anterior fecha */
+    private func present(_ p: NSPopover, from anchor: NSView) {
+        popover?.performClose(nil)
+        popover = p
+        p.show(relativeTo: anchor.bounds, of: anchor, preferredEdge: .maxY)
         showControls()
     }
-    @objc private func pickAudio(_ item: NSMenuItem) { player.currentAudioTrackIndex = Int32(item.tag) }
 
     // ---------- legendas em português ----------
     private static let ptRegex = try? NSRegularExpression(pattern: "portug|brazil|brasil|\\bpt\\b|\\bpor\\b|\\bpob\\b|pt-br|pt_br", options: .caseInsensitive)
@@ -748,15 +946,9 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
         player.currentVideoSubTitleIndex = -1
     }
 
-    private func greyItem(_ text: String) -> NSMenuItem {
-        let it = NSMenuItem(title: text, action: nil, keyEquivalent: "")
-        it.isEnabled = false
-        it.attributedTitle = NSAttributedString(string: text, attributes: [
-            .foregroundColor: NSColor.secondaryLabelColor, .font: NSFont.systemFont(ofSize: 11)])
-        return it
-    }
+    @objc private func chooseSubtitles(_ sender: Any?) { showControls(); showSubtitlePopover() }
 
-    @objc private func chooseSubtitles(_ sender: NSButton) {
+    private func showSubtitlePopover() {
         let tracks = subTracks()
         let current = Int(player.currentVideoSubTitleIndex)
         var rows: [(String, Int)] = []
@@ -778,35 +970,30 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
                 if id == current { chosen = "Embutida: \(name)" }
             }
         }
-        let menu = NSMenu()
-        menu.addItem(greyItem(diagId + " · " + (!subsDownloaded ? "baixando legendas…" : cands.count == 1 ? "1 legenda PT" : "\(cands.count) legendas PT")))
-        menu.addItem(greyItem("Hash: " + diagHash + " · Referência: " + (diagRef.isEmpty ? "…" : diagRef)))
-        if !diagEmb.isEmpty { menu.addItem(greyItem(diagEmb)) }
-        if let c = chosen { menu.addItem(greyItem("Escolhida: " + c)) }
-        menu.addItem(greyItem("Atraso manual: " + (subDelayMs == 0 ? "0,0 s" : SubtitleSync.signedSecs(Int64(subDelayMs)))))
-        menu.addItem(NSMenuItem.separator())
+        var items: [PopItem] = []
         if rows.count <= 1 {
-            menu.addItem(withTitle: !subsDownloaded ? "Procurando legendas em português…" : "Não há legendas em português", action: nil, keyEquivalent: "")
+            items.append(PopItem(title: !subsDownloaded ? "Procurando legendas em português…" : "Não há legendas em português", enabled: false))
+            if let off = rows.first { items.append(PopItem(title: off.0, checked: current == off.1, action: { [weak self] in self?.pickSubtitleId(off.1) })) }
         } else {
             for (title, id) in rows {
-                let item = NSMenuItem(title: title, action: #selector(pickSubtitle(_:)), keyEquivalent: "")
-                item.target = self
-                item.tag = id
-                item.state = current == id ? .on : .off
-                menu.addItem(item)
+                items.append(PopItem(title: title, checked: current == id, action: { [weak self] in self?.pickSubtitleId(id) }))
             }
         }
-        menu.addItem(NSMenuItem.separator())
-        let sync = NSMenuItem(title: "Sincronizar legenda…", action: #selector(showSyncPanel), keyEquivalent: "")
-        sync.target = self
-        menu.addItem(sync)
-        menu.popUp(positioning: nil, at: NSPoint(x: 0, y: sender.bounds.height + 4), in: sender)
-        showControls()
+        // diagnóstico (como estava no menu): o que o app achou e como escolheu
+        var notes: [String] = []
+        notes.append(diagId + " · " + (!subsDownloaded ? "baixando legendas…" : cands.count == 1 ? "1 legenda PT" : "\(cands.count) legendas PT"))
+        notes.append("Hash: " + diagHash + " · Referência: " + (diagRef.isEmpty ? "…" : diagRef))
+        if !diagEmb.isEmpty { notes.append(diagEmb) }
+        if let c = chosen { notes.append("Escolhida: " + c) }
+        notes.append("Atraso manual: " + (subDelayMs == 0 ? "0,0 s" : SubtitleSync.signedSecs(Int64(subDelayMs))))
+        let footer = [PopItem(title: "Sincronizar legenda…", detail: "Atalho: L", action: { [weak self] in self?.showSyncPanel() })]
+        present(PopList.make(title: "Legendas", items: items, notes: notes, footer: footer, close: { [weak self] in self?.popover?.performClose(nil) }), from: subsButton)
     }
-    @objc private func pickSubtitle(_ item: NSMenuItem) {
+
+    private func pickSubtitleId(_ id: Int) {
         userPickedSub = true
-        player.currentVideoSubTitleIndex = Int32(item.tag)
-        syncDelayToTrack(item.tag)
+        player.currentVideoSubTitleIndex = Int32(id)
+        syncDelayToTrack(id)
     }
 
     // ---------- ajuste manual do atraso da legenda ----------
@@ -879,16 +1066,18 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
     }
 
     private func notice(_ s: String, seconds: Double = 3) {
-        noticeLabel.stringValue = "  " + s + "  "
+        noticeLabel.stringValue = s
         noticeLabel.isHidden = false
+        noticeBox.isHidden = false
         noticeUntil = Date().addingTimeInterval(seconds)
     }
 
     private func applySubDelay() { player.currentVideoSubTitleDelay = subDelayMs * 1000 }
 
     private func delayLabel() -> String {
-        return "Atraso da legenda: " + (subDelayMs == 0 ? "0,0 s" : SubtitleSync.signedSecs(Int64(subDelayMs)))
+        return "Atraso da legenda: " + delayValueText()
     }
+    private func delayValueText() -> String { subDelayMs == 0 ? "0,0 s" : SubtitleSync.signedSecs(Int64(subDelayMs)) }
 
     /** define o atraso da legenda ativa (limite ±600 s), guarda por fonte+legenda, aplica e atualiza o texto */
     private func setSubDelay(_ ms: Int) {
@@ -900,34 +1089,38 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
             UserDefaults.standard.set(subDelayMs, forKey: PlayerWindowController.delayPrefs + k)
         }
         applySubDelay()
-        syncValue?.stringValue = delayLabel()
+        syncValue?.stringValue = delayValueText()
         log("atraso da legenda: \(subDelayMs) ms (\(k ?? "sem legenda ativa, não guardado"))")
     }
 
     private func changeSubDelay(_ delta: Int, reset: Bool) { setSubDelay(reset ? 0 : subDelayMs + delta) }
 
     // ---------- painel "Sincronizar legenda" (por cima do vídeo; teclado: setas/Enter/Esc; mouse: clique, segurar repete) ----------
-    private func panelLabel(_ s: String, _ size: CGFloat, bold: Bool = false, color: NSColor = .white) -> NSTextField {
+    private func panelLabel(_ s: String, _ size: CGFloat, bold: Bool = false, color: NSColor = .white, align: NSTextAlignment = .center, width: CGFloat = 392) -> NSTextField {
         let t = NSTextField(wrappingLabelWithString: s)
-        t.font = bold ? .boldSystemFont(ofSize: size) : .systemFont(ofSize: size)
+        t.font = bold ? .systemFont(ofSize: size, weight: .bold) : .systemFont(ofSize: size)
         t.textColor = color
-        t.alignment = .center
+        t.alignment = align
         t.maximumNumberOfLines = 0
-        t.preferredMaxLayoutWidth = 420
+        t.preferredMaxLayoutWidth = width
         return t
     }
 
-    private func syncButton(_ title: String) -> SyncButton {
+    private func syncButton(_ title: String, primary: Bool = false, width: CGFloat = 96) -> SyncButton {
         let b = SyncButton(title: title, target: nil, action: nil)
         b.setButtonType(.momentaryPushIn)
         b.isBordered = false
         b.wantsLayer = true
-        b.layer?.cornerRadius = 12
-        b.layer?.backgroundColor = NSColor(white: 1, alpha: 0.16).cgColor
-        b.layer?.borderWidth = 1
-        b.layer?.borderColor = NSColor(white: 1, alpha: 0.18).cgColor
-        b.attributedTitle = NSAttributedString(string: "  \(title)  ", attributes: [.foregroundColor: NSColor.white, .font: NSFont.boldSystemFont(ofSize: 15)])
+        b.primary = primary
+        let para = NSMutableParagraphStyle()
+        para.alignment = .center
+        b.attributedTitle = NSAttributedString(string: title, attributes: [
+            .foregroundColor: primary ? NSColor.black : NSColor.white, .font: NSFont.systemFont(ofSize: 14, weight: .semibold), .paragraphStyle: para])
         b.refusesFirstResponder = true
+        b.translatesAutoresizingMaskIntoConstraints = false
+        b.heightAnchor.constraint(equalToConstant: 36).isActive = true
+        b.widthAnchor.constraint(greaterThanOrEqualToConstant: width).isActive = true
+        b.restyle()
         return b
     }
 
@@ -949,30 +1142,46 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
         p.state = .active
         p.appearance = NSAppearance(named: .darkAqua)
         p.wantsLayer = true
-        p.layer?.cornerRadius = 18
+        p.layer?.cornerRadius = 22
+        p.layer?.borderWidth = 1
+        p.layer?.borderColor = NSColor(white: 1, alpha: 0.10).cgColor
         p.translatesAutoresizingMaskIntoConstraints = false
         return p
     }
 
+    /** o painel no centro, sobre um fundo escurecido (clicar fora fecha) */
     private func place(_ p: NSView, in stack: NSStackView, width: CGFloat) {
+        let host = PanelHost()
+        host.wantsLayer = true
+        host.layer?.backgroundColor = NSColor(white: 0, alpha: 0.42).cgColor
+        host.onOutsideClick = { [weak self] in self?.closePanels() }
+        host.translatesAutoresizingMaskIntoConstraints = false
         stack.translatesAutoresizingMaskIntoConstraints = false
         p.addSubview(stack)
-        root.addSubview(p)
+        host.addSubview(p)
+        root.addSubview(host)
+        panelHost = host
         NSLayoutConstraint.activate([
-            stack.leadingAnchor.constraint(equalTo: p.leadingAnchor, constant: 24),
-            stack.trailingAnchor.constraint(equalTo: p.trailingAnchor, constant: -24),
-            stack.topAnchor.constraint(equalTo: p.topAnchor, constant: 20),
-            stack.bottomAnchor.constraint(equalTo: p.bottomAnchor, constant: -20),
+            host.leadingAnchor.constraint(equalTo: root.leadingAnchor),
+            host.trailingAnchor.constraint(equalTo: root.trailingAnchor),
+            host.topAnchor.constraint(equalTo: root.topAnchor),
+            host.bottomAnchor.constraint(equalTo: root.bottomAnchor),
+            stack.leadingAnchor.constraint(equalTo: p.leadingAnchor, constant: 28),
+            stack.trailingAnchor.constraint(equalTo: p.trailingAnchor, constant: -28),
+            stack.topAnchor.constraint(equalTo: p.topAnchor, constant: 24),
+            stack.bottomAnchor.constraint(equalTo: p.bottomAnchor, constant: -24),
             p.widthAnchor.constraint(equalToConstant: width),
-            p.centerXAnchor.constraint(equalTo: root.centerXAnchor),
-            p.centerYAnchor.constraint(equalTo: root.centerYAnchor),
+            p.centerXAnchor.constraint(equalTo: host.centerXAnchor),
+            p.centerYAnchor.constraint(equalTo: host.centerYAnchor),
+            p.topAnchor.constraint(greaterThanOrEqualTo: host.topAnchor, constant: 70),
         ])
     }
 
     private func buttonRow(_ bs: [SyncButton]) -> NSStackView {
         let r = NSStackView(views: bs)
         r.orientation = .horizontal
-        r.spacing = 12
+        r.spacing = 10
+        r.distribution = .fillEqually
         return r
     }
 
@@ -985,22 +1194,28 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
     }
 
     @objc private func showSyncPanel() {
+        popover?.performClose(nil)
         closePanels()
         let active = candForTrack(Int(player.currentVideoSubTitleIndex))
-        let value = panelLabel(delayLabel(), 20, bold: true)
+        let value = NSTextField(labelWithString: delayValueText())
+        value.font = NSFont.monospacedDigitSystemFont(ofSize: 38, weight: .bold)
+        value.textColor = .white
+        value.alignment = .center
         syncValue = value
-        var views: [NSView] = [panelLabel("Sincronizar legenda", 22, bold: true)]
+        let dimColor = NSColor(white: 1, alpha: 0.58)
+        var views: [NSView] = [panelLabel("Sincronizar legenda", 20, bold: true)]
         var rows: [[SyncButton]] = []
         if let a = active, a.text != nil {
             // principal: acertar pela fala (só com legenda baixada ativa: a embutida não tem texto acessível)
-            let sp = syncButton("Sincronizar pela fala")
+            let sp = syncButton("Sincronizar pela fala", primary: true, width: 300)
             sp.onTap = { [weak self] in self?.showSpeechPicker(a) }
             rows.append([sp])
             views.append(buttonRow([sp]))
-            views.append(panelLabel("Pause numa fala, escolha-a na lista e a legenda acerta sozinha.", 13, color: NSColor(white: 0.63, alpha: 1)))
+            views.append(panelLabel("Pause numa fala, escolha-a na lista e a legenda acerta sozinha.", 12, color: dimColor))
         } else {
-            views.append(panelLabel("Sincronizar pela fala: ative uma legenda baixada (a embutida não permite). Use os botões abaixo.", 13, color: NSColor(red: 1, green: 0.78, blue: 0.34, alpha: 1)))
+            views.append(panelLabel("Sincronizar pela fala: ative uma legenda baixada (a embutida não permite). Use os botões abaixo.", 12, color: NSColor(red: 1, green: 0.78, blue: 0.34, alpha: 1)))
         }
+        views.append(panelLabel("Atraso da legenda", 12, color: dimColor))
         views.append(value)
         let m30 = stepButton("−30 s", -30000), m5 = stepButton("−5 s", -5000), m1 = stepButton("−1 s", -1000)
         let p1 = stepButton("+1 s", 1000), p5 = stepButton("+5 s", 5000), p30 = stepButton("+30 s", 30000)
@@ -1009,12 +1224,12 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
         reset.onTap = { [weak self] in self?.changeSubDelay(0, reset: true) }
         let close = syncButton("Fechar")
         close.onTap = { [weak self] in self?.closePanels() }
-        views.append(panelLabel("Legenda DEPOIS da fala (adiantar):", 14))
+        views.append(panelLabel("Legenda DEPOIS da fala (adiantar)", 12, color: dimColor))
         views.append(buttonRow([m30, m5, m1]))
-        views.append(panelLabel("Legenda ANTES da fala (atrasar):", 14))
+        views.append(panelLabel("Legenda ANTES da fala (atrasar)", 12, color: dimColor))
         views.append(buttonRow([p1, p5, p30]))
         views.append(buttonRow([m05, p05, reset]))
-        views.append(panelLabel("Segure o botão para repetir (acelera). Setas escolhem, Enter aplica, Esc fecha.", 12, color: NSColor(white: 0.63, alpha: 1)))
+        views.append(panelLabel("Segure o botão para repetir (acelera). Setas escolhem, Enter aplica, Esc fecha.", 11, color: NSColor(white: 1, alpha: 0.45)))
         views.append(buttonRow([close]))
         let startRow = rows.count
         rows.append([m30, m5, m1])
@@ -1025,8 +1240,10 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
         stack.orientation = .vertical
         stack.alignment = .centerX
         stack.spacing = 8
+        if let i = views.firstIndex(where: { $0 === value }) { stack.setCustomSpacing(14, after: views[i]) }
+        for v in views where v is NSStackView { v.widthAnchor.constraint(equalTo: stack.widthAnchor).isActive = true }
         let p = makePanel()
-        place(p, in: stack, width: 480)
+        place(p, in: stack, width: 448)
         syncPanel = p
         syncRows = rows
         setSyncFocus(startRow + 1, 0) // como no Android: o foco começa no +1 s
@@ -1035,6 +1252,7 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
     }
 
     private func closePanels() {
+        panelHost?.removeFromSuperview(); panelHost = nil
         syncPanel?.removeFromSuperview(); syncPanel = nil
         speechPanel?.removeFromSuperview(); speechPanel = nil
         syncRows = []
@@ -1111,33 +1329,38 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
         speechNow = now
         let table = NSTableView()
         let col = NSTableColumn(identifier: NSUserInterfaceItemIdentifier("fala"))
-        col.width = 560
+        col.width = 556
         table.addTableColumn(col)
         table.headerView = nil
         table.backgroundColor = .clear
-        table.rowHeight = 26
+        table.rowHeight = 34
+        table.intercellSpacing = NSSize(width: 0, height: 2)
         table.dataSource = self
         table.delegate = self
         table.target = self
         table.action = #selector(speechClicked)
         table.selectionHighlightStyle = .regular
+        if #available(macOS 11.0, *) { table.style = .plain }
         let scroll = NSScrollView()
         scroll.documentView = table
         scroll.hasVerticalScroller = true
+        scroll.autohidesScrollers = true
+        scroll.scrollerStyle = .overlay
         scroll.drawsBackground = false
+        scroll.borderType = .noBorder
         scroll.translatesAutoresizingMaskIntoConstraints = false
         scroll.heightAnchor.constraint(equalToConstant: 340).isActive = true
-        scroll.widthAnchor.constraint(equalToConstant: 580).isActive = true
+        scroll.widthAnchor.constraint(equalToConstant: 560).isActive = true
         let stack = NSStackView(views: [
-            panelLabel("Qual fala estava sendo dita?", 20, bold: true),
-            panelLabel("Pause numa fala, escolha-a na lista e a legenda acerta sozinha. Setas e Enter, ou clique; Esc cancela.", 13, color: NSColor(white: 0.63, alpha: 1)),
+            panelLabel("Qual fala estava sendo dita?", 20, bold: true, width: 560),
+            panelLabel("Pause numa fala, escolha-a na lista e a legenda acerta sozinha. Setas e Enter, ou clique; Esc cancela.", 12, color: NSColor(white: 1, alpha: 0.58), width: 560),
             scroll,
         ])
         stack.orientation = .vertical
         stack.alignment = .centerX
-        stack.spacing = 10
+        stack.spacing = 12
         let p = makePanel()
-        place(p, in: stack, width: 630)
+        place(p, in: stack, width: 616)
         speechPanel = p
         speechTable = table
         table.reloadData()
@@ -1166,6 +1389,17 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
         closePanels() // retoma a reprodução
     }
 
+    /** o que o VLC diz sobre a leitura do arquivo (só para o teste: ver se dá para mostrar a faixa "carregada" na linha do tempo) */
+    private func statsProbe() -> String {
+        guard let m = player.media else { return "sem mídia" }
+        var out: [String] = []
+        for name in ["stats", "statistics"] where m.responds(to: NSSelectorFromString(name)) {
+            out.append("\(name)=\(String(describing: m.value(forKey: name)))")
+        }
+        out.append("position=\(player.position)")
+        return out.joined(separator: " ")
+    }
+
     /** comandos do teste automático (só no GitHub) */
     func testCommand(_ line: String) {
         let w = line.split(separator: " ").map(String.init)
@@ -1185,6 +1419,13 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
                                       context: nil, characters: "", charactersIgnoringModifiers: "", isARepeat: false, keyCode: UInt16(n))
             if let ev = ev { _ = handleKey(ev) }
         case "show": showControls()
+        case "subs": showSubtitlePopover()
+        case "audio": showAudioPopover()
+        case "popclose": popover?.performClose(nil)
+        case "hover": timeline.testHover(n == 0 ? nil : Double(n) / 100)
+        case "vol": volumeLevel = max(0, min(100, n)); volumeMuted = false; applyVolume()
+        case "mute": toggleMute()
+        case "stats": log("stats: " + statsProbe())
         case "showforce": controls.alphaValue = 1; topBar.alphaValue = 1; hideAt = Date().addingTimeInterval(30)
         case "dump":
             log("dump: controls alpha=\(controls.alphaValue) hidden=\(controls.isHidden) frame=\(controls.frame) topBar alpha=\(topBar.alphaValue) tocando=\(player.isPlaying) hideEm=\(hideAt.timeIntervalSinceNow) ordem=\(root.subviews.map { NSStringFromClass(type(of: $0)).split(separator: ".").last.map(String.init) ?? "" }) videoLayer=\(String(describing: videoView.layer))")
@@ -1240,15 +1481,16 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
         log("tela: \(PlayerWindowController.scaleNames[scaleMode]) \(ratio)")
     }
 
-    @objc private func toggleScale(_ sender: NSButton) {
+    @objc private func toggleScale(_ sender: Any?) {
         setScaleMode((scaleMode + 1) % 3)
+        notice("Tela: \(PlayerWindowController.scaleNames[scaleMode])", seconds: 1.5)
         showControls()
     }
 
     func setScaleMode(_ m: Int) {
         scaleMode = max(0, min(2, m))
-        scaleButton?.attributedTitle = NSAttributedString(string: "  Tela: \(PlayerWindowController.scaleNames[scaleMode])  ", attributes: [
-            .foregroundColor: NSColor.white, .font: NSFont.boldSystemFont(ofSize: 13)])
+        scaleButton?.toolTip = "Tela: \(PlayerWindowController.scaleNames[scaleMode]) (clique para trocar)"
+        scaleButton?.accent = scaleMode != 0
         applyScale(force: true)
     }
 
@@ -1488,7 +1730,16 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
     @objc func closePlayer() { window?.performClose(nil) }
 
     func windowWillClose(_ notification: Notification) { finish() }
-    func windowDidResize(_ notification: Notification) { applyScale() }
+    func windowDidResize(_ notification: Notification) {
+        applyScale()
+        DispatchQueue.main.async { [weak self] in self?.placeTrafficLights() }
+    }
+    func windowDidEnterFullScreen(_ notification: Notification) { fsButton.symbol = "arrow.down.right.and.arrow.up.left"; fsButton.toolTip = "Sair da tela cheia (F)" }
+    func windowDidExitFullScreen(_ notification: Notification) {
+        fsButton.symbol = "arrow.up.left.and.arrow.down.right"
+        fsButton.toolTip = "Tela cheia (F)"
+        DispatchQueue.main.async { [weak self] in self?.placeTrafficLights() }
+    }
 
     override func close() {
         finish()
@@ -1498,6 +1749,8 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
     private func finish() {
         if finished { return }
         finished = true
+        popover?.performClose(nil)
+        popover = nil
         timer?.invalidate()
         timer = nil
         let t = Int64(player.time.intValue)
@@ -1518,7 +1771,7 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
 }
 
 
-/** botão do painel de sincronização: clique = onTap; segurar (mouse) repete onHold a cada ~150 ms, depois de 0,4 s; borda branca = foco do teclado */
+/** botão do painel de sincronização: clique = onTap; segurar (mouse) repete onHold a cada ~150 ms, depois de 0,4 s; borda de destaque = foco do teclado */
 final class SyncButton: NSButton {
     var onTap: (() -> Void)?
     /** segurando: segundos desde o começo do segurar */
@@ -1526,15 +1779,40 @@ final class SyncButton: NSButton {
     private var holdTimer: Timer?
     private var holdStart = Date()
     private var held = false
-    var focused = false {
-        didSet {
-            layer?.borderWidth = focused ? 3 : 1
-            layer?.borderColor = NSColor(white: 1, alpha: focused ? 1 : 0.18).cgColor
-            layer?.backgroundColor = NSColor(white: 1, alpha: focused ? 0.28 : 0.16).cgColor
+    private var hovering = false { didSet { restyle() } }
+    private var pressedLook = false { didSet { restyle() } }
+    private var tracking: NSTrackingArea?
+    /** botão principal: branco com letra preta */
+    var primary = false
+    var focused = false { didSet { restyle() } }
+
+    override var acceptsFirstResponder: Bool { false }
+    override var mouseDownCanMoveWindow: Bool { false }
+
+    func restyle() {
+        wantsLayer = true
+        layer?.cornerRadius = 11
+        if primary {
+            layer?.backgroundColor = NSColor(white: 1, alpha: pressedLook ? 0.7 : hovering ? 0.88 : 0.96).cgColor
+            layer?.borderWidth = focused ? 3 : 0
+            layer?.borderColor = GF.red.cgColor
+        } else {
+            let a: CGFloat = pressedLook ? 0.30 : focused ? 0.24 : hovering ? 0.19 : 0.12
+            layer?.backgroundColor = NSColor(white: 1, alpha: a).cgColor
+            layer?.borderWidth = focused ? 2 : 0
+            layer?.borderColor = NSColor(white: 1, alpha: 0.95).cgColor
         }
     }
 
-    override var acceptsFirstResponder: Bool { false }
+    override func updateTrackingAreas() {
+        super.updateTrackingAreas()
+        if let t = tracking { removeTrackingArea(t) }
+        let t = NSTrackingArea(rect: bounds, options: [.mouseEnteredAndExited, .activeAlways, .inVisibleRect], owner: self, userInfo: nil)
+        addTrackingArea(t)
+        tracking = t
+    }
+    override func mouseEntered(with event: NSEvent) { hovering = true }
+    override func mouseExited(with event: NSEvent) { hovering = false }
 
     override func mouseDown(with event: NSEvent) {
         held = false
@@ -1543,7 +1821,7 @@ final class SyncButton: NSButton {
         if onHold != nil {
             holdTimer = Timer.scheduledTimer(withTimeInterval: 0.4, repeats: false) { [weak self] _ in self?.startRepeat() }
         }
-        layer?.backgroundColor = NSColor(white: 1, alpha: 0.34).cgColor
+        pressedLook = true
     }
 
     private func startRepeat() {
@@ -1557,23 +1835,51 @@ final class SyncButton: NSButton {
     override func mouseUp(with event: NSEvent) {
         holdTimer?.invalidate()
         holdTimer = nil
-        layer?.backgroundColor = NSColor(white: 1, alpha: focused ? 0.28 : 0.16).cgColor
+        pressedLook = false
         if !held && bounds.contains(convert(event.locationInWindow, from: nil)) { onTap?() }
         held = false
     }
+}
+
+/** linha escolhida da lista de falas: retângulo claro arredondado (no lugar do azul do sistema) */
+final class SpeechRowView: NSTableRowView {
+    override func drawSelection(in dirtyRect: NSRect) {
+        let r = bounds.insetBy(dx: 2, dy: 0)
+        NSColor(white: 1, alpha: 0.18).setFill()
+        NSBezierPath(roundedRect: r, xRadius: 9, yRadius: 9).fill()
+    }
+    override var isEmphasized: Bool { get { false } set {} }
 }
 
 // lista de falas do "Sincronizar pela fala"
 extension PlayerWindowController: NSTableViewDataSource, NSTableViewDelegate {
     func numberOfRows(in tableView: NSTableView) -> Int { return speechCues.count }
 
+    func tableView(_ tableView: NSTableView, rowViewForRow row: Int) -> NSTableRowView? { SpeechRowView() }
+
     func tableView(_ tableView: NSTableView, viewFor tableColumn: NSTableColumn?, row: Int) -> NSView? {
         let c = speechCues[row]
         let one = c.text.replacingOccurrences(of: "\n", with: " ")
-        let t = NSTextField(labelWithString: PlayerWindowController.clockString(c.startMs) + "   " + one)
-        t.textColor = .white
-        t.font = .monospacedDigitSystemFont(ofSize: 14, weight: .regular)
-        t.lineBreakMode = .byTruncatingTail
-        return t
+        let time = NSTextField(labelWithString: PlayerWindowController.clockString(c.startMs))
+        time.font = .monospacedDigitSystemFont(ofSize: 13, weight: .medium)
+        time.textColor = NSColor(white: 1, alpha: 0.55)
+        time.translatesAutoresizingMaskIntoConstraints = false
+        let text = NSTextField(labelWithString: one)
+        text.font = .systemFont(ofSize: 14)
+        text.textColor = .white
+        text.lineBreakMode = .byTruncatingTail
+        text.translatesAutoresizingMaskIntoConstraints = false
+        let cell = NSView()
+        cell.addSubview(time)
+        cell.addSubview(text)
+        NSLayoutConstraint.activate([
+            time.leadingAnchor.constraint(equalTo: cell.leadingAnchor, constant: 12),
+            time.centerYAnchor.constraint(equalTo: cell.centerYAnchor),
+            time.widthAnchor.constraint(equalToConstant: 52),
+            text.leadingAnchor.constraint(equalTo: time.trailingAnchor, constant: 10),
+            text.trailingAnchor.constraint(equalTo: cell.trailingAnchor, constant: -12),
+            text.centerYAnchor.constraint(equalTo: cell.centerYAnchor),
+        ])
+        return cell
     }
 }

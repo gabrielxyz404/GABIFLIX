@@ -1,0 +1,58 @@
+/* FramePlay para Mac: polimento visual. Tudo aqui só vale no app do Mac (html[data-gf-app="mac"]); o celular e a TV não mudam. */
+
+/* ---------- cabeçalho: os botões vermelho/amarelo/verde da janela ficam DENTRO da cápsula de vidro ----------
+   O app posiciona os 3 botões a ~22px da borda, no meio da cápsula; o conteúdo do cabeçalho começa depois deles.
+   Em tela cheia os botões somem (o app liga data-gf-fs) e o recuo também. */
+html[data-gf-app="mac"]:not([data-gf-fs]) .horizontal-nav-bar-container-Y_zvK { padding-left: 4.5rem; }
+/* o cabeçalho da Home no Mac chama-se "Início" (as outras telas já estão em português) */
+html[data-gf-app="mac"][data-gf-route="home"]:not([data-gf-view="catalog"]) .horizontal-nav-bar-container-Y_zvK .logo-container-jteMT::after { content: "Início"; }
+
+/* ---------- Início: o nome do serviço lê-se bem mesmo com a janela estreita (nunca parte uma palavra; "Prime Video" quebra entre as palavras) ---------- */
+html[data-gf-app="mac"][data-gf-route="home"][data-gf-view="grid"] #gf-home .gf-mac-grid .gf-card { padding-left: 0.3rem; padding-right: 0.3rem; }
+html[data-gf-app="mac"][data-gf-route="home"][data-gf-view="grid"] #gf-home .gf-mac-grid .gf-card-name,
+html[data-gf-app="mac"][data-gf-route="home"][data-gf-view="grid"] #gf-home .gf-mac-grid .gf-card.is-wide .gf-card-name {
+    font-size: clamp(0.88rem, 16cqw, 2.6rem);
+    letter-spacing: -0.01em;
+    word-break: keep-all;
+    overflow-wrap: normal;
+}
+
+/* ---------- Mais Tarde: o filtro escolhido deixa de ser azul do Stremio (branco com letra preta, como as abas das fontes) ---------- */
+html[data-gf-app="mac"] .chip-L3r9A.active-jnhyP {
+    background-color: #fff;
+    color: #000;
+    border-color: transparent;
+}
+html[data-gf-app="mac"] .chip-L3r9A.active-jnhyP:hover { background-color: rgba(255, 255, 255, 0.88); }
+
+/* ---------- Continuar assistindo: barra de progresso bem visível ---------- */
+html[data-gf-app="mac"] #gf-home .gf-progress {
+    height: 5px;
+    border-radius: 3px;
+    background: rgba(0, 0, 0, 0.55);
+    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.28);
+}
+html[data-gf-app="mac"] #gf-home .gf-progress-fill { background: #fff; }
+
+/* ---------- janela de fontes: tamanho de janela do Mac, não de celular ---------- */
+html[data-gf-app="mac"] .gf-sheet-card { width: min(44rem, calc(100vw - 6rem)); max-height: min(78vh, 46rem); }
+html[data-gf-app="mac"] .gf-cw-card { width: min(24rem, calc(100vw - 6rem)); }
+html[data-gf-app="mac"] .gf-sheet-sub { max-width: 34rem; }
+html[data-gf-app="mac"] .gf-sheet-list { padding: 0.8rem 1rem 1rem; }
+html[data-gf-app="mac"] .gf-src-row:hover { background: rgba(255, 255, 255, 0.1); border-color: rgba(255, 255, 255, 0.16); }
+html[data-gf-app="mac"] .gf-src-row:active { transform: none; }
+html[data-gf-app="mac"] .gf-src-tab { cursor: pointer; }
+html[data-gf-app="mac"] .gf-src-tab:not(.is-on):hover { background: rgba(255, 255, 255, 0.18); color: #fff; }
+/* as abas cortadas à direita (ou à esquerda) esmaecem: sinal de que há mais para o lado */
+html[data-gf-app="mac"] .gf-src-tabs[data-more="1"] {
+    -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 3rem), transparent);
+    mask-image: linear-gradient(90deg, #000 calc(100% - 3rem), transparent);
+}
+html[data-gf-app="mac"] .gf-src-tabs[data-less="1"] {
+    -webkit-mask-image: linear-gradient(90deg, transparent, #000 3rem);
+    mask-image: linear-gradient(90deg, transparent, #000 3rem);
+}
+html[data-gf-app="mac"] .gf-src-tabs[data-more="1"][data-less="1"] {
+    -webkit-mask-image: linear-gradient(90deg, transparent, #000 3rem, #000 calc(100% - 3rem), transparent);
+    mask-image: linear-gradient(90deg, transparent, #000 3rem, #000 calc(100% - 3rem), transparent);
+}
