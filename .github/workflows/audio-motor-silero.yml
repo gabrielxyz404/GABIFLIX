@@ -38,7 +38,7 @@ jobs:
           mkdir -p /tmp/ort /tmp/cls
           M=https://repo1.maven.org/maven2/com/microsoft/onnxruntime/onnxruntime/1.20.0/onnxruntime-1.20.0.jar
           curl -fsSL -o /tmp/ort/ort.jar $M
-          javac -d /tmp/cls -cp /tmp/ort/ort.jar tools/audio-sync/java/io/github/gabrielxyz404/gabiflix/audiosync/Vad.java $S/java/io/github/gabrielxyz404/gabiflix/audiosync/SileroVad.java $S/java/SileroParity.java
+          javac -d /tmp/cls -cp /tmp/ort/ort.jar tools/audio-sync/java/io/github/gabrielxyz404/gabiflix/audiosync/Vad.java $S/java/io/github/gabrielxyz404/gabiflix/audiosync/SileroVad.java $S/pc/SileroParity.java
           java -cp /tmp/cls:/tmp/ort/ort.jar SileroParity ref/silero_vad.onnx ref/test.wav ref/ref.f32 2>&1 | tee ref/java-pc.log
           ls -la /tmp/ort/ort.jar >> ref/java-pc.log; unzip -l /tmp/ort/ort.jar | grep -E "\.so|\.dll|\.dylib" >> ref/java-pc.log || true
       - uses: actions/upload-artifact@v4
@@ -148,7 +148,6 @@ jobs:
           find $S/mac/.build -name "*.xcframework" -maxdepth 6 | head -3 | tee -a out-mac/bin.txt
           for x in $(find $S/mac/.build -name "*.xcframework" -maxdepth 6 | head -1); do du -sh $x/* | tee -a out-mac/bin.txt; done
           $BIN/sileroprobe ref/silero_vad.onnx ref/test.wav out-mac/silero.f32 2>&1 | tee out-mac/run.txt
-          pip3 install -q numpy 2>&1 | tail -1 || true
           python3 $S/pc/compare.py ref/ref.f32 out-mac/silero.f32 mac-arm64 | tee out-mac/parity.txt
       - uses: actions/upload-artifact@v4
         if: always()
