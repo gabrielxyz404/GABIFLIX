@@ -1,0 +1,106 @@
+name: Audio motor (corpus + avaliacao)
+
+# Motor de sincronia de legenda pelo audio: monta o corpus (filmes de dominio publico do archive.org + legendas do addon),
+# gera a verdade de campo com ffsubsync/alass e roda a avaliacao do motor. NAO publica nada do app.
+# Dispara so ao empurrar o branch run-audio (os filmes/legendas ficam apenas no runner e no cache; so resultados pequenos vao para audio-motor-out).
+on:
+  push:
+    branches: [run-audio]
+
+permissions:
+  contents: write
+  actions: read
+
+jobs:
+  subs:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Legendas (addon OpenSubtitles)
+        run: |
+          python3 tools/audio-sync/corpus/corpus.py subs subs 2>&1 | tee subs.log
+      - uses: actions/upload-artifact@v4
+        with:
+          name: subs
+          path: subs
+          retention-days: 3
+
+  film:
+    needs: subs
+    runs-on: ubuntu-latest
+    timeout-minutes: 170
+    strategy:
+      fail-fast: false
+      matrix:
+        slug: [his_girl_friday, charade, night_of_the_living_dead, doa, detour, little_shop, plan9, meet_john_doe, carnival_of_souls, the_stranger, last_man_on_earth, my_man_godfrey, brain_that_wouldnt_die, hitch_hiker, suddenly, dementia_13, house_on_haunted_hill, scarlet_street, reefer_madness, sherlock_secret_weapon, sintel, tears_of_steel, elephants_dream]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 17
+      - uses: actions/download-artifact@v4
+        with:
+          name: subs
+          path: subs
+      - name: Cache do filme
+        id: cache
+        uses: actions/cache/restore@v4
+        with:
+          path: corpus/${{ matrix.slug }}
+          key: audio-film-v1-${{ matrix.slug }}
+      - name: Ferramentas (ffsubsync, webrtcvad, onnxruntime, ffmpeg)
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg >/dev/null
+          pip install -q "numpy<2" "setuptools<81" webrtcvad-wheels onnxruntime ffsubsync 2>&1 | tail -3
+          mkdir -p /tmp/sv && pip download -q silero-vad --no-deps -d /tmp/sv 2>&1 | tail -1
+          cd /tmp/sv && unzip -o -q -j *.whl '*silero_vad.onnx' -d /tmp/sv/m && ls -la /tmp/sv/m
+          echo "SILERO_ONNX=/tmp/sv/m/silero_vad.onnx" >> $GITHUB_ENV
+      - name: Montar o filme (download + oraculos + VAD de referencia)
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: |
+          mkdir -p corpus
+          python3 tools/audio-sync/corpus/corpus.py film ${{ matrix.slug }} subs corpus/${{ matrix.slug }} 2>&1 | tee corpus-${{ matrix.slug }}.log | cut -c1-400
+      - name: Guardar no cache
+        if: always() && steps.cache.outputs.cache-hit != 'true' && hashFiles(format('corpus/{0}/audio16k.wav', matrix.slug)) != ''
+        uses: actions/cache/save@v4
+        with:
+          path: corpus/${{ matrix.slug }}
+          key: audio-film-v1-${{ matrix.slug }}
+      - name: Resumo do corpus (pequeno)
+        if: always()
+        run: |
+          mkdir -p out/${{ matrix.slug }}
+          cp corpus/${{ matrix.slug }}/meta.json corpus/${{ matrix.slug }}/oracle.json out/${{ matrix.slug }}/ 2>/dev/null || true
+          cp corpus-${{ matrix.slug }}.log out/${{ matrix.slug }}/ 2>/dev/null || true
+          du -sh corpus/${{ matrix.slug }} || true
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: res-${{ matrix.slug }}
+          path: out/${{ matrix.slug }}
+          retention-days: 3
+
+  report:
+    needs: film
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: res-*
+          path: res
+      - name: Publicar resultados pequenos
+        run: |
+          mkdir -p /tmp/o && cp -r res /tmp/o/ && cd /tmp/o
+          git init -q -b audio-motor-out && git config user.name "FramePlay CI" && git config user.email ci@frameplay.local
+          git add -A && git commit -qm "audio-motor: corpus run ${{ github.run_number }}" || true
+          git push -q -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" audio-motor-out
