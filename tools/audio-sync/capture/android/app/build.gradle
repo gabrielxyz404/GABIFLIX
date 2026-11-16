@@ -1,0 +1,27 @@
+plugins { id 'com.android.application' }
+
+android {
+    namespace 'io.github.gabrielxyz404.audiocap'
+    compileSdk 34
+    defaultConfig {
+        applicationId 'io.github.gabrielxyz404.audiocap'
+        minSdk 21
+        targetSdk 30
+        versionCode 1
+        versionName '1'
+        testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
+        ndk { abiFilters 'x86' }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+    packagingOptions { jniLibs { useLegacyPackaging = true } }
+}
+
+dependencies {
+    // a mesma versão do app FramePlay
+    implementation 'org.videolan.android:libvlc-all:3.6.0'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.5'
+    androidTestImplementation 'androidx.test:runner:1.5.2'
+}
