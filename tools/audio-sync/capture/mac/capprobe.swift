@@ -2,6 +2,7 @@
 // Métodos:
 //   cb    : libvlc_audio_set_callbacks + libvlc_audio_set_format("S16N", 16000, 1)  (símbolos resolvidos com dlsym no próprio VLCKit; o
 //           ponteiro libvlc_media_player_t* vem do ivar _playerInstance, como na sonda de vídeo da fase das legendas)
+//   sout  : cadeia de saída (transcode -> WAV em arquivo): não toca nada, não segue o relógio de reprodução (método mais rápido no Linux)
 //   afile : aout "afile" do VLC escrevendo um WAV (mono)
 // uso: capprobe <url> <inicioS> <duracaoS> <metodo> <saida> [opcoes da biblioteca/midia separadas por espaço; ":x=y" vai para a mídia, "--x" para a biblioteca]
 import Foundation
@@ -22,6 +23,7 @@ var libOpts: [String] = ["--no-video", "--no-spu", "--no-sub-autodetect-file", "
 var mediaOpts: [String] = [":no-video", ":no-spu", ":network-caching=600", ":http-reconnect",
                            ":start-time=\(String(format: "%.3f", startS))", ":stop-time=\(String(format: "%.3f", startS + durS))"]
 for e in extra { if e.hasPrefix("--") { libOpts.append(e) } else if e.hasPrefix(":") { mediaOpts.append(e) } }
+if method == "sout" { mediaOpts.append(":sout=#transcode{acodec=s16l,channels=1,samplerate=16000}:std{access=file,mux=wav,dst=\(outPath)}") }
 if method == "afile" { libOpts += ["--aout=afile", "--audiofile-file=\(outPath)", "--audiofile-wav", "--audiofile-channels=1"] }
 
 let player = VLCMediaPlayer(options: libOpts)

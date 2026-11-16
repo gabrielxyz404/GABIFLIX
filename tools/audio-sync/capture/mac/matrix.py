@@ -81,14 +81,18 @@ def run(name, codec, start, dur, method, extra):
     err, corr = start_error(cap, r) if cap is not None else (None, None)
     res["start_err_ms"] = err
     res["corr"] = None if corr is None else round(corr, 3)
-    res["xRT"] = round(dur / res["wall_proc_s"], 2)
+    res["xRT"] = round(dur / max(res["wall_proc_s"], 0.05), 2)
+    res["rc"] = p.returncode
     print(json.dumps(res), flush=True)
     if not p.stderr.count("RESULT"):
-        print("STDERR:", p.stderr[-800:], flush=True)
+        print("STDERR:", p.stderr[-1200:], "STDOUT:", p.stdout[-400:], flush=True)
     return res
 
 
 S1 = [
+    ("sout", "sout", []),
+    ("sout+fastseek", "sout", [":input-fast-seek"]),
+    ("sout+nosync", "sout", ["--clock-synchro=0"]),
     ("cb", "cb", []),
     ("cb+nosync", "cb", ["--clock-synchro=0"]),
     ("cb+nosync+jit0", "cb", ["--clock-synchro=0", "--clock-jitter=0"]),
