@@ -1,10 +1,10 @@
 name: Audio motor (reverificacao)
 
 # So a avaliacao da reverificacao durante a reproducao (Recheck): reaproveita os filmes em cache e os pesos do VAD DSP ja publicados em audio-motor-out.
-# Dispara so ao empurrar o branch run-audio-rck. Resultados pequenos vao para audio-motor-out-rck.
+# Dispara ao empurrar o branch run-audio (o cache dos filmes so existe nesse branch) com '[rck-only]' na mensagem do commit; o workflow completo ignora esses commits. Resultados pequenos vao para audio-motor-out-rck.
 on:
   push:
-    branches: [run-audio-rck]
+    branches: [run-audio]
 
 permissions:
   contents: write
@@ -17,6 +17,7 @@ env:
 
 jobs:
   rck:
+    if: ${{ contains(github.event.head_commit.message, '[rck-only]') }}
     runs-on: ubuntu-latest
     timeout-minutes: 90
     strategy:
@@ -66,7 +67,7 @@ jobs:
 
   report:
     needs: rck
-    if: always()
+    if: ${{ always() && contains(github.event.head_commit.message, '[rck-only]') }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/download-artifact@v4

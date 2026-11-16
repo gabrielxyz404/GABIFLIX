@@ -53,6 +53,8 @@ public final class AudioAligner {
         public double snapAlpha = 3e-3;
         public double snapResMs = 120;
         /** mínimo de blocos com fala para tentar */
+        /** limiar final de z para ACEITAR o ajuste global (sem partes). Medido: z >= 9 deu 0 falsos aceites em 1823 negativos em todas as configurações; z >= 6 deu 3-9. */
+        public double acceptMinZ = 9.0;
         public int minBlocks = 3;
         public double minSpeechFrac = 0.03;
         public long maxCueGapForCut = 20_000;
@@ -516,6 +518,10 @@ public final class AudioAligner {
             analyzeCuts(R, cues, windows, ps, bl, use, nu, P, mediaDurationMs, fine);
         } catch (RuntimeException e) {
             R.segments = null; R.more = null; R.pieceSuspect = true;   // o ajuste global continua valendo
+        }
+        if (R.accepted && R.segments == null && R.z < P.acceptMinZ) {
+            R.accepted = false;
+            R.reason = (R.reason + " z abaixo do limiar de aceitação (" + P.acceptMinZ + ");").trim();
         }
         if (!R.accepted) suggestMore(R, windows, P, mediaDurationMs);
         return R;

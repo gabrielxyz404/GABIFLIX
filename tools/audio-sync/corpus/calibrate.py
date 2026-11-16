@@ -22,8 +22,9 @@ def main():
     tol = float(sys.argv[4]) if len(sys.argv) > 4 else 250
     maxfp = int(sys.argv[5]) if len(sys.argv) > 5 else 0
     rows = [r for r in report.load(root) if r["vad"] == vad and r["cfg"] == cfg]
-    pos = [(r["film"], feats(r), r["med"] <= tol and r["med"] >= 0) for r in rows if r["cat"] in ("offset", "scale", "combo", "natural")]
-    neg = [(r["film"], feats(r)) for r in rows if r["cat"] == "neg"]
+    # a regra calibrada vem POR CIMA da decisão do motor (só casos que o motor já aceitou entram: refinar nunca aceita mais, só recusa mais)
+    pos = [(r["film"], feats(r), (report.rel_ok(r, tol))) for r in rows if r["cat"] in ("offset", "scale", "combo", "natural") and r["acc"]]
+    neg = [(r["film"], feats(r)) for r in rows if r["cat"] == "neg" and r["acc"]]
     films = sorted({p[0] for p in pos})
     if not pos or not neg:
         print("sem dados"); return
@@ -43,6 +44,8 @@ def main():
         return best
 
     glob = best_rule(pos, neg)
+    if glob is None:
+        print("nenhuma regra da grade tem <= %d falsos aceites nos negativos" % maxfp); return
     print("regra global:", dict(zip(("z", "agree", "nccm", "margin", "f1"), glob)))
     tot = collections.Counter()
     for fl in films:

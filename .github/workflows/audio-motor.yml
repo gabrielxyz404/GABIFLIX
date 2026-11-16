@@ -19,6 +19,7 @@ env:
 
 jobs:
   subs:
+    if: ${{ !contains(github.event.head_commit.message, '[rck-only]') }}
     runs-on: ubuntu-latest
     timeout-minutes: 40
     steps:
@@ -36,6 +37,7 @@ jobs:
 
   film:
     needs: subs
+    if: ${{ !contains(github.event.head_commit.message, '[rck-only]') }}
     runs-on: ubuntu-latest
     timeout-minutes: 170
     strategy:
@@ -115,7 +117,7 @@ jobs:
 
   train:
     needs: film
-    if: always()
+    if: ${{ always() && !contains(github.event.head_commit.message, '[rck-only]') }}
     runs-on: ubuntu-latest
     timeout-minutes: 60
     steps:
@@ -143,7 +145,7 @@ jobs:
 
   eval:
     needs: train
-    if: always()
+    if: ${{ always() && !contains(github.event.head_commit.message, '[rck-only]') }}
     runs-on: ubuntu-latest
     timeout-minutes: 120
     strategy:
@@ -199,7 +201,7 @@ jobs:
 
   report:
     needs: [eval, train]
-    if: always()
+    if: ${{ always() && !contains(github.event.head_commit.message, '[rck-only]') }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

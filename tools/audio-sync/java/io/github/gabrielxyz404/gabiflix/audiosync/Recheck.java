@@ -94,6 +94,7 @@ public final class Recheck {
             q.knownScales = new double[]{1.0};
             q.maxAlpha = 1e-4;
             q.maxOffsetMs = P.searchMs;
+            q.acceptMinZ = 0;
             q.minZ = P.minZ; q.minNcc = P.minNcc; q.minMargin = 0.10; q.minAgreeFrac = 0.6;
             q.randomHyps = 1500;
             q.minBlocks = 2;
