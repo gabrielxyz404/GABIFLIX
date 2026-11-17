@@ -62,8 +62,8 @@ public final class AudioAligner {
         /** escalas 0,999 e 1,001001 (24 x 23,976 fps) são recusadas: a diferença é pequena demais para ser distinguida do ruído com poucas janelas e custa legendas já certas */
         public boolean rejectNearUnitScale = true;
         public double nearUnitEps = 0.0015;
-        /** porta opcional (0 = desligada): todas as janelas com fala têm de concordar com o modelo dentro de gateWinDevMs (ms) */
-        public double gateWinDevMs = 0;
+        /** porta (0 = desligada): todas as janelas com fala (>= 2) têm de concordar com o modelo dentro de gateWinDevMs (ms). Medida em CI: tira os falsos mexidos em legenda certa (4 -> 0 de 93) e os aceites errados (4,3% -> 0%) */
+        public double gateWinDevMs = 150;
         /** porta opcional: mínimo de janelas com fala e concordantes (0 = desligada) */
         public int gateMinWinsAgree = 0;
         /** escalas fora das razões de fps conhecidas: ajuste dentro de unitSnap de 1,0 vira 1,0 (reajusta o offset); fora disso é recusado (allowFreeScale=false) */
