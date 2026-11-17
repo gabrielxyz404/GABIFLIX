@@ -114,6 +114,9 @@ final class AudioSyncAuto {
         core.close()
     }
 
+    /** saúde da reprodução desde a última análise (para os testes) */
+    func healthText() -> String { return healthLine() }
+
     /** texto de diagnóstico do estado, para os testes */
     func stateText() -> String {
         return "st=\(st) executando=\(running) mScale=\(mScale) mOffset=\(Int(mOffset)) escrito=\(lastWritten) maiorIntervaloDoCiclo=\(maxTickGapMs) ms"

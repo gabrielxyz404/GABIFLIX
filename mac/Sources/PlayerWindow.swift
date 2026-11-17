@@ -1336,6 +1336,8 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
         case "track": userPickedSub = true; player.currentVideoSubTitleIndex = Int32(n); syncDelayToTrack(n)
         case "autosync": runAutoSync()
         case "audiostate": log("audiosync: " + (audioAuto?.stateText() ?? "desligado"))
+        case "audiohealth": log("AUDIOSYNC " + (audioAuto?.healthText() ?? "desligado"))
+        case "closeplayer": closePlayer()
         case "menudump":
             let m = buildSubtitleMenu()
             log("menu: " + m.items.map { $0.isSeparatorItem ? "-----" : (($0.state == .on ? "[x] " : "") + $0.title + ($0.isEnabled ? "" : " (desativado)")) }.joined(separator: " | "))
