@@ -106,11 +106,11 @@ cmd "state"; save 5-dsp; finish
 launch 6-manual-antes mais3.srt $BASE FP_AUDIO_START_SEC=15
 sleep 4; cmd "delay 1500"; sleep 30; cmd "state"; cmd "audiostate"; save 6-manual-antes; finish
 
-# ---- 7) rede lenta (375 KB/s no total): a reproducao nao pode parar; depois, atraso manual DURANTE a analise descarta o resultado
-LOG=/tmp/server-bytes-lenta.log THROTTLE_KBPS=375 nohup python3 "$(dirname "$0")/../audio-integra/server.py" "$MEDIA" 8001 >/tmp/server-lenta.out 2>&1 &
+# ---- 7) rede lenta (900 KB/s no total): a reproducao nao pode parar; depois, atraso manual DURANTE a analise descarta o resultado
+LOG=/tmp/server-bytes-lenta.log THROTTLE_KBPS=900 nohup python3 "$(dirname "$0")/../audio-integra/server.py" "$MEDIA" 8001 >/tmp/server-lenta.out 2>&1 &
 sleep 2
 launch 7-rede-lenta mais3.srt $SLOW FP_AUDIO_START_SEC=20
-waitlog "AUDIOSYNC resultado:" 900; sleep 2; shot 7-rede-lenta-depois 0.3
+waitlog "AUDIOSYNC resultado:" 300; sleep 2; shot 7-rede-lenta-depois 0.3
 cmd "state"; cmd "audiohealth"; save 7-rede-lenta; finish
 
 launch 8-manual-durante mais3.srt $SLOW FP_AUDIO_START_SEC=10

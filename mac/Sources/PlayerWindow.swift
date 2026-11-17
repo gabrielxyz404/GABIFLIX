@@ -351,6 +351,12 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
 
     /** quadros de vídeo perdidos até agora, só para o diagnóstico (-1 se o VLCKit não diz) */
     private func lostVideoFrames() -> Int {
+        // Estatísticas do VLC (VLCMedia.statistics): imagens perdidas desde o começo da mídia; -1 se o VLCKit não dá.
+        guard let m = player.media, m.responds(to: NSSelectorFromString("statistics")),
+              let d = m.value(forKey: "statistics") as? [String: Any] else { return -1 }
+        for k in ["lostPictures", "lostPicture", "lost_pictures"] {
+            if let n = d[k] as? NSNumber { return n.intValue }
+        }
         return -1
     }
 
