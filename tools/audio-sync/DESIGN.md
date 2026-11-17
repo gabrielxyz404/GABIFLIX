@@ -361,3 +361,15 @@ Varredura offline de politicas (`corpus/policy_sweep.py`), Silero 3x90 s (300 s 
 | Silero 3x90, z>=9, banda 1100 ms, sem escalas 0,999/1,001 | 48,0% | 10,5% | 3 | 0 / 54 | 0/1823 |
 | DSP 3x90, z>=9, banda 1100 ms, sem escalas 0,999/1,001 | 39,7% | 12,5% | 3 | 0 / 42 | 0/1823 |
 | 4x90 nao melhora em nenhum VAD (menos corretas) | | | | | |
+
+### 9.1 Politica final v5/v6 (medida no motor real, run 8, clipes de 20 min)
+
+Motor: z >= 9, so escalas de fps conhecidas e 0,999/1,001001 recusadas, banda morta 1100 ms, cortes so aviso, e **porta de concordancia entre janelas**
+(todas as janelas com fala, no minimo 2, a ate 150 ms do modelo; `Params.gateWinDevMs`). O z global de 12-13 enganava nos casos ruins (meet_john_doe: janelas sozinhas z 6-8
+e discordando em segundos; a porta as recusa). Metrica corrigida: o alvo relativo usa o deslocamento SEM a banda morta (`Result.rawOffsetMs`) e "deixada como esta" (inSync) nao e contada como errada.
+
+| VAD, janelas | agiu (% das distorcidas) | certas +-250 | erradas (rel >250) | abs >500 ms do oraculo | safe mexidas | natural piorou / melhorou (de 93) | outro filme |
+|---|---|---|---|---|---|---|---|
+| Silero 3x90 | 41,4% | 41,0% | 0,4% | 2,9% | 0/93 | 0 / 39 | 0/1823 |
+| Silero 4x90 | 25,7% | 25,4% | 0,3% | 3,8% | 0/93 | 0 / 31 | 0/1823 |
+| DSP 3x90 | 21,8% | 19,2% | 2,7% | 3,8% | 0/93 | 0 / 19 | 0/1823 |
