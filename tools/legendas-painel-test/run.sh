@@ -63,9 +63,9 @@ launch http://10.0.2.2:8001/teste.mkv "a1.srt"
 sleep 4; snap carregando-1 0.5
 if [ "$P" = tel ]; then adb shell input tap $((W/2)) $((H/2)); else key DPAD_DOWN; fi
 sleep 1; snap carregando-2-depois-de-tocar 0.5
-for i in $(seq 1 45); do xy=$(dump | python3 $UI xy "Reproduzir ou pausar"); [ -n "$xy" ] && break; done
-snap controles-ao-comecar 0.1
-sleep 7; snap controles-somem 0.5
+# rajada de fotos: o fim do carregamento (controles aparecem uma vez e somem) cai dentro dela
+sleep 5; mkdir -p $OUT/seq
+for i in $(seq 1 20); do adb exec-out screencap -p > $OUT/seq/$P-$(printf %02d $i).png; done
 
 # 1) com referência de tempo: lista, automático ("já estava certa"), manual, automático de novo (corrige)
 launch teste.mkv "a1.srt,a2.srt,b.srt" "ref.srt"
