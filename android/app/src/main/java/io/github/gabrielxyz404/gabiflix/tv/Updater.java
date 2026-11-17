@@ -27,13 +27,23 @@ import java.util.regex.Pattern;
 final class Updater {
     private Updater() {}
 
-    private static final String RELEASE = "https://api.github.com/repos/gabrielxyz404/GABIFLIX/releases/tags/tv";
+    private static final String[] REPOS = io.github.gabrielxyz404.gabiflix.Site.REPOS;
+
+    /** lê a release "tv" pelo nome novo do repositório e, se não responder, pelo antigo */
+    private static String releaseJson() throws Exception {
+        Exception last = null;
+        for (String r : REPOS) {
+            try { return Net.get("https://api.github.com/repos/gabrielxyz404/" + r + "/releases/tags/tv"); }
+            catch (Exception e) { last = e; }
+        }
+        throw last;
+    }
 
     static void run(Activity a) {
         Toast.makeText(a, "Procurando atualização…", Toast.LENGTH_SHORT).show();
         Context app = a.getApplicationContext();
         Net.async(() -> {
-            JSONObject rel = new JSONObject(Net.get(RELEASE));
+            JSONObject rel = new JSONObject(releaseJson());
             String text = rel.optString("name") + " " + rel.optString("body");
             Matcher m = Pattern.compile("1\\.0\\.(\\d+)").matcher(text);
             long latest = m.find() ? Long.parseLong(m.group(1)) : -1;
@@ -41,7 +51,10 @@ final class Updater {
             JSONArray assets = rel.optJSONArray("assets");
             if (assets != null) for (int i = 0; i < assets.length(); i++) {
                 JSONObject as = assets.getJSONObject(i);
-                if (as.optString("name").endsWith(".apk")) url = as.optString("browser_download_url");
+                String n = as.optString("name");
+                // escolha fixa: FramePlay.apk; só se não existir, qualquer outro .apk (o GabiFlix.apk é uma cópia igual, para as versões antigas)
+                if (n.equals("FramePlay.apk")) { url = as.optString("browser_download_url"); break; }
+                if (n.endsWith(".apk") && url == null) url = as.optString("browser_download_url");
             }
             return new Object[]{latest, url};
         }, (res, err) -> {
@@ -78,7 +91,7 @@ final class Updater {
     private static void download(Activity a, String url) {
         AlertDialog progress = new AlertDialog.Builder(a, android.R.style.Theme_DeviceDefault_Dialog_Alert)
                 .setTitle("Baixando a atualização…").setMessage("0%").setCancelable(false).show();
-        File out = new File(a.getCacheDir(), "update/GabiFlix.apk");
+        File out = new File(a.getCacheDir(), "update/FramePlay.apk");
         Net.IO.execute(() -> {
             try {
                 out.getParentFile().mkdirs();
@@ -125,6 +138,6 @@ final class Updater {
         i.setDataAndType(uri, "application/vnd.android.package-archive");
         i.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_ACTIVITY_NEW_TASK);
         try { a.startActivity(i); }
-        catch (Exception e) { Toast.makeText(a, "Abra o Downloader para instalar: gabrielxyz404.github.io/GABIFLIX/tv", Toast.LENGTH_LONG).show(); }
+        catch (Exception e) { Toast.makeText(a, "Abra o Downloader para instalar: " + io.github.gabrielxyz404.gabiflix.Site.tvHint(), Toast.LENGTH_LONG).show(); }
     }
 }

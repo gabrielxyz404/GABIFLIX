@@ -45,12 +45,15 @@ jobs:
       - name: Preparar o arquivo
         run: |
           mkdir -p out
-          cp android/app/build/outputs/apk/release/app-release.apk out/GabiFlix.apk
+          cp android/app/build/outputs/apk/release/app-release.apk out/FramePlay.apk
+          # cópia idêntica com o nome antigo: os apps já instalados e os links antigos ainda apontam para GabiFlix.apk
+          cp out/FramePlay.apk out/GabiFlix.apk
+          cmp out/FramePlay.apk out/GabiFlix.apk
           ls -la out
       - uses: actions/upload-artifact@v4
         with:
-          name: GabiFlix-apk
-          path: out/GabiFlix.apk
+          name: FramePlay-apk
+          path: out/FramePlay.apk
       # O celular só recebe versão nova quando muda algo do celular.
       # Mudanças só da TV (pasta tv/ e animações) vão apenas para a versão da TV.
       - name: Mudou algo do celular?
@@ -72,9 +75,11 @@ jobs:
           name: FramePlay para Android
           body: |
             Versão 1.0.${{ github.run_number }}
-            Baixe o GabiFlix.apk abaixo no celular Android e toque nele para instalar o FramePlay.
+            Baixe o FramePlay.apk abaixo no celular Android e toque nele para instalar o FramePlay.
             <!-- celular:${{ steps.phone.outputs.hash }} -->
-          files: out/GabiFlix.apk
+          files: |
+            out/FramePlay.apk
+            out/GabiFlix.apk
           make_latest: true
       - name: Publicar para a TV
         uses: softprops/action-gh-release@v2
@@ -83,6 +88,8 @@ jobs:
           name: FramePlay para TV
           body: |
             Versão 1.0.${{ github.run_number }}
-            App da TV (Fire TV). Instale pelo Downloader: gabrielxyz404.github.io/GABIFLIX/tv
-          files: out/GabiFlix.apk
+            App da TV (Fire TV). Instale pelo Downloader: gabrielxyz404.github.io/${{ github.event.repository.name }}/tv
+          files: |
+            out/FramePlay.apk
+            out/GabiFlix.apk
           make_latest: false

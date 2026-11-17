@@ -350,7 +350,7 @@ public class PlayerActivity extends Activity {
 
     private void resume() {
         resumeDone = true;
-        // aberto pelo GabiFlix: o ponto certo é o do Stremio (se foi removido do Continuar assistindo, começa do zero)
+        // aberto pelo FramePlay: o ponto certo é o do Stremio (se foi removido do Continuar assistindo, começa do zero)
         long saved = metaId != null ? startMs : prefs().getLong(key(), 0);
         long len = player.getLength();
         if (saved > 30000 && (len <= 0 || saved < len - 60000)) player.setTime(saved);

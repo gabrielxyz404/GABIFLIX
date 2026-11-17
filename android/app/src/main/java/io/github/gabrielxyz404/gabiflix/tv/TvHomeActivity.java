@@ -34,6 +34,7 @@ public class TvHomeActivity extends TvBase {
     @Override
     protected void onCreate(Bundle b) {
         super.onCreate(b);
+        new Thread(io.github.gabrielxyz404.gabiflix.Site::resolve).start(); // descobre já qual endereço do site responde
         LinearLayout root = new LinearLayout(this);
         root.setOrientation(LinearLayout.VERTICAL);
         root.setPadding(0, Ui.dp(this, 22), 0, Ui.dp(this, 14));

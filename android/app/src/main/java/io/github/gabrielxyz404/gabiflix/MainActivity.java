@@ -22,13 +22,12 @@ import android.widget.FrameLayout;
 import java.util.ArrayList;
 
 /**
- * Tela principal: abre o GabiFlix (site) dentro do app.
+ * Tela principal: abre o FramePlay (site) dentro do app.
  * Os vídeos abrem no player embutido (PlayerActivity, com VLC) pela ponte window.GabiFlixNative.playSession.
  */
 public class MainActivity extends Activity {
 
-    static final String APP_URL = "https://gabrielxyz404.github.io/GABIFLIX/";
-    static final String APP_HOST = "gabrielxyz404.github.io";
+    static final String APP_HOST = Site.HOST;
 
     private WebView web;
     private FrameLayout root;
@@ -122,7 +121,12 @@ public class MainActivity extends Activity {
         else {
             // só para os testes automáticos: carrega o site de outro endereço (a cópia da branch, servida pelo runner)
             String testWeb = getIntent().getStringExtra("gfTestWeb");
-            web.loadUrl(testWeb != null && testWeb.startsWith("http://10.0.2.2") ? testWeb : APP_URL);
+            if (testWeb != null && testWeb.startsWith("http://10.0.2.2")) web.loadUrl(testWeb);
+            else {
+                // o site pode estar em /FramePlay/ ou em /GABIFLIX/ (o GitHub Pages não redireciona): usa o que responder
+                final android.os.Handler ui = new android.os.Handler(android.os.Looper.getMainLooper());
+                new Thread(() -> { final String u = Site.resolve(); ui.post(() -> { if (!isFinishing()) web.loadUrl(u); }); }).start();
+            }
         }
     }
 
@@ -132,7 +136,7 @@ public class MainActivity extends Activity {
         Uri uri = Uri.parse(url);
         String scheme = uri.getScheme() == null ? "" : uri.getScheme().toLowerCase();
 
-        // 1) páginas do próprio GabiFlix continuam dentro do app
+        // 1) páginas do próprio FramePlay continuam dentro do app
         if ((scheme.equals("http") || scheme.equals("https")) && APP_HOST.equalsIgnoreCase(uri.getHost())) {
             return false;
         }

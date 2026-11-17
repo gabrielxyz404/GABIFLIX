@@ -20,14 +20,15 @@ import java.util.Set;
 import java.util.TimeZone;
 
 /**
- * Conta do Stremio e dados do GabiFlix:
- * login, addons da conta, biblioteca (Mais Tarde / Continuar assistindo), títulos, fontes e os catálogos do GabiFlix.
+ * Conta do Stremio e dados do FramePlay:
+ * login, addons da conta, biblioteca (Mais Tarde / Continuar assistindo), títulos, fontes e os catálogos do FramePlay.
  */
 final class Stremio {
     private Stremio() {}
 
     static final String API = "https://api.strem.io/api/";
-    static final String SITE = "https://gabrielxyz404.github.io/GABIFLIX/";
+    /** o site pode estar em /FramePlay/ ou em /GABIFLIX/: Site.resolve() descobre qual responde (chamado sempre fora da thread principal) */
+    static String site() { return io.github.gabrielxyz404.gabiflix.Site.resolve(); }
     static final String CINEMETA = "https://v3-cinemeta.strem.io";
 
     private static SharedPreferences prefs(Context c) { return c.getSharedPreferences("gf-tv", Context.MODE_PRIVATE); }
@@ -177,12 +178,12 @@ final class Stremio {
         return new JSONObject(Net.getCached(CINEMETA + "/meta/" + Uri.encode(type) + "/" + Uri.encode(id) + ".json")).getJSONObject("meta");
     }
 
-    /** sinopse em português (gerada todo dia pelo GabiFlix) */
+    /** sinopse em português (gerada todo dia pelo FramePlay) */
     static String ptDescription(String id) {
         try {
             String shard = id.length() >= 2 ? id.substring(id.length() - 2) : "00";
             if (!shard.matches("\\d\\d")) return null;
-            JSONObject d = new JSONObject(Net.getCached(SITE + "data/desc/" + shard + ".json?v=" + (System.currentTimeMillis() / 86400000L)));
+            JSONObject d = new JSONObject(Net.getCached(site() + "data/desc/" + shard + ".json?v=" + (System.currentTimeMillis() / 86400000L)));
             String s = d.optString(id, null);
             return s == null || s.isEmpty() ? null : s;
         } catch (Exception e) { return null; }
@@ -203,11 +204,11 @@ final class Stremio {
         return out;
     }
 
-    // ---------- catálogos do GabiFlix (os mesmos do celular) ----------
+    // ---------- catálogos do FramePlay (os mesmos do celular) ----------
     private static String hour() { return String.valueOf(System.currentTimeMillis() / 3600000L); }
 
     static JSONObject data(String file) throws Exception {
-        return new JSONObject(Net.getCached(SITE + "data/" + file + ".json?v=" + hour()));
+        return new JSONObject(Net.getCached(site() + "data/" + file + ".json?v=" + hour()));
     }
 
     static List<JSONObject> metas(JSONArray arr) {
@@ -219,7 +220,7 @@ final class Stremio {
     static Set<String> ids(String service) {
         Set<String> s = new HashSet<>();
         try {
-            JSONArray a = new JSONArray(Net.getCached(SITE + "data/" + service + "-ids.json?v=" + hour()));
+            JSONArray a = new JSONArray(Net.getCached(site() + "data/" + service + "-ids.json?v=" + hour()));
             for (int i = 0; i < a.length(); i++) s.add(a.optString(i));
         } catch (Exception ignored) {}
         return s;

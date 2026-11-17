@@ -6,7 +6,29 @@ import VLCKit
 
 // teste automático (só no GitHub): --gf-test-url <endereço> carrega o site da branch em vez do site publicado
 let TEST_URL: URL? = { let a = CommandLine.arguments; if let i = a.firstIndex(of: "--gf-test-url"), i + 1 < a.count { return URL(string: a[i + 1]) }; return nil }()
-let APP_URL = TEST_URL ?? URL(string: "https://gabrielxyz404.github.io/GABIFLIX/")!
+let SITE_NOVO = URL(string: "https://gabrielxyz404.github.io/FramePlay/")!
+let SITE_ANTIGO = URL(string: "https://gabrielxyz404.github.io/GABIFLIX/")!
+let APP_URL = TEST_URL ?? SITE_ANTIGO
+/// O site mora no GitHub Pages, que NÃO redireciona quando o repositório muda de nome: testa os dois endereços ao mesmo tempo
+/// (o novo tem preferência). A origem é a mesma (gabrielxyz404.github.io), então o login e os dados guardados continuam.
+func resolveSite(_ done: @escaping (URL) -> Void) {
+    if let t = TEST_URL { done(t); return }
+    var ok = [false, false]
+    let lock = NSLock()
+    let group = DispatchGroup()
+    for (i, base) in [SITE_NOVO, SITE_ANTIGO].enumerated() {
+        group.enter()
+        var req = URLRequest(url: base.appendingPathComponent("manifest.json"), timeoutInterval: 4)
+        req.httpMethod = "HEAD"
+        req.cachePolicy = .reloadIgnoringLocalCacheData
+        URLSession.shared.dataTask(with: req) { _, resp, _ in
+            lock.lock(); ok[i] = (resp as? HTTPURLResponse)?.statusCode == 200; lock.unlock()
+            group.leave()
+        }.resume()
+    }
+    group.notify(queue: .main) { done(ok[0] ? SITE_NOVO : (ok[1] ? SITE_ANTIGO : (lastSite ?? SITE_ANTIGO))) }
+}
+var lastSite: URL?
 let APP_HOST = TEST_URL?.host ?? "gabrielxyz404.github.io"
 
 // versão do app (a mostrada nas Configurações do site, no lugar da versão do Stremio)
@@ -103,7 +125,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, WKScriptMessageHandler
         NSApp.activate(ignoringOtherApps: true)
         DispatchQueue.main.async { [weak self] in self?.placeTrafficLights() }
 
-        web.load(URLRequest(url: APP_URL))
+        loadSite()
 
         // Esc volta uma tela (como o botão Voltar do site); só na janela do site, nunca no player
         keyMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { [weak self] e in
@@ -443,9 +465,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate, WKScriptMessageHandler
         }, completionHandler: { ov.removeFromSuperview() })
     }
 
+    private func loadSite() {
+        resolveSite { [weak self] url in lastSite = url; self?.web.load(URLRequest(url: url)) }
+    }
+
     private func retryLoad() {
         overlay?.showLoading()
-        web.load(URLRequest(url: APP_URL))
+        loadSite()
     }
 
     func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: Error) {
@@ -484,14 +510,24 @@ final class AppDelegate: NSObject, NSApplicationDelegate, WKScriptMessageHandler
     }
 
     // ---------- atualizações ----------
-    static let releaseAPI = URL(string: "https://api.github.com/repos/gabrielxyz404/GABIFLIX/releases/tags/mac")!
+    /// lê a release "mac" pelo nome novo do repositório e, se não responder, pelo antigo
+    static let releaseAPIs = ["FramePlay", "GABIFLIX"].map { URL(string: "https://api.github.com/repos/gabrielxyz404/\($0)/releases/tags/mac")! }
 
     @objc func checkUpdatesMenu() { checkForUpdates(silent: false) }
 
     func checkForUpdates(silent: Bool) {
         if checkingUpdate { return }
         checkingUpdate = true
-        var req = URLRequest(url: AppDelegate.releaseAPI, timeoutInterval: 15)
+        fetchRelease(AppDelegate.releaseAPIs[...]) { [weak self] latest, zip in
+            guard let self = self else { return }
+            self.checkingUpdate = false
+            self.showUpdateResult(latest: latest, zip: zip, silent: silent)
+        }
+    }
+
+    private func fetchRelease(_ urls: ArraySlice<URL>, _ done: @escaping (Int, URL?) -> Void) {
+        guard let first = urls.first else { done(-1, nil); return }
+        var req = URLRequest(url: first, timeoutInterval: 15)
         req.setValue("FramePlay", forHTTPHeaderField: "User-Agent")
         req.setValue("application/vnd.github+json", forHTTPHeaderField: "Accept")
         URLSession.shared.dataTask(with: req) { [weak self] data, resp, _ in
@@ -513,9 +549,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, WKScriptMessageHandler
                 }
             }
             DispatchQueue.main.async {
-                guard let self = self else { return }
-                self.checkingUpdate = false
-                self.showUpdateResult(latest: latest, zip: zip, silent: silent)
+                if latest < 0 || zip == nil, urls.count > 1, let self = self { self.fetchRelease(urls.dropFirst(), done) }
+                else { done(latest, zip) }
             }
         }.resume()
     }
