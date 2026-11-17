@@ -1069,7 +1069,7 @@ public class PlayerActivity extends Activity {
         boolean on = panelAuto.isEnabled();
         GradientDrawable g = new GradientDrawable();
         g.setCornerRadius(dp(26));
-        g.setColor(on ? PlayerUi.RED : 0x26FFFFFF);
+        g.setColor(!on ? 0x26FFFFFF : autoRunning ? 0x99E50914 : PlayerUi.RED);
         boolean f = panelAuto.hasFocus();
         g.setStroke(dp(f ? 3 : 1), f ? 0xFFFFFFFF : 0x2EFFFFFF);
         panelAuto.setBackground(g);
@@ -1244,7 +1244,7 @@ public class PlayerActivity extends Activity {
         if (panelValue != null) panelValue.setText(delayLabel());
         SubtitleSync.Cand a = activeCand();
         boolean can = a != null && a.text != null;
-        panelAuto.setEnabled(can && !autoRunning);
+        panelAuto.setEnabled(can); // desligar o botão durante a espera tiraria o foco do controle: o clique é que é ignorado
         styleAuto();
         if (!autoRunning && !statusFixed) {
             if (can) { panelStatus.setTextColor(0xFFC8C8C8); panelStatus.setText("Acerta o tempo da legenda sozinha, sem parar o filme."); }
@@ -1294,7 +1294,7 @@ public class PlayerActivity extends Activity {
         final long now = player.getTime();
         final AutoSync.Engine eng = autoEngine;
         setAutoStatus("A sincronizar…", 0xFFFFFFFF);
-        if (panelAuto != null) { panelAuto.setEnabled(false); styleAuto(); }
+        if (panelAuto != null) styleAuto();
         new Thread(() -> {
             AutoSync.Result r;
             try { r = eng.sync(active, now, delayAtStart); }
@@ -1306,6 +1306,7 @@ public class PlayerActivity extends Activity {
 
     private void finishAutoSync(AutoSync.Result res, int track, int delayAtStart) {
         autoRunning = false;
+        if (subPanelOpen && panelAuto != null) styleAuto();
         if (player == null || isFinishing()) return;
         glog("sincronização automática: status=" + res.status + " atraso=" + res.delayMs + " ms (" + res.note + ")");
         if (panelTrack != track && subPanelOpen) { statusFixed = false; refreshSubPanel(); return; }
