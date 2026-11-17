@@ -1,0 +1,2 @@
+import OnnxRuntimeBindings
+print("ortfetch")

@@ -1,0 +1,59 @@
+name: Mac audio sonda
+
+# Sonda curta (so informacao): cabecalhos do VLCKit (estatisticas de quadros), ONNX Runtime via SwiftPM (conteudo do xcframework) e versoes do runner.
+on:
+  push:
+    branches: [run-mac-audio-sonda]
+
+permissions:
+  contents: write
+
+jobs:
+  sonda:
+    runs-on: macos-15
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - name: Informacao
+        run: |
+          mkdir -p res
+          { swift --version; sw_vers; uname -m; which say ffmpeg python3; python3 --version; } > res/versoes.txt 2>&1 || true
+          VER=$(curl -fsSL https://cdn.cocoapods.org/all_pods_versions_5_f_4.txt | grep '^VLCKit/' | tr '/' '\n' | grep -E '^3\.[0-9]+\.[0-9]+$' | sort -V | tail -1)
+          echo "VLCKit $VER" > res/vlckit.txt
+          SPEC=$(curl -fsSL "https://cdn.cocoapods.org/Specs/5/f/4/VLCKit/$VER/VLCKit.podspec.json")
+          SRC=$(echo "$SPEC" | python3 -c 'import json,sys; print(json.load(sys.stdin)["source"]["http"])')
+          mkdir -p w/vlckit && curl -fsSL "$SRC" -o w/v.archive
+          case "$SRC" in *.zip) unzip -q w/v.archive -d w/vlckit ;; *) tar -xf w/v.archive -C w/vlckit ;; esac
+          FW=$(find w/vlckit -type d -name 'VLCKit.framework' -path '*macos*' | head -1)
+          [ -z "$FW" ] && FW=$(find w/vlckit -type d -name 'VLCKit.framework' | head -1)
+          echo "FW=$FW" >> res/vlckit.txt
+          ls "$FW" "$FW/Headers" >> res/vlckit.txt 2>&1
+          du -sh "$FW" >> res/vlckit.txt; lipo -info "$FW/VLCKit" >> res/vlckit.txt 2>&1 || true
+          grep -n -i -E "stats|lost|displayed|decoded|statistics" "$FW"/Headers/*.h > res/vlckit-stats.txt 2>&1 || true
+          grep -n -E "initWithOptions|VLCMediaPlayerState|typedef NS_ENUM" "$FW"/Headers/VLCMediaPlayer.h "$FW"/Headers/VLCLibrary.h > res/vlckit-init.txt 2>&1 || true
+          cp "$FW/Headers/VLCMedia.h" res/ 2>/dev/null || true
+      - name: ONNX Runtime pelo SwiftPM
+        run: |
+          cd mac/ort && swift package resolve 2>&1 | tail -15 | tee ../../res/ort-resolve.txt
+          cd ../..
+          X=$(find mac/ort/.build -name onnxruntime.xcframework -maxdepth 6 | head -1)
+          echo "XC=$X" > res/ort.txt
+          ls -la "$X" "$X"/* >> res/ort.txt 2>&1
+          S=$(find "$X" -maxdepth 1 -name 'macos*' | head -1)
+          find "$S" | head -60 >> res/ort.txt
+          du -sh "$S" "$S"/* >> res/ort.txt 2>&1
+          F=$(find "$S" -name onnxruntime.framework -maxdepth 2 | head -1)
+          B=$(find "$F" -type f -name onnxruntime | head -1)
+          echo "BIN=$B" >> res/ort.txt
+          lipo -info "$B" >> res/ort.txt 2>&1; ls -la "$B" >> res/ort.txt
+          lipo -thin arm64 "$B" -output /tmp/ort-arm64 && ls -la /tmp/ort-arm64 >> res/ort.txt
+          otool -L /tmp/ort-arm64 >> res/ort.txt 2>&1 || true
+          grep -n -E "ORT_API_VERSION|OrtGetApiBase|define ORT_EXPORT" "$F"/Headers/onnxruntime_c_api.h >> res/ort.txt 2>&1 || true
+          ls "$F/Headers" >> res/ort.txt
+          cat "$F/Info.plist" >> res/ort.txt 2>&1 || cat "$F/Resources/Info.plist" >> res/ort.txt 2>&1 || true
+          zip -qr /tmp/ort-thin.zip /tmp/ort-arm64 && ls -la /tmp/ort-thin.zip >> res/ort.txt
+      - name: Publicar
+        if: always()
+        run: |
+          cd res && git init -q -b x && git add -A && git -c user.name=ci -c user.email=ci@x commit -qm sonda
+          git push -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" x:mac-audio-out-sonda
