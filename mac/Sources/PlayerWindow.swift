@@ -72,6 +72,9 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
     private var embeddedKnown = false
     private var embeddedCheckDone = false
     private var subLabels: [String] = []
+    /** tempos das falas das referências (outros idiomas ou PT do hash), para a sincronização automática */
+    private var refStartsAll: [[Int64]] = []
+    private var autoRunning = false
     /** ajuste manual da legenda (ms; positivo = a legenda aparece mais tarde), lembrado por título */
     private var subDelayMs = 0
     private var srcHash: String? = nil
@@ -452,6 +455,9 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
         case 123: skip(-10000); return true                // ←
         case 124: skip(10000); return true                 // →
         case 3: toggleFullScreen(); return true            // F
+        case 5: manualAdjust(-100); return true            // G: legenda mais cedo (como no VLC)
+        case 4: manualAdjust(100); return true             // H: legenda mais tarde
+        case 1: showSyncPanel(); return true               // S: painel "Sincronizar pela fala"
         case 53:                                           // Esc
             if window?.styleMask.contains(.fullScreen) == true { toggleFullScreen() } else { closePlayer() }
             return true
@@ -605,6 +611,7 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
             DispatchQueue.main.async {
                 guard let self = self else { return }
                 self.cands = ok
+                self.refStartsAll = refStarts
                 self.diagId = fId
                 self.diagRef = fRef
                 self.diagHash = fHash
@@ -756,53 +763,140 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
         return it
     }
 
-    @objc private func chooseSubtitles(_ sender: NSButton) {
-        let tracks = subTracks()
-        let current = Int(player.currentVideoSubTitleIndex)
+    /** qualificadores de uma faixa embutida, pelo nome que o VLC mostra */
+    private func embeddedQualifiers(_ name: String) -> [String] {
+        let n = name.lowercased()
+        var q: [String] = []
+        if n.contains("forced") || n.contains("forçad") || n.contains("forcad") || n.contains("foreign") { q.append("forçada") }
+        if n.contains("sdh") || n.contains("hearing") || n.contains("surdos") { q.append("SDH") }
+        if n.contains("brazil") || n.contains("brasil") || n.contains("pt-br") || n.contains("pt_br") || n.contains("pob") { q.append("PT-BR") }
+        return q
+    }
+
+    /** as linhas da lista de legendas: (título, id da faixa); só nomes limpos, sem sufixos técnicos */
+    private func subtitleRows() -> [(String, Int)] {
         var rows: [(String, Int)] = []
-        var chosen: String? = current == -1 ? "desativada" : nil
-        var n = 0
-        for (id, name) in tracks {
+        var nDown = 0, nEmb = 0
+        for (id, name) in subTracks() {
             if id == -1 { rows.append(("Desativado", id)); continue }
             if isDownloaded(id) {
-                n += 1
-                let title = n <= subLabels.count ? subLabels[n - 1] : "Português \(n)"
-                rows.append((title, id))
-                if id == current && n <= attached.count {
-                    let c = attached[n - 1]
-                    let adj = !c.alignNote.isEmpty ? c.alignNote : c.fixed ? "velocidade corrigida" : "sem ajuste auto"
-                    chosen = "\(title) (\(adj))"
-                }
+                nDown += 1
+                rows.append(("Português \(nDown)", id))
             } else if isPortuguese(name) {
-                rows.append(("Embutida: \(name)", id))
-                if id == current { chosen = "Embutida: \(name)" }
+                nEmb += 1
+                let q = embeddedQualifiers(name)
+                rows.append(("Português (do vídeo) \(nEmb)" + (q.isEmpty ? "" : " (" + q.joined(separator: ", ") + ")"), id))
             }
         }
+        return rows
+    }
+
+    private func menuAction(_ title: String, _ sel: Selector, tag: Int = 0, enabled: Bool = true) -> NSMenuItem {
+        let it = NSMenuItem(title: title, action: sel, keyEquivalent: "")
+        it.target = self
+        it.tag = tag
+        it.isEnabled = enabled
+        return it
+    }
+
+    /** o menu do botão "Legendas": lista de faixas, sincronização automática e ajuste manual */
+    private func buildSubtitleMenu() -> NSMenu {
+        let current = Int(player.currentVideoSubTitleIndex)
+        let rows = subtitleRows()
         let menu = NSMenu()
-        menu.addItem(greyItem(diagId + " · " + (!subsDownloaded ? "baixando legendas…" : cands.count == 1 ? "1 legenda PT" : "\(cands.count) legendas PT")))
-        menu.addItem(greyItem("Hash: " + diagHash + " · Referência: " + (diagRef.isEmpty ? "…" : diagRef)))
-        if !diagEmb.isEmpty { menu.addItem(greyItem(diagEmb)) }
-        if let c = chosen { menu.addItem(greyItem("Escolhida: " + c)) }
-        menu.addItem(greyItem("Atraso manual: " + (subDelayMs == 0 ? "0,0 s" : SubtitleSync.signedSecs(Int64(subDelayMs)))))
-        menu.addItem(NSMenuItem.separator())
+        menu.autoenablesItems = false
+        log("menu de legendas: \(diagId) · hash \(diagHash) · referência \(diagRef.isEmpty ? "…" : diagRef)" + (diagEmb.isEmpty ? "" : " · " + diagEmb))
+        // 1) lista de faixas
         if rows.count <= 1 {
-            menu.addItem(withTitle: !subsDownloaded ? "Procurando legendas em português…" : "Não há legendas em português", action: nil, keyEquivalent: "")
+            for (title, id) in rows {
+                let item = menuAction(title, #selector(pickSubtitle(_:)), tag: id)
+                item.state = current == id ? .on : .off
+                menu.addItem(item)
+            }
+            menu.addItem(greyItem(!subsDownloaded ? "Procurando legendas em português…" : "Não há legendas em português"))
         } else {
             for (title, id) in rows {
-                let item = NSMenuItem(title: title, action: #selector(pickSubtitle(_:)), keyEquivalent: "")
-                item.target = self
-                item.tag = id
+                let item = menuAction(title, #selector(pickSubtitle(_:)), tag: id)
                 item.state = current == id ? .on : .off
                 menu.addItem(item)
             }
         }
+        // 2) sincronização automática (só com legenda baixada ativa)
         menu.addItem(NSMenuItem.separator())
-        let sync = NSMenuItem(title: "Sincronizar legenda…", action: #selector(showSyncPanel), keyEquivalent: "")
-        sync.target = self
-        menu.addItem(sync)
+        let active = candForTrack(current)
+        if autoRunning {
+            menu.addItem(menuAction("A sincronizar…", #selector(autoSyncPicked), enabled: false))
+        } else if active != nil {
+            menu.addItem(menuAction("Sincronizar automaticamente", #selector(autoSyncPicked)))
+        } else {
+            menu.addItem(menuAction("Sincronizar automaticamente", #selector(autoSyncPicked), enabled: false))
+            menu.addItem(greyItem(current == -1 ? "Escolha uma legenda baixada para usar" : "Só funciona com legendas baixadas, não com as do vídeo"))
+        }
+        // 3) ajuste manual
+        menu.addItem(NSMenuItem.separator())
+        menu.addItem(greyItem("Ajuste manual"))
+        let canAdjust = current != -1
+        for (t, d) in [("\u{2212}10 s", -10000), ("\u{2212}5 s", -5000), ("\u{2212}1 s", -1000), ("+1 s", 1000), ("+5 s", 5000), ("+10 s", 10000)] {
+            menu.addItem(menuAction(t, #selector(manualDelta(_:)), tag: d, enabled: canAdjust))
+        }
+        menu.addItem(menuAction("Repor", #selector(manualReset), enabled: canAdjust))
+        menu.addItem(greyItem("Atraso: " + (subDelayMs == 0 ? "0,0 s" : SubtitleSync.signedSecs(Int64(subDelayMs))) + " · \u{2212} mais cedo, + mais tarde"))
+        return menu
+    }
+
+    @objc private func chooseSubtitles(_ sender: NSButton) {
+        let menu = buildSubtitleMenu()
         menu.popUp(positioning: nil, at: NSPoint(x: 0, y: sender.bounds.height + 4), in: sender)
         showControls()
     }
+
+    @objc private func manualDelta(_ item: NSMenuItem) { manualAdjust(item.tag) }
+    @objc private func manualReset() { manualAdjust(nil) }
+    /** ajuste manual (delta em ms; nil = repor): vale por fonte+legenda como sempre e ganha da sincronização automática */
+    private func manualAdjust(_ delta: Int?) {
+        if Int(player.currentVideoSubTitleIndex) == -1 { notice("Escolha uma legenda primeiro"); return }
+        if let d = delta { changeSubDelay(d, reset: false) } else { changeSubDelay(0, reset: true) }
+        notice(delayLabel())
+    }
+
+    // ---------- sincronização automática (motor pluggable: ver AutoSync.swift) ----------
+    /** ponto único para ligar outro motor (por exemplo o do áudio) */
+    private func makeAutoEngine() -> AutoSyncEngine { return RefAutoSyncEngine(refs: refStartsAll, others: cands) }
+
+    @objc private func autoSyncPicked() { runAutoSync() }
+
+    /** corre numa fila à parte, o vídeo continua a tocar; só no fim (de volta na principal) o atraso é aplicado e guardado como um ajuste manual.
+        Se a pessoa mexer à mão ou trocar de legenda durante a espera, o resultado é descartado. */
+    private func runAutoSync() {
+        if autoRunning { return }
+        let track = Int(player.currentVideoSubTitleIndex)
+        guard let active = candForTrack(track) else { notice("Escolha uma legenda baixada para sincronizar", seconds: 4); return }
+        autoRunning = true
+        let delayAtStart = subDelayMs
+        let now = Int64(player.time.intValue)
+        let eng = makeAutoEngine()
+        notice("A sincronizar…", seconds: 60)
+        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+            let r = eng.sync(active: active, videoTimeMs: now, currentDelayMs: delayAtStart)
+            DispatchQueue.main.async { self?.finishAutoSync(r, track, delayAtStart) }
+        }
+    }
+
+    private func finishAutoSync(_ res: AutoSyncResult, _ track: Int, _ delayAtStart: Int) {
+        autoRunning = false
+        if finished { return }
+        log("sincronização automática: status=\(res.status) atraso=\(res.delayMs) ms (\(res.note))")
+        if Int(player.currentVideoSubTitleIndex) != track { noticeUntil = Date(); return }
+        if subDelayMs != delayAtStart { notice("Ajuste manual feito: não alterei.", seconds: 4); return }
+        switch res.status {
+        case .fixed:
+            setSubDelay(res.delayMs)
+            notice("Legenda acertada (" + SubtitleSync.signedSecs(Int64(res.delayMs)) + ")", seconds: 4)
+        case .ok: notice("Já estava certa", seconds: 4)
+        case .failed: notice("Não consegui acertar \u{2014} usa o ajuste manual", seconds: 5)
+        }
+    }
+
     @objc private func pickSubtitle(_ item: NSMenuItem) {
         userPickedSub = true
         player.currentVideoSubTitleIndex = Int32(item.tag)
@@ -1179,6 +1273,32 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
             showSyncPanel()
             if let c = candForTrack(Int(player.currentVideoSubTitleIndex)) { showSpeechPicker(c) }
         case "delay": setSubDelay(n)
+        case "ref":
+            // referência de tempo conhecida, só para teste: baixa uma legenda e guarda os tempos das falas
+            if w.count > 1 { let u = w[1]; DispatchQueue.global().async { [weak self] in
+                let st = PlayerWindowController.fetchStarts(u)
+                DispatchQueue.main.async { if let st = st, st.count >= 20 { self?.refStartsAll.append(st) }; self?.log("referência de teste: \(st?.count ?? 0) falas") }
+            } }
+        case "track": userPickedSub = true; player.currentVideoSubTitleIndex = Int32(n); syncDelayToTrack(n)
+        case "autosync": runAutoSync()
+        case "menudump":
+            let m = buildSubtitleMenu()
+            log("menu: " + m.items.map { $0.isSeparatorItem ? "-----" : (($0.state == .on ? "[x] " : "") + $0.title + ($0.isEnabled ? "" : " (desativado)")) }.joined(separator: " | "))
+        case "menu":
+            // abre o menu de verdade (a captura de tela tem de ser feita de fora); fecha sozinho depois de n segundos
+            let m = buildSubtitleMenu()
+            log("menu aberto: " + m.items.map { $0.isSeparatorItem ? "-----" : (($0.state == .on ? "[x] " : "") + $0.title + ($0.isEnabled ? "" : " (desativado)")) }.joined(separator: " | "))
+            let t = Timer(timeInterval: Double(n > 0 ? n : 4), repeats: false) { [weak m] _ in m?.cancelTracking() }
+            RunLoop.main.add(t, forMode: .common)
+            if let v = window?.contentView { m.popUp(positioning: nil, at: NSPoint(x: v.bounds.width - 330, y: 90), in: v) }
+        case "menuclick":
+            // clica no item do menu cujo título começa com o texto dado (mesmo caminho do clique real)
+            let want = line.dropFirst(cmd.count + 1).trimmingCharacters(in: .whitespaces)
+            let m = buildSubtitleMenu()
+            if let it = m.items.first(where: { $0.title.hasPrefix(want) && !$0.isSeparatorItem }), it.isEnabled, let act = it.action {
+                log("clique no menu: \(it.title)")
+                NSApp.sendAction(act, to: it.target, from: it)
+            } else { log("clique no menu: item não encontrado ou desativado: \(want)") }
         case "close": closePanels()
         case "key":
             let ev = NSEvent.keyEvent(with: .keyDown, location: .zero, modifierFlags: [], timestamp: 0, windowNumber: window?.windowNumber ?? 0,
