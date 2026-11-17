@@ -122,7 +122,7 @@ jobs:
           profile: pixel_4
           disable-animations: true
           emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
-          script: bash tools/audio-integra/run.sh tel android/app/build/outputs/apk/release/app-release.apk
+          script: timeout 3600 bash tools/audio-integra/run.sh tel android/app/build/outputs/apk/release/app-release.apk
       - name: Emulador de TV
         if: matrix.perfil == 'tv'
         uses: reactivecircus/android-emulator-runner@v2
@@ -133,7 +133,7 @@ jobs:
           profile: tv_1080p
           disable-animations: true
           emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
-          script: bash tools/audio-integra/run.sh tv android/app/build/outputs/apk/release/app-release.apk
+          script: timeout 3600 bash tools/audio-integra/run.sh tv android/app/build/outputs/apk/release/app-release.apk
       - name: Medidas
         if: always()
         run: |

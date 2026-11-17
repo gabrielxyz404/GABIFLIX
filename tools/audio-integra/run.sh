@@ -42,8 +42,9 @@ launch() {
   else adb shell am start -n $PKG/.tv.TvHomeActivity --es gfTestUrl "$BASE/clip.mkv" --es gfTestSubs "$BASE/$sub" "$@"; fi
 }
 glog() { adb logcat -v epoch -d 2>/dev/null | grep -E "GabiFlixPlayer|GFPlayer" | grep -E "AUDIOSYNC|atraso|sincroniza" ; }
-waitlog() {  # $1 = padrao, $2 = segundos
-  for i in $(seq 1 $(( $2 / 2 ))); do glog | grep -q -E "$1" && return 0; sleep 2; done
+waitlog() {  # $1 = padrao, $2 = segundos (no maximo 150: se nada acontece, segue e o log mostra por que)
+  local lim=$2; [ $lim -gt 150 ] && [ "$P_SLOW" != 1 ] && lim=150
+  for i in $(seq 1 $(( lim / 2 ))); do glog | grep -q -E "$1" && return 0; sleep 2; done
   echo "TEMPO ESGOTADO esperando: $1" >> $OUT/passos.txt; return 1
 }
 save() { glog > "$OUT/log-$P-$1.txt"; }
@@ -111,12 +112,13 @@ LOG=/tmp/server-bytes-lenta.log THROTTLE_KBPS=375 nohup python3 tools/audio-inte
 sleep 2
 BASE=http://10.0.2.2:8001
 launch mais3.srt --es gfAudioStartSec 30
-waitlog "AUDIOSYNC resultado:" 840; sleep 2
+P_SLOW=1 waitlog "AUDIOSYNC resultado:" 840; sleep 2
 snap 6-rede-lenta-depois 0.3
 save 6-rede-lenta
 cp /tmp/server-bytes-lenta.log $OUT/server-bytes-lenta.log 2>/dev/null
 BASE=http://10.0.2.2:8000
 
+adb logcat -d | tail -400 > $OUT/logcat-final.txt
 adb logcat -d | grep -E "FATAL EXCEPTION|AndroidRuntime|libc.*Fatal" | head -40 > $OUT/crash.txt
 adb logcat -d | grep -i -E "onnx|ORT|UnsatisfiedLink" | head -20 > $OUT/ort.txt
 cp /tmp/server-bytes.log $OUT/server-bytes.log 2>/dev/null
