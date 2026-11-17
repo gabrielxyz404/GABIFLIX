@@ -5,13 +5,34 @@ set -uo pipefail
 cd "$(dirname "$0")"
 WORK="$1"; ARCH="$2"
 mkdir -p "$WORK"
-if ! swift package resolve > "$WORK/ort-resolve.log" 2>&1; then tail -5 "$WORK/ort-resolve.log" >&2; echo "::warning::não baixou o onnxruntime" >&2; exit 1; fi
-X=$(find .build -type d -name onnxruntime.xcframework 2>/dev/null | head -1)
-S=$(find "$X" -maxdepth 1 -type d -name 'macos*' 2>/dev/null | head -1)
-F=$(find "$S" -maxdepth 1 -type d -name onnxruntime.framework 2>/dev/null | head -1)
-if [ -z "$F" ] || [ ! -f "$F/Headers/onnxruntime_c_api.h" ]; then echo "::warning::framework do onnxruntime não encontrado" >&2; exit 1; fi
-rm -rf "$WORK/ortfw" && mkdir -p "$WORK/ortfw" && cp -R "$F" "$WORK/ortfw/"
+rm -rf "$WORK/ortfw" && mkdir -p "$WORK/ortfw"
 FW="$WORK/ortfw/onnxruntime.framework"
+# 1) pacote oficial da Microsoft (dylib + cabecalhos) pela pagina de releases
+TGZ="$WORK/ort.tgz"
+if curl -fsSL --retry 3 --retry-delay 5 -o "$TGZ" "https://github.com/microsoft/onnxruntime/releases/download/v1.20.0/onnxruntime-osx-universal2-1.20.0.tgz" 2>/dev/null && tar -tzf "$TGZ" >/dev/null 2>&1; then
+  rm -rf "$WORK/ortx" && mkdir -p "$WORK/ortx" && tar -xzf "$TGZ" -C "$WORK/ortx"
+  H=$(find "$WORK/ortx" -type f -name onnxruntime_c_api.h | head -1)
+  D=$(find "$WORK/ortx" -type f -name 'libonnxruntime*.dylib' ! -type l | head -1)
+  if [ -n "$H" ] && [ -n "$D" ]; then
+    mkdir -p "$FW/Headers" && cp "$(dirname "$H")"/*.h "$FW/Headers/" && cp "$D" "$FW/onnxruntime"
+    echo "onnxruntime: pacote oficial (release 1.20.0)" >&2
+  fi
+fi
+# 2) reserva: xcframework do SwiftPM (cabecalhos) + dylib do wheel do PyPI
+if [ ! -f "$FW/onnxruntime" ]; then
+  rm -rf "$FW"
+  OKP=0
+  for TRY in 1 2 3; do
+    if swift package resolve > "$WORK/ort-resolve.log" 2>&1; then OKP=1; break; fi
+    tail -3 "$WORK/ort-resolve.log" >&2; sleep 15
+  done
+  [ "$OKP" = 1 ] || { echo "::warning::não baixou o onnxruntime" >&2; exit 1; }
+  X=$(find .build -type d -name onnxruntime.xcframework 2>/dev/null | head -1)
+  S=$(find "$X" -maxdepth 1 -type d -name 'macos*' 2>/dev/null | head -1)
+  F=$(find "$S" -maxdepth 1 -type d -name onnxruntime.framework 2>/dev/null | head -1)
+  if [ -z "$F" ] || [ ! -f "$F/Headers/onnxruntime_c_api.h" ]; then echo "::warning::framework do onnxruntime não encontrado" >&2; exit 1; fi
+  cp -R "$F" "$WORK/ortfw/"
+fi
 B=$(find "$FW" -type f -name onnxruntime | head -1)
 # O framework do SwiftPM e estatico (nao abre com dlopen): troca o binario pela dylib oficial do wheel do PyPI (mesma versao).
 if ! file "$B" | grep -q 'dynamically linked'; then
