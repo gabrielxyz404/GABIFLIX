@@ -100,7 +100,8 @@ waitlog "AUDIOSYNC resultado:" 240; sleep 2
 show_controls; open_subs; sleep 1.5; snap 4-outro-filme-painel-atraso-zero 0.5; texts 4-painel
 save 4-outro
 
-# ---- 5) VAD de reserva (DSP) com a +3 s: so informativo
+# ---- 5) VAD de reserva (DSP) com a +3 s: so informativo (limpa os dados do app: senao vale a marca guardada do cenario 1)
+adb shell pm clear $PKG >/dev/null; sleep 2
 launch mais3.srt --es gfAudioStartSec 10 --es gfAudioDsp true
 waitlog "AUDIOSYNC resultado:" 240; sleep 2
 snap 5-dsp-reserva 0.3
