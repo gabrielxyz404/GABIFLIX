@@ -65,7 +65,12 @@ if [ "$P" = tel ]; then adb shell input tap $((W/2)) $((H/2)); else key DPAD_DOW
 sleep 1; adb exec-out screencap -p > "$OUT/00-$P-carregando-2-depois-de-tocar.png"
 # rajada de fotos: o fim do carregamento (controles aparecem uma vez e somem) cai dentro dela
 mkdir -p $OUT/seq
-for i in $(seq 1 32); do adb exec-out screencap -p > $OUT/seq/$P-$(printf %02d $i).png; done
+big=0
+for i in $(seq 1 150); do
+  f=$OUT/seq/$P-$(printf %03d $i).png; adb exec-out screencap -p > $f; sz=$(stat -c%s $f)
+  if [ $sz -gt 200000 ]; then big=$((big+1)); elif [ $big = 0 ] && [ $i -gt 2 ]; then rm -f $f; fi   # carregando: guarda só as 2 primeiras
+  [ $big -ge 12 ] && break
+done
 
 # 1) com referência de tempo: lista, automático ("já estava certa"), manual, automático de novo (corrige)
 launch teste.mkv "a1.srt,a2.srt,b.srt" "ref.srt"
