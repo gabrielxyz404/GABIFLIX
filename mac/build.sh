@@ -39,8 +39,15 @@ ARCH="${FRAMEPLAY_ARCH:-arm64}"
 ORT_OK=0
 ORT_FW=""
 if [ "${FRAMEPLAY_NO_ORT:-0}" != "1" ]; then
-  ORT_FW=$(./ort/fetch.sh "$WORK" "$ARCH" | tail -1 || true)
-  if [ -n "$ORT_FW" ] && [ -d "$ORT_FW" ]; then ORT_OK=1; else echo "::warning::sem o onnxruntime: o app usa o VAD por DSP"; fi
+  for TRY in 1 2 3 4; do   # o download pode falhar de vez em quando (rede do GitHub): tenta de novo
+    ORT_FW=$(./ort/fetch.sh "$WORK" "$ARCH" | tail -1 || true)
+    if [ -n "$ORT_FW" ] && [ -d "$ORT_FW" ]; then ORT_OK=1; break; fi
+    echo "onnxruntime: tentativa $TRY falhou" >&2; sleep 20
+  done
+  if [ "$ORT_OK" != "1" ]; then
+    echo "::warning::sem o onnxruntime: o app usa o VAD por DSP"
+    if [ "${FRAMEPLAY_REQUIRE_ORT:-0}" = "1" ]; then echo "::error::onnxruntime obrigatório e não baixou"; exit 1; fi
+  fi
 fi
 echo "ORT_OK=$ORT_OK"
 

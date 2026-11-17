@@ -25,6 +25,7 @@ jobs:
         env:
           FRAMEPLAY_VERSION: 1.0.${{ github.run_number }}
           FRAMEPLAY_BUILD: ${{ github.run_number }}
+          FRAMEPLAY_REQUIRE_ORT: "1"
         run: |
           set -o pipefail
           ./mac/build.sh 2>&1 | tee build.log
