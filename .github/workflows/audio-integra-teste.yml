@@ -80,7 +80,7 @@ jobs:
   teste:
     needs: prep
     runs-on: ubuntu-latest
-    timeout-minutes: 75
+    timeout-minutes: 95
     strategy:
       fail-fast: false
       matrix:
@@ -138,6 +138,7 @@ jobs:
         if: always()
         run: |
           cp /tmp/server-bytes.log shots/server-bytes.log 2>/dev/null || true
+          cp /tmp/server-bytes-lenta.log shots/ 2>/dev/null || true
           python3 tools/audio-integra/report.py shots ${{ matrix.perfil }} || true
       - name: Publicar as fotos
         if: always()

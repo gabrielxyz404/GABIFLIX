@@ -15,7 +15,7 @@ dump() { adb shell uiautomator dump /sdcard/u.xml >/dev/null 2>&1; adb shell cat
 snap() { N=$((N+1)); sleep "${2:-0.5}"; adb exec-out screencap -p > "$OUT/$(printf %02d $N)-$P-$1.png"; echo "$(printf %02d $N) $1" >> $OUT/passos.txt; }
 key() { for k in "$@"; do adb shell input keyevent $k; sleep 0.7; done; }
 W=2400; [ "$P" = tv ] && W=1920; H=1080
-BASE=http://10.0.2.2:8000
+BASE=${B:-http://10.0.2.2:8000}
 show_controls() { if [ "$P" = tel ]; then xy=$(dump | python3 $UI xy "Voltar"); [ -z "$xy" ] && adb shell input tap $((W/2)) $((H/3)); else key DPAD_DOWN; fi; sleep 1; }
 open_subs() { if [ "$P" = tel ]; then click "Legendas"; else key DPAD_DOWN DPAD_DOWN DPAD_CENTER; sleep 1; fi; }
 click() {
@@ -104,6 +104,18 @@ launch mais3.srt --es gfAudioStartSec 10 --es gfAudioDsp true
 waitlog "AUDIOSYNC resultado:" 240; sleep 2
 snap 5-dsp-reserva 0.3
 save 5-dsp
+
+# ---- 6) rede lenta: 3 Mbit/s no total (a reproducao usa ~1,9 Mbit/s: sobram ~1,1 Mbit/s para a captura); a reproducao nao pode parar
+cp /tmp/server-bytes.log $OUT/server-bytes-rapida.log 2>/dev/null
+LOG=/tmp/server-bytes-lenta.log THROTTLE_KBPS=375 nohup python3 tools/audio-integra/server.py /tmp/media 8001 >/tmp/server-lenta.out 2>&1 &
+sleep 2
+BASE=http://10.0.2.2:8001
+launch mais3.srt --es gfAudioStartSec 30
+waitlog "AUDIOSYNC resultado:" 840; sleep 2
+snap 6-rede-lenta-depois 0.3
+save 6-rede-lenta
+cp /tmp/server-bytes-lenta.log $OUT/server-bytes-lenta.log 2>/dev/null
+BASE=http://10.0.2.2:8000
 
 adb logcat -d | grep -E "FATAL EXCEPTION|AndroidRuntime|libc.*Fatal" | head -40 > $OUT/crash.txt
 adb logcat -d | grep -i -E "onnx|ORT|UnsatisfiedLink" | head -20 > $OUT/ort.txt

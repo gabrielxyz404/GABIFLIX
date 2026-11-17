@@ -24,12 +24,15 @@ if os.path.exists(cf):
     for l in open(cf):
         p = l.split()
         if len(p) >= 3 and p[0].isdigit(): cpu.append((int(p[0]) + skew, int(p[1]) / 100.0, int(p[2]) if p[2].isdigit() else 0))
-srv = []
-sf = os.path.join(d, "server-bytes.log")
-if os.path.exists(sf):
-    for l in open(sf):
-        m = re.match(r"([\d.]+) \S+ range=(\d+)-(\d+) sent=(\d+)", l)
-        if m: srv.append((float(m.group(1)), int(m.group(2)), int(m.group(4))))
+def readsrv(fn):
+    r = []
+    sf = os.path.join(d, fn)
+    if os.path.exists(sf):
+        for l in open(sf):
+            m = re.match(r"([\d.]+) \S+ range=(\d+)-(\d+) sent=(\d+)", l)
+            if m: r.append((float(m.group(1)), int(m.group(2)), int(m.group(4))))
+    return r
+srvs = {"fast": readsrv("server-bytes.log"), "slow": readsrv("server-bytes-lenta.log")}
 
 P("# Medidas (%s) - aparelho: %s" % (perfil, open(os.path.join(d, "aparelho.txt")).read().strip() if os.path.exists(os.path.join(d, "aparelho.txt")) else "?"))
 for f in sorted(glob.glob(os.path.join(d, "log-%s-*.txt" % perfil))):
@@ -51,6 +54,10 @@ for f in sorted(glob.glob(os.path.join(d, "log-%s-*.txt" % perfil))):
             rw = (win[-1][1] - win[0][1]) / max(1, win[-1][0] - win[0][0])
             P("  CPU do processo: reproducao sozinha %.2f nucleos; durante a analise (%.0f s) %.2f nucleos; extra %.1f s de CPU" % (rb, t1 - t0, rw, (rw - rb) * (t1 - t0)))
             P("  PSS: antes %.0f MB, maximo durante a analise %.0f MB, depois %.0f MB" % (base[-1][2] / 1024.0, max(c[2] for c in win) / 1024.0, win[-1][2] / 1024.0))
+    if t0 and t1:
+        srv = srvs["slow" if name.startswith("6-") else "fast"]
         sb = sum(n for t, a, n in srv if t0 - 1 <= t <= t1 + 1)
-        P("  rede (servidor): %.1f MB enviados durante a analise (inclui a reproducao: ~%.1f MB)" % (sb / 1e6, 0))
+        ps = sum(n for t, a, n in srv if t0 - 1 <= t <= t1 + 1 and a < 3_000_000)
+        P("  rede (servidor): %.1f MB enviados entre o comeco e o fim da analise (%.0f s), incluindo a reproducao (~0,24 MB/s)" % (sb / 1e6, t1 - t0))
+        P("  estimativa so da captura: %.1f MB" % (max(0, sb - 0.24e6 * (t1 - t0)) / 1e6))
 open(os.path.join(d, "medidas-%s.txt" % perfil), "w").write("\n".join(out))

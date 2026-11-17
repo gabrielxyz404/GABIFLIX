@@ -5,7 +5,16 @@ from http.server import ThreadingHTTPServer, BaseHTTPRequestHandler
 
 ROOT = sys.argv[1]
 PORT = int(sys.argv[2]) if len(sys.argv) > 2 else 8000
-LOG = '/tmp/server-bytes.log'
+LOG = os.environ.get('LOG', '/tmp/server-bytes.log')
+RATE = float(os.environ.get('THROTTLE_KBPS', '0')) * 1024   # bytes/s para TODAS as conexoes juntas (0 = sem limite)
+rate_lock = threading.Lock()
+rate_next = [0.0]
+
+def throttle(n):
+    if RATE <= 0: return
+    with rate_lock:
+        now = time.time(); t = max(rate_next[0], now); rate_next[0] = t + n / RATE
+    if t > now: time.sleep(t - now)
 lock = threading.Lock()
 total = {}
 
@@ -53,8 +62,9 @@ class H(BaseHTTPRequestHandler):
             with open(p, 'rb') as f:
                 f.seek(a)
                 while sent < n:
-                    chunk = f.read(min(262144, n - sent))
+                    chunk = f.read(min(65536 if RATE else 262144, n - sent))
                     if not chunk: break
+                    throttle(len(chunk))
                     self.wfile.write(chunk); sent += len(chunk)
         except Exception:
             pass
