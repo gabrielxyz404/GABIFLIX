@@ -61,7 +61,7 @@ jobs:
           NEW_APK: /tmp/apks/novo.apk
         with:
           api-level: 30
-          target: ${{ matrix.perfil == 'tv' && 'android-tv' || 'default' }}
+          target: ${{ matrix.perfil == 'tv' && 'android-tv' || 'google_apis' }}
           arch: x86
           profile: ${{ matrix.perfil == 'tv' && 'tv_1080p' || 'pixel_5' }}
           disable-animations: true
