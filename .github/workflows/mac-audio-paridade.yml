@@ -1,0 +1,61 @@
+name: Mac audio paridade
+
+# Motor de sincronizacao pelo audio em Swift (macOS): paridade com o motor Java (vetores, planos de janelas, leitura de SRT, VAD por DSP),
+# fuzz sem travar e Silero via ONNX Runtime em Swift x referencia Python. Nunca publica o app.
+on:
+  push:
+    branches: [run-mac-audio-paridade]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  paridade:
+    runs-on: macos-15
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: ONNX Runtime e compilar o testador
+        run: |
+          mkdir -p res
+          ORT_FW=$(mac/ort/fetch.sh "$PWD/work" arm64 | tail -1) || ORT_FW=""
+          echo "ORT_FW=$ORT_FW" | tee res/ort.txt
+          [ -n "$ORT_FW" ] && du -sh "$ORT_FW" | tee -a res/ort.txt
+          echo "$ORT_FW" > work/ortfw.path
+          tools/mac-audio/build-test.sh /tmp/audiotest "$ORT_FW" 2>&1 | tee res/compile.txt
+      - name: Paridade com o Java (vetores, planos, SRT, DSP) e fuzz
+        run: |
+          set -o pipefail
+          /tmp/audiotest parity tools/audio-integra/vectors.json tools/mac-audio/expected.txt 2>&1 | tee res/paridade.txt
+      - name: Silero em Swift x Python
+        if: always()
+        run: |
+          pip install -q "numpy<2" onnxruntime 2>&1 | tail -1
+          MODEL=$PWD/android/app/src/main/assets/silero_vad.onnx
+          # fala sintetica do macOS (say) a 16 kHz; sem say, ruido modulado
+          if say -v Samantha -o /tmp/t.aiff "The quick brown fox jumps over the lazy dog. I told you we should never have come to this place. Where were you last night when the lights went out? It is a long way to the station and the rain has not stopped. Give me the keys and nobody will get hurt. She said the answer was in the letter all along. We have to leave before the sun comes up. You do not understand what is at stake here." 2>res/say.err; then
+            afconvert -f WAVE -d LEI16@16000 -c 1 /tmp/t.aiff /tmp/t.wav
+          else
+            python3 - <<'PY'
+          import numpy as np, wave
+          r = np.random.default_rng(1); t = np.arange(16000*60)/16000.0
+          x = (np.sin(2*np.pi*150*t)*(np.sin(2*np.pi*3*t)>0)*6000 + r.normal(0, 300, len(t))).astype('<i2')
+          w = wave.open('/tmp/t.wav','wb'); w.setnchannels(1); w.setsampwidth(2); w.setframerate(16000); w.writeframes(x.tobytes()); w.close()
+          PY
+          fi
+          ls -la /tmp/t.wav | tee res/audio.txt
+          python3 tools/mac-audio/silero_ref.py "$MODEL" /tmp/t.wav /tmp/ref.f32 | tee res/ref.txt
+          ORT_FW=$(cat work/ortfw.path)
+          export FP_ORT_LIB="$ORT_FW/onnxruntime"
+          [ -f "$FP_ORT_LIB" ] || export FP_ORT_LIB=$(find "$ORT_FW" -type f -name onnxruntime | head -1)
+          echo "FP_ORT_LIB=$FP_ORT_LIB"
+          /tmp/audiotest silero "$MODEL" /tmp/t.wav /tmp/ref.f32 2>&1 | tee res/silero.txt
+      - name: Publicar
+        if: always()
+        run: |
+          cd res && git init -q -b x && git add -A && git -c user.name=ci -c user.email=ci@x commit -qm paridade
+          git push -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" x:mac-audio-out-paridade

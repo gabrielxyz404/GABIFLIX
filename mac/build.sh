@@ -33,17 +33,42 @@ if [ ! -f "$FW/Modules/module.modulemap" ]; then
 fi
 lipo -info "$FW/VLCKit" || true
 
+# 1b) ONNX Runtime (oficial da Microsoft, pelo SwiftPM só para baixar) para o VAD Silero da sincronização pelo áudio.
+# O app NÃO liga o ONNX Runtime na compilação: carrega com dlopen; se faltar ou não abrir, usa o VAD por DSP.
+ARCH="${FRAMEPLAY_ARCH:-arm64}"
+ORT_OK=0
+ORT_FW=""
+if [ "${FRAMEPLAY_NO_ORT:-0}" != "1" ]; then
+  ORT_FW=$(./ort/fetch.sh "$WORK" "$ARCH" | tail -1 || true)
+  if [ -n "$ORT_FW" ] && [ -d "$ORT_FW" ]; then ORT_OK=1; else echo "::warning::sem o onnxruntime: o app usa o VAD por DSP"; fi
+fi
+echo "ORT_OK=$ORT_OK"
+
 # 2) compila o app
-swiftc -O -target "${FRAMEPLAY_ARCH:-arm64}-apple-macos11.0" \
-  -F "$WORK/fw" -framework VLCKit -framework WebKit -framework Cocoa \
-  -Xlinker -rpath -Xlinker @executable_path/../Frameworks \
-  Sources/*.swift -o "$WORK/FramePlay"
+SWIFT_COMMON=(-O -target "$ARCH-apple-macos11.0"
+  -F "$WORK/fw" -framework VLCKit -framework WebKit -framework Cocoa
+  -Xlinker -rpath -Xlinker @executable_path/../Frameworks)
+SWIFT_SRCS=(Sources/*.swift Sources/AudioSync/*.swift)
+if [ "$ORT_OK" = "1" ]; then
+  if ! swiftc "${SWIFT_COMMON[@]}" -import-objc-header ort/ort_bridge.h -Xcc -I"$ORT_FW/Headers" "${SWIFT_SRCS[@]}" -o "$WORK/FramePlay"; then
+    echo "::warning::não compilou com o onnxruntime: refazendo sem ele (VAD por DSP)"
+    ORT_OK=0
+  fi
+fi
+if [ "$ORT_OK" != "1" ]; then
+  swiftc "${SWIFT_COMMON[@]}" -D FP_NO_ORT "${SWIFT_SRCS[@]}" -o "$WORK/FramePlay"
+fi
 
 # 3) monta o pacote .app
 APP="$WORK/FramePlay.app"
 mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Frameworks" "$APP/Contents/Resources"
 cp "$WORK/FramePlay" "$APP/Contents/MacOS/FramePlay"
 cp -R "$FW" "$APP/Contents/Frameworks/"
+if [ "$ORT_OK" = "1" ]; then
+  cp -R "$ORT_FW" "$APP/Contents/Frameworks/"
+  cp ../android/app/src/main/assets/silero_vad.onnx "$APP/Contents/Resources/silero_vad.onnx"
+  du -sh "$APP/Contents/Frameworks/onnxruntime.framework" "$APP/Contents/Resources/silero_vad.onnx"
+fi
 sed -e "s/__VERSION__/$VERSION/" -e "s/__BUILD__/$BUILD/" Info.plist > "$APP/Contents/Info.plist"
 
 # ícone a partir do ícone do FramePlay
