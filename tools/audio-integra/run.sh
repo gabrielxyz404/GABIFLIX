@@ -13,6 +13,8 @@ adb root >/dev/null 2>&1; sleep 3
 N=0
 dump() { adb shell uiautomator dump /sdcard/u.xml >/dev/null 2>&1; adb shell cat /sdcard/u.xml 2>/dev/null; }
 snap() { N=$((N+1)); sleep "${2:-0.5}"; adb exec-out screencap -p > "$OUT/$(printf %02d $N)-$P-$1.png"; echo "$(printf %02d $N) $1" >> $OUT/passos.txt; }
+pause_v() { adb shell input keyevent KEYCODE_MEDIA_PAUSE; sleep 1; }
+play_v() { adb shell input keyevent KEYCODE_MEDIA_PLAY; sleep 1; }
 key() { for k in "$@"; do adb shell input keyevent $k; sleep 0.7; done; }
 W=2400; [ "$P" = tv ] && W=1920; H=1080
 BASE=${B:-http://10.0.2.2:8000}
@@ -60,15 +62,15 @@ cpu_start; bytes_mark 1a
 launch mais3.srt --es gfAudioStartSec 10 --es gfAudioRecheckSec 45
 waitlog "AUDIOSYNC aplicado" 240 && snap 1-aviso-legenda-acertada-pelo-audio 0.3
 bytes_mark 1b
-sleep 4; show_controls; open_subs; sleep 1.5; snap 1-painel-atraso-aplicado 0.5; texts 1-painel
-adb shell input keyevent KEYCODE_BACK; sleep 1
+sleep 4; pause_v; show_controls; open_subs; sleep 1.5; snap 1-painel-atraso-aplicado 0.5; texts 1-painel
+adb shell input keyevent KEYCODE_BACK; sleep 1; play_v
 waitlog "AUDIOSYNC reverificação:" 150; sleep 3
 save 1-mais3; cpu_save 1; bytes_mark 1c
 snap 1-depois-da-reverificacao 0.3; adb shell input keyevent KEYCODE_MEDIA_PAUSE; sleep 1; snap 1-pausado-legenda 0.5
 
 # ---- 2) legenda -2 s, botao "Sincronizar automaticamente" (automatico desligado)
 launch menos2.srt --es gfAudioAuto false
-sleep 22; show_controls; open_subs; sleep 1.5
+sleep 22; pause_v; show_controls; open_subs; sleep 1.5
 snap 2-painel-antes 0.5
 click "Sincronizar automaticamente"
 snap 2-botao-sincronizando 0.3
@@ -80,15 +82,15 @@ save 2-menos2
 launch certa.srt --es gfAudioStartSec 10 --es gfAudioRecheckSec 45
 waitlog "AUDIOSYNC resultado:" 240; sleep 2
 snap 3-certa-depois-da-analise 0.3
-show_controls; open_subs; sleep 1.5; snap 3-certa-painel-atraso-zero 0.5; texts 3-painel
-adb shell input keyevent KEYCODE_BACK; sleep 1
+pause_v; show_controls; open_subs; sleep 1.5; snap 3-certa-painel-atraso-zero 0.5; texts 3-painel
+adb shell input keyevent KEYCODE_BACK; sleep 1; play_v
 waitlog "AUDIOSYNC reverificação:" 150; sleep 3
 snap 3-certa-depois-da-reverificacao 0.3
 save 3-certa
 
 # ---- 3b) legenda CERTA pelo botao: "Ja estava certa"
 launch certa.srt --es gfAudioAuto false
-sleep 22; show_controls; open_subs; sleep 1.5
+sleep 22; pause_v; show_controls; open_subs; sleep 1.5
 click "Sincronizar automaticamente"
 waitlog "AUDIOSYNC botão:" 240; sleep 2
 snap 3b-certa-botao-ja-estava-certa 0.5; texts 3b-painel
@@ -97,7 +99,7 @@ save 3b-certa-botao
 # ---- 4) legenda de OUTRO filme: tem de recusar e deixar como estava
 launch outro.srt --es gfAudioStartSec 10
 waitlog "AUDIOSYNC resultado:" 240; sleep 2
-show_controls; open_subs; sleep 1.5; snap 4-outro-filme-painel-atraso-zero 0.5; texts 4-painel
+pause_v; show_controls; open_subs; sleep 1.5; snap 4-outro-filme-painel-atraso-zero 0.5; texts 4-painel
 save 4-outro
 
 # ---- 5) VAD de reserva (DSP) com a +3 s: so informativo (limpa os dados do app: senao vale a marca guardada do cenario 1)
