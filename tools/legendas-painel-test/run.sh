@@ -60,9 +60,9 @@ adb logcat -c
 
 # 0) carregando: só seta, título e círculo; toque/tecla não traz os controles; depois do primeiro quadro eles aparecem e somem
 launch http://10.0.2.2:8001/teste.mkv "a1.srt"
-sleep 4; snap carregando-1 0.5
+sleep 3; adb exec-out screencap -p > "$OUT/00-$P-carregando-1.png"
 if [ "$P" = tel ]; then adb shell input tap $((W/2)) $((H/2)); else key DPAD_DOWN; fi
-sleep 1; snap carregando-2-depois-de-tocar 0.5
+sleep 1; adb exec-out screencap -p > "$OUT/00-$P-carregando-2-depois-de-tocar.png"
 # rajada de fotos: o fim do carregamento (controles aparecem uma vez e somem) cai dentro dela
 mkdir -p $OUT/seq
 for i in $(seq 1 32); do adb exec-out screencap -p > $OUT/seq/$P-$(printf %02d $i).png; done
