@@ -349,3 +349,15 @@ Harness: `tools/audio-sync/harness/{Eval,Film,Rank,SelfTest,Vectors,Parity,FeatD
 Corpus/relatórios: `tools/audio-sync/corpus/{corpus.py,report.py,rank_report.py,calibrate.py,final_tables.py,films.json}`.
 Captura: `tools/audio-sync/capture/{server.py, linux/, mac/capprobe.swift, mac/matrix.py, android/...}` (`AudioCapture.java`, `ExtractorCapture.java`, `CaptureBenchTest.java`).
 Paridade: `tools/audio-sync/parity/vectors.json`. Workflows: `.github/workflows/audio-motor.yml`, `audio-motor-rck.yml`, `audio-motor-capture-{linux,mac,android}.yml`, `audio-motor-refs.yml`.
+
+## 9. Rodada final v4 (clipes de 20 min, 93 legendas naturais, 1122 distorcidas, 1823 negativos)
+
+Regra do motor v4: z >= 9, so escalas de fps conhecidas (sem escala livre), escala ~1 vira 1,0, banda morta 600 ms, cortes so como aviso (nada aplicado).
+Varredura offline de politicas (`corpus/policy_sweep.py`), Silero 3x90 s (300 s de audio) x DSP 3x90 s (390 s):
+
+| config | corretas +-250 | aceitas erradas (distorcidas) | safe mexidas >150 ms (de 93) | natural piorou / melhorou (de 93) | negativos aceitos |
+|---|---|---|---|---|---|
+| Silero 3x90, z>=9, banda 600 (v4 como esta) | 62,4% | 13,6% | 22 | 2 / 65 | 0/1823 |
+| Silero 3x90, z>=9, banda 1100 ms, sem escalas 0,999/1,001 | 48,0% | 10,5% | 3 | 0 / 54 | 0/1823 |
+| DSP 3x90, z>=9, banda 1100 ms, sem escalas 0,999/1,001 | 39,7% | 12,5% | 3 | 0 / 42 | 0/1823 |
+| 4x90 nao melhora em nenhum VAD (menos corretas) | | | | | |
