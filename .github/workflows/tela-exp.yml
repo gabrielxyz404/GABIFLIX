@@ -25,7 +25,7 @@ jobs:
       matrix:
         perfil: [tel, tv]
         versao: [depois]
-        exp: [0, 1, 2]
+        exp: [9, 1.3]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/checkout@v4
@@ -59,7 +59,7 @@ jobs:
           def ts(s): return "%02d:%02d:%02d,%03d"%(s//3600,s//60%60,s%60,0)
           out=[]
           for i in range(30):
-              a=i*10; out.append("%d\n%s --> %s\nVocê não sabe o que ela fez para nós, mas eu também estou aqui (%d)\ne isso é uma linha de baixo que tem de ficar inteira, com você\n"%(i+1,ts(a),ts(a+10)[:-3]+"999",i+1))
+              a=i*10; out.append("%d\n%s --> %s\nVocê não sabe o que ela fez para nós, mas eu também estou aqui, e isso é uma linha longa que tem de ficar inteira, com você, e ainda tem mais um pouco de texto aqui no fim (%d)\ne uma segunda linha curta\n"%(i+1,ts(a),ts(a+10)[:-3]+"999",i+1))
           open("teste.srt","w").write("\n".join(out))
           PY
           ffmpeg -loglevel error -f lavfi -i testsrc2=size=1920x804:rate=24 -f lavfi -i sine=frequency=440:sample_rate=48000 -t 300 -c:v libx264 -preset veryfast -pix_fmt yuv420p -c:a aac wide.mkv

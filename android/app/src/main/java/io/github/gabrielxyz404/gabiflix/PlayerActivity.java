@@ -91,7 +91,8 @@ public class PlayerActivity extends Activity {
     // vista do vídeo (TextureView na TV, SurfaceView no celular; ambas aceitam escala).
     private static final String[] SCALE_NAMES = {"Normal", "Preencher"};
     private int lastScaleW = -1, lastScaleH = -1;
-    private int expScale = 0; // EXPERIMENTO (só testes): 0 = zoom na vista, 1 = setScale do VLC, 2 = zoom na vista ancorado embaixo
+    /** Preencher: no máximo quantas vezes a largura da tela pode ter a imagem ampliada (a legenda quebra a ~75% da largura da imagem; acima disso cortaria nas laterais) */
+    private float coverMaxWidth = 1.3f;
 
     private void applyScale() {
         if (player == null || videoLayout == null) return;
@@ -100,16 +101,7 @@ public class PlayerActivity extends Activity {
         if (w <= 0 || h <= 0) return;
         try {
             player.setVideoScale(MediaPlayer.ScaleType.SURFACE_BEST_FIT);
-            float vs = 0f;
-            if (expScale == 1 && scaleIndex == 1) {
-                IMedia.VideoTrack vt = player.getCurrentVideoTrack();
-                if (vt != null && vt.width > 0 && vt.height > 0) {
-                    float sar = vt.sarNum > 0 && vt.sarDen > 0 ? (float) vt.sarNum / vt.sarDen : 1f;
-                    vs = Math.max(w / (vt.width * sar), (float) h / vt.height);
-                    glog("setScale " + vs);
-                }
-            }
-            player.setScale(vs);
+            player.setScale(0f);
             player.setAspectRatio(null);
         } catch (Throwable t) { glog("escala: " + t); }
         zoomVideo();
@@ -152,13 +144,16 @@ public class PlayerActivity extends Activity {
             float f = 1f;
             int tw = tex.getWidth(), th = tex.getHeight(), w = videoLayout.getWidth(), h = videoLayout.getHeight();
             float py = th / 2f;
-            if (scaleIndex == 1 && expScale != 1 && tw > 0 && th > 0 && w > 0 && h > 0) {
+            if (scaleIndex == 1 && tw > 0 && th > 0 && w > 0 && h > 0) {
                 // a imagem real ocupa só um retângulo dentro da vista (na TV a TextureView é do tamanho da tela e o VLC desenha as barras pretas
                 // dentro dela: com vídeo 2,39:1 o zoom tinha de ser > 1 e dava 1). Retângulo = o vídeo (proporção real) ajustado dentro da vista.
                 float dw = tw, dh = th, va = videoAspect();
                 if (va > 0) { if ((float) tw / th > va) dw = th * va; else dh = tw / va; }
                 f = Math.max((float) w / dw, (float) h / dh);
-                if (expScale == 2 && f > 1.001f && dh * f - h > 1f) py = ((th + dh) / 2f * f - h) / (f - 1f);
+                if (dw * f > coverMaxWidth * w) f = Math.max(1f, coverMaxWidth * w / dw);
+                // a legenda vem desenhada dentro da imagem, perto da borda de baixo: o corte vertical sai todo por cima (a borda de baixo
+                // da imagem fica na borda de baixo da tela) e as legendas não são cortadas
+                if (f > 1.001f && dh * f - h > 1f) py = ((th + dh) / 2f * f - h) / (f - 1f);
                 glog(String.format(Locale.ROOT, "zoom Preencher: vista %dx%d, tela %dx%d, proporção do vídeo %.3f, fator %.3f", tw, th, w, h, va, f));
             }
             tex.setPivotX(tw / 2f); tex.setPivotY(py);
@@ -173,7 +168,7 @@ public class PlayerActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         url = getIntent().getStringExtra(EXTRA_URL);
-        try { String ge = getIntent().getStringExtra("gfScaleExp"); if (ge != null) expScale = Integer.parseInt(ge); } catch (Throwable ignored) { }
+        try { String ge = getIntent().getStringExtra("gfScaleExp"); if (ge != null) coverMaxWidth = Float.parseFloat(ge); } catch (Throwable ignored) { } // só testes
         String[] extraSubs = getIntent().getStringArrayExtra(EXTRA_SUBS);
         if (extraSubs != null) subs = extraSubs;
         metaType = getIntent().getStringExtra(EXTRA_TYPE);

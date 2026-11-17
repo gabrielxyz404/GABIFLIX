@@ -27,6 +27,7 @@ hidec() { if [ "$P" = tel ]; then adb shell input tap 1200 300; else adb shell i
 tela_click() {
   if [ "$P" = tel ]; then
     xy=$(dump | python3 $UI xy "Tela")
+    for t in 1 2 3; do [ -n "$xy" ] && break; adb shell input tap 1200 360; sleep 1.5; xy=$(dump | python3 $UI xy "Tela"); done
     [ -n "$xy" ] && adb shell input tap $xy || echo "FALHA: sem botao Tela" >> $OUT/passos.txt
   else
     for t in $(seq 1 10); do
