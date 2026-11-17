@@ -6,20 +6,21 @@ import json, os, subprocess, sys
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "corpus"))
 import corpus as C
 
-slug, other, out = sys.argv[1], sys.argv[2], sys.argv[3]
+slugs, others, out = sys.argv[1].split(","), sys.argv[2].split(","), sys.argv[3]
 CLIP_S = 1200
 os.makedirs(out, exist_ok=True)
 work = os.path.join(out, "_work"); os.makedirs(work, exist_ok=True)
 F = {f["slug"]: f for f in C.FILMS}
 
 
-def addon_subs(f, maxn):
+def addon_subs(f, maxn, pt=True):
     imdb = C.resolve_imdb(f)
     raw = C.http_get("https://opensubtitles-v3.strem.io/subtitles/movie/%s.json" % imdb, binary=False)
     items = json.loads(raw).get("subtitles", []) if raw else []
     got = []
     for it in items:
-        if not C.is_en(str(it.get("lang", "")).lower()) or not it.get("url"):
+        lg = str(it.get("lang", "")).lower()
+        if not (C.is_pt(lg) if pt else C.is_en(lg)) or not it.get("url"):
             continue
         b = C.http_get(it["url"])
         if not b or len(b) < 200:
@@ -33,7 +34,16 @@ def addon_subs(f, maxn):
     return got
 
 
-f = F[slug]
+# o app so aceita legendas em portugues: escolhe o primeiro filme com legenda PT
+slug = f = cands = None
+for sl in slugs:
+    cs = addon_subs(F[sl], 6)
+    print("filme", sl, "legendas PT:", len(cs), flush=True)
+    if cs:
+        slug, f, cands = sl, F[sl], cs
+        break
+if f is None:
+    print("nenhum filme com legenda PT"); sys.exit(5)
 clip = os.path.join(out, "clip.mkv")
 wav = os.path.join(work, "audio16k.wav")
 if not os.path.exists(clip):
@@ -52,8 +62,7 @@ if not os.path.exists(alass):
     C.download("https://github.com/kaegi/alass/releases/download/v2.0.0/alass-linux64", alass)
     os.chmod(alass, 0o755)
 
-cands = addon_subs(f, 6)
-print("candidatas EN:", len(cands), flush=True)
+print("candidatas PT:", len(cands), flush=True)
 oracle = []
 good = None
 for idx, (sid, cues) in enumerate(cands):
@@ -92,7 +101,12 @@ cues = good[1]
 C.write_srt(cues, os.path.join(out, "certa.srt"))
 C.write_srt([[a + 3000, b + 3000, t] for a, b, t in cues], os.path.join(out, "mais3.srt"))
 C.write_srt([[max(0, a - 2000), max(0, b - 2000), t] for a, b, t in cues], os.path.join(out, "menos2.srt"))
-wrong = addon_subs(F[other], 1)
+wrong = []
+for o in others:
+    wrong = addon_subs(F[o], 1)
+    if wrong:
+        other = o
+        break
 if not wrong:
     print("sem legenda do outro filme"); sys.exit(4)
 C.write_srt(wrong[0][1], os.path.join(out, "outro.srt"))
