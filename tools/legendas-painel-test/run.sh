@@ -9,8 +9,12 @@ UI=tools/android-subs-test/ui.py
 adb install -r "$APK"
 if [ "$P" = tel ]; then adb shell wm size 1080x2400; adb shell wm density 420; fi
 adb shell wm size > $OUT/wm.txt
+adb shell settings put global hide_error_dialogs 1
+adb shell pm disable-user --user 0 com.google.android.apps.nexuslauncher >/dev/null 2>&1
+BAD=0
 N=0
-snap() { N=$((N+1)); sleep "${2:-0.6}"; adb exec-out screencap -p > "$OUT/$(printf %02d $N)-$P-$1.png"; echo "$(printf %02d $N) $1: foco=$(dump | python3 $UI focus)" >> $OUT/passos.txt; }
+snap() { N=$((N+1)); sleep "${2:-0.6}"; adb shell am broadcast -a android.intent.action.CLOSE_SYSTEM_DIALOGS >/dev/null 2>&1
+  if dump | grep -qiE "isn't responding|não está respondendo|Close app|Fechar app"; then echo "FALHA: dialogo ANR na foto $N ($1)" | tee -a $OUT/passos.txt; BAD=1; adb shell input keyevent KEYCODE_BACK; sleep 1; fi; adb exec-out screencap -p > "$OUT/$(printf %02d $N)-$P-$1.png"; echo "$(printf %02d $N) $1: foco=$(dump | python3 $UI focus)" >> $OUT/passos.txt; }
 dump() { adb shell uiautomator dump /sdcard/u.xml >/dev/null 2>&1; adb shell cat /sdcard/u.xml 2>/dev/null; }
 key() { for k in "$@"; do adb shell input keyevent $k; sleep 0.7; done; }
 W=2400; [ "$P" = tv ] && W=1920; H=1080
@@ -37,21 +41,36 @@ click() {  # texto exato na tela: toque (celular) ou navegação do controle (TV
   fi
   sleep 1
 }
-launch() {  # $1 = vídeo, $2 = legendas (vírgula), $3 = referências (vírgula, opcional)
+launch() {  # $1 = vídeo (nome ou URL), $2 = legendas (vírgula), $3 = referências (vírgula, opcional)
   adb shell am force-stop $PKG; sleep 1
-  local subs="" refs=""
+  local u="$1" subs="" refs=""
+  case "$u" in http*) ;; *) u="$BASE/$u";; esac
   for s in ${2//,/ }; do subs="$subs,$BASE/$s"; done; subs=${subs#,}
   for s in ${3//,/ }; do refs="$refs,$BASE/$s"; done; refs=${refs#,}
   if [ "$P" = tel ]; then
-    if [ -n "$refs" ]; then adb shell am start -n $PKG/.PlayerActivity --es url "$BASE/$1" --esa subs "$subs" --esa gfTestRefs "$refs"
-    else adb shell am start -n $PKG/.PlayerActivity --es url "$BASE/$1" --esa subs "$subs"; fi
+    local a=(--es url "$u"); [ -n "$subs" ] && a+=(--esa subs "$subs"); [ -n "$refs" ] && a+=(--esa gfTestRefs "$refs")
+    adb shell am start -n $PKG/.PlayerActivity "${a[@]}"
   else
-    if [ -n "$refs" ]; then adb shell am start -n $PKG/.tv.TvHomeActivity --es gfTestUrl "$BASE/$1" --es gfTestSubs "$subs" --es gfTestRefs "$refs"
-    else adb shell am start -n $PKG/.tv.TvHomeActivity --es gfTestUrl "$BASE/$1" --es gfTestSubs "$subs"; fi
+    local a=(--es gfTestUrl "$u" --es gfTestSubs "${subs:-$BASE/a1.srt}"); [ -n "$refs" ] && a+=(--es gfTestRefs "$refs")
+    adb shell am start -n $PKG/.tv.TvHomeActivity "${a[@]}"
   fi
 }
 adb logcat -c
 [ "$P" = tel ] && { adb root; sleep 3; }
+
+# 0) carregando: só seta, título e círculo; toque/tecla não traz os controles; depois do primeiro quadro eles aparecem e somem
+launch http://10.0.2.2:8001/teste.mkv "a1.srt"
+sleep 3; adb exec-out screencap -p > "$OUT/00-$P-carregando-1.png"
+if [ "$P" = tel ]; then adb shell input tap $((W/2)) $((H/2)); else key DPAD_DOWN; fi
+sleep 1; adb exec-out screencap -p > "$OUT/00-$P-carregando-2-depois-de-tocar.png"
+# rajada de fotos: o fim do carregamento (controles aparecem uma vez e somem) cai dentro dela
+mkdir -p $OUT/seq
+big=0
+for i in $(seq 1 150); do
+  f=$OUT/seq/$P-$(printf %03d $i).png; adb exec-out screencap -p > $f; sz=$(stat -c%s $f)
+  if [ $sz -gt 200000 ]; then big=$((big+1)); elif [ $big = 0 ] && [ $i -gt 2 ]; then rm -f $f; fi   # carregando: guarda só as 2 primeiras
+  [ $big -ge 12 ] && break
+done
 
 # 1) com referência de tempo: lista, automático ("já estava certa"), manual, automático de novo (corrige)
 launch teste.mkv "a1.srt,a2.srt,b.srt" "ref.srt"
@@ -110,7 +129,15 @@ adb shell input keyevent KEYCODE_MEDIA_PAUSE; sleep 2
 show_controls; open_subs; sleep 1.5
 snap embutida-auto-desligado 0.5
 adb shell input keyevent KEYCODE_BACK; sleep 1
+# 4) faixas embutidas: rótulos
+launch emb3.mkv "a1.srt"
+sleep 40
+adb shell input keyevent KEYCODE_MEDIA_PAUSE; sleep 2
+show_controls; open_subs; sleep 1.5
+snap embutidas-rotulos 0.5
+adb shell input keyevent KEYCODE_BACK; sleep 1
 adb logcat -d | grep -E "GabiFlixPlayer|GFPlayer" | grep -E "painel|sincroniza|atraso|embutida|vistas" > $OUT/log.txt
 adb logcat -d | grep -E "FATAL EXCEPTION|AndroidRuntime" | head -40 > $OUT/crash.txt
 cat $OUT/passos.txt $OUT/crash.txt
+[ $BAD = 1 ] && exit 1
 exit 0

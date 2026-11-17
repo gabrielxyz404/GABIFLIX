@@ -71,6 +71,9 @@ public class PlayerActivity extends Activity {
 
     private View controls;
     private boolean controlsShown = false;
+    /** carregando o início do vídeo: só a seta, o título e o círculo vermelho aparecem; os botões só depois do primeiro quadro */
+    private boolean loading = true, buffering = false;
+    private View midBox;
     private PlayerUi.Btn playButton;
     private TextView timeLabel, lengthLabel, messageLabel, titleLabel, loadingLabel;
     private PlayerUi.Timeline seek;
@@ -189,7 +192,7 @@ public class PlayerActivity extends Activity {
         loadingLabel = text("", 14, false);
         loadingLabel.setTypeface(PlayerUi.font(this, 500));
         loadingLabel.setGravity(Gravity.CENTER);
-        loadingLabel.setVisibility(View.GONE);
+        loadingLabel.setText("Carregando 0%");
         FrameLayout.LayoutParams lbp = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.CENTER);
         lbp.topMargin = dp(52);
         root.addView(loadingLabel, lbp);
@@ -201,8 +204,8 @@ public class PlayerActivity extends Activity {
         root.addView(messageLabel, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.CENTER));
 
         controls = buildControls();
-        controls.setVisibility(View.GONE);
-        root.addView(controls, match());
+        root.addView(controls, match()); // visível desde o início só com a seta e o título (ver applyChrome)
+        applyChrome();
         tapFx = new PlayerUi.TapFx(this);
         root.addView(tapFx, match());
         noticeLabel = text("", 14, false);
@@ -254,6 +257,23 @@ public class PlayerActivity extends Activity {
         player.setMedia(media);
         media.release();
         player.play();
+        immersive();
+    }
+
+    /** botões do meio e barra de baixo: escondidos ao carregar; o do meio some também enquanto o círculo gira no meio do filme */
+    private void applyChrome() {
+        if (midBox == null || bottomBar == null) return;
+        midBox.setVisibility(loading ? View.GONE : buffering ? View.INVISIBLE : View.VISIBLE);
+        bottomBar.setVisibility(loading ? View.GONE : View.VISIBLE);
+    }
+
+    /** primeiro quadro tocando: mostra os controles uma vez (somem sozinhos como sempre) */
+    private void endLoading() {
+        if (!loading) return;
+        loading = false;
+        applyChrome();
+        for (View v : new View[]{midBox, bottomBar}) { v.setAlpha(0f); v.animate().alpha(1f).setDuration(180).start(); }
+        controlsShown = false;
         setControlsVisible(true);
         // sincronização pelo áudio: o botão passa a usar o motor encadeado (referência primeiro, áudio confere) e o modo automático começa a vigiar
         audioSync = new AudioSyncAuto(this, audioHost);
@@ -267,12 +287,16 @@ public class PlayerActivity extends Activity {
             case MediaPlayer.Event.Playing:
                 spinner.setVisibility(View.GONE);
                 loadingLabel.setVisibility(View.GONE);
+                buffering = false;
+                applyChrome();
+                if (loading) ui.postDelayed(this::endLoading, 1500); // se o primeiro quadro não avisar (só áudio), libera mesmo assim
                 playButton.setIcon(PlayerUi.Icon.PAUSE);
                 if (!resumeDone) resume();
                 if (!playing) { playing = true; ui.postDelayed(this::attachReadySubs, 1500); selectEmbeddedPortugueseLater(); }
                 scheduleHide();
                 break;
             case MediaPlayer.Event.Vout:
+                if (loading && playing) ui.post(this::endLoading);
                 if (scaleIndex != 0) ui.post(this::applyScale);
                 if (controlsShown) ui.post(() -> raiseSubs(true));
                 break;
@@ -284,6 +308,8 @@ public class PlayerActivity extends Activity {
                 boolean buf = event.getBuffering() < 100f;
                 spinner.setVisibility(buf ? View.VISIBLE : View.GONE);
                 loadingLabel.setVisibility(buf ? View.VISIBLE : View.GONE);
+                buffering = buf;
+                applyChrome();
                 if (buf) loadingLabel.setText(String.format(Locale.ROOT, "Carregando %d%%", (int) event.getBuffering()));
                 break;
             case MediaPlayer.Event.LengthChanged:
@@ -307,6 +333,8 @@ public class PlayerActivity extends Activity {
             case MediaPlayer.Event.EncounteredError:
                 spinner.setVisibility(View.GONE);
                 loadingLabel.setVisibility(View.GONE);
+                loading = false; buffering = false;
+                applyChrome();
                 messageLabel.setText("Não foi possível reproduzir este vídeo.\nToque em voltar e escolha outra fonte.");
                 messageLabel.setVisibility(View.VISIBLE);
                 setControlsVisible(true);
@@ -429,6 +457,7 @@ public class PlayerActivity extends Activity {
         mid.addView(playButton, big);
         mid.addView(ff, new LinearLayout.LayoutParams(small));
         box.addView(mid, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.CENTER));
+        midBox = mid;
 
         // faixa de baixo: linha do tempo vermelha e opções
         LinearLayout bottom = new LinearLayout(this);
@@ -547,6 +576,10 @@ public class PlayerActivity extends Activity {
         boolean visible = controlsShown;
         // o Voltar que fechou o painel de legendas não pode sair do player quando a tecla sobe
         if (k == android.view.KeyEvent.KEYCODE_BACK && panelBackEat) { if (!down) panelBackEat = false; return true; }
+        if (loading) { // carregando: nenhuma tecla traz os controles; só o Voltar (que sai)
+            if (k == android.view.KeyEvent.KEYCODE_BACK) return super.dispatchKeyEvent(e);
+            return true;
+        }
         if (subPanelOpen) {
             if (k == android.view.KeyEvent.KEYCODE_BACK) {
                 if (down && e.getRepeatCount() == 0) { panelBackEat = true; closeSubPanel(); }
@@ -683,7 +716,7 @@ public class PlayerActivity extends Activity {
     private void skip(long ms) { skip(ms, true); }
 
     private void skip(long ms, boolean showControls) {
-        if (player == null) return;
+        if (player == null || loading) return;
         long len = player.getLength();
         long t = Math.max(0, player.getTime() + ms);
         if (len > 0) t = Math.min(t, len - 1000);
@@ -918,7 +951,7 @@ public class PlayerActivity extends Activity {
                 player.addSlave(0 /* legenda */, c.uri, i == 0 && !embeddedFirst);
                 addedSubs++;
                 attached.add(c);
-                subLabels.add("Português " + (subLabels.size() + 1) + (c.aligned ? (c.pieced ? " (sincronizada por partes)" : " (sincronizada)") : c.consensus ? " (consenso)" : c.hashMatch ? " (do hash)" : "") + (c.fixed ? " (corrigida)" : "") + (c.sparse ? " (poucas falas)" : ""));
+                subLabels.add("Português " + (subLabels.size() + 1) + (c.sparse ? " (poucas falas)" : ""));
             } catch (Exception ignored) {}
         }
         if (embeddedFirst && !userPickedSub) player.setSpuTrack(embeddedPtId);
@@ -989,6 +1022,7 @@ public class PlayerActivity extends Activity {
     /** faixa mostrada como atual no painel (id do VLC; -1 = desativada) */
     private int panelTrack = -1;
     private LinearLayout panelList;
+    private android.widget.ScrollView panelScroll;
     private TextView panelValue, panelStatus, panelAuto;
     private final ArrayList<PanelRow> panelRows = new ArrayList<>();
     private PlayerUi.Btn subsBtn;
@@ -1049,7 +1083,11 @@ public class PlayerActivity extends Activity {
         PanelRow cur = null;
         for (PanelRow r : panelRows) if (r.id == panelTrack) cur = r;
         if (cur == null && !panelRows.isEmpty()) cur = panelRows.get(0);
-        if (cur != null) cur.view.requestFocus();
+        if (cur != null) {
+            final View cv = cur.view;
+            cv.requestFocus();
+            if (panelScroll != null) panelScroll.post(() -> panelScroll.scrollTo(0, Math.max(0, cv.getTop() - dp(48)))); // a faixa atual fica à vista mesmo com muitas
+        }
     }
 
     private void closeSubPanel() {
@@ -1072,16 +1110,31 @@ public class PlayerActivity extends Activity {
     private ArrayList<Object[]> subEntries() {
         ArrayList<Object[]> out = new ArrayList<>();
         MediaPlayer.TrackDescription[] all = player.getSpuTracks();
-        int n = 0;
+        int n = 0, emb = 0, embTotal = 0;
+        if (all != null) for (MediaPlayer.TrackDescription d : all) if (d.id != -1 && !isDownloaded(d.id) && isPortuguese(d.name)) embTotal++;
         if (all != null) for (MediaPlayer.TrackDescription d : all) {
             if (!(d.id == -1 || isPortuguese(d.name) || isDownloaded(d.id))) continue;
             String name;
             if (d.id == -1) name = "Desativado";
             else if (isDownloaded(d.id)) { n++; name = n <= subLabels.size() ? subLabels.get(n - 1) : "Português " + n; }
-            else name = "Embutida: " + d.name;
+            else { emb++; name = "Português (do vídeo)" + (embTotal > 1 ? " " + emb : "") + embeddedQualifier(d.name); }
             out.add(new Object[]{d.id, name});
         }
         return out;
+    }
+
+    /** " (PT-BR, forçada)" a partir do nome que o VLC dá à faixa embutida; "" se não houver nada a dizer */
+    private static String embeddedQualifier(String raw) {
+        String n = raw == null ? "" : raw.toLowerCase(Locale.ROOT);
+        ArrayList<String> q = new ArrayList<>();
+        if (n.contains("brazil") || n.contains("brasil") || n.contains("pt-br") || n.contains("pt_br") || n.contains("pob")) q.add("PT-BR");
+        else if (n.contains("pt-pt") || n.contains("portugal") || n.contains("european") || n.contains("europeu")) q.add("PT-PT");
+        if (n.contains("sdh") || n.matches(".*\\bcc\\b.*") || n.contains("closed caption") || n.contains("hearing") || n.contains("deaf") || n.contains("surdos")) q.add("SDH");
+        if (n.contains("forced") || n.contains("forçad") || n.contains("forcad") || n.contains("foreign")) q.add("forçada");
+        if (q.isEmpty()) return "";
+        StringBuilder sb = new StringBuilder(" (");
+        for (int i = 0; i < q.size(); i++) sb.append(i > 0 ? ", " : "").append(q.get(i));
+        return sb.append(")").toString();
     }
 
     private void styleRow(PanelRow r) {
@@ -1150,6 +1203,7 @@ public class PlayerActivity extends Activity {
 
         // esquerda: lista das legendas
         android.widget.ScrollView sv = new android.widget.ScrollView(this);
+        panelScroll = sv;
         sv.setFocusable(false);
         sv.setVerticalScrollBarEnabled(false);
         sv.setClipToPadding(false);
@@ -1281,7 +1335,7 @@ public class PlayerActivity extends Activity {
         if (!autoRunning && !statusFixed) {
             if (can) { panelStatus.setTextColor(0xFFC8C8C8); panelStatus.setText("Acerta o tempo da legenda sozinha, sem parar o filme."); }
             else if (panelTrack == -1) { panelStatus.setTextColor(0xFFC8C8C8); panelStatus.setText("Escolha uma legenda para a poder sincronizar."); }
-            else { panelStatus.setTextColor(0xFFFFC857); panelStatus.setText("Esta legenda vem dentro do vídeo: a sincronização automática só funciona com as baixadas. Use os botões abaixo."); }
+            else { panelStatus.setTextColor(0xFFFFC857); panelStatus.setText("Legenda do próprio vídeo — normalmente já vem certa. Se não estiver, usa os botões abaixo."); }
         }
     }
 
@@ -1548,6 +1602,7 @@ public class PlayerActivity extends Activity {
     }
 
     private void setControlsVisible(boolean show) {
+        if (loading) return; // carregando: os controles não aparecem nem somem
         if (!show && controlFocused() && focusSink != null) focusSink.requestFocus();
         ui.removeCallbacks(hideControls);
         if (show != controlsShown || (show && controls.getAlpha() < 1f)) {

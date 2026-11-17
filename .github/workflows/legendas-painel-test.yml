@@ -66,6 +66,41 @@ jobs:
           ffmpeg -loglevel error -f lavfi -i testsrc2=size=1280x720:rate=24 -f lavfi -i sine=frequency=440:sample_rate=48000 -t 300 -c:v libx264 -preset veryfast -pix_fmt yuv420p -c:a aac teste.mkv
           ffmpeg -loglevel error -f lavfi -i testsrc2=size=1920x804:rate=24 -f lavfi -i sine=frequency=440:sample_rate=48000 -t 200 -c:v libx264 -preset veryfast -pix_fmt yuv420p -c:a aac wide.mkv
           ffmpeg -loglevel error -i teste.mkv -i emb.srt -map 0 -map 1 -c copy -c:s srt -metadata:s:s:0 language=por -disposition:s:0 default emb.mkv
+          ffmpeg -loglevel error -i teste.mkv -i emb.srt -i emb.srt -i emb.srt -map 0 -map 1 -map 2 -map 3 -c copy -c:s srt -metadata:s:s:0 language=por -metadata:s:s:0 title="Portuguese" -metadata:s:s:1 language=por -metadata:s:s:1 title="Portuguese (Brazil)" -metadata:s:s:2 language=por -metadata:s:s:2 title="Portuguese - Forced" -disposition:s:2 forced emb3.mkv
+          cat > /tmp/slow.py <<'PY'
+          import http.server, os, re, time, socketserver
+          ROOT='/tmp/video'; DELAY=14; T=[None]
+          class H(http.server.BaseHTTPRequestHandler):
+              def log_message(self,*a): pass
+              def handle_one(self, body):
+                  if T[0] is None: T[0]=time.time()
+                  rem=T[0]+DELAY-time.time()
+                  if rem>0: time.sleep(rem)
+                  path=ROOT+self.path.split('?')[0]; size=os.path.getsize(path)
+                  a,b,code=0,size-1,200
+                  r=self.headers.get('Range')
+                  if r:
+                      m=re.match(r'bytes=(\d+)-(\d*)',r); a=int(m.group(1)); b=int(m.group(2)) if m.group(2) else size-1; b=min(b,size-1); code=206
+                  self.send_response(code); self.send_header('Accept-Ranges','bytes'); self.send_header('Content-Type','video/x-matroska'); self.send_header('Content-Length',str(b-a+1))
+                  if code==206: self.send_header('Content-Range','bytes %d-%d/%d'%(a,b,size))
+                  self.end_headers()
+                  if body:
+                      with open(path,'rb') as f:
+                          f.seek(a); left=b-a+1
+                          while left>0:
+                              d=f.read(min(65536,left))
+                              if not d: break
+                              self.wfile.write(d); left-=len(d)
+              def do_GET(self):
+                  try: self.handle_one(True)
+                  except Exception: pass
+              def do_HEAD(self):
+                  try: self.handle_one(False)
+                  except Exception: pass
+          class S(socketserver.ThreadingMixIn, http.server.HTTPServer): daemon_threads=True
+          S(('0.0.0.0',8001),H).serve_forever()
+          PY
+          nohup python3 /tmp/slow.py >/dev/null 2>&1 &
           nohup npx --yes http-server -p 8000 -s /tmp/video >/dev/null 2>&1 &
           sleep 8; curl -sI http://127.0.0.1:8000/teste.mkv | head -1
       - name: KVM
