@@ -7,22 +7,26 @@ WORK="$1"; ARCH="$2"
 mkdir -p "$WORK"
 rm -rf "$WORK/ortfw" && mkdir -p "$WORK/ortfw"
 FW="$WORK/ortfw/onnxruntime.framework"
-# 1) pacote oficial da Microsoft (dylib + cabecalhos) pela pagina de releases
-TGZ="$WORK/ort.tgz"
-if curl -fsSL --retry 3 --retry-delay 5 -o "$TGZ" "https://github.com/microsoft/onnxruntime/releases/download/v1.20.0/onnxruntime-osx-universal2-1.20.0.tgz" 2>/dev/null && tar -tzf "$TGZ" >/dev/null 2>&1; then
-  rm -rf "$WORK/ortx" && mkdir -p "$WORK/ortx" && tar -xzf "$TGZ" -C "$WORK/ortx"
+# 1) pacote oficial da Microsoft no NuGet (dylib + cabecalhos); o github.com/microsoft nao responde mais
+TGZ="$WORK/ort.nupkg"
+if curl -fsSL --retry 3 --retry-delay 5 -o "$TGZ" "https://globalcdn.nuget.org/packages/microsoft.ml.onnxruntime.1.20.0.nupkg" && unzip -tq "$TGZ" >/dev/null 2>&1; then
+  rm -rf "$WORK/ortx" && mkdir -p "$WORK/ortx" && unzip -oq "$TGZ" -d "$WORK/ortx"
   H=$(find "$WORK/ortx" -type f -name onnxruntime_c_api.h | head -1)
-  D=$(find "$WORK/ortx" -type f -name 'libonnxruntime*.dylib' ! -type l | head -1)
+  D=$(find "$WORK/ortx" -type f -name 'libonnxruntime*.dylib' -path "*osx*$ARCH*" | head -1)
+  [ -n "$D" ] || D=$(find "$WORK/ortx" -type f -name 'libonnxruntime*.dylib' | head -1)
+  find "$WORK/ortx" -type f | grep -i "dylib\|onnxruntime_c_api.h" | sed "s|$WORK/ortx/||" >&2
   if [ -n "$H" ] && [ -n "$D" ]; then
     mkdir -p "$FW/Headers" && cp "$(dirname "$H")"/*.h "$FW/Headers/" && cp "$D" "$FW/onnxruntime"
-    echo "onnxruntime: pacote oficial (release 1.20.0)" >&2
+    echo "onnxruntime: pacote oficial do NuGet 1.20.0 ($D)" >&2
   fi
+else
+  echo "onnxruntime: nao baixou o pacote do NuGet" >&2
 fi
 # 2) reserva: xcframework do SwiftPM (cabecalhos) + dylib do wheel do PyPI
 if [ ! -f "$FW/onnxruntime" ]; then
   rm -rf "$FW"
   OKP=0
-  for TRY in 1 2 3; do
+  for TRY in 1; do
     if swift package resolve > "$WORK/ort-resolve.log" 2>&1; then OKP=1; break; fi
     tail -3 "$WORK/ort-resolve.log" >&2; sleep 15
   done

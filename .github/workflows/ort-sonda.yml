@@ -4,15 +4,9 @@ on:
     branches: [run-ort-sonda]
 jobs:
   s:
-    strategy:
-      matrix:
-        os: [ubuntu-latest, macos-15]
-    runs-on: ${{ matrix.os }}
+    runs-on: macos-15
     steps:
-      - name: Sondar
+      - uses: actions/checkout@v4
+      - name: Buscar
         run: |
-          for u in https://github.com/microsoft/onnxruntime-swift-package-manager https://github.com/microsoft/onnxruntime-swift-package-manager.git/info/refs?service=git-upload-pack https://github.com/microsoft/onnxruntime/releases/download/v1.20.0/onnxruntime-osx-universal2-1.20.0.tgz https://api.github.com/repos/microsoft/onnxruntime-swift-package-manager https://github.com/microsoft/onnxruntime https://pypi.org/simple/onnxruntime/ https://globalcdn.nuget.org/packages/microsoft.ml.onnxruntime.1.20.0.nupkg https://onnxruntimepackages.azureedge.net/ ; do
-            echo "== $u"; curl -sS -o /dev/null -L --max-time 30 -w '%{http_code} %{url_effective}\n' "$u" 2>&1 | tail -2
-          done
-          echo "== git ls-remote"; GIT_TERMINAL_PROMPT=0 git ls-remote https://github.com/microsoft/onnxruntime-swift-package-manager 2>&1 | head -3
-          echo "== git config"; git config --global -l 2>&1 | head; git config --system -l 2>&1 | head
+          mkdir -p w && FW=$(mac/ort/fetch.sh "$PWD/w" arm64 | tail -1); echo "FW=$FW"; ls -la "$FW" "$FW/Headers" | head -20; file "$FW/onnxruntime"; du -sh "$FW"
