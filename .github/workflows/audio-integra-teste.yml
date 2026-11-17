@@ -71,8 +71,9 @@ jobs:
           retention-days: 3
       - name: Publicar o oraculo (pequeno)
         if: always()
+        continue-on-error: true
         run: |
-          mkdir -p res && cp prep.log res/ 2>/dev/null; cp prep-oracle.json res/ 2>/dev/null; cp media/info.json res/ 2>/dev/null; ls media > res/media-ls.txt 2>/dev/null
+          mkdir -p res; cp prep.log res/ 2>/dev/null || true; cp prep-oracle.json res/ 2>/dev/null || true; cp media/info.json res/ 2>/dev/null || true; ls media > res/media-ls.txt 2>/dev/null || true; echo ok > res/ok.txt
           cd res && git init -q -b x && git add -A && git -c user.name=ci -c user.email=ci@x commit -qm prep
           git push -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" x:${{ env.OUT }}-prep
 
