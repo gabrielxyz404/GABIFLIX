@@ -255,6 +255,10 @@ public class PlayerActivity extends Activity {
         media.release();
         player.play();
         setControlsVisible(true);
+        // sincronização pelo áudio: o botão passa a usar o motor encadeado (referência primeiro, áudio confere) e o modo automático começa a vigiar
+        audioSync = new AudioSyncAuto(this, audioHost);
+        autoEngine = audioSync.chain(autoEngine);
+        audioSync.start();
     }
 
     // ---------- eventos do VLC ----------
@@ -995,6 +999,34 @@ public class PlayerActivity extends Activity {
     /** motor da sincronização automática: para ligar outro (ex.: o que ouve o áudio) basta trocar este campo por outro AutoSync.Engine */
     private AutoSync.Engine autoEngine = new AutoSync.RefEngine(() -> refStartsAll, () -> candsSnap);
 
+    // ---------- sincronização pelo áudio (AudioSyncAuto): o que a tela empresta ao controlador ----------
+    private AudioSyncAuto audioSync;
+    private final AudioSyncAuto.Host audioHost = new AudioSyncAuto.Host() {
+        @Override public boolean buffering() { return spinner != null && spinner.getVisibility() == View.VISIBLE; }
+        @Override public boolean playing() { return player != null && player.isPlaying() && !buffering(); }
+        @Override public long timeMs() { return player == null ? 0 : player.getTime(); }
+        @Override public long durationMs() { return player == null ? 0 : player.getLength(); }
+        @Override public String url() { return url; }
+        @Override public SubtitleSync.Cand activeCand() { return player == null ? null : candForTrack(player.getSpuTrack(), player.getSpuTracks()); }
+        @Override public String delayKey() { return player == null ? null : delayKeyFor(player.getSpuTrack(), player.getSpuTracks()); }
+        @Override public int delayMs() { return subDelayMs; }
+        @Override public int savedDelay(String key) { return PlayerActivity.this.savedDelay(key); }
+        @Override public void applyDelay(int ms, boolean persist) {
+            if (persist) { setSubDelay(ms, panelValue); return; }
+            subDelayMs = Math.max(-MAX_DELAY_MS, Math.min(MAX_DELAY_MS, ms));
+            applySubDelay();
+            if (panelValue != null) panelValue.setText(delayLabel());
+        }
+        @Override public void notice(String s) { PlayerActivity.this.notice(s); }
+        @Override public long lostFrames() {
+            try {
+                Object m = player == null ? null : player.getMedia();
+                Object st = m == null ? null : m.getClass().getMethod("getStats").invoke(m);
+                return st == null ? -1 : ((Number) st.getClass().getField("lostPictures").get(st)).longValue();
+            } catch (Throwable t) { return -1; }
+        }
+    };
+
     private static final class PanelRow {
         LinearLayout view;
         View dot;
@@ -1319,7 +1351,7 @@ public class PlayerActivity extends Activity {
         int color;
         if (res.status == AutoSync.FIXED) {
             setSubDelay(res.delayMs, panelValue);
-            msg = "Legenda acertada (" + signedSecs(res.delayMs) + ")";
+            msg = (res.note != null && res.note.startsWith("áudio") ? "Legenda acertada pelo áudio (" : "Legenda acertada (") + signedSecs(res.delayMs) + ")";
             color = 0xFF7BD88F;
             if (!subPanelOpen) notice(msg);
         } else if (res.status == AutoSync.OK) {
@@ -1639,6 +1671,7 @@ public class PlayerActivity extends Activity {
     @Override
     protected void onPause() {
         super.onPause();
+        if (audioSync != null) audioSync.onPause();
         if (player != null) { resumeOnReturn = player.isPlaying(); savePosition(true); player.pause(); }
     }
 
@@ -1651,6 +1684,7 @@ public class PlayerActivity extends Activity {
     @Override
     protected void onDestroy() {
         ui.removeCallbacksAndMessages(null);
+        if (audioSync != null) audioSync.stop();
         if (player != null) {
             savePosition(true);
             player.stop();

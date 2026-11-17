@@ -1,0 +1,186 @@
+name: Audio integra teste
+
+# Prova da sincronizacao da legenda pelo audio no app (celular e TV, emulador x86): paridade do motor copiado, trecho de filme de dominio publico com
+# legendas deslocadas/certa/de outro filme, fotos, logs e medidas; tamanho do APK antes/depois. Nunca publica o app.
+on:
+  push:
+    branches: [run-audio-integra]
+  workflow_dispatch:
+    inputs:
+      out_branch:
+        description: prefixo dos branches de resultado
+        default: audio-integra-out
+
+permissions:
+  contents: write
+
+env:
+  OUT: ${{ github.event.inputs.out_branch || 'audio-integra-out' }}
+
+jobs:
+  paridade:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          ref: audio-motor
+          path: motor
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 17
+      - name: Codigo copiado == codigo do motor; vetores de paridade
+        run: |
+          mkdir -p res cls
+          D=android/app/src/main/java/io/github/gabrielxyz404/gabiflix/audiosync
+          M=motor/tools/audio-sync/java/io/github/gabrielxyz404/gabiflix/audiosync
+          echo "motor: $(git -C motor rev-parse HEAD)" | tee res/paridade.txt
+          for f in AudioAligner AudioSyncSession Recheck Result Segment Window Cue Vad DspVad Fft; do
+            if diff -q $M/$f.java $D/$f.java >/dev/null; then echo "identico: $f" | tee -a res/paridade.txt; else echo "DIFERENTE: $f" | tee -a res/paridade.txt; exit 1; fi
+          done
+          diff -q motor/tools/audio-sync/silero/java/io/github/gabrielxyz404/gabiflix/audiosync/SileroVad.java $D/SileroVad.java && echo "identico: SileroVad" | tee -a res/paridade.txt
+          javac -nowarn -d cls $(ls $D/*.java | grep -v SileroVad) tools/audio-integra/ParityCheck.java
+          java -cp cls ParityCheck tools/audio-integra/vectors.json | tee -a res/paridade.txt
+      - name: Publicar
+        if: always()
+        run: |
+          cd res && git init -q -b x && git add -A && git -c user.name=ci -c user.email=ci@x commit -qm paridade
+          git push -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" x:${{ env.OUT }}-paridade
+
+  prep:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/cache@v4
+        with:
+          path: media
+          key: audio-integra-media-detour-v1-${{ hashFiles('tools/audio-integra/prep.py') }}
+      - name: Trecho do filme e legendas
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg >/dev/null
+          if [ ! -f media/info.json ]; then python3 tools/audio-integra/prep.py detour charade media 2>&1 | tee prep.log; fi
+          rm -rf media/_work
+          ls -la media
+          cp media/oracle.json prep-oracle.json || true
+      - uses: actions/upload-artifact@v4
+        with:
+          name: media
+          path: media
+          retention-days: 3
+      - name: Publicar o oraculo (pequeno)
+        if: always()
+        run: |
+          mkdir -p res && cp prep.log res/ 2>/dev/null; cp prep-oracle.json res/ 2>/dev/null; cp media/info.json res/ 2>/dev/null; ls media > res/media-ls.txt 2>/dev/null
+          cd res && git init -q -b x && git add -A && git -c user.name=ci -c user.email=ci@x commit -qm prep
+          git push -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" x:${{ env.OUT }}-prep
+
+  teste:
+    needs: prep
+    runs-on: ubuntu-latest
+    timeout-minutes: 75
+    strategy:
+      fail-fast: false
+      matrix:
+        perfil: [tel, tv]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 17
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+      - uses: actions/download-artifact@v4
+        with:
+          name: media
+          path: /tmp/media
+      - name: APK de teste (x86, com ONNX Runtime x86)
+        env:
+          GABIFLIX_ABIS: x86,x86_64
+        run: gradle -p android assembleRelease --no-daemon -q
+      - name: Servidor dos videos
+        run: |
+          ls -la /tmp/media
+          : > /tmp/server-bytes.log
+          nohup python3 tools/audio-integra/server.py /tmp/media 8000 >/tmp/server.out 2>&1 &
+          sleep 2; curl -sI http://127.0.0.1:8000/clip.mkv | head -3
+      - name: KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules && sudo udevadm trigger --name-match=kvm
+      - name: Emulador de celular
+        if: matrix.perfil == 'tel'
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 30
+          target: google_apis
+          arch: x86
+          profile: pixel_4
+          disable-animations: true
+          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
+          script: bash tools/audio-integra/run.sh tel android/app/build/outputs/apk/release/app-release.apk
+      - name: Emulador de TV
+        if: matrix.perfil == 'tv'
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 30
+          target: android-tv
+          arch: x86
+          profile: tv_1080p
+          disable-animations: true
+          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
+          script: bash tools/audio-integra/run.sh tv android/app/build/outputs/apk/release/app-release.apk
+      - name: Medidas
+        if: always()
+        run: |
+          cp /tmp/server-bytes.log shots/server-bytes.log 2>/dev/null || true
+          python3 tools/audio-integra/report.py shots ${{ matrix.perfil }} || true
+      - name: Publicar as fotos
+        if: always()
+        run: |
+          cd shots || exit 0
+          git init -q -b x && git add -A
+          git -c user.name=ci -c user.email=ci@x commit -qm fotos
+          git push -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" x:${{ env.OUT }}-${{ matrix.perfil }}
+
+  tamanho:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: novo
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          path: base
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 17
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+      - name: APK release arm64-v8a + armeabi-v7a, antes e depois
+        run: |
+          mkdir -p res
+          gradle -p base/android assembleRelease --no-daemon -q
+          cp base/android/app/build/outputs/apk/release/app-release*.apk res/antes.apk
+          gradle -p novo/android assembleRelease --no-daemon -q
+          cp novo/android/app/build/outputs/apk/release/app-release*.apk res/depois.apk
+          ls -l res | tee res/tamanhos.txt
+          python3 - <<'PY' | tee -a res/tamanhos.txt
+          import os
+          a=os.path.getsize('res/antes.apk'); b=os.path.getsize('res/depois.apk')
+          print('APK antes: %.1f MB; depois: %.1f MB; diferenca +%.1f MB' % (a/1e6, b/1e6, (b-a)/1e6))
+          PY
+          unzip -lv res/depois.apk | grep -E "\.so|silero|classes" > res/depois-conteudo.txt
+          rm -f res/*.apk
+      - name: Publicar
+        if: always()
+        run: |
+          cd res && git init -q -b x && git add -A && git -c user.name=ci -c user.email=ci@x commit -qm tamanho
+          git push -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" x:${{ env.OUT }}-tamanho
