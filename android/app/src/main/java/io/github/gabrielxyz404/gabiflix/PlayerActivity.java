@@ -84,12 +84,12 @@ public class PlayerActivity extends Activity {
     private boolean ended = false;
     private long lastSaved = 0;
     private int scaleIndex = 0;
-    // 0 = Ajustar (barras pretas), 1 = Preencher (corta o excesso, sem distorcer), 2 = Esticar (distorce até encher a tela).
+    // 0 = Normal (imagem inteira, com barras pretas se precisar), 1 = Preencher (zoom sem distorcer: corta o excesso até cobrir a tela).
     // O VLC fica sempre em SURFACE_BEST_FIT: assim a superfície das legendas continua dentro da tela e a legenda fica
     // inteira e centrada em baixo nos 3 modos. (SURFACE_FILL/FIT_SCREEN do VLC desenham a legenda no fundo de um vídeo
     // maior que a tela, e ela sai da área visível.) Esticar = proporção do VLC igual à da tela; Preencher = zoom na
     // vista do vídeo (TextureView na TV, SurfaceView no celular; ambas aceitam escala).
-    private static final String[] SCALE_NAMES = {"Ajustar", "Preencher", "Esticar"};
+    private static final String[] SCALE_NAMES = {"Normal", "Preencher"};
     private int lastScaleW = -1, lastScaleH = -1;
 
     private void applyScale() {
@@ -100,7 +100,7 @@ public class PlayerActivity extends Activity {
         try {
             player.setVideoScale(MediaPlayer.ScaleType.SURFACE_BEST_FIT);
             player.setScale(0f);
-            player.setAspectRatio(scaleIndex == 2 ? w + ":" + h : null);
+            player.setAspectRatio(null);
         } catch (Throwable t) { glog("escala: " + t); }
         zoomVideo();
         ui.postDelayed(this::zoomVideo, 300);
