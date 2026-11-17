@@ -60,12 +60,17 @@ jobs:
       - name: Trecho do filme e legendas
         run: |
           sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg >/dev/null
+          mkdir -p /tmp/ort /tmp/pc
+          curl -fsSL -o /tmp/ort/ort.jar https://repo1.maven.org/maven2/com/microsoft/onnxruntime/onnxruntime/1.20.0/onnxruntime-1.20.0.jar
+          D=android/app/src/main/java/io/github/gabrielxyz404/gabiflix/audiosync
+          javac -nowarn -d /tmp/pc -cp /tmp/ort/ort.jar $D/*.java tools/audio-integra/PreCheck.java
+          export PRECHECK="java -cp /tmp/pc:/tmp/ort/ort.jar PreCheck" MODEL=$PWD/android/app/src/main/assets/silero_vad.onnx
           if [ ! -f media/info.json ]; then
-            for s in his_girl_friday charade freaks scarlet_street; do
-              rm -rf media; python3 tools/audio-integra/prep.py $s suddenly,the_stranger media > prep-$s.log 2>&1 && { cp prep-$s.log prep.log; break; }
+            for s in his_girl_friday charade freaks scarlet_street the_stranger sherlock_secret_weapon; do
+              rm -rf media; python3 tools/audio-integra/prep.py $s suddenly,manos,meet_john_doe media > prep-$s.log 2>&1 && { cp prep-$s.log prep.log; break; }
               tail -3 prep-$s.log
             done
-            if [ ! -f media/info.json ]; then rm -rf media; FALLBACK=1 python3 tools/audio-integra/prep.py his_girl_friday suddenly,the_stranger media > prep.log 2>&1 || { tail -30 prep.log; exit 1; }; fi
+            if [ ! -f media/info.json ]; then rm -rf media; FALLBACK=1 python3 tools/audio-integra/prep.py his_girl_friday suddenly,manos,meet_john_doe media > prep.log 2>&1 || { tail -30 prep.log; exit 1; }; fi
             cat prep-*.log >> prep.log 2>/dev/null; tail -15 prep.log
           fi
           rm -rf media/_work

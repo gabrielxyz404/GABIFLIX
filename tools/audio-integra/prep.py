@@ -103,6 +103,24 @@ cues = good[1]
 C.write_srt(cues, os.path.join(out, "certa.srt"))
 C.write_srt([[a + 3000, b + 3000, t] for a, b, t in cues], os.path.join(out, "mais3.srt"))
 C.write_srt([[max(0, a - 2000), max(0, b - 2000), t] for a, b, t in cues], os.path.join(out, "menos2.srt"))
+# pre-escolha: o MESMO motor no PC tem de aceitar as deslocadas (assim a prova no emulador mostra o caminho de "aplicar");
+# o que o motor faz com cada legenda aqui vale como referencia para o que o app faz la
+pre = os.environ.get("PRECHECK")
+if pre:
+    def precheck(name):
+        r = subprocess.run(pre.split() + [wav, os.path.join(out, name), os.environ["MODEL"]], capture_output=True, text=True)
+        line = [l for l in r.stdout.splitlines() if l.startswith("PRE")]
+        print(name, line[0] if line else r.stderr[-300:], flush=True)
+        return line[0] if line else ""
+    import re
+    def val(l, k):
+        m = re.search(k + r"=(-?[\d.]+)", l)
+        return float(m.group(1)) if m else None
+    l3, l2, lc = precheck("mais3.srt"), precheck("menos2.srt"), precheck("certa.srt")
+    ok3 = "accepted=1" in l3 and abs((val(l3, "raw") or 1e9) + 3000) < 400
+    ok2 = "accepted=1" in l2 and abs((val(l2, "raw") or 1e9) - 2000) < 400
+    if not (ok3 and ok2) and os.environ.get("FALLBACK") != "1":
+        print("o motor no PC nao aceita as deslocadas neste filme"); sys.exit(6)
 wrong = []
 for o in others:
     wrong = addon_subs(F[o], 1)
