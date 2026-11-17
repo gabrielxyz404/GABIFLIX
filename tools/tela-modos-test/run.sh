@@ -22,8 +22,12 @@ import sys,re
 x=sys.stdin.read()
 m=re.search(r'(?:text|content-desc)=\"(Tela: [^\"]*)\"',x)
 print(m.group(1).replace(' ','').replace(':','-') if m else 'semrotulo')"; }
-showc() { if [ "$P" = tel ]; then adb shell input tap 1200 360; else adb shell input keyevent DPAD_DOWN; fi; sleep 1.5; }
-hidec() { if [ "$P" = tel ]; then adb shell input tap 1200 300; else adb shell input keyevent BACK; fi; sleep 1.5; }
+showc() { if [ "$P" = tel ]; then
+    for t in 1 2 3 4; do dump | grep -q "Tela" && break; adb shell input tap 1200 360; sleep 1.5; done
+  else adb shell input keyevent DPAD_DOWN; fi; sleep 1.5; }
+hidec() { if [ "$P" = tel ]; then
+    for t in 1 2 3; do dump | grep -q "Tela" || break; adb shell input tap 1200 300; sleep 1.5; done
+  else adb shell input keyevent BACK; fi; sleep 1.5; }
 tela_click() {
   if [ "$P" = tel ]; then
     xy=$(dump | python3 $UI xy "Tela")
