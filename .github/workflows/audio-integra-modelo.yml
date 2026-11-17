@@ -1,0 +1,32 @@
+name: Audio integra modelo Silero
+
+# Baixa o modelo Silero VAD (ONNX, MIT) do pacote silero-vad e publica so o arquivo (2,3 MB) em audio-integra-modelo-out,
+# para ser copiado para os assets do app. Nao publica o app.
+on:
+  push:
+    branches: [run-audio-integra-modelo]
+
+permissions:
+  contents: write
+
+jobs:
+  modelo:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Modelo
+        run: |
+          mkdir -p /tmp/sv out && cd /tmp/sv
+          pip download -q silero-vad==5.1.2 --no-deps -d . 2>&1 | tail -2
+          unzip -o -q -j *.whl '*silero_vad.onnx' '*LICENSE*' -d /tmp/sv/m || true
+          ls -la /tmp/sv/m
+          cp /tmp/sv/m/silero_vad.onnx $GITHUB_WORKSPACE/out/
+          cp /tmp/sv/m/LICENSE* $GITHUB_WORKSPACE/out/LICENSE-silero-vad.txt 2>/dev/null || true
+          sha256sum $GITHUB_WORKSPACE/out/silero_vad.onnx | tee $GITHUB_WORKSPACE/out/sha256.txt
+      - name: Publicar
+        run: |
+          cd out && git init -q -b x && git add -A
+          git -c user.name=ci -c user.email=ci@x commit -qm modelo
+          git push -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" x:audio-integra-modelo-out
