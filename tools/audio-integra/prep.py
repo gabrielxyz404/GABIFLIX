@@ -93,6 +93,8 @@ how = "original confirmada pelo alass"
 if good is None:
     # nenhuma legenda baixada casa com este corte do filme: a "certa" e a versao que o alass (independente do nosso motor) alinhou ao audio
     fb = locals().get("fb")
+    if os.environ.get("FALLBACK") != "1":
+        print("nenhuma legenda original confirmada pelo alass neste filme"); sys.exit(3)
     if fb is None:
         print("sem legenda alinhavel"); sys.exit(3)
     good = (fb[0], fb[1]); how = "alinhada ao audio pelo alass (nenhuma original casava)"

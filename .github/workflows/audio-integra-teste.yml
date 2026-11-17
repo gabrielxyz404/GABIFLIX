@@ -60,7 +60,14 @@ jobs:
       - name: Trecho do filme e legendas
         run: |
           sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg >/dev/null
-          if [ ! -f media/info.json ]; then python3 tools/audio-integra/prep.py detour,dementia_13,hitch_hiker,house_on_haunted_hill charade,his_girl_friday media > prep.log 2>&1 || { tail -30 prep.log; exit 1; }; tail -15 prep.log; fi
+          if [ ! -f media/info.json ]; then
+            for s in his_girl_friday charade freaks scarlet_street; do
+              rm -rf media; python3 tools/audio-integra/prep.py $s suddenly,the_stranger media > prep-$s.log 2>&1 && { cp prep-$s.log prep.log; break; }
+              tail -3 prep-$s.log
+            done
+            if [ ! -f media/info.json ]; then rm -rf media; FALLBACK=1 python3 tools/audio-integra/prep.py his_girl_friday suddenly,the_stranger media > prep.log 2>&1 || { tail -30 prep.log; exit 1; }; fi
+            cat prep-*.log >> prep.log 2>/dev/null; tail -15 prep.log
+          fi
           rm -rf media/_work
           ls -la media
           cp media/oracle.json prep-oracle.json || true
