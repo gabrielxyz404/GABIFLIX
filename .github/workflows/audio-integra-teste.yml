@@ -60,7 +60,7 @@ jobs:
       - name: Trecho do filme e legendas
         run: |
           sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg >/dev/null
-          if [ ! -f media/info.json ]; then python3 tools/audio-integra/prep.py detour charade media 2>&1 | tee prep.log; fi
+          if [ ! -f media/info.json ]; then python3 tools/audio-integra/prep.py detour charade media > prep.log 2>&1 || { tail -30 prep.log; exit 1; }; tail -15 prep.log; fi
           rm -rf media/_work
           ls -la media
           cp media/oracle.json prep-oracle.json || true

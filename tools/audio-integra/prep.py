@@ -43,6 +43,8 @@ if not os.path.exists(clip):
           "-vf", "scale=640:-2", "-r", "24", "-c:v", "libx264", "-preset", "veryfast", "-crf", "30", "-c:a", "aac", "-b:a", "96k", "-ac", "2", clip])
     C.sh(["ffmpeg", "-nostdin", "-loglevel", "error", "-y", "-i", clip, "-vn", "-ac", "1", "-ar", "16000", "-c:a", "pcm_s16le", wav])
     os.remove(src)
+if not os.path.exists(wav):
+    C.sh(["ffmpeg", "-nostdin", "-loglevel", "error", "-y", "-i", clip, "-vn", "-ac", "1", "-ar", "16000", "-c:a", "pcm_s16le", wav])
 print("clip: %.1f s, %d bytes" % (C.probe_duration(clip), os.path.getsize(clip)), flush=True)
 
 alass = os.path.join(work, "alass")
@@ -74,10 +76,18 @@ for idx, (sid, cues) in enumerate(cands):
     print(rec, flush=True)
     if good is None and abs(med) <= 300 and rec["alass_p90_desvio_ms"] <= 1000:
         good = (idx, cues)
+    best_rec = rec
+    if "alass_p90_desvio_ms" in rec and (not locals().get("fb") or rec["alass_p90_desvio_ms"] < fb[2]):
+        fb = (idx, C.parse_srt(open(tout, encoding="utf-8").read()), rec["alass_p90_desvio_ms"])
 json.dump(oracle, open(os.path.join(out, "oracle.json"), "w"), indent=1)
+how = "original confirmada pelo alass"
 if good is None:
-    print("NENHUMA legenda confirmada como certa pelo oraculo", flush=True)
-    sys.exit(3)
+    # nenhuma legenda baixada casa com este corte do filme: a "certa" e a versao que o alass (independente do nosso motor) alinhou ao audio
+    fb = locals().get("fb")
+    if fb is None:
+        print("sem legenda alinhavel"); sys.exit(3)
+    good = (fb[0], fb[1]); how = "alinhada ao audio pelo alass (nenhuma original casava)"
+    print("usando a legenda %d alinhada pelo alass" % fb[0], flush=True)
 cues = good[1]
 C.write_srt(cues, os.path.join(out, "certa.srt"))
 C.write_srt([[a + 3000, b + 3000, t] for a, b, t in cues], os.path.join(out, "mais3.srt"))
@@ -86,5 +96,5 @@ wrong = addon_subs(F[other], 1)
 if not wrong:
     print("sem legenda do outro filme"); sys.exit(4)
 C.write_srt(wrong[0][1], os.path.join(out, "outro.srt"))
-json.dump({"slug": slug, "outro": other, "legenda_certa_idx": good[0], "clip_s": CLIP_S}, open(os.path.join(out, "info.json"), "w"), indent=1)
+json.dump({"slug": slug, "outro": other, "legenda_certa_idx": good[0], "clip_s": CLIP_S, "certa": how}, open(os.path.join(out, "info.json"), "w"), indent=1)
 print("pronto", flush=True)
