@@ -3,7 +3,7 @@
 # Para cada vídeo (2,39:1, 16:9, 4:3) com legenda de 2 linhas: fotos em cada modo de "Tela", sem controles e com controles. Nunca publica nada.
 set -x
 PKG=io.github.gabrielxyz404.gabiflix
-P=${1:-tel}; APK=${2:-android/app/build/outputs/apk/release/app-release.apk}; L=${3:-depois}; NM=${4:-2}
+P=${1:-tel}; APK=${2:-android/app/build/outputs/apk/release/app-release.apk}; L=${3:-depois}; NM=${4:-2}; EXP=${5:-0}
 OUT=shots; mkdir -p $OUT
 UI=tools/android-subs-test/ui.py
 adb install -r "$APK"
@@ -16,7 +16,7 @@ BAD=0; N=0
 dump() { adb shell uiautomator dump /sdcard/u.xml >/dev/null 2>&1; adb shell cat /sdcard/u.xml 2>/dev/null; }
 snap() { N=$((N+1)); sleep "${2:-0.6}"; adb shell am broadcast -a android.intent.action.CLOSE_SYSTEM_DIALOGS >/dev/null 2>&1
   if dump | grep -qiE "isn't responding|não está respondendo|Close app|Fechar app"; then echo "FALHA: dialogo ANR na foto $N ($1)" | tee -a $OUT/passos.txt; BAD=1; adb shell input keyevent KEYCODE_BACK; sleep 1; fi
-  adb exec-out screencap -p > "$OUT/$L-$P-$1.png"; }
+  adb exec-out screencap -p > "$OUT/$L-$P-e$EXP-$1.png"; }
 label() { dump | python3 -c "
 import sys,re
 x=sys.stdin.read()
@@ -40,8 +40,8 @@ tela_click() {
 }
 abrir() {  # $1 = arquivo de vídeo
   adb shell am force-stop $PKG; sleep 1
-  if [ "$P" = tel ]; then adb shell am start -n $PKG/.PlayerActivity --es url "http://10.0.2.2:8000/$1" --esa subs "http://10.0.2.2:8000/teste.srt" --es type movie --es id tt0000001
-  else adb shell am start -n $PKG/.tv.TvHomeActivity --es gfTestUrl "http://10.0.2.2:8000/$1" --es gfTestSubs "http://10.0.2.2:8000/teste.srt"; fi
+  if [ "$P" = tel ]; then adb shell am start -n $PKG/.PlayerActivity --es url "http://10.0.2.2:8000/$1" --esa subs "http://10.0.2.2:8000/teste.srt" --es type movie --es id tt0000001 --es gfScaleExp $EXP
+  else adb shell am start -n $PKG/.tv.TvHomeActivity --es gfTestUrl "http://10.0.2.2:8000/$1" --es gfTestSubs "http://10.0.2.2:8000/teste.srt" --es gfScaleExp $EXP; fi
 }
 [ "$P" = tel ] && adb root >/dev/null && sleep 3
 adb logcat -c
@@ -57,7 +57,7 @@ for v in wide hd sd; do
     snap $v-$m-$lb-controles 0.4
     hidec; snap $v-$m-$lb 0.4
   done
-  showc; tela_click; snap $v-9-ciclo-controles 0.4; hidec; snap $v-9-ciclo 0.4
+  if [ "$NM" -ge 2 ]; then showc; tela_click; snap $v-9-ciclo-controles 0.4; hidec; snap $v-9-ciclo 0.4; fi
 done
 adb logcat -d | grep -E "GFPlayer|zoom Preencher|escala" > $OUT/$P-log.txt
 adb logcat -d | grep -E "FATAL EXCEPTION|AndroidRuntime" | head -40 > $OUT/$P-crash.txt
