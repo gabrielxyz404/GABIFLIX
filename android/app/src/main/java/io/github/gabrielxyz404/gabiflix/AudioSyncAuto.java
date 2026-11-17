@@ -44,6 +44,8 @@ final class AudioSyncAuto {
         void notice(String s);
         /** quadros de vídeo perdidos até agora (diagnóstico; -1 se não sabe) */
         long lostFrames();
+        /** texto de diagnóstico (faixa ativa, faixas, legendas ligadas) */
+        String debug();
     }
 
     private static final String PREFS = "audio-sync-1";
@@ -242,8 +244,11 @@ final class AudioSyncAuto {
         if (k != null) log("legenda ativa: " + k.substring(Math.max(0, k.length() - 60)));
     }
 
+    private long lastDiag;
+
     private void onTick() {
         long now = SystemClock.uptimeMillis();
+        if (now - lastDiag >= 20_000) { lastDiag = now; log("estado: st=" + st + " executando=" + running + " " + h.debug()); }
         boolean pl = h.playing();
         sampleHealth(now, pl);
         SubtitleSync.Cand cand = h.activeCand();

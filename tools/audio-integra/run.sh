@@ -41,7 +41,7 @@ launch() {
   if [ "$P" = tel ]; then adb shell am start -n $PKG/.PlayerActivity --es url "$BASE/clip.mkv" --esa subs "$BASE/$sub" "$@"
   else adb shell am start -n $PKG/.tv.TvHomeActivity --es gfTestUrl "$BASE/clip.mkv" --es gfTestSubs "$BASE/$sub" "$@"; fi
 }
-glog() { adb logcat -v epoch -d 2>/dev/null | grep -E "GabiFlixPlayer|GFPlayer" | grep -E "AUDIOSYNC|atraso|sincroniza" ; }
+glog() { adb logcat -v epoch -d -s GabiFlixPlayer 2>/dev/null | grep -v "^---" ; }
 waitlog() {  # $1 = padrao, $2 = segundos (no maximo 150: se nada acontece, segue e o log mostra por que)
   local lim=$2; [ $lim -gt 150 ] && [ "$P_SLOW" != 1 ] && lim=150
   for i in $(seq 1 $(( lim / 2 ))); do glog | grep -q -E "$1" && return 0; sleep 2; done

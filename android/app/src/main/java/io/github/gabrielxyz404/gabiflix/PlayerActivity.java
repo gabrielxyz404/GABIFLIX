@@ -1052,6 +1052,13 @@ public class PlayerActivity extends Activity {
             if (panelValue != null) panelValue.setText(delayLabel());
         }
         @Override public void notice(String s) { PlayerActivity.this.notice(s); }
+        @Override public String debug() {
+            if (player == null) return "sem player";
+            StringBuilder b = new StringBuilder("tocando=" + player.isPlaying() + " carregando=" + buffering() + " faixa=" + player.getSpuTrack() + " baixadas=" + attached.size() + " addedSubs=" + addedSubs + " embeddedKnown=" + embeddedKnown + " faixas=[");
+            MediaPlayer.TrackDescription[] t = player.getSpuTracks();
+            if (t != null) for (MediaPlayer.TrackDescription d : t) b.append(d.id).append(':').append(d.name).append(isDownloaded(d.id) ? "(baixada)" : "").append("; ");
+            return b.append("] cand=").append(candForTrack(player.getSpuTrack(), t) != null).toString();
+        }
         @Override public long lostFrames() {
             try {
                 Object m = player == null ? null : player.getMedia();

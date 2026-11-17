@@ -40,6 +40,7 @@ for f in sorted(glob.glob(os.path.join(d, "log-%s-*.txt" % perfil))):
     L = lines(f)
     P("\n## cenario %s" % name)
     for t, s in L:
+        if not s.startswith("AUDIOSYNC"): continue
         if s.startswith("AUDIOSYNC") and not s.startswith("AUDIOSYNC captura"):
             P("  %.1f %s" % (t, s[:400]))
         elif s.startswith("AUDIOSYNC captura"):
