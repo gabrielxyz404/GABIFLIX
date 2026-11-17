@@ -112,6 +112,8 @@ jobs:
           shot() { screencapture -x "/tmp/telas/$1.png" || true; }
           cmd() { echo "$1" > /tmp/gf-cmd; sleep 2.5; }
           # abre o menu, tira a foto com ele aberto e espera ele fechar sozinho
+          # manda o comando e tira a foto 1 s depois (os avisos somem em 3-5 s)
+          cmdshot() { echo "$2" > /tmp/gf-cmd; sleep 1.2; shot "$1"; sleep 1.5; }
           menushot() { echo "menu 7" > /tmp/gf-cmd; sleep 3; shot "$1"; sleep 6; }
           defaults delete FramePlay 2>/dev/null || true
           rm -f /tmp/frameplay-player.log
@@ -123,14 +125,14 @@ jobs:
           echo "== 2. escolhe a baixada pelo menu"
           cmd "menuclick Português 1"; cmd "state"; cmd "menudump"; menushot 02-menu-baixada
           echo "== 3. sincronização automática SEM referência: não consegue"
-          cmd "menuclick Sincronizar automaticamente"; sleep 2; shot 03-aviso-nao-consegui; cmd "state"
+          cmdshot 03-aviso-nao-consegui "menuclick Sincronizar automaticamente"; cmd "state"
           echo "== 4. com referência: acerta"
           cmd "ref http://127.0.0.1:8765/ref.srt"; sleep 3
-          cmd "menuclick Sincronizar automaticamente"; shot 04a-a-sincronizar; sleep 2; shot 04-aviso-acertada; cmd "state"
+          cmdshot 04-aviso-acertada "menuclick Sincronizar automaticamente"; cmd "state"
           echo "== 5. de novo: já estava certa"
-          cmd "menuclick Sincronizar automaticamente"; sleep 2; shot 05-aviso-ja-certa; cmd "state"
+          cmdshot 05-aviso-ja-certa "menuclick Sincronizar automaticamente"; cmd "state"
           echo "== 6. ajuste manual pelo menu"
-          cmd "menuclick +5 s"; shot 06-aviso-manual; cmd "state"
+          cmdshot 06-aviso-manual "menuclick +5 s"; cmd "state"
           cmd "menuclick +1 s"; cmd "state"
           cmd "menuclick −10 s"; cmd "state"
           cmd "menuclick −5 s"; cmd "state"
