@@ -10,6 +10,11 @@ public final class Result {
     /** o motor viu sinais de cortes (a legenda tem pedaços com deslocamentos diferentes): só aviso, nunca aplicado automaticamente (accepted = false) */
     public boolean cutsWarning;
     public double scale = 1.0, offsetMs = 0.0;
+    /** deslocamento estimado antes da banda morta (só diagnóstico/avaliação) */
+    public double rawOffsetMs;
+    /** evidência por janela: janelas com fala, as que concordam com o modelo dentro de 150 ms e o maior desvio (ms) */
+    public int winsValid, winsAgree;
+    public double winMaxDev;
     /** a escala é uma razão de fps conhecida (a resposta confiável: escalas livres exigem evidência bem maior) */
     public boolean scaleKnown;
     /** 0..1: confiança composta (só informativa; a decisão está em accepted) */

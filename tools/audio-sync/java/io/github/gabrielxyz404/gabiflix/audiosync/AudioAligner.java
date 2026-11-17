@@ -58,7 +58,14 @@ public final class AudioAligner {
         /** alfa ajustado a menos disto de 0 => escala 1,0 (ver fineRefine) */
         public double unitAlpha = 6e-4;
         /** correção de escala 1,0 com |offset| menor que isto => a legenda já está sincronizada: não mexe (Result.inSync) */
-        public double deadbandMs = 600;
+        public double deadbandMs = 1100;
+        /** escalas 0,999 e 1,001001 (24 x 23,976 fps) são recusadas: a diferença é pequena demais para ser distinguida do ruído com poucas janelas e custa legendas já certas */
+        public boolean rejectNearUnitScale = true;
+        public double nearUnitEps = 0.0015;
+        /** porta opcional (0 = desligada): todas as janelas com fala têm de concordar com o modelo dentro de gateWinDevMs (ms) */
+        public double gateWinDevMs = 0;
+        /** porta opcional: mínimo de janelas com fala e concordantes (0 = desligada) */
+        public int gateMinWinsAgree = 0;
         /** escalas fora das razões de fps conhecidas: ajuste dentro de unitSnap de 1,0 vira 1,0 (reajusta o offset); fora disso é recusado (allowFreeScale=false) */
         public double unitSnap = 0.0035;
         public boolean allowFreeScale = false;
@@ -548,6 +555,7 @@ public final class AudioAligner {
             R.accepted = false;
             R.reason = (R.reason + " z abaixo do limiar de aceitação (" + P.acceptMinZ + ");").trim();
         }
+        R.rawOffsetMs = R.offsetMs;
         if (R.accepted && R.segments == null && Math.abs(R.scale - 1.0) < 1e-9 && Math.abs(R.offsetMs) < P.deadbandMs) {
             R.inSync = true;
             R.offsetMs = 0;
@@ -637,6 +645,11 @@ public final class AudioAligner {
         for (int w = 0; w < ws.length; w++) {
             Fine f = fineWindow(ps[w], ws[w].startMs, fine, R.scale, R.offsetMs, 40);
             if (f.speechFrac < P.minSpeechFrac) continue;
+            Fine fw = fineWindow(ps[w], ws[w].startMs, fine, R.scale, R.offsetMs, 150);
+            R.winsValid++;
+            double dev = Math.abs(fw.bestDelta);
+            if (dev > R.winMaxDev) R.winMaxDev = dev;
+            if (dev <= 150) R.winsAgree++;
             sum += f.ncc0; cnt++;
             if (f.ncc0 < min) min = f.ncc0;
             for (int j = 0; j < ps[w].length; j++) {
@@ -656,6 +669,11 @@ public final class AudioAligner {
         double agreeFrac = R.blocksValid > 0 ? R.blocksAgree / (double) R.blocksValid : 0;
         boolean ok = R.z >= P.minZ && agreeFrac >= P.minAgreeFrac && R.nccMean >= P.minNcc && R.margin >= P.minMargin && R.f1 >= P.minF1;
         if (!R.scaleKnown && (!P.allowFreeScale || R.z < P.minZFree || R.nccMean < P.minNccFree)) ok = false;
+        boolean nearUnit = P.rejectNearUnitScale && Math.abs(R.scale - 1.0) > 1e-9 && Math.abs(R.scale - 1.0) < P.nearUnitEps;
+        if (nearUnit) ok = false;
+        boolean gateDev = P.gateWinDevMs > 0 && R.winsValid >= 2 && R.winMaxDev > P.gateWinDevMs;
+        boolean gateWin = P.gateMinWinsAgree > 0 && R.winsAgree < P.gateMinWinsAgree;
+        if (gateDev || gateWin) ok = false;
         R.accepted = ok;
         double c = Math.min(1.0, Math.max(0.0, (R.z - 3.0) / 12.0)) * 0.4 + Math.min(1.0, agreeFrac) * 0.3
                 + Math.min(1.0, R.nccMean / 0.4) * 0.2 + Math.min(1.0, R.margin) * 0.1;
@@ -668,6 +686,8 @@ public final class AudioAligner {
             if (R.margin < P.minMargin) sb.append("pico ambíguo; ");
             if (R.f1 < P.minF1) sb.append("cobertura baixa; ");
             if (!R.scaleKnown && (R.z < P.minZFree || R.nccMean < P.minNccFree)) sb.append("escala fora das razões de fps; ");
+            if (nearUnit) sb.append("escala 0,999/1,001 recusada; ");
+            if (gateDev || gateWin) sb.append("janelas discordam; ");
             R.reason = sb.toString();
         }
     }

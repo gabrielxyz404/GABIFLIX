@@ -87,6 +87,8 @@ jobs:
           CLIP_S= ORACLE=1 java -Xmx4g -cp /tmp/cls Eval corpus/${{ matrix.slug }} out/${{ matrix.slug }}/eval-full-o1.csv dsp,silero 3x90,4x90 offset,scale,combo,natural,safe 3 2>&1 | tail -5
           # verdade v2: o que depende da verdade (natural, safe)
           ORACLE=2 java -Xmx4g -cp /tmp/cls Eval corpus/${{ matrix.slug }} out/${{ matrix.slug }}/eval-o2.csv dsp,silero 3x90,4x90 natural,safe 3 2>&1 | tail -5
+          # diagnostico janela a janela (motor x oraculo) nas legendas naturais
+          ORACLE=1 java -Xmx4g -cp /tmp/cls Eval corpus/${{ matrix.slug }} out/${{ matrix.slug }}/eval-diag.csv dsp,silero 3x90 diag 3 2>&1 | tail -5
       - uses: actions/upload-artifact@v4
         if: always()
         with:

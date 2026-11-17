@@ -77,7 +77,8 @@ public class SelfTest {
             double[] err = new double[dist.length];
             for (int i = 0; i < dist.length; i++) err[i] = Math.abs(res.apply(dist[i].startMs) - truth[i].startMs);
             Arrays.sort(err);
-            boolean good = res.accepted && (err[err.length / 2] <= 250 || (res.inSync && Math.abs(b) < P.deadbandMs));   // dentro da banda morta: não mexe
+            boolean nearUnit = Math.abs(k - 1.0) > 1e-9 && Math.abs(k - 1.0) < P.nearUnitEps;   // 0,999/1,001: recusada de propósito
+            boolean good = nearUnit ? !res.accepted : res.accepted && (err[err.length / 2] <= 250 || (res.inSync && Math.abs(b) < P.deadbandMs));   // dentro da banda morta: não mexe
             tot++;
             if (good) ok++;
             System.out.printf("off=%8.0f k=%.5f -> %s medErr=%.0f p90=%.0f (%d ms)%n", b, k, good ? "OK  " : "FALHA", err[err.length / 2], err[(int) (err.length * 0.9)], ms);

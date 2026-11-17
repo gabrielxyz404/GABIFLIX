@@ -122,7 +122,7 @@ public class Eval {
         out.printf(Locale.ROOT, "%s,%s,%s,%s,%s,%s,%s,%d,%.0f,%.0f,%.1f,%.6f,%.2f,%.3f,%.3f,%.3f,%d,%d,%.3f,%.3f,%d,%d,%.0f,%.0f,%s%n",
                 f.slug, s == null ? "-" : s.name, vad, cfg, cat, param.replace(',', ';'), "-", r.accepted ? 1 : 0,
                 err == null ? -1 : err[0], err == null ? -1 : err[1], r.offsetMs, r.scale, r.z, r.margin, r.nccMean, r.nccMin, r.blocksAgree, r.blocksValid, r.f1, r.confidence,
-                r.audioMs, tookMs, rel == null ? -1 : rel[0], rel == null ? -1 : rel[1], (extra + " " + r.reason).trim().replace(',', ';'));
+                r.audioMs, tookMs, rel == null ? -1 : rel[0], rel == null ? -1 : rel[1], (extra + " " + String.format(Locale.ROOT, "insync=%d raw=%.0f winmax=%.0f wagree=%d/%d ", r.inSync ? 1 : 0, r.rawOffsetMs, r.winMaxDev, r.winsAgree, r.winsValid) + r.reason).trim().replace(',', ';'));
         out.flush();
     }
 
@@ -175,7 +175,7 @@ public class Eval {
                     // alvo relativo: onde o próprio motor põe a legenda SEM distorção (tira o viés do oráculo; mede só a recuperação da distorção)
                     Result r0 = session(f, v, truth, ws, P, 6);
                     REL = new long[ts.length];
-                    for (int i = 0; i < ts.length; i++) REL[i] = r0.accepted ? Math.round(r0.applySegments(truth[i].startMs)) : ts[i];
+                    for (int i = 0; i < ts.length; i++) REL[i] = r0.accepted ? Math.round(r0.scale * truth[i].startMs + r0.rawOffsetMs) : ts[i];
                     REL_OK = r0.accepted;
                     if (cats.contains("recheck")) recheckEval(f, v, s, vname, P, truth, r0);
                     if (cats.contains("offset")) for (double o : OFFS) run(f, v, s, vname, cfg, "offset", String.valueOf(o), P, ws, truth, ts, 1.0, new long[0], new double[]{o * 1000}, false);
@@ -200,6 +200,29 @@ public class Eval {
                             long c1 = (long) (f.durationMs * (0.3 + 0.05 * j)), c2 = (long) (f.durationMs * (0.6 + 0.05 * j));
                             double b0 = (rnd.nextInt(20) - 5) * 1000.0, d1 = (rnd.nextBoolean() ? 1 : -1) * (5 + rnd.nextInt(40)) * 1000.0, d2 = (rnd.nextBoolean() ? 1 : -1) * (5 + rnd.nextInt(40)) * 1000.0;
                             run(f, v, s, vname, cfg, "piece2", "cuts " + c1 / 1000 + "," + c2 / 1000, P, ws, truth, ts, 1.0, new long[]{c1, c2}, new double[]{b0, b0 + d1, b0 + d1 + d2}, true);
+                        }
+                    }
+                }
+                // diag: janela por janela, motor x oráculo (legendas naturais com verdade)
+                if (cats.contains("diag")) {
+                    try (PrintWriter dg = new PrintWriter(new FileWriter(args[1] + ".diag", true))) {
+                        for (Film.Sub s : f.subs) {
+                            if (!s.truth || s.pairs == null || s.pairs.length < 20) continue;
+                            long[][] pl = AudioSyncSession.planDense(s.orig, f.durationMs, nwF, lenF);
+                            Window[] wsd = windows(f, v, pl);
+                            Result rr = session(f, v, s.orig, wsd, P, 3);
+                            for (Window w : wsd) {
+                                long w0 = w.startMs, w1 = w.startMs + w.p.length * 10L;
+                                ArrayList<Double> dl = new ArrayList<>();
+                                for (long[] pr : s.pairs) if (pr[1] >= w0 && pr[1] < w1) dl.add((double) (pr[1] - pr[0]));
+                                Collections.sort(dl);
+                                AudioSyncSession one = new AudioSyncSession(s.orig, f.durationMs, P);
+                                one.addWindow(w);
+                                Result r1 = one.solve();
+                                dg.printf(Locale.ROOT, "%s,%s,%s,%s,win=%d-%ds,full_off=%.0f full_k=%.5f full_z=%.1f full_acc=%d,one_off=%.0f one_k=%.5f one_z=%.1f one_acc=%d,oracle_n=%d oracle_med=%s%n",
+                                        f.slug, s.name, vname, cfg, w0 / 1000, w1 / 1000, rr.rawOffsetMs, rr.scale, rr.z, rr.accepted ? 1 : 0,
+                                        r1.rawOffsetMs, r1.scale, r1.z, r1.accepted ? 1 : 0, dl.size(), dl.isEmpty() ? "-" : String.format(Locale.ROOT, "%.0f", dl.get(dl.size() / 2)));
+                            }
                         }
                     }
                 }
