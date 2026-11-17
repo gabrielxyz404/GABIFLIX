@@ -1,0 +1,140 @@
+name: Mac audio teste
+
+# Prova da sincronizacao da legenda pelo audio no FramePlay para Mac (macOS, VLCKit real): trecho de filme de dominio publico com legendas
+# deslocadas (+3 s e -2 s), certa e de outro filme; avisos, logs, CPU/memoria/rede, reproducao sem parar; tamanho do app. Nunca publica o app.
+on:
+  push:
+    branches: [run-mac-audio-teste]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: mac-audio-teste
+  cancel-in-progress: true
+
+jobs:
+  prep:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/cache@v4
+        with:
+          path: media
+          key: mac-audio-media-v1-${{ hashFiles('tools/audio-integra/prep.py') }}
+      - name: Trecho do filme e legendas
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg >/dev/null
+          mkdir -p /tmp/ort /tmp/pc
+          curl -fsSL -o /tmp/ort/ort.jar https://repo1.maven.org/maven2/com/microsoft/onnxruntime/onnxruntime/1.20.0/onnxruntime-1.20.0.jar
+          D=android/app/src/main/java/io/github/gabrielxyz404/gabiflix/audiosync
+          javac -nowarn -d /tmp/pc -cp /tmp/ort/ort.jar $D/*.java tools/audio-integra/PreCheck.java
+          export PRECHECK="java -cp /tmp/pc:/tmp/ort/ort.jar PreCheck" MODEL=$PWD/android/app/src/main/assets/silero_vad.onnx
+          if [ ! -f media/info.json ]; then
+            for s in scarlet_street his_girl_friday charade freaks the_stranger sherlock_secret_weapon; do
+              rm -rf media; python3 tools/audio-integra/prep.py $s suddenly,manos,meet_john_doe media > prep-$s.log 2>&1 && { cp prep-$s.log prep.log; break; }
+              tail -3 prep-$s.log
+            done
+            if [ ! -f media/info.json ]; then rm -rf media; FALLBACK=1 python3 tools/audio-integra/prep.py scarlet_street suddenly,manos,meet_john_doe media > prep.log 2>&1 || { tail -30 prep.log; exit 1; }; fi
+            cat prep-*.log >> prep.log 2>/dev/null; tail -15 prep.log
+          fi
+          cp media/_work/audio16k.wav media/audio16k.wav 2>/dev/null || true
+          rm -rf media/_work
+          # o MESMO motor (Java, PC) em cada legenda: o Swift tem de dar o mesmo
+          : > media/precheck.txt
+          for f in mais3 menos2 certa outro; do
+            echo "$f $($PRECHECK media/audio16k.wav media/$f.srt $MODEL 2>/dev/null | grep ^PRE)" | tee -a media/precheck.txt
+          done
+          ls -la media
+      - uses: actions/upload-artifact@v4
+        with:
+          name: media
+          path: media
+          retention-days: 3
+      - name: Publicar o oraculo (pequeno)
+        if: always()
+        continue-on-error: true
+        run: |
+          mkdir -p res; cp prep.log res/ 2>/dev/null || true; cp media/oracle.json media/info.json media/precheck.txt res/ 2>/dev/null || true; ls -la media > res/media-ls.txt 2>/dev/null || true; echo ok > res/ok.txt
+          cd res && git init -q -b x && git add -A && git -c user.name=ci -c user.email=ci@x commit -qm prep
+          git push -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" x:mac-audio-out-prep
+
+  app:
+    needs: prep
+    runs-on: macos-15
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: media
+          path: /tmp/media
+      - name: Montar o FramePlay.app
+        env:
+          FRAMEPLAY_VERSION: 0.0.${{ github.run_number }}
+          FRAMEPLAY_BUILD: ${{ github.run_number }}
+        run: |
+          set -o pipefail
+          ./mac/build.sh 2>&1 | tee build.log
+      - name: Mostrar o erro (se houver)
+        if: failure()
+        run: |
+          grep -n -E "error:|fatal|No such|cannot find|VLCKit |framework:" build.log | sort -u -k2 | head -60 | while IFS= read -r line; do
+            echo "::error::$(echo "$line" | cut -c1-900)"
+          done
+      - name: Tamanho do app (com e sem o ONNX Runtime) e do publicado
+        run: |
+          mkdir -p res
+          APP=mac/build/FramePlay.app
+          du -sh $APP $APP/Contents/Frameworks/* $APP/Contents/Resources/silero_vad.onnx 2>&1 | tee res/tamanho.txt
+          rm -f /tmp/full.zip /tmp/sem.zip
+          ditto -c -k --sequesterRsrc --keepParent $APP /tmp/full.zip
+          rm -rf /tmp/sem && mkdir /tmp/sem && ditto $APP /tmp/sem/FramePlay.app
+          rm -rf /tmp/sem/FramePlay.app/Contents/Frameworks/onnxruntime.framework /tmp/sem/FramePlay.app/Contents/Resources/silero_vad.onnx
+          ditto -c -k --sequesterRsrc --keepParent /tmp/sem/FramePlay.app /tmp/sem.zip
+          ls -l /tmp/full.zip /tmp/sem.zip | tee -a res/tamanho.txt
+          python3 - <<'PY' | tee -a res/tamanho.txt
+          import os
+          a=os.path.getsize('/tmp/full.zip'); b=os.path.getsize('/tmp/sem.zip')
+          print('zip do app com ONNX Runtime + modelo: %.1f MB; sem os dois: %.1f MB; aumento por eles: +%.1f MB' % (a/1e6, b/1e6, (a-b)/1e6))
+          PY
+          env -u GH_TOKEN gh api repos/${{ github.repository }}/releases/tags/mac --jq '.assets[] | "publicado hoje: " + .name + " " + (.size|tostring) + " bytes"' 2>&1 | tee -a res/tamanho.txt || true
+        env:
+          GH_TOKEN: ${{ github.token }}
+      - name: Testador do motor (mesmo comando do PreCheck do PC)
+        run: |
+          ORT_FW=$(ls -d mac/build/ortfw/onnxruntime.framework 2>/dev/null || true)
+          tools/mac-audio/build-test.sh /tmp/audiotest "$ORT_FW" 2>&1 | tail -5
+          export FP_SILERO_MODEL=$PWD/android/app/src/main/assets/silero_vad.onnx
+          B=$(find "$ORT_FW" -type f -name onnxruntime | head -1); export FP_ORT_LIB="$B"
+          : > res/pre-swift.txt
+          for f in mais3 menos2 certa outro; do
+            echo "$f $(/tmp/audiotest pre /tmp/media/audio16k.wav /tmp/media/$f.srt 2>&1 | grep ^PRE)" | tee -a res/pre-swift.txt
+          done
+          echo "--- PC (Java)"; cat /tmp/media/precheck.txt | tee res/pre-java.txt
+      - name: Servidor dos videos
+        run: |
+          ls -la /tmp/media
+          : > /tmp/server-bytes.log
+          nohup python3 tools/audio-integra/server.py /tmp/media 8000 >/tmp/server.out 2>&1 &
+          sleep 2; curl -sI http://127.0.0.1:8000/clip.mkv | head -3
+      - name: Prova no app
+        run: |
+          xattr -cr mac/build/FramePlay.app
+          mkdir -p shots
+          tools/mac-audio/prova.sh "$PWD/mac/build/FramePlay.app" /tmp/media "$PWD/shots" 2>&1 | tail -80
+      - name: Medidas
+        if: always()
+        run: |
+          cp res/* shots/ 2>/dev/null || true
+          cp build.log shots/ 2>/dev/null || true
+          python3 tools/mac-audio/report.py shots || true
+      - name: Publicar as fotos e os logs
+        if: always()
+        run: |
+          cd shots || exit 0
+          git init -q -b x && git add -A
+          git -c user.name=ci -c user.email=ci@x commit -qm fotos
+          git push -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" x:mac-audio-out-teste

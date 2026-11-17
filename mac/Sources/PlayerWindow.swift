@@ -75,6 +75,8 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
     /** tempos das falas das referências (outros idiomas ou PT do hash), para a sincronização automática */
     private var refStartsAll: [[Int64]] = []
     private var autoRunning = false
+    /** sincronização pelo áudio (ver AudioSync/): corre fora da thread principal e só mexe no atraso da legenda */
+    private var audioAuto: AudioSyncAuto?
     /** ajuste manual da legenda (ms; positivo = a legenda aparece mais tarde), lembrado por título */
     private var subDelayMs = 0
     private var srcHash: String? = nil
@@ -303,6 +305,59 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
         player.play()
         showControls()
         timer = Timer.scheduledTimer(withTimeInterval: 0.4, repeats: true) { [weak self] _ in self?.tick() }
+        startAudioSync()
+    }
+
+    // ---------- sincronização pelo áudio ----------
+    private func startAudioSync() {
+        let host = AudioSyncHost(
+            playing: { [weak self] in guard let s = self else { return false }; return s.startedPlaying && s.player.isPlaying },
+            buffering: { [weak self] in self?.player.state == .buffering },
+            timeMs: { [weak self] in Int(self?.player.time.intValue ?? 0) },
+            durationMs: { [weak self] in Int(self?.player.media?.length.intValue ?? 0) },
+            url: { [weak self] in self?.url ?? URL(fileURLWithPath: "/") },
+            activeCand: { [weak self] in
+                guard let s = self else { return nil }
+                return s.candForTrack(Int(s.player.currentVideoSubTitleIndex))
+            },
+            delayKey: { [weak self] in
+                guard let s = self else { return nil }
+                return s.delayKeyFor(Int(s.player.currentVideoSubTitleIndex))
+            },
+            delayMs: { [weak self] in self?.subDelayMs ?? 0 },
+            savedDelay: { [weak self] k in self?.savedDelay(k) ?? 0 },
+            applyDelay: { [weak self] ms, persist in self?.applyAutoDelay(ms, persist: persist) },
+            notice: { [weak self] s in self?.notice(s, seconds: 5) },
+            lostFrames: { [weak self] in self?.lostVideoFrames() ?? -1 },
+            debug: { [weak self] in
+                guard let s = self else { return "" }
+                return "faixa=\(s.player.currentVideoSubTitleIndex) atraso=\(s.subDelayMs) tempo=\(s.player.time.intValue)"
+            },
+            log: { [weak self] in self?.log($0) })
+        let a = AudioSyncAuto(host: host)
+        audioAuto = a
+        a.start()
+    }
+
+    /** atraso posto pelo motor do áudio: com persist vale como o ajuste manual (guardado por legenda); sem persist (escala diferente de 1) só se aplica */
+    private func applyAutoDelay(_ ms: Int, persist: Bool) {
+        if persist { setSubDelay(ms); return }
+        let m = PlayerWindowController.maxDelayMs
+        subDelayMs = max(-m, min(m, ms))
+        applySubDelay()
+        syncValue?.stringValue = delayLabel()
+        log("atraso da legenda (automático, não guardado): \(subDelayMs) ms")
+    }
+
+    /** quadros de vídeo perdidos até agora, só para o diagnóstico (-1 se o VLCKit não diz) */
+    private func lostVideoFrames() -> Int {
+        // Estatísticas do VLC (VLCMedia.statistics): imagens perdidas desde o começo da mídia; -1 se o VLCKit não dá.
+        guard let m = player.media, m.responds(to: NSSelectorFromString("statistics")),
+              let d = m.value(forKey: "statistics") as? [String: Any] else { return -1 }
+        for k in ["lostPictures", "lostPicture", "lost_pictures"] {
+            if let n = d[k] as? NSNumber { return n.intValue }
+        }
+        return -1
     }
 
     static var testLog = false
@@ -861,7 +916,12 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
 
     // ---------- sincronização automática (motor pluggable: ver AutoSync.swift) ----------
     /** ponto único para ligar outro motor (por exemplo o do áudio) */
-    private func makeAutoEngine() -> AutoSyncEngine { return RefAutoSyncEngine(refs: refStartsAll, others: cands) }
+    private func makeAutoEngine() -> AutoSyncEngine {
+        let ref = RefAutoSyncEngine(refs: refStartsAll, others: cands)
+        guard let a = audioAuto else { return ref }
+        // primeiro a referência/consenso de sempre; depois o áudio confere e, se tem certeza, corrige
+        return a.chain(ref: ref, url: url, durationMs: Int(player.media?.length.intValue ?? 0))
+    }
 
     @objc private func autoSyncPicked() { runAutoSync() }
 
@@ -891,7 +951,7 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
         switch res.status {
         case .fixed:
             setSubDelay(res.delayMs)
-            notice("Legenda acertada (" + SubtitleSync.signedSecs(Int64(res.delayMs)) + ")", seconds: 4)
+            notice((res.note.hasPrefix("áudio") ? "Legenda acertada pelo áudio (" : "Legenda acertada (") + SubtitleSync.signedSecs(Int64(res.delayMs)) + ")", seconds: 4)
         case .ok: notice("Já estava certa", seconds: 4)
         case .failed: notice("Não consegui acertar \u{2014} usa o ajuste manual", seconds: 5)
         }
@@ -1281,6 +1341,9 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
             } }
         case "track": userPickedSub = true; player.currentVideoSubTitleIndex = Int32(n); syncDelayToTrack(n)
         case "autosync": runAutoSync()
+        case "audiostate": log("audiosync: " + (audioAuto?.stateText() ?? "desligado"))
+        case "audiohealth": log("AUDIOSYNC " + (audioAuto?.healthText() ?? "desligado"))
+        case "closeplayer": closePlayer()
         case "menudump":
             let m = buildSubtitleMenu()
             log("menu: " + m.items.map { $0.isSeparatorItem ? "-----" : (($0.state == .on ? "[x] " : "") + $0.title + ($0.isEnabled ? "" : " (desativado)")) }.joined(separator: " | "))
@@ -1620,6 +1683,8 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
         finished = true
         timer?.invalidate()
         timer = nil
+        audioAuto?.stop()
+        audioAuto = nil
         let t = Int64(player.time.intValue)
         if t > 0 { lastTime = t }
         if ended { lastTime = lastLength }
