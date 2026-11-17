@@ -9,8 +9,12 @@ UI=tools/android-subs-test/ui.py
 adb install -r "$APK"
 if [ "$P" = tel ]; then adb shell wm size 1080x2400; adb shell wm density 420; fi
 adb shell wm size > $OUT/wm.txt
+adb shell settings put global hide_error_dialogs 1
+adb shell pm disable-user --user 0 com.google.android.apps.nexuslauncher >/dev/null 2>&1
+BAD=0
 N=0
-snap() { N=$((N+1)); sleep "${2:-0.6}"; adb exec-out screencap -p > "$OUT/$(printf %02d $N)-$P-$1.png"; echo "$(printf %02d $N) $1: foco=$(dump | python3 $UI focus)" >> $OUT/passos.txt; }
+snap() { N=$((N+1)); sleep "${2:-0.6}"; adb shell am broadcast -a android.intent.action.CLOSE_SYSTEM_DIALOGS >/dev/null 2>&1
+  if dump | grep -qiE "isn't responding|não está respondendo|Close app|Fechar app"; then echo "FALHA: dialogo ANR na foto $N ($1)" | tee -a $OUT/passos.txt; BAD=1; adb shell input keyevent KEYCODE_BACK; sleep 1; fi; adb exec-out screencap -p > "$OUT/$(printf %02d $N)-$P-$1.png"; echo "$(printf %02d $N) $1: foco=$(dump | python3 $UI focus)" >> $OUT/passos.txt; }
 dump() { adb shell uiautomator dump /sdcard/u.xml >/dev/null 2>&1; adb shell cat /sdcard/u.xml 2>/dev/null; }
 key() { for k in "$@"; do adb shell input keyevent $k; sleep 0.7; done; }
 W=2400; [ "$P" = tv ] && W=1920; H=1080
@@ -113,4 +117,5 @@ adb shell input keyevent KEYCODE_BACK; sleep 1
 adb logcat -d | grep -E "GabiFlixPlayer|GFPlayer" | grep -E "painel|sincroniza|atraso|embutida|vistas" > $OUT/log.txt
 adb logcat -d | grep -E "FATAL EXCEPTION|AndroidRuntime" | head -40 > $OUT/crash.txt
 cat $OUT/passos.txt $OUT/crash.txt
+[ $BAD = 1 ] && exit 1
 exit 0
