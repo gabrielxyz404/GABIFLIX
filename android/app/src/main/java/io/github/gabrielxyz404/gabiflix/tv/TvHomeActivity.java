@@ -192,7 +192,7 @@ public class TvHomeActivity extends TvBase {
             String testRefs = i.getStringExtra("gfTestRefs"); // só para os testes: referências de tempo conhecidas (links, separados por vírgula)
             Intent pi = new Intent(this, io.github.gabrielxyz404.gabiflix.PlayerActivity.class).putExtra("url", url).putExtra("subs", testSubs.split(","));
             if (testRefs != null) pi.putExtra("gfTestRefs", testRefs.split(","));
-            if (i.getExtras() != null) for (String k : i.getExtras().keySet()) if (k.startsWith("gfAudio") || k.equals("gfScaleExp")) pi.putExtra(k, String.valueOf(i.getExtras().get(k))); // só para os testes da sincronização pelo áudio
+            if (i.getExtras() != null) for (String k : i.getExtras().keySet()) if (k.startsWith("gfAudio")) pi.putExtra(k, String.valueOf(i.getExtras().get(k))); // só para os testes da sincronização pelo áudio
             startActivity(pi);
             return;
         }

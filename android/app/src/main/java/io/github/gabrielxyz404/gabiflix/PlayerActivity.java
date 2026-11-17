@@ -85,14 +85,14 @@ public class PlayerActivity extends Activity {
     private long lastSaved = 0;
     private int scaleIndex = 0;
     // 0 = Normal (imagem inteira, com barras pretas se precisar), 1 = Preencher (zoom sem distorcer: corta o excesso até cobrir a tela).
-    // O VLC fica sempre em SURFACE_BEST_FIT: assim a superfície das legendas continua dentro da tela e a legenda fica
-    // inteira e centrada em baixo nos 3 modos. (SURFACE_FILL/FIT_SCREEN do VLC desenham a legenda no fundo de um vídeo
-    // maior que a tela, e ela sai da área visível.) Esticar = proporção do VLC igual à da tela; Preencher = zoom na
-    // vista do vídeo (TextureView na TV, SurfaceView no celular; ambas aceitam escala).
+    // O VLC fica sempre em SURFACE_BEST_FIT e sem proporção forçada (nunca estica). O zoom de Preencher é feito na vista do vídeo
+    // (TextureView na TV, SurfaceView no celular). A legenda vem desenhada dentro da imagem, perto da borda de baixo; por isso o
+    // zoom fica ancorado embaixo (a borda de baixo da imagem = a borda de baixo da tela) e o corte vertical sai todo por cima.
+    // O libVLC 3.6 não tem API de recorte (crop) nem SURFACE_FILL/FIT_SCREEN que mantenham a legenda dentro da tela.
     private static final String[] SCALE_NAMES = {"Normal", "Preencher"};
     private int lastScaleW = -1, lastScaleH = -1;
-    /** Preencher: no máximo quantas vezes a largura da tela pode ter a imagem ampliada (a legenda quebra a ~75% da largura da imagem; acima disso cortaria nas laterais) */
-    private float coverMaxWidth = 1.3f;
+    /** Preencher: no máximo quantas vezes a largura da tela pode ter a imagem ampliada (filmes ultra-largos, como 2,76:1 em 16:9, ficariam com cortes demais nas laterais) */
+    private static final float COVER_MAX_WIDTH = 1.45f;
 
     private void applyScale() {
         if (player == null || videoLayout == null) return;
@@ -150,7 +150,7 @@ public class PlayerActivity extends Activity {
                 float dw = tw, dh = th, va = videoAspect();
                 if (va > 0) { if ((float) tw / th > va) dw = th * va; else dh = tw / va; }
                 f = Math.max((float) w / dw, (float) h / dh);
-                if (dw * f > coverMaxWidth * w) f = Math.max(1f, coverMaxWidth * w / dw);
+                if (dw * f > COVER_MAX_WIDTH * w) f = Math.max(1f, COVER_MAX_WIDTH * w / dw);
                 // a legenda vem desenhada dentro da imagem, perto da borda de baixo: o corte vertical sai todo por cima (a borda de baixo
                 // da imagem fica na borda de baixo da tela) e as legendas não são cortadas
                 if (f > 1.001f && dh * f - h > 1f) py = ((th + dh) / 2f * f - h) / (f - 1f);
@@ -168,7 +168,6 @@ public class PlayerActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         url = getIntent().getStringExtra(EXTRA_URL);
-        try { String ge = getIntent().getStringExtra("gfScaleExp"); if (ge != null) coverMaxWidth = Float.parseFloat(ge); } catch (Throwable ignored) { } // só testes
         String[] extraSubs = getIntent().getStringArrayExtra(EXTRA_SUBS);
         if (extraSubs != null) subs = extraSubs;
         metaType = getIntent().getStringExtra(EXTRA_TYPE);
