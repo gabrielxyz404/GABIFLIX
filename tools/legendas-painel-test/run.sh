@@ -41,21 +41,31 @@ click() {  # texto exato na tela: toque (celular) ou navegação do controle (TV
   fi
   sleep 1
 }
-launch() {  # $1 = vídeo, $2 = legendas (vírgula), $3 = referências (vírgula, opcional)
+launch() {  # $1 = vídeo (nome ou URL), $2 = legendas (vírgula), $3 = referências (vírgula, opcional)
   adb shell am force-stop $PKG; sleep 1
-  local subs="" refs=""
+  local u="$1" subs="" refs=""
+  case "$u" in http*) ;; *) u="$BASE/$u";; esac
   for s in ${2//,/ }; do subs="$subs,$BASE/$s"; done; subs=${subs#,}
   for s in ${3//,/ }; do refs="$refs,$BASE/$s"; done; refs=${refs#,}
   if [ "$P" = tel ]; then
-    if [ -n "$refs" ]; then adb shell am start -n $PKG/.PlayerActivity --es url "$BASE/$1" --esa subs "$subs" --esa gfTestRefs "$refs"
-    else adb shell am start -n $PKG/.PlayerActivity --es url "$BASE/$1" --esa subs "$subs"; fi
+    local a=(--es url "$u"); [ -n "$subs" ] && a+=(--esa subs "$subs"); [ -n "$refs" ] && a+=(--esa gfTestRefs "$refs")
+    adb shell am start -n $PKG/.PlayerActivity "${a[@]}"
   else
-    if [ -n "$refs" ]; then adb shell am start -n $PKG/.tv.TvHomeActivity --es gfTestUrl "$BASE/$1" --es gfTestSubs "$subs" --es gfTestRefs "$refs"
-    else adb shell am start -n $PKG/.tv.TvHomeActivity --es gfTestUrl "$BASE/$1" --es gfTestSubs "$subs"; fi
+    local a=(--es gfTestUrl "$u" --es gfTestSubs "${subs:-$BASE/a1.srt}"); [ -n "$refs" ] && a+=(--es gfTestRefs "$refs")
+    adb shell am start -n $PKG/.tv.TvHomeActivity "${a[@]}"
   fi
 }
 adb logcat -c
 [ "$P" = tel ] && { adb root; sleep 3; }
+
+# 0) carregando: só seta, título e círculo; toque/tecla não traz os controles; depois do primeiro quadro eles aparecem e somem
+launch http://10.0.2.2:8001/teste.mkv "a1.srt"
+sleep 4; snap carregando-1 0.5
+if [ "$P" = tel ]; then adb shell input tap $((W/2)) $((H/2)); else key DPAD_DOWN; fi
+sleep 1; snap carregando-2-depois-de-tocar 0.5
+for i in $(seq 1 45); do xy=$(dump | python3 $UI xy "Reproduzir ou pausar"); [ -n "$xy" ] && break; done
+snap controles-ao-comecar 0.1
+sleep 7; snap controles-somem 0.5
 
 # 1) com referência de tempo: lista, automático ("já estava certa"), manual, automático de novo (corrige)
 launch teste.mkv "a1.srt,a2.srt,b.srt" "ref.srt"
@@ -113,6 +123,13 @@ sleep 40
 adb shell input keyevent KEYCODE_MEDIA_PAUSE; sleep 2
 show_controls; open_subs; sleep 1.5
 snap embutida-auto-desligado 0.5
+adb shell input keyevent KEYCODE_BACK; sleep 1
+# 4) faixas embutidas: rótulos
+launch emb3.mkv "a1.srt"
+sleep 40
+adb shell input keyevent KEYCODE_MEDIA_PAUSE; sleep 2
+show_controls; open_subs; sleep 1.5
+snap embutidas-rotulos 0.5
 adb shell input keyevent KEYCODE_BACK; sleep 1
 adb logcat -d | grep -E "GabiFlixPlayer|GFPlayer" | grep -E "painel|sincroniza|atraso|embutida|vistas" > $OUT/log.txt
 adb logcat -d | grep -E "FATAL EXCEPTION|AndroidRuntime" | head -40 > $OUT/crash.txt
