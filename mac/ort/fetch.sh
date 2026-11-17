@@ -13,6 +13,17 @@ if [ -z "$F" ] || [ ! -f "$F/Headers/onnxruntime_c_api.h" ]; then echo "::warnin
 rm -rf "$WORK/ortfw" && mkdir -p "$WORK/ortfw" && cp -R "$F" "$WORK/ortfw/"
 FW="$WORK/ortfw/onnxruntime.framework"
 B=$(find "$FW" -type f -name onnxruntime | head -1)
+# O framework do SwiftPM e estatico (nao abre com dlopen): troca o binario pela dylib oficial do wheel do PyPI (mesma versao).
+if ! file "$B" | grep -q 'dynamically linked'; then
+  echo "onnxruntime do SwiftPM e estatico ($(file -b "$B" | cut -c1-40)); pegando a dylib do wheel" >&2
+  rm -rf "$WORK/ortwhl" && mkdir -p "$WORK/ortwhl"
+  python3 -m pip download onnxruntime==1.20.0 --no-deps --only-binary=:all: --platform macosx_11_0_universal2 --platform macosx_13_0_universal2 --platform macosx_14_0_arm64 --platform macosx_11_0_arm64 --platform macosx_10_15_x86_64 -d "$WORK/ortwhl" >&2 || { echo "::warning::pip nao baixou o wheel do onnxruntime" >&2; exit 1; }
+  W=$(ls "$WORK"/ortwhl/*.whl | head -1)
+  (cd "$WORK/ortwhl" && unzip -oq "$W" '*libonnxruntime*.dylib') || { echo "::warning::wheel sem dylib" >&2; exit 1; }
+  D=$(find "$WORK/ortwhl" -type f -name 'libonnxruntime*.dylib' | head -1)
+  [ -n "$D" ] || { echo "::warning::dylib nao encontrada" >&2; exit 1; }
+  cp "$D" "$B"
+fi
 ARCHS=$(lipo -archs "$B" 2>/dev/null || true)
 echo "onnxruntime: $B ($ARCHS)" >&2
 case " $ARCHS " in
