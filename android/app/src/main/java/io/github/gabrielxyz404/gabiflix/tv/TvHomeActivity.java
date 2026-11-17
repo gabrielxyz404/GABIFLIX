@@ -188,7 +188,10 @@ public class TvHomeActivity extends TvBase {
         if (url == null) return;
         String testSubs = i.getStringExtra("gfTestSubs"); // só para os testes: abre o player direto com legendas conhecidas (separadas por vírgula)
         if (testSubs != null) {
-            startActivity(new Intent(this, io.github.gabrielxyz404.gabiflix.PlayerActivity.class).putExtra("url", url).putExtra("subs", testSubs.split(",")));
+            String testRefs = i.getStringExtra("gfTestRefs"); // só para os testes: referências de tempo conhecidas (links, separados por vírgula)
+            Intent pi = new Intent(this, io.github.gabrielxyz404.gabiflix.PlayerActivity.class).putExtra("url", url).putExtra("subs", testSubs.split(","));
+            if (testRefs != null) pi.putExtra("gfTestRefs", testRefs.split(","));
+            startActivity(pi);
             return;
         }
         try {

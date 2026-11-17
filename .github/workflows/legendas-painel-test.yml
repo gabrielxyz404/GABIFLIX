@@ -1,0 +1,103 @@
+name: Teste painel de legendas
+
+# Fotos do painel de legendas (celular em paisagem e TV) com este commit. Nunca publica o app.
+on:
+  push:
+    branches: [legendas-painel-run]
+  workflow_dispatch:
+    inputs:
+      out_branch:
+        description: prefixo do branch onde as fotos são publicadas
+        default: legendas-painel-out
+
+permissions:
+  contents: write
+
+jobs:
+  teste:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    strategy:
+      fail-fast: false
+      matrix:
+        perfil: [tel, tv]
+        versao: [depois]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          path: appsrc
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 17
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+      - name: APK de teste (x86)
+        env:
+          GABIFLIX_ABIS: x86,x86_64
+        run: gradle -p appsrc/android assembleRelease --no-daemon -q
+      - name: API do MediaPlayer (para a margem das legendas)
+        run: |
+          mkdir -p shots
+          A=$(find ~/.gradle -name 'libvlc-all-3.6.0*.aar' | head -1); echo "$A"
+          mkdir -p /tmp/aar && cd /tmp/aar && unzip -o -q "$A" classes.jar && javap -cp classes.jar org.videolan.libvlc.MediaPlayer | grep -i -E "margin|spu|sub|position|attach" > $GITHUB_WORKSPACE/shots/mediaplayer-api.txt || true
+      - name: Vídeos e legendas de teste
+        run: |
+          timeout 300 sudo apt-get install -y -qq ffmpeg >/dev/null || (sudo apt-get update -qq && timeout 300 sudo apt-get install -y -qq ffmpeg >/dev/null)
+          mkdir -p /tmp/video && cd /tmp/video
+          python3 - <<'PY'
+          import random
+          def ts(ms): return "%02d:%02d:%02d,%03d"%(ms//3600000,ms//60000%60,ms//1000%60,ms%1000)
+          random.seed(7)
+          t=2000; starts=[]
+          for i in range(90):
+              starts.append(t); t+=random.choice([3200,4100,5300,6700,7900,9100,11300])
+          def mk(name, tag, shift):
+              out=[]
+              for i,a0 in enumerate(starts):
+                  a=a0+shift; end=(starts[i+1] if i+1<len(starts) else a0+6000)+shift-150
+                  out.append("%d\n%s --> %s\nVocê não sabe o que ela fez para nós, mas eu também estou aqui [%s %02d]\ne isso é uma linha de baixo que tem de ficar inteira, com você\n"%(i+1,ts(a),ts(end),tag,i+1))
+              open(name,"w").write("\n".join(out))
+          mk("ref.srt","REF",0); mk("a1.srt","ALFA",0); mk("a2.srt","CHARLIE",0); mk("b.srt","BRAVO",4000); mk("emb.srt","EMB",0)
+          PY
+          ffmpeg -loglevel error -f lavfi -i testsrc2=size=1280x720:rate=24 -f lavfi -i sine=frequency=440:sample_rate=48000 -t 300 -c:v libx264 -preset veryfast -pix_fmt yuv420p -c:a aac teste.mkv
+          ffmpeg -loglevel error -f lavfi -i testsrc2=size=1920x804:rate=24 -f lavfi -i sine=frequency=440:sample_rate=48000 -t 200 -c:v libx264 -preset veryfast -pix_fmt yuv420p -c:a aac wide.mkv
+          ffmpeg -loglevel error -i teste.mkv -i emb.srt -map 0 -map 1 -c copy -c:s srt -metadata:s:s:0 language=por -disposition:s:0 default emb.mkv
+          nohup npx --yes http-server -p 8000 -s /tmp/video >/dev/null 2>&1 &
+          sleep 8; curl -sI http://127.0.0.1:8000/teste.mkv | head -1
+      - name: KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules && sudo udevadm trigger --name-match=kvm
+      - name: Emulador de celular
+        if: matrix.perfil == 'tel'
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 30
+          target: google_apis
+          arch: x86
+          profile: pixel_4
+          disable-animations: true
+          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
+          script: bash tools/legendas-painel-test/run.sh tel appsrc/android/app/build/outputs/apk/release/app-release.apk
+      - name: Emulador de TV
+        if: matrix.perfil == 'tv'
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 30
+          target: android-tv
+          arch: x86
+          profile: tv_1080p
+          disable-animations: true
+          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
+          script: bash tools/legendas-painel-test/run.sh tv appsrc/android/app/build/outputs/apk/release/app-release.apk
+      - name: Publicar as fotos
+        if: always()
+        run: |
+          cd shots || exit 0
+          git init -q -b x && git add -A
+          git -c user.name=ci -c user.email=ci@x commit -qm fotos
+          git push -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" x:${{ github.event.inputs.out_branch || 'legendas-painel-out' }}-${{ matrix.perfil }}-${{ matrix.versao }}
