@@ -1539,12 +1539,18 @@ public class PlayerActivity extends Activity {
     // da vista das LEGENDAS (a segunda SurfaceView do VLC): a vista do vídeo, a superfície e a escala não são tocadas.
     private static final boolean RAISE_SUBS = true;
 
+    private String lastViewsLog = "";
+
     private View subsView() {
         if (videoLayout == null) return null;
         ArrayList<View> found = new ArrayList<>();
         collectVideoViews(videoLayout, found);
         View vid = findVideoView(videoLayout);
-        for (View c : found) if (c != vid && c instanceof android.view.SurfaceView) return c;
+        StringBuilder sb = new StringBuilder("vistas do vídeo:");
+        for (View c : found) sb.append(' ').append(c.getClass().getSimpleName()).append(c == vid ? "(vídeo)" : "");
+        if (!sb.toString().equals(lastViewsLog)) { lastViewsLog = sb.toString(); glog(lastViewsLog); }
+        // a vista das legendas é a outra (SurfaceView no celular; na TV pode ser outra TextureView)
+        for (View c : found) if (c != vid) return c;
         return null;
     }
 
@@ -1556,7 +1562,7 @@ public class PlayerActivity extends Activity {
             float ty = 0f;
             if (up) {
                 int h = ((View) controls).getHeight(), top = bottomBar == null ? 0 : bottomBar.getTop();
-                ty = h > 0 && top > 0 ? -(h - top - dp(30)) : -dp(96);
+                ty = h > 0 && top > 0 ? -(h - top - dp(72)) : -dp(96);
                 ty = Math.max(ty, -dp(160));
             }
             sv.animate().cancel();

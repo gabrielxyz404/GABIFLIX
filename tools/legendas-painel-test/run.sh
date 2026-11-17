@@ -19,6 +19,9 @@ show_controls() {
   if [ "$P" = tel ]; then xy=$(dump | python3 $UI xy "Voltar"); [ -z "$xy" ] && adb shell input tap $((W/2)) $((H/3)); else key DPAD_DOWN; fi
   sleep 1
 }
+open_subs() {  # abre o painel (a barra de baixo não aparece no dump da TV: vai por teclas)
+  if [ "$P" = tel ]; then click "Legendas"; else key DPAD_DOWN DPAD_DOWN DPAD_CENTER; sleep 1; fi
+}
 click() {  # texto exato na tela: toque (celular) ou navegação do controle (TV)
   if [ "$P" = tel ]; then
     for t in 1 2 3; do xy=$(dump | python3 $UI xy "$1"); [ -n "$xy" ] && break; show_controls; done
@@ -57,7 +60,7 @@ adb shell input keyevent KEYCODE_MEDIA_PAUSE; sleep 2
 snap legenda-normal-sem-controles 1
 show_controls; snap barra-sem-sincronizar 1
 snap legenda-subida-com-controles 0.5
-click "Legendas"; sleep 1.5
+open_subs; sleep 1.5
 snap painel-aberto 1
 click "Sincronizar automaticamente"
 snap auto-a-sincronizar 0.3
@@ -95,7 +98,7 @@ adb shell dumpsys activity activities | grep -E "mResumedActivity|topResumed" | 
 launch teste.mkv "a1.srt,a2.srt,b.srt"
 sleep 40
 adb shell input keyevent KEYCODE_MEDIA_PAUSE; sleep 2
-show_controls; click "Legendas"; sleep 1.5
+show_controls; open_subs; sleep 1.5
 click "Sincronizar automaticamente"; sleep 4
 snap auto-nao-consegui 0.5
 adb shell input keyevent KEYCODE_BACK; sleep 1
@@ -104,10 +107,10 @@ adb shell input keyevent KEYCODE_BACK; sleep 1
 launch emb.mkv "a1.srt"
 sleep 40
 adb shell input keyevent KEYCODE_MEDIA_PAUSE; sleep 2
-show_controls; click "Legendas"; sleep 1.5
+show_controls; open_subs; sleep 1.5
 snap embutida-auto-desligado 0.5
 adb shell input keyevent KEYCODE_BACK; sleep 1
-adb logcat -d | grep -E "GabiFlixPlayer|GFPlayer" | grep -E "painel|sincroniza|atraso|embutida" > $OUT/log.txt
+adb logcat -d | grep -E "GabiFlixPlayer|GFPlayer" | grep -E "painel|sincroniza|atraso|embutida|vistas" > $OUT/log.txt
 adb logcat -d | grep -E "FATAL EXCEPTION|AndroidRuntime" | head -40 > $OUT/crash.txt
 cat $OUT/passos.txt $OUT/crash.txt
 exit 0
