@@ -10,6 +10,7 @@ adb install -r "$APK"
 if [ "$P" = tel ]; then adb shell wm size 1080x2400; adb shell wm density 420; fi
 adb shell wm size > $OUT/$P-wm.txt
 adb shell settings put global hide_error_dialogs 1
+adb shell settings put secure immersive_mode_confirmations confirmed
 adb shell pm disable-user --user 0 com.google.android.apps.nexuslauncher >/dev/null 2>&1
 BAD=0; N=0
 dump() { adb shell uiautomator dump /sdcard/u.xml >/dev/null 2>&1; adb shell cat /sdcard/u.xml 2>/dev/null; }
