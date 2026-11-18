@@ -357,6 +357,7 @@ public class PlayerActivity extends Activity {
                     glog("teste: " + kind + " " + val + " (tempo " + player.getTime() + " ms)");
                     if ("delay".equals(kind)) changeSubDelay((int) val, false, panelValue);
                     else if ("seek".equals(kind)) player.setTime(val * 1000);
+                    else if ("tela".equals(kind)) { scaleIndex = (int) val % SCALE_NAMES.length; glog("tela: modo " + SCALE_NAMES[scaleIndex]); applyScale(); }   // só nos testes (igual ao botão Tela)
                 }, Long.parseLong(a[2]));
             } catch (Throwable t) { glog("teste: roteiro inválido " + tok); }
         }
