@@ -1757,8 +1757,9 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
         let nFit = min(Double(viewH) / fh, Double(viewW) / (fw * pixelAspect))
         let minCh = Double(viewH) / (nFit * PlayerWindowController.zoomMax)
         if ch < minCh { ch = minCh; cw = ch * rp }
-        if cw > fw { cw = fw; ch = cw / rp }
-        if ch > fh { ch = fh; cw = ch * rp }
+        // cada dimensão é limitada ao quadro sozinha (sem manter a proporção da janela): assim o zoom nunca passa do limite; se as duas passam
+        // do quadro, o recorte é o quadro inteiro (= Normal) e o VLC põe as barras da janela
+        cw = min(cw, fw); ch = min(ch, fh)
         let cx = ax + aw / 2, cy = ay + ah / 2
         var x = Int((cx - cw / 2).rounded()), y = Int((cy - ch / 2).rounded())
         var iw = Int(cw.rounded()), ih = Int(ch.rounded())
