@@ -20,13 +20,15 @@ import java.util.concurrent.Executors;
  * Protocolo (Messenger): CAPTURE (com replyTo) -> REPLY; CANCEL, RESET e CLOSE não esperam resposta.
  */
 public final class AudioCapService extends Service {
-    static final int MSG_CAPTURE = 1, MSG_CANCEL = 2, MSG_RESET = 3, MSG_CLOSE = 4, MSG_REPLY = 10;
+    static final int MSG_CAPTURE = 1, MSG_CANCEL = 2, MSG_RESET = 3, MSG_CLOSE = 4, MSG_VAD = 5, MSG_REPLY = 10;
 
     private static volatile boolean alive;
     private HandlerThread ctl;
     private Messenger messenger;
     private AudioCapEngine engine;
     private ExecutorService worker;
+    /** o Silero (ONNX Runtime, código nativo) também vive AQUI: uma queda ou falta de memória dele nunca fecha o player */
+    private io.github.gabrielxyz404.gabiflix.audiosync.SileroVad vad;
 
     @Override public void onCreate() {
         super.onCreate();
@@ -44,6 +46,7 @@ public final class AudioCapService extends Service {
                 try {
                     switch (m.what) {
                         case MSG_CAPTURE: capture(m); break;
+                        case MSG_VAD: vad(m); break;
                         case MSG_CANCEL: engine.cancel(); break;
                         case MSG_RESET: engine.reset(); break;
                         case MSG_CLOSE: engine.cancel(); break;
@@ -80,12 +83,56 @@ public final class AudioCapService extends Service {
         });
     }
 
+    /** PCM s16le (ficheiro) -> probabilidade de fala a cada 10 ms (ficheiro de floats little-endian) */
+    private void vad(Message m) {
+        final Messenger to = m.replyTo;
+        final Bundle b = m.getData();
+        worker.execute(() -> {
+            Bundle r = new Bundle();
+            r.putInt("id", b.getInt("id"));
+            try {
+                java.io.File in = new java.io.File(b.getString("in")), out = new java.io.File(b.getString("out"));
+                byte[] raw = new byte[(int) in.length()];
+                try (java.io.FileInputStream fi = new java.io.FileInputStream(in)) { int o = 0, n; while (o < raw.length && (n = fi.read(raw, o, raw.length - o)) > 0) o += n; }
+                short[] pcm = new short[raw.length / 2];
+                java.nio.ByteBuffer.wrap(raw).order(java.nio.ByteOrder.LITTLE_ENDIAN).asShortBuffer().get(pcm);
+                if (vad == null) {
+                    byte[] model;
+                    try (java.io.InputStream is = getAssets().open("silero_vad.onnx")) {
+                        java.io.ByteArrayOutputStream bo = new java.io.ByteArrayOutputStream(2_400_000);
+                        byte[] buf = new byte[65536];
+                        int n;
+                        while ((n = is.read(buf)) > 0) bo.write(buf, 0, n);
+                        model = bo.toByteArray();
+                    }
+                    vad = new io.github.gabrielxyz404.gabiflix.audiosync.SileroVad(model);
+                }
+                float[] p = vad.speechProb(pcm, pcm.length, 16000);
+                java.nio.ByteBuffer bb = java.nio.ByteBuffer.allocate(p.length * 4).order(java.nio.ByteOrder.LITTLE_ENDIAN);
+                bb.asFloatBuffer().put(p);
+                try (java.io.FileOutputStream fo = new java.io.FileOutputStream(out)) { fo.write(bb.array()); }
+                r.putBoolean("ok", true);
+                r.putString("end", "silero");
+            } catch (Throwable t) {
+                r.putBoolean("ok", false);
+                r.putString("end", "silero indisponível: " + t);
+            }
+            try {
+                Message rm = Message.obtain(null, MSG_REPLY);
+                rm.setData(r);
+                if (to != null) to.send(rm);
+            } catch (Throwable ignored) {}
+        });
+    }
+
     @Override public IBinder onBind(Intent intent) { return messenger.getBinder(); }
 
     @Override public void onDestroy() {
         try { engine.cancel(); } catch (Throwable ignored) {}
         try { worker.shutdownNow(); } catch (Throwable ignored) {}
         try { AudioCapEngine.close(); } catch (Throwable ignored) {}
+        try { if (vad != null) vad.close(); } catch (Throwable ignored) {}
+        vad = null;
         try { ctl.quit(); } catch (Throwable ignored) {}
         super.onDestroy();
         alive = false;
