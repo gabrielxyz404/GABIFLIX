@@ -3,6 +3,10 @@
 import Cocoa
 import VLCKit
 
+/** ajudante em Objective-C (mac/shim/trycatch.m): fotografia do VLC que devolve um código em vez de lançar a exceção "No video output" */
+@_silgen_name("fp_try_snapshot")
+private func fpTrySnapshot(_ player: AnyObject, _ path: NSString, _ w: UInt, _ h: UInt) -> Int32
+
 /** Vista principal do player: recebe teclado e mouse */
 final class PlayerRootView: NSView {
     var onKey: ((NSEvent) -> Bool)?
@@ -98,6 +102,10 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
     private var barBusy = false
     private var srcSize = CGSize.zero
     private var pixelAspect = 1.0
+    private var cropRect: (x0: Double, y0: Double, x1: Double, y1: Double)? = nil   // recorte atual, em fração do quadro
+    private var cropGen = 0
+    private var snapWorld = 0   // 0 = ainda não se sabe, 1 = a fotografia é do quadro inteiro, 2 = só da parte recortada
+    private var barSamplesGen = -1   // só mexe na barQueue
     private let barQueue = DispatchQueue(label: "frameplay.barras", qos: .utility)
     private var barSamples: [(rows: [Bool], cols: [Bool])] = []   // só mexe na barQueue
     private var scaleForce = 0
@@ -1348,12 +1356,10 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
             if mode == "bg" {
                 DispatchQueue.global().async { [weak self] in
                     guard let self = self else { return }
-                    self.player.saveVideoSnapshot(at: path, withWidth: 192, andHeight: 0)
-                    self.log("snap: bg ok")
+                    self.log("snap: bg código=\(fpTrySnapshot(self.player, path as NSString, 192, 0))")
                 }
             } else {
-                player.saveVideoSnapshot(at: path, withWidth: 192, andHeight: 0)
-                log("snap: main ok")
+                log("snap: main código=\(fpTrySnapshot(player, path as NSString, 192, 0))")
             }
         case "sync": showSyncPanel()
         case "speech":
@@ -1439,17 +1445,20 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
     private func applyScale(force: Bool = false) {
         let w = Int(videoView.bounds.width.rounded()), h = Int(videoView.bounds.height.rounded())
         if w <= 0 || h <= 0 { return }
+        // tamanho do quadro (pixels do vídeo) lido enquanto ainda não há recorte, para não confundir com o quadro já recortado
+        if lastCropSet == nil { let vs = player.videoSize; if vs.width > 0 && vs.height > 0 { srcSize = vs } }
         let key = "\(w)x\(h)/\(scaleMode)/\(barsKey())"
         if !force && lastScaleKey == key { return }
         lastScaleKey = key
         videoView.fillScreen = false
         player.videoAspectRatio = nil
-        // tamanho do quadro (pixels do vídeo) lido enquanto ainda não há recorte, para não confundir com o quadro já recortado
-        if lastCropSet == nil { let vs = player.videoSize; if vs.width > 0 && vs.height > 0 { srcSize = vs } }
         var crop: String? = nil
-        if scaleMode == 1 { crop = cropGeometry(viewW: w, viewH: h) }
+        var rect: (x0: Double, y0: Double, x1: Double, y1: Double)? = nil
+        if scaleMode == 1, let c = cropGeometry(viewW: w, viewH: h) { crop = c.0; rect = c.1 }
         if crop != lastCropSet || force {
             lastCropSet = crop
+            cropRect = rect
+            cropGen += 1   // as amostras de barras recomeçam: eram de outro enquadramento
             if let c = crop { c.withCString { player.videoCropGeometry = UnsafeMutablePointer(mutating: $0) } }
             else { player.videoCropGeometry = nil }
         }
@@ -1473,6 +1482,8 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
     // ---------- barras pretas gravadas dentro do vídeo ----------
     // Amostras pequenas (fotografia do VLC, 192 px de largura) feitas fora da thread principal, de 2 em 2 s no início e depois de 20 em 20 s.
     // Uma linha/coluna só é "barra" se foi preta em TODAS as últimas 8 amostras (mínimo 3): cenas escuras não criam barras falsas.
+    // A fotografia pode vir do quadro inteiro ou só da parte recortada (depende do VLC): o tamanho dela diz qual dos dois (snapWorld),
+    // e as barras são sempre guardadas em fração do quadro inteiro.
     private static let barMinSamples = 3, barMaxSamples = 8, barLuma = 40
 
     private func barsKey() -> String { String(format: "%.3f/%.3f/%.3f/%.3f", bars.t, bars.b, bars.l, bars.r) }
@@ -1487,29 +1498,48 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
         barTimer = t
     }
 
+    /** teste automático sem placa gráfica (FP_SNAP_SIM = pasta): o "VLC" é simulado por um script que lê pedido.txt e escreve resposta.png */
+    private static func simSnapshot(dir: String, path: String, crop: String) -> Int32 {
+        let req = dir + "/pedido.txt", resp = dir + "/resposta.png"
+        try? FileManager.default.removeItem(atPath: resp)
+        do { try crop.write(toFile: req, atomically: true, encoding: .utf8) } catch { return -4 }
+        for _ in 0..<80 {
+            if FileManager.default.fileExists(atPath: resp) {
+                usleep(100_000)
+                try? FileManager.default.moveItem(atPath: resp, toPath: path)
+                return 0
+            }
+            usleep(100_000)
+        }
+        return -5
+    }
+
     private func barTick() {
         barTicks += 1
         scheduleBarTick()
-        guard scaleMode == 1, startedPlaying, !finished, player.isPlaying, !barBusy, ProcessInfo.processInfo.environment["FP_NO_BARS"] == nil else { return }
-        // tamanho do quadro (pixels do vídeo) medido enquanto ainda não há recorte, para não confundir com o quadro já recortado
-        let vs = player.videoSize
-        if lastCropSet == nil, vs.width > 0, vs.height > 0 { srcSize = vs }
+        let env = ProcessInfo.processInfo.environment
+        guard scaleMode == 1, startedPlaying, !finished, player.isPlaying, !barBusy, env["FP_NO_BARS"] == nil else { return }
+        // sem o tamanho do quadro ou com um recorte que não conhecemos: não se mede
+        if srcSize.width < 16 || srcSize.height < 16 || (lastCropSet != nil && cropRect == nil) { return }
         barBusy = true
         let path = NSTemporaryDirectory() + "frameplay-barras-\(ProcessInfo.processInfo.processIdentifier).png"
-        let wasCropped = lastCropSet != nil
-        let vsNow = vs
-        let tickNo = barTicks
+        let gen = cropGen, rect = cropRect, tickNo = barTicks, cropNow = lastCropSet ?? "none"
+        let sim = env["FP_SNAP_SIM"]
         barQueue.async { [weak self] in
             guard let self = self else { return }
             try? FileManager.default.removeItem(atPath: path)
-            self.player.saveVideoSnapshot(at: path, withWidth: 192, andHeight: 0)
-            let res = self.analyzeSnapshot(path: path)
+            // sem saída de vídeo (ou a mudar): o ajudante devolve erro em vez de a exceção fechar o app
+            var rc: Int32 = -3
+            if let d = sim { rc = PlayerWindowController.simSnapshot(dir: d, path: path, crop: cropNow) }
+            else if self.player.hasVideoOut { rc = fpTrySnapshot(self.player, path as NSString, 192, 0) }
+            if rc != 0 { self.log("barras: sem fotografia (código \(rc))") }
+            let res = rc == 0 ? self.analyzeSnapshot(path: path, gen: gen) : nil
             // só no teste automático: guarda as primeiras fotografias para se ver o que o VLC mede
             if PlayerWindowController.testLog && tickNo <= 14 { try? FileManager.default.copyItem(atPath: path, toPath: "/tmp/frameplay-snap-\(tickNo).png") }
             try? FileManager.default.removeItem(atPath: path)
             DispatchQueue.main.async {
                 self.barBusy = false
-                if let r = res { self.barResult(r, wasCropped: wasCropped, videoSizeNow: vsNow) }
+                if let r = res { self.barResult(r, gen: gen, rect: rect) }
             }
         }
     }
@@ -1519,10 +1549,11 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
     private static func lead(_ a: [Bool]) -> Int { var n = 0; while n < a.count && !a[n] { n += 1 }; return n == a.count ? 0 : n }
     private static func trail(_ a: [Bool]) -> Int { var n = 0; while n < a.count && !a[a.count - 1 - n] { n += 1 }; return n == a.count ? 0 : n }
 
-    /** fila de fundo: lê a fotografia, regista que linhas/colunas têm algo que não é preto e, com amostras suficientes, devolve as barras (fração do quadro) */
-    private func analyzeSnapshot(path: String) -> BarResult? {
+    /** fila de fundo: lê a fotografia, regista que linhas/colunas têm algo que não é preto e, com amostras suficientes, devolve as barras
+        (fração da própria fotografia). As amostras recomeçam quando o recorte muda (gen). */
+    private func analyzeSnapshot(path: String, gen: Int) -> BarResult? {
         guard let src = CGImageSourceCreateWithURL(URL(fileURLWithPath: path) as CFURL, nil), let img = CGImageSourceCreateImageAtIndex(src, 0, nil) else {
-            log("barras: sem fotografia"); return nil }
+            log("barras: ficheiro da fotografia ilegível"); return nil }
         let w = img.width, h = img.height
         guard w >= 32, h >= 16, w <= 2000, h <= 2000 else { return nil }
         var px = [UInt8](repeating: 0, count: w * h * 4)
@@ -1550,9 +1581,9 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
             for y in y0..<y1 where luma(x, y) > thr { c += 1 }
             cols[x] = c * 100 > (y1 - y0) * 2
         }
-        log("barras: fotografia \(w)x\(h) linhas-com-imagem=\(any)")
         // quadro quase todo preto (fade, transição): não conta
-        if any * 100 < h * 8 { return nil }
+        if any * 100 < h * 8 { log("barras: fotografia \(w)x\(h) quase toda preta, ignorada"); return nil }
+        if barSamplesGen != gen { barSamples.removeAll(); barSamplesGen = gen }
         if let f = barSamples.first, f.rows.count != h || f.cols.count != w { barSamples.removeAll() }
         barSamples.append((rows, cols))
         while barSamples.count > PlayerWindowController.barMaxSamples { barSamples.removeFirst() }
@@ -1570,43 +1601,61 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
         if b > 0 { b += 1.0 / Double(h) }
         if l > 0 { l += 1.0 / Double(w) }
         if r > 0 { r += 1.0 / Double(w) }
-        if t < 0.015 { t = 0 }
-        if b < 0.015 { b = 0 }
-        if l < 0.015 { l = 0 }
-        if r < 0.015 { r = 0 }
-        // na dúvida, sem barras: sobraria pouco da imagem
-        if 1 - t - b < 0.35 || 1 - l - r < 0.35 { t = 0; b = 0; l = 0; r = 0 }
-        // barras de cima e de baixo vêm sempre em par (a legenda "suja" a de baixo): sem a de cima não se confia na de baixo
-        if t == 0 { b = 0 } else if t > b { b = t }
         res.t = t; res.b = b; res.l = l; res.r = r
         return res
     }
 
-    private func barResult(_ r: BarResult, wasCropped: Bool, videoSizeNow: CGSize) {
-        if scaleMode != 1 { return }
-        if !wasCropped && srcSize.width > 0 && srcSize.height > 0 && r.h > 0 {
-            // proporção dos pixels (SAR): proporção da fotografia dividida pela do quadro em pixels
-            let pa = (Double(r.w) / Double(r.h)) / (Double(srcSize.width) / Double(srcSize.height))
+    /** thread principal: põe o resultado da fotografia em fração do QUADRO INTEIRO e, se as barras mudaram, refaz o recorte */
+    private func barResult(_ r: BarResult, gen: Int, rect: (x0: Double, y0: Double, x1: Double, y1: Double)?) {
+        if scaleMode != 1 || gen != cropGen { return }   // o recorte mudou entretanto: amostra de outro enquadramento
+        if r.samples < PlayerWindowController.barMinSamples { return }
+        let fw = Double(srcSize.width), fh = Double(srcSize.height)
+        let s = Double(r.w) / Double(r.h), frameAspect = fw / fh
+        var R = (x0: 0.0, y0: 0.0, x1: 1.0, y1: 1.0)
+        if let c = rect, c.x1 - c.x0 < 0.98 || c.y1 - c.y0 < 0.98 {
+            // recorte menor que o quadro: a fotografia é do quadro inteiro (mundo 1) ou só da parte recortada (mundo 2)? O formato diz.
+            let cropAspect = (c.x1 - c.x0) * fw / ((c.y1 - c.y0) * fh)
+            let isFrame = abs(s / (frameAspect * pixelAspect) - 1) < 0.03, isCrop = abs(s / (cropAspect * pixelAspect) - 1) < 0.03
+            if isFrame && !isCrop { snapWorld = 1 } else if isCrop && !isFrame { snapWorld = 2 }
+            else if snapWorld == 0 { log("barras: fotografia \(r.w)x\(r.h) ambígua, ignorada"); return }
+            if snapWorld == 2 { R = c }
+        } else {
+            // quadro inteiro: a proporção da fotografia dá a proporção dos pixels (SAR)
+            let pa = s / frameAspect
             pixelAspect = (pa > 0.5 && pa < 2) ? (abs(pa - 1) < 0.02 ? 1 : pa) : 1
         }
-        if r.samples < PlayerWindowController.barMinSamples { return }
-        let ch = abs(r.t - bars.t) > 0.004 || abs(r.b - bars.b) > 0.004 || abs(r.l - bars.l) > 0.004 || abs(r.r - bars.r) > 0.004
+        let rw = R.x1 - R.x0, rh = R.y1 - R.y0
+        // fração do quadro: com barra medida, a borda dela; sem barra na fotografia, o que já se sabia (nunca mais do que a borda da fotografia)
+        var t = r.t > 0 ? R.y0 + r.t * rh : min(bars.t, R.y0)
+        var b = r.b > 0 ? (1 - R.y1) + r.b * rh : min(bars.b, 1 - R.y1)
+        var l = r.l > 0 ? R.x0 + r.l * rw : min(bars.l, R.x0)
+        var rr = r.r > 0 ? (1 - R.x1) + r.r * rw : min(bars.r, 1 - R.x1)
+        if t < 0.015 { t = 0 }
+        if b < 0.015 { b = 0 }
+        if l < 0.015 { l = 0 }
+        if rr < 0.015 { rr = 0 }
+        // na dúvida, sem barras: sobraria pouco da imagem
+        if 1 - t - b < 0.35 || 1 - l - rr < 0.35 { t = 0; b = 0; l = 0; rr = 0 }
+        // barras de cima e de baixo vêm sempre em par (a legenda "suja" a de baixo): sem a de cima não se confia na de baixo
+        if t == 0 { b = 0 } else if t > b { b = t }
+        let ch = abs(t - bars.t) > 0.004 || abs(b - bars.b) > 0.004 || abs(l - bars.l) > 0.004 || abs(rr - bars.r) > 0.004
         if ch {
-            bars = (r.t, r.b, r.l, r.r)
-            log("barras: cima \(String(format: "%.3f", r.t)) baixo \(String(format: "%.3f", r.b)) esq \(String(format: "%.3f", r.l)) dir \(String(format: "%.3f", r.r)) (amostras \(r.samples), fotografia \(r.w)x\(r.h), vídeo \(Int(srcSize.width))x\(Int(srcSize.height)), agora \(Int(videoSizeNow.width))x\(Int(videoSizeNow.height)), recortado \(wasCropped ? 1 : 0))")
+            bars = (t, b, l, rr)
+            log("barras: cima \(String(format: "%.3f", t)) baixo \(String(format: "%.3f", b)) esq \(String(format: "%.3f", l)) dir \(String(format: "%.3f", rr)) (amostras \(r.samples), fotografia \(r.w)x\(r.h), mundo \(snapWorld), vídeo \(Int(fw))x\(Int(fh)))")
             applyScale()
         }
     }
 
-    /** recorte "LxA+X+Y" (pixels do vídeo): a imagem real (sem as barras) cobre a vista com a proporção dela, centrada, sem esticar */
-    private func cropGeometry(viewW: Int, viewH: Int) -> String? {
+    /** recorte "LxA+X+Y" (pixels do vídeo): a imagem real (sem as barras) cobre a vista com a proporção dela, centrada, sem esticar.
+        Devolve também o recorte em fração do quadro (nil se só se conhece a proporção da vista). */
+    private func cropGeometry(viewW: Int, viewH: Int) -> (String, (x0: Double, y0: Double, x1: Double, y1: Double)?)? {
         let ratio = "\(viewW):\(viewH)"
         let fw = Double(srcSize.width), fh = Double(srcSize.height)
         // sem o tamanho do vídeo (ainda a abrir): só a proporção da vista (recorte centrado sobre o quadro todo)
-        if fw < 16 || fh < 16 { return ratio }
+        if fw < 16 || fh < 16 { return (ratio, nil) }
         let ax = bars.l * fw, ay = bars.t * fh
         let aw = fw - ax - bars.r * fw, ah = fh - ay - bars.b * fh
-        if aw < 16 || ah < 16 { return ratio }
+        if aw < 16 || ah < 16 { return (ratio, nil) }
         // proporção da vista em pixels do vídeo (a proporção dos pixels pode não ser 1:1)
         let rp = Double(viewW) / Double(viewH) / pixelAspect
         var cw = aw, ch = aw / rp
@@ -1616,7 +1665,7 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
         var iw = Int(cw.rounded()), ih = Int(ch.rounded())
         iw = max(16, min(Int(fw), iw)); ih = max(16, min(Int(fh), ih))
         x = max(0, min(Int(fw) - iw, x)); y = max(0, min(Int(fh) - ih, y))
-        return "\(iw)x\(ih)+\(x)+\(y)"
+        return ("\(iw)x\(ih)+\(x)+\(y)", (Double(x) / fw, Double(y) / fh, Double(x + iw) / fw, Double(y + ih) / fh))
     }
 
     private static func get(_ url: URL) -> Data? {

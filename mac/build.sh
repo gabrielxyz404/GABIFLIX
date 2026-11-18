@@ -51,11 +51,14 @@ if [ "${FRAMEPLAY_NO_ORT:-0}" != "1" ]; then
 fi
 echo "ORT_OK=$ORT_OK"
 
+# 1c) pequeno ajudante em Objective-C: apanha a exceção do VLCKit ao pedir uma fotografia sem saída de vídeo (ver shim/trycatch.m)
+clang -c -fobjc-arc -O2 -target "${FRAMEPLAY_ARCH:-arm64}-apple-macos11.0" shim/trycatch.m -o "$WORK/trycatch.o"
+
 # 2) compila o app
 SWIFT_COMMON=(-O -target "$ARCH-apple-macos11.0"
   -F "$WORK/fw" -framework VLCKit -framework WebKit -framework Cocoa
   -Xlinker -rpath -Xlinker @executable_path/../Frameworks)
-SWIFT_SRCS=(Sources/*.swift Sources/AudioSync/*.swift)
+SWIFT_SRCS=(Sources/*.swift Sources/AudioSync/*.swift "$WORK/trycatch.o")
 if [ "$ORT_OK" = "1" ]; then
   if ! swiftc "${SWIFT_COMMON[@]}" -import-objc-header ort/ort_bridge.h -Xcc -I"$ORT_FW/Headers" "${SWIFT_SRCS[@]}" -o "$WORK/FramePlay"; then
     echo "::warning::não compilou com o onnxruntime: refazendo sem ele (VAD por DSP)"

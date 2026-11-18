@@ -1,14 +1,11 @@
 name: Mac Preencher teste (sem publicar)
 
-# Compila o FramePlay.app do Mac "antes" (main) e "depois" (este commit) e tira fotos em Normal e Preencher, com a janela em 16:10,
-# de 4 vídeos sintéticos (2,39:1 com barras gravadas, 2,39:1 de verdade, 16:9, 4:3 com barras laterais) com legenda PT de 3 linhas.
-# NÃO publica o app. As fotos vão para o branch mac-preencher-out.
+# Compila o FramePlay.app do Mac deste commit e testa o Preencher com 4 vídeos sintéticos (2,39:1 com barras gravadas, 2,39:1 de verdade,
+# 16:9, 4:3 com barras laterais) e legenda PT de 3 linhas, com a janela em 16:10. O GitHub não tem placa gráfica (o VLC não tem saída de
+# vídeo): as fotografias do VLC são simuladas com o ffmpeg e as imagens finais são compostas com o recorte que o app calculou.
+# NÃO publica o app. Os resultados vão para o branch mac-preencher-out.
 on:
   workflow_dispatch:
-    inputs:
-      antes_ref:
-        description: commit do app "antes"
-        default: main
   push:
     branches: [mac-preencher-run]
 
@@ -21,30 +18,18 @@ jobs:
     timeout-minutes: 90
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.inputs.antes_ref || 'main' }}
-          path: antes
-      - name: Montar o app depois
+      - name: Montar o app
         env:
           FRAMEPLAY_VERSION: 0.0.${{ github.run_number }}
           FRAMEPLAY_BUILD: ${{ github.run_number }}
         run: |
           set -o pipefail
-          ./mac/build.sh 2>&1 | tee build-depois.log
+          ./mac/build.sh 2>&1 | tee build.log
           mkdir -p /tmp/apps && cp -R mac/build/FramePlay.app /tmp/apps/depois.app
-      - name: Montar o app antes
-        env:
-          FRAMEPLAY_VERSION: 0.0.${{ github.run_number }}
-          FRAMEPLAY_BUILD: ${{ github.run_number }}
-        run: |
-          set -o pipefail
-          (cd antes && ./mac/build.sh 2>&1 | tee ../build-antes.log)
-          cp -R antes/mac/build/FramePlay.app /tmp/apps/antes.app
       - name: Mostrar o erro (se houver)
         if: failure()
         run: |
-          grep -n -E "error:|fatal|No such|cannot find" build-depois.log build-antes.log | sort -u | head -60 | while IFS= read -r line; do
+          grep -n -E "error:|fatal|No such|cannot find" build.log | sort -u | head -60 | while IFS= read -r line; do
             echo "::error::$(echo "$line" | cut -c1-900)"
           done
       - name: Vídeos de teste
@@ -53,18 +38,18 @@ jobs:
           bash tools/mac-preencher-test/videos.sh /tmp/srv
           nohup python3 tools/mac-preencher-test/serve.py /tmp/srv > /tmp/srv.log 2>&1 &
           sleep 2; curl -sI http://127.0.0.1:8765/barra.mkv | head -1
-      - name: Fotos do antes
-        run: bash tools/mac-preencher-test/run.sh /tmp/apps/antes.app antes /tmp/telas/antes
-      - name: Fotos do depois
-        run: bash tools/mac-preencher-test/run.sh /tmp/apps/depois.app depois /tmp/telas/depois
-      - name: Guardar as telas no branch mac-preencher-out
+      - name: Testar o app (fotografias simuladas)
+        run: bash tools/mac-preencher-test/run2.sh /tmp/apps/depois.app /tmp/telas/logs
+      - name: Compor as imagens
+        run: python3 tools/mac-preencher-test/compose.py /tmp/telas/logs /tmp/srv /tmp/telas/imagens
+      - name: Guardar no branch mac-preencher-out
         if: always()
         env:
           TOKEN: ${{ github.token }}
         run: |
-          mkdir -p /tmp/telas && cp build-depois.log build-antes.log /tmp/telas/ 2>/dev/null || true
+          mkdir -p /tmp/telas && cp build.log /tmp/telas/ 2>/dev/null || true
           cd /tmp/telas
           git init -q && git checkout -q -b mac-preencher-out
           git config user.name "FramePlay CI"; git config user.email "ci@frameplay.local"
-          git add -A && git commit -qm "fotos do teste Preencher do Mac" || true
-          git push -q -f "https://x-access-token:${TOKEN}@github.com/${{ github.repository }}.git" mac-preencher-out || echo "::warning::não guardou as telas"
+          git add -A && git commit -qm "teste Preencher do Mac" || true
+          git push -q -f "https://x-access-token:${TOKEN}@github.com/${{ github.repository }}.git" mac-preencher-out || echo "::warning::não guardou"
