@@ -3,6 +3,8 @@ name: Teste Preencher TV com legenda embutida
 # A legenda EMBUTIDA no arquivo (desenhada pelo libVLC dentro do quadro) fica cortada nas laterais com o zoom do Preencher? Linhas de varios
 # tamanhos, em Normal e em Preencher, no emulador de TV. Mede a largura do texto e se encosta nas bordas. Nunca publica o app.
 on:
+  push:
+    branches: [preencher-emb-run]
   workflow_dispatch:
     inputs:
       out_branch:
