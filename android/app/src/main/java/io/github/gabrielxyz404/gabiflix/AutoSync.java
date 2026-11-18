@@ -21,7 +21,11 @@ final class AutoSync {
         /** atraso final da legenda (ms; positivo = aparece mais tarde); só vale com FIXED */
         final int delayMs;
         final String note;
-        Result(int status, int delayMs, String note) { this.status = status; this.delayMs = delayMs; this.note = note; }
+        /** frase pronta para o usuário (português simples) com o motivo exato; null = o painel usa o texto padrão */
+        final String userMsg;
+        Result(int status, int delayMs, String note) { this(status, delayMs, note, null); }
+        Result(int status, int delayMs, String note, String userMsg) { this.status = status; this.delayMs = delayMs; this.note = note; this.userMsg = userMsg; }
+        static Result failedMsg(String note, String userMsg) { return new Result(FAILED, 0, note, userMsg); }
         static Result fixed(int delayMs, String note) { return new Result(FIXED, delayMs, note); }
         static Result ok(String note) { return new Result(OK, 0, note); }
         static Result failed(String note) { return new Result(FAILED, 0, note); }

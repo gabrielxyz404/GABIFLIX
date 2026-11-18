@@ -589,7 +589,7 @@ public class PlayerActivity extends Activity {
         }
         if (subPanelOpen) {
             if (k == android.view.KeyEvent.KEYCODE_BACK) {
-                if (down && e.getRepeatCount() == 0) { panelBackEat = true; closeSubPanel(); }
+                if (down && e.getRepeatCount() == 0) { panelBackEat = true; if (detailsView != null) closeDetails(); else closeSubPanel(); }
                 return true;
             }
             switch (k) {
@@ -1034,6 +1034,11 @@ public class PlayerActivity extends Activity {
     private final ArrayList<PanelRow> panelRows = new ArrayList<>();
     private PlayerUi.Btn subsBtn;
     private boolean autoRunning = false, statusFixed = false;
+    /** o estado da sincronização automática pelo áudio, em português simples (null = nada a dizer); mostrado na linha de estado do painel */
+    private volatile String audioStatus;
+    private volatile int audioTone;
+
+    private static int toneColor(int tone) { return tone == AudioSyncAuto.TONE_GOOD ? 0xFF7BD88F : tone == AudioSyncAuto.TONE_WARN ? 0xFFFFC857 : 0xFFC8C8C8; }
     /** referências de tempo (outro idioma) baixadas pela thread de legendas; o motor automático usa as mesmas */
     private volatile ArrayList<long[]> refStartsAll = new ArrayList<>();
     private volatile ArrayList<SubtitleSync.Cand> candsSnap = new ArrayList<>();
@@ -1065,6 +1070,28 @@ public class PlayerActivity extends Activity {
             MediaPlayer.TrackDescription[] t = player.getSpuTracks();
             if (t != null) for (MediaPlayer.TrackDescription d : t) b.append(d.id).append(':').append(d.name).append(isDownloaded(d.id) ? "(baixada)" : "").append("; ");
             return b.append("] cand=").append(candForTrack(player.getSpuTrack(), t) != null).toString();
+        }
+        @Override public int audioTrackId() {
+            if (player == null) return -1;
+            try {
+                // só nos testes: usa a N-ésima faixa de áudio da lista (para provar a captura da dublagem sem mexer no que toca)
+                String idx = getIntent().getStringExtra("gfAudioTrackIdx");
+                if (idx != null) {
+                    int n = 0, want = Integer.parseInt(idx);
+                    MediaPlayer.TrackDescription[] t = player.getAudioTracks();
+                    if (t != null) for (MediaPlayer.TrackDescription d : t) if (d.id != -1 && n++ == want) return d.id;
+                }
+                return player.getAudioTrack();
+            } catch (Throwable e) { return -1; }
+        }
+        @Override public void status(String text, int tone) {
+            audioStatus = text;
+            audioTone = tone;
+            ui.post(() -> {
+                if (!subPanelOpen || panelStatus == null) return;
+                if (autoRunning && text != null) setAutoStatus(text, toneColor(tone));   // o botão está rodando: o andamento aparece na linha de estado
+                else if (!statusFixed) refreshSubPanel();
+            });
         }
         @Override public long lostFrames() {
             try {
@@ -1104,8 +1131,60 @@ public class PlayerActivity extends Activity {
         }
     }
 
+    private View detailsView;
+
+    /** tela de diagnóstico: versão, aparelho, rede e as últimas linhas do registro do motor; um print dela basta para entender o que aconteceu */
+    private void showDetails() {
+        if (subPanel == null || detailsView != null) return;
+        StringBuilder b = new StringBuilder();
+        try {
+            android.net.ConnectivityManager cm = (android.net.ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
+            b.append("FramePlay ").append(BuildConfigHelper.versionName(this)).append(" · ").append(android.os.Build.MANUFACTURER).append(' ').append(android.os.Build.MODEL)
+                    .append(" · Android ").append(android.os.Build.VERSION.RELEASE).append(" · ").append(android.os.Build.SUPPORTED_ABIS.length > 0 ? android.os.Build.SUPPORTED_ABIS[0] : "?")
+                    .append(" · rede ").append(cm != null && cm.isActiveNetworkMetered() ? "com limite de dados" : "sem limite").append('\n');
+        } catch (Throwable ignored) {}
+        String u = url == null ? "?" : url;
+        try { Uri pu = Uri.parse(u); String path = pu.getLastPathSegment(); b.append("Fonte: ").append(pu.getHost()).append(" · ").append(path == null ? "?" : path.substring(Math.max(0, path.length() - 40))).append(" · duração ").append(player == null ? 0 : player.getLength() / 60000).append(" min\n"); } catch (Throwable ignored) {}
+        SubtitleSync.Cand c = activeCand();
+        b.append("Legenda: ").append(c == null ? (panelTrack == -1 ? "nenhuma" : "do próprio vídeo (não é analisada)") : "baixada").append(" · atraso ").append(delayLabel()).append('\n');
+        b.append("Estado: ").append(audioStatus == null ? "—" : audioStatus).append("\n\n");
+        String log = SubtitleSync.recent(70, "AUDIOSYNC");
+        b.append(log.isEmpty() ? "(o motor ainda não registou nada: ele começa ~25 s depois de a legenda baixada ficar ativa)\n" : log);
+        FrameLayout box = new FrameLayout(this);
+        box.setBackgroundColor(0xF5101012);
+        box.setClickable(true);
+        android.widget.ScrollView sv = new android.widget.ScrollView(this);
+        sv.setFocusable(true);
+        sv.setFocusableInTouchMode(false);
+        TextView tx = new TextView(this);
+        tx.setText(b.toString());
+        tx.setTextColor(0xFFE6E6E6);
+        tx.setTypeface(Typeface.MONOSPACE);
+        tx.setTextSize(TypedValue.COMPLEX_UNIT_SP, 9);
+        tx.setPadding(dp(14), dp(46), dp(14), dp(14));
+        sv.addView(tx);
+        box.addView(sv, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+        TextView x = syncButton("Fechar");
+        x.setTextSize(TypedValue.COMPLEX_UNIT_SP, 13);
+        x.setPadding(dp(14), dp(5), dp(14), dp(5));
+        x.setOnClickListener(v -> closeDetails());
+        FrameLayout.LayoutParams xl = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.TOP | Gravity.END);
+        xl.setMargins(dp(10), dp(8), dp(14), 0);
+        box.addView(x, xl);
+        subPanel.addView(box, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+        detailsView = box;
+        x.requestFocus();
+        sv.post(() -> sv.fullScroll(View.FOCUS_DOWN));   // o fim do registro (o mais recente) primeiro
+    }
+
+    private void closeDetails() {
+        if (detailsView != null && detailsView.getParent() != null) ((ViewGroup) detailsView.getParent()).removeView(detailsView);
+        detailsView = null;
+    }
+
     private void closeSubPanel() {
         if (!subPanelOpen) return;
+        detailsView = null;
         subPanelOpen = false;
         if (subPanel != null && subPanel.getParent() != null) ((ViewGroup) subPanel.getParent()).removeView(subPanel);
         subPanel = null;
@@ -1116,7 +1195,7 @@ public class PlayerActivity extends Activity {
 
     @Override
     public void onBackPressed() {
-        if (subPanelOpen) { closeSubPanel(); return; }
+        if (subPanelOpen) { if (detailsView != null) closeDetails(); else closeSubPanel(); return; }
         super.onBackPressed();
     }
 
@@ -1202,6 +1281,13 @@ public class PlayerActivity extends Activity {
         TextView title = text("Legendas", 19, true);
         title.setTypeface(PlayerUi.font(this, 600));
         head.addView(title, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
+        TextView details = syncButton("Detalhes");
+        details.setTextSize(TypedValue.COMPLEX_UNIT_SP, 13);
+        details.setPadding(dp(14), dp(5), dp(14), dp(5));
+        details.setOnClickListener(v -> showDetails());
+        LinearLayout.LayoutParams dtl = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        dtl.rightMargin = dp(8);
+        head.addView(details, dtl);
         TextView close = syncButton("Fechar");
         close.setTextSize(TypedValue.COMPLEX_UNIT_SP, 13);
         close.setPadding(dp(14), dp(5), dp(14), dp(5));
@@ -1286,6 +1372,7 @@ public class PlayerActivity extends Activity {
         panelStatus.setGravity(Gravity.CENTER);
         panelStatus.setMinLines(2);
         panelStatus.setPadding(dp(4), dp(6), dp(4), dp(6));
+        panelStatus.setOnLongClickListener(v -> { showDetails(); return true; });   // toque longo na linha de estado = os detalhes do motor (para diagnóstico)
         right.addView(panelStatus, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
 
         View line = new View(this);
@@ -1347,7 +1434,9 @@ public class PlayerActivity extends Activity {
         panelAuto.setEnabled(can); // desligar o botão durante a espera tiraria o foco do controle: o clique é que é ignorado
         styleAuto();
         if (!autoRunning && !statusFixed) {
-            if (can) { panelStatus.setTextColor(0xFFC8C8C8); panelStatus.setText("Acerta o tempo da legenda sozinha, sem parar o filme."); }
+            String as = audioStatus;
+            if (can && as != null) { panelStatus.setTextColor(toneColor(audioTone)); panelStatus.setText(as); }
+            else if (can) { panelStatus.setTextColor(0xFFC8C8C8); panelStatus.setText("Acerta o tempo da legenda sozinha, sem parar o filme."); }
             else if (panelTrack == -1) { panelStatus.setTextColor(0xFFC8C8C8); panelStatus.setText("Escolha uma legenda para a poder sincronizar."); }
             else { panelStatus.setTextColor(0xFFFFC857); panelStatus.setText("Legenda do próprio vídeo — normalmente já vem certa. Se não estiver, usa os botões abaixo."); }
         }
@@ -1426,7 +1515,7 @@ public class PlayerActivity extends Activity {
             msg = "Já estava certa";
             color = 0xFF7BD88F;
         } else {
-            msg = "Não consegui acertar — usa os botões abaixo";
+            msg = res.userMsg != null ? res.userMsg + " Usa o ajuste manual abaixo." : "Não consegui acertar — usa os botões abaixo";
             color = 0xFFFFC857;
         }
         setAutoStatus(msg, color);

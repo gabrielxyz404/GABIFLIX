@@ -46,7 +46,13 @@ final class AudioSyncAuto {
         long lostFrames();
         /** texto de diagnóstico (faixa ativa, faixas, legendas ligadas) */
         String debug();
+        /** faixa de áudio que está tocando (-1 = não sabe): a segunda instância ouve a mesma */
+        int audioTrackId();
+        /** o estado da análise, em português simples, para a linha de estado do painel de legendas (null = nada a dizer); tom: 0 neutro, 1 bom, 2 aviso */
+        void status(String text, int tone);
     }
+
+    static final int TONE_NEUTRAL = 0, TONE_GOOD = 1, TONE_WARN = 2;
 
     private static final String PREFS = "audio-sync-1";
     private static final int NEW = 0, DONE = 2, OFF = 3;
@@ -63,6 +69,10 @@ final class AudioSyncAuto {
     // configuração (os extras só existem nos testes)
     private final boolean autoOn;
     private long startAfterMs = 25_000, recheckMs = 600_000;
+    /** orçamento de leitura da rede (as 3 janelas) para o modo automático: o botão não tem limite */
+    private long budgetOverrideMb = -1;
+    private static final long BUDGET_WIFI = 2048L << 20, BUDGET_METERED = 250L << 20;
+    private static final long RECHECK_WIFI = 450L << 20, RECHECK_METERED = 80L << 20;
 
     // estado da legenda ativa
     private String key;
@@ -76,6 +86,8 @@ final class AudioSyncAuto {
     private long nextRecheckAt, nextFollowAt;
     private Recheck.Out prevOut;
     private final ArrayList<Window> failing = new ArrayList<>();
+    private int stallAborts;
+    private long runStartedAt;
     private volatile long rescanAt;
     private volatile String keyNow;
 
@@ -101,6 +113,9 @@ final class AudioSyncAuto {
         v = extra(in, "gfAudioRecheckSec");
         if (v != null) try { recheckMs = Integer.parseInt(v) * 1000L; } catch (NumberFormatException ignored) {}
         if ("true".equals(extra(in, "gfAudioDsp"))) core.forceDsp = true;
+        v = extra(in, "gfAudioBudgetMb");
+        if (v != null) try { budgetOverrideMb = Integer.parseInt(v); } catch (NumberFormatException ignored) {}
+        core.progress = s2 -> ui.post(() -> { if (!stopped) h.status(s2, TONE_NEUTRAL); });
     }
 
     private static String extra(android.content.Intent in, String k) {
@@ -112,10 +127,33 @@ final class AudioSyncAuto {
 
     private static void log(String s) { SubtitleSync.log("AUDIOSYNC " + s); }
 
+    private boolean metered() {
+        try {
+            android.net.ConnectivityManager cm = (android.net.ConnectivityManager) act.getSystemService(android.content.Context.CONNECTIVITY_SERVICE);
+            return cm == null || cm.isActiveNetworkMetered();
+        } catch (Throwable t) { return true; }
+    }
+
+    private long autoBudget() { return budgetOverrideMb >= 0 ? budgetOverrideMb << 20 : metered() ? BUDGET_METERED : BUDGET_WIFI; }
+
+    private long recheckBudget() { return budgetOverrideMb >= 0 ? budgetOverrideMb << 18 : metered() ? RECHECK_METERED : RECHECK_WIFI; }
+
+    private String noticedKey = "";
+
+    /** um aviso discreto por situação e por legenda (não repete a cada tentativa) */
+    private void noticeOnce(String k, String what, String text) {
+        String id = k + "#" + what;
+        if (id.equals(noticedKey)) return;
+        noticedKey = id;
+        h.notice(text);
+    }
+
+    private void status(String s, int tone) { h.status(s, tone); }
+
     void start() {
         if (started || stopped) return;
         started = true;
-        log("pronto (automático=" + autoOn + ", começa " + startAfterMs / 1000 + " s depois de a legenda ficar ativa, reverifica a cada " + recheckMs / 1000 + " s)");
+        log("pronto (rede " + (metered() ? "com limite de dados" : "sem limite de dados") + ", orçamento do automático " + (autoBudget() >> 20) + " MB, automático=" + autoOn + ", começa " + startAfterMs / 1000 + " s depois de a legenda ficar ativa, reverifica a cada " + recheckMs / 1000 + " s)");
         ui.postDelayed(tick, TICK_MS);
     }
 
@@ -151,7 +189,8 @@ final class AudioSyncAuto {
             final int d1 = r1.status == AutoSync.FIXED ? r1.delayMs : currentDelayMs;
             token.incrementAndGet();   // a execução automática em andamento (se houver) é descartada
             core.cancel();
-            AudioSyncCore.Outcome o = core.run(h.url(), active.text, h.durationMs(), videoTimeMs, d1, true);
+            core.audioTrackId = h.audioTrackId();
+            AudioSyncCore.Outcome o = core.run(h.url(), active.text, h.durationMs(), videoTimeMs, d1, AudioSyncCore.NO_LIMIT);
             log("botão: " + o.note + " | " + o.st.summary());
             String k = keyNow;
             switch (o.kind) {
@@ -165,9 +204,11 @@ final class AudioSyncAuto {
                     return r1.status == AutoSync.FIXED ? r1 : AutoSync.Result.ok("já estava certa (o áudio confirma)");
                 case AudioSyncCore.Outcome.REFUSED:
                     if (k != null) mark(k, "no", 1.0, 0, 0);
+                    return r1.status == AutoSync.FAILED ? AutoSync.Result.failedMsg(r1.note, o.msg) : r1;
+                case AudioSyncCore.Outcome.CANCELLED:
                     return r1;
-                default:
-                    return r1;
+                default: // erro de captura, pulado: diz o motivo em vez de um "não consegui" genérico (se a referência já acertou, vale a referência)
+                    return r1.status == AutoSync.FAILED ? AutoSync.Result.failedMsg(r1.note, o.msg.isEmpty() ? "Não consegui ouvir o áudio do filme." : o.msg) : r1;
             }
         };
     }
@@ -177,7 +218,7 @@ final class AudioSyncAuto {
     private void mark(String k, String kind, double scale, double off, int delay) {
         try {
             SharedPreferences p = act.getSharedPreferences(PREFS, Activity.MODE_PRIVATE);
-            p.edit().putString(k, AudioSyncCore.VERSION + "|" + kind + "|" + scale + "|" + off + "|" + delay).apply();
+            p.edit().putString(k, AudioSyncCore.VERSION + "|" + kind + "|" + scale + "|" + off + "|" + delay + "|" + System.currentTimeMillis()).apply();
         } catch (Throwable ignored) {}
     }
 
@@ -186,7 +227,10 @@ final class AudioSyncAuto {
             String v = act.getSharedPreferences(PREFS, Activity.MODE_PRIVATE).getString(k, null);
             if (v == null) return null;
             String[] a = v.split("\\|");
-            return a.length == 5 && a[0].equals(AudioSyncCore.VERSION) ? a : null;
+            if (a.length != 6 || !a[0].equals(AudioSyncCore.VERSION)) return null;
+            // "sem confiança" vale por 3 dias: depois tenta de novo (a causa pode ter sido passageira: rede, faixa errada, versão do app)
+            if (a[1].equals("no") && System.currentTimeMillis() - Long.parseLong(a[5]) > 3L * 86_400_000L) return null;
+            return a;
         } catch (Throwable t) { return null; }
     }
 
@@ -227,6 +271,28 @@ final class AudioSyncAuto {
         lastWall = now; lastT = t; lastPl = pl; lastBuf = buf;
     }
 
+    /** a reprodução engasgou duas vezes durante a análise: a rede não aguenta a captura junto com o filme; cancela e tenta uma vez mais tarde */
+    private void abortForStall(long now) {
+        log("a reprodução engasgou " + hBuf + " vezes durante a análise: cancelo para não atrapalhar o filme");
+        token.incrementAndGet();
+        core.cancel();
+        running = false;
+        stallAborts++;
+        if (st == NEW) {
+            if (stallAborts >= 2) {
+                st = OFF;
+                status("A rede não aguenta ouvir o filme sem engasgar a reprodução. Para acertar a legenda, pausa e toca em Sincronizar automaticamente.", TONE_WARN);
+                noticeOnce(key == null ? "" : key, "fim", "Legenda: a rede está curta para analisar — usa Sincronizar no painel");
+            } else {
+                retryPending = true;
+                retryAt = now + 180_000;
+                status("A reprodução engasgou durante a análise: tento de novo daqui a 3 min.", TONE_WARN);
+            }
+        } else {
+            nextRecheckAt = now + 1_800_000L;
+        }
+    }
+
     private void newSub(String k) {
         token.incrementAndGet();
         if (running) { core.cancel(); log("legenda trocada: análise em andamento cancelada"); }
@@ -241,6 +307,8 @@ final class AudioSyncAuto {
         failing.clear();
         mScale = 1.0;
         mOffset = 0;
+        stallAborts = 0;
+        status(null, TONE_NEUTRAL);
         if (k != null) log("legenda ativa: " + k.substring(Math.max(0, k.length() - 60)));
     }
 
@@ -255,6 +323,7 @@ final class AudioSyncAuto {
         String k = cand == null || cand.text == null ? null : h.delayKey();
         if ((k == null ? key != null : !k.equals(key))) newSub(k);
         if (k == null || !autoOn) return;
+        if (running && hBuf >= 2 && now - runStartedAt > 5000) abortForStall(now);
         if (rescanAt > 0 && now >= rescanAt && !running) { rescanAt = 0; st = NEW; keySince = 0; retries = 0; }
         switch (st) {
             case NEW:
@@ -278,9 +347,14 @@ final class AudioSyncAuto {
         int saved = h.savedDelay(k);
         String[] m = readMark(k);
         if (m != null) {
-            if (m[1].equals("no")) { st = OFF; log("esta legenda já foi vista pelo áudio e recusada: não tento de novo"); return; }
+            if (m[1].equals("no")) {
+                st = OFF;
+                log("esta legenda já foi vista pelo áudio e recusada: não tento de novo (por 3 dias)");
+                status("Já conferida pelo áudio: sem confiança nesta legenda (pode ser de outra versão do filme). Se estiver fora, usa os botões.", TONE_WARN);
+                return;
+            }
             int markDelay = Integer.parseInt(m[4]);
-            if (saved != markDelay) { st = OFF; log("atraso guardado (" + saved + " ms) não é o do áudio (" + markDelay + " ms): é manual, não mexo"); return; }
+            if (saved != markDelay) { st = OFF; log("atraso guardado (" + saved + " ms) não é o do áudio (" + markDelay + " ms): é manual, não mexo"); status("Há um ajuste manual guardado para esta legenda: não mexi.", TONE_NEUTRAL); return; }
             mScale = Double.parseDouble(m[2]);
             mOffset = Double.parseDouble(m[3]);
             if (m[1].equals("ok")) mOffset = h.delayMs();
@@ -289,9 +363,10 @@ final class AudioSyncAuto {
             nextRecheckAt = SystemClock.uptimeMillis() + recheckMs;
             nextFollowAt = 0;
             log("legenda já sincronizada pelo áudio antes (" + m[1] + "): sem nova captura, reverifica em " + recheckMs / 1000 + " s");
+            status(m[1].equals("ok") ? "Legenda conferida pelo áudio: já estava certa." : "Legenda acertada pelo áudio antes (" + secs(markDelay) + ").", TONE_GOOD);
             return;
         }
-        if (saved != 0 || h.delayMs() != 0) { st = OFF; log("atraso manual guardado (" + saved + " ms): não mexo"); return; }
+        if (saved != 0 || h.delayMs() != 0) { st = OFF; log("atraso manual guardado (" + saved + " ms): não mexo"); status("Há um ajuste manual guardado para esta legenda (" + secs(saved != 0 ? saved : h.delayMs()) + "): não mexi.", TONE_NEUTRAL); return; }
         startRun(cand, k);
     }
 
@@ -303,9 +378,15 @@ final class AudioSyncAuto {
         final String url = h.url(), text = cand.text;
         log("antes da análise: " + healthLine());
         resetHealth();
-        log("começando: posição " + pos / 1000 + " s, duração " + dur / 1000 + " s, atraso atual " + d0 + " ms");
+        runStartedAt = SystemClock.uptimeMillis();
+        final long budget = autoBudget();
+        final int trackId = h.audioTrackId();
+        log("começando: posição " + pos / 1000 + " s, duração " + dur / 1000 + " s, atraso atual " + d0 + " ms, faixa de áudio " + trackId + ", orçamento " + (budget >> 20) + " MB");
+        status("A verificar a legenda pelo áudio…", TONE_NEUTRAL);
+        noticeOnce(k, "verificando", "Legenda: a verificar pelo áudio…");
         ex.execute(() -> {
-            AudioSyncCore.Outcome o = core.run(url, text, dur, pos, d0, false);
+            core.audioTrackId = trackId;
+            AudioSyncCore.Outcome o = core.run(url, text, dur, pos, d0, budget);
             ui.post(() -> finishRun(tok, k, d0, o));
         });
     }
@@ -328,7 +409,10 @@ final class AudioSyncAuto {
                 st = DONE;
                 nextRecheckAt = SystemClock.uptimeMillis() + recheckMs;
                 nextFollowAt = SystemClock.uptimeMillis() + 15_000;
-                h.notice(persist ? "Legenda acertada pelo áudio (" + secs(o.targetDelay) + ")" : "Legenda acertada pelo áudio (velocidade e atraso)");
+                String fixMsg = persist ? "Legenda acertada pelo áudio (" + secs(o.targetDelay) + ")" : "Legenda acertada pelo áudio (velocidade e atraso)";
+                h.notice(fixMsg);
+                status(fixMsg + ".", TONE_GOOD);
+                noticedKey = k + "#fim";
                 log("aplicado: atraso " + o.targetDelay + " ms, escala " + o.scale);
                 break;
             }
@@ -340,15 +424,29 @@ final class AudioSyncAuto {
                 st = DONE;
                 nextRecheckAt = SystemClock.uptimeMillis() + recheckMs;
                 log("a legenda já estava certa (deslocamento medido " + Math.round(o.offsetMs) + " ms): não mexi");
+                status("Legenda conferida pelo áudio: já estava certa.", TONE_GOOD);
+                noticeOnce(k, "fim", "Legenda confirmada pelo áudio");
                 break;
             case AudioSyncCore.Outcome.REFUSED:
                 mark(k, "no", 1.0, 0, 0);
                 st = OFF;
                 log("o áudio não tem certeza: legenda deixada como estava");
+                status(o.msg.isEmpty() ? "Sem confiança: o áudio não confirma esta legenda." : o.msg, TONE_WARN);
+                noticeOnce(k, "fim", "Legenda: não consegui confirmar pelo áudio — usa Sincronizar no painel");
                 break;
             default: // erro, cancelado, pulado: tenta de novo mais tarde (no máximo 2 vezes)
-                if (o.kind == AudioSyncCore.Outcome.SKIPPED || retries >= 2) { st = OFF; log("desisti (" + o.note + ")"); }
-                else { retries++; retryPending = true; retryAt = SystemClock.uptimeMillis() + 120_000 * retries; log("tento de novo em " + 120 * retries + " s (" + o.note + ")"); }
+                if (o.kind == AudioSyncCore.Outcome.CANCELLED) { st = NEW; retryPending = true; retryAt = SystemClock.uptimeMillis() + 30_000; log("análise cancelada (" + o.note + "): tento de novo em 30 s"); }
+                else if (o.kind == AudioSyncCore.Outcome.SKIPPED || retries >= 2) {
+                    st = OFF;
+                    log("desisti (" + o.note + ")");
+                    status(o.msg.isEmpty() ? "Não consegui conferir pelo áudio (" + o.note + ")." : o.msg, TONE_WARN);
+                    noticeOnce(k, "fim", o.kind == AudioSyncCore.Outcome.SKIPPED ? "Legenda: ficheiro pesado para analisar sozinho — usa Sincronizar no painel" : "Legenda: não consegui ouvir o áudio — usa Sincronizar no painel");
+                }
+                else {
+                    retries++; retryPending = true; retryAt = SystemClock.uptimeMillis() + 120_000 * retries;
+                    log("tento de novo em " + 120 * retries + " s (" + o.note + ")");
+                    status((o.msg.isEmpty() ? "Não consegui conferir pelo áudio." : o.msg) + " Tento de novo em " + 2 * retries + " min.", TONE_WARN);
+                }
                 break;
         }
     }
@@ -380,8 +478,12 @@ final class AudioSyncAuto {
         final Recheck.Out prev = prevOut;
         final ArrayList<Window> fl = new ArrayList<>(failing);
         log("reverificando na posição " + pos / 1000 + " s");
+        runStartedAt = SystemClock.uptimeMillis();
+        final long budget = recheckBudget();
+        final int trackId = h.audioTrackId();
         ex.execute(() -> {
-            AudioSyncCore.Check ck = core.recheck(url, text, dur, pos, a, b, prev, fl);
+            core.audioTrackId = trackId;
+            AudioSyncCore.Check ck = core.recheck(url, text, dur, pos, a, b, prev, fl, budget);
             ui.post(() -> finishRecheck(tok, k, ck, pos, a, b));
         });
     }
@@ -391,6 +493,7 @@ final class AudioSyncAuto {
         running = false;
         nextRecheckAt = SystemClock.uptimeMillis() + recheckMs;
         log("reverificação: " + ck.note + " | " + healthLine());
+        if (ck.kind == AudioSyncCore.Outcome.SKIPPED && ck.note.contains("não reverifico")) nextRecheckAt = SystemClock.uptimeMillis() + 3_600_000L;
         if (!k.equals(key) || ck.out == null) return;
         if (h.delayMs() != lastWritten) { st = OFF; return; }
         switch (ck.out.verdict) {

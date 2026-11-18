@@ -33,7 +33,40 @@ final class SubtitleSync {
     private SubtitleSync() {}
 
     static final String TAG = "GabiFlixPlayer";
-    static void log(String s) { try { Log.i(TAG, s); } catch (Throwable ignored) {} }
+    static void log(String s) {
+        try { Log.i(TAG, s); } catch (Throwable ignored) {}
+        try {
+            synchronized (RING) {
+                RING.add(System.currentTimeMillis() + "|" + s);
+                while (RING.size() > 600) RING.removeFirst();
+            }
+        } catch (Throwable ignored) {}
+    }
+
+    /** as últimas linhas do registro (para a tela "Detalhes" do painel de legendas): só as que começam com um dos prefixos; hora local no começo de cada uma */
+    private static final java.util.ArrayDeque<String> RING = new java.util.ArrayDeque<>();
+    static String recent(int max, String... prefixes) {
+        java.util.ArrayList<String> out = new java.util.ArrayList<>();
+        synchronized (RING) {
+            for (String e : RING) {
+                int i = e.indexOf('|');
+                String m = e.substring(i + 1);
+                boolean ok = prefixes == null || prefixes.length == 0;
+                if (!ok) for (String p : prefixes) if (m.startsWith(p)) { ok = true; break; }
+                if (ok) out.add(e);
+            }
+        }
+        java.text.SimpleDateFormat f = new java.text.SimpleDateFormat("HH:mm:ss", java.util.Locale.ROOT);
+        StringBuilder b = new StringBuilder();
+        for (int k = Math.max(0, out.size() - max); k < out.size(); k++) {
+            String e = out.get(k);
+            int i = e.indexOf('|');
+            String m = e.substring(i + 1);
+            if (m.length() > 220) m = m.substring(0, 220) + "…";
+            b.append(f.format(new java.util.Date(Long.parseLong(e.substring(0, i))))).append(' ').append(m).append('\n');
+        }
+        return b.toString();
+    }
 
     /** uma legenda baixada */
     static final class Cand {

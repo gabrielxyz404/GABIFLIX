@@ -30,11 +30,11 @@ import java.util.Locale;
  */
 final class AudioSyncCore {
     /** versão do motor + política: muda o que está guardado (cache) sobre cada legenda */
-    static final String VERSION = "a1";
+    static final String VERSION = "a2";
     static final long WIN_MS = 90_000;
     static final int N_WIN = 3;
-    /** a execução automática pula filmes cuja leitura estimada das 3 janelas passa disto (o botão não pula) */
-    static final long AUTO_MAX_BYTES = 600L * 1024 * 1024;
+    /** a leitura estimada das 3 janelas: o automático só roda se couber no orçamento da rede (ver AudioSyncAuto); o botão nunca pula */
+    static final long NO_LIMIT = Long.MAX_VALUE;
     private static final long MIN_DURATION_MS = 8 * 60_000L;
     private static final int MIN_SPEECH_CUES = 40;
 
@@ -42,11 +42,11 @@ final class AudioSyncCore {
         String vad = "?";
         int windows;
         long captureWallMs, vadMs, vadCpuMs, solveMs, solveCpuMs, totalCpuMs, totalWallMs;
-        long estBytes;
+        long estBytes, realBytes;
         long pssStartKb, pssEndKb, javaUsedStartKb, javaUsedEndKb;
         String summary() {
-            return String.format(Locale.ROOT, "vad=%s janelas=%d captura=%d ms vad=%d ms (cpu %d) solve=%d ms (cpu %d) cpu_thread=%d ms total=%d ms leitura_estimada=%d MB pss=%d->%d MB java=%d->%d MB",
-                    vad, windows, captureWallMs, vadMs, vadCpuMs, solveMs, solveCpuMs, totalCpuMs, totalWallMs, estBytes >> 20, pssStartKb >> 10, pssEndKb >> 10, javaUsedStartKb >> 10, javaUsedEndKb >> 10);
+            return String.format(Locale.ROOT, "vad=%s janelas=%d captura=%d ms vad=%d ms (cpu %d) solve=%d ms (cpu %d) cpu_thread=%d ms total=%d ms leitura_estimada=%d MB leitura_real=%s pss=%d->%d MB java=%d->%d MB",
+                    vad, windows, captureWallMs, vadMs, vadCpuMs, solveMs, solveCpuMs, totalCpuMs, totalWallMs, estBytes >> 20, realBytes > 0 ? (realBytes >> 20) + " MB" : "?", pssStartKb >> 10, pssEndKb >> 10, javaUsedStartKb >> 10, javaUsedEndKb >> 10);
         }
     }
 
@@ -59,6 +59,8 @@ final class AudioSyncCore {
         /** atraso (ms) que a legenda deve ter AGORA para ficar certa (igual a offsetMs com escala 1) */
         int targetDelay;
         boolean cuts;
+        /** frase pronta, em português simples, para mostrar ao usuário quando nada foi mudado ("" = não há) */
+        String msg = "";
         Result result;
         Window[] windows;
         final Stats st = new Stats();
@@ -72,6 +74,13 @@ final class AudioSyncCore {
     private volatile boolean busy;
     /** só nos testes: força o VAD por DSP (reserva) em vez do Silero */
     volatile boolean forceDsp;
+    /** faixa de áudio que está tocando no player (a segunda instância ouve a mesma); -1 = a padrão do arquivo */
+    volatile int audioTrackId = -1;
+
+    interface Progress { void on(String s); }
+    /** chamado da thread de trabalho: diz em que ponto a análise está (o painel mostra) */
+    volatile Progress progress;
+    private void say(String s) { Progress p = progress; if (p != null) { try { p.on(s); } catch (Throwable ignored) {} } }
     private final Object lock = new Object();
 
     AudioSyncCore(Context ctx) {
@@ -128,17 +137,45 @@ final class AudioSyncCore {
         return vad;
     }
 
-    /** o tamanho do arquivo (bytes) pelo servidor, ou -1 */
+    /**
+     * O tamanho do arquivo (bytes) pelo servidor, ou -1. Muitos servidores de links diretos recusam o HEAD (403/405): então pede só o
+     * primeiro byte (Range: bytes=0-0) e lê o total em Content-Range. Segue redirecionamentos (o endereço de download costuma redirecionar).
+     */
     static long contentLength(String url) {
+        if (!url.startsWith("http")) return -1;
+        long n = probe(url, true);
+        if (n <= 0) n = probe(url, false);
+        return n;
+    }
+
+    private static long probe(String url, boolean head) {
+        HttpURLConnection c = null;
         try {
-            if (!url.startsWith("http")) return -1;
-            HttpURLConnection c = (HttpURLConnection) new URL(url).openConnection();
-            c.setConnectTimeout(5000);
-            c.setReadTimeout(5000);
-            c.setRequestMethod("HEAD");
-            c.setRequestProperty("User-Agent", "GabiFlix");
-            try { return c.getResponseCode() < 400 ? c.getContentLengthLong() : -1; } finally { c.disconnect(); }
-        } catch (Throwable t) { return -1; }
+            c = (HttpURLConnection) new URL(url).openConnection();
+            c.setConnectTimeout(6000);
+            c.setReadTimeout(8000);
+            c.setInstanceFollowRedirects(true);
+            c.setRequestMethod(head ? "HEAD" : "GET");
+            c.setRequestProperty("User-Agent", "Mozilla/5.0 (Linux; Android) FramePlay");
+            if (!head) c.setRequestProperty("Range", "bytes=0-0");
+            int code = c.getResponseCode();
+            if (code >= 400) return -1;
+            String cr = c.getHeaderField("Content-Range");   // "bytes 0-0/123456"
+            if (cr != null && cr.contains("/")) {
+                try { return Long.parseLong(cr.substring(cr.indexOf('/') + 1).trim()); } catch (NumberFormatException ignored) {}
+            }
+            return code == 200 ? c.getContentLengthLong() : -1;
+        } catch (Throwable t) {
+            return -1;
+        } finally {
+            if (c != null) { try { c.disconnect(); } catch (Throwable ignored) {} }
+        }
+    }
+
+    /** leitura estimada (bytes) para `seconds` s de filme: o tamanho do arquivo repartido pela duração; -1 se não deu para saber */
+    static long estimateBytes(String url, long durMs, long seconds) {
+        long len = contentLength(url);
+        return len > 0 && durMs > 0 ? (long) (len / (double) durMs * 1000.0 * seconds) : -1;
     }
 
     private static int countSpeech(Cue[] cues) {
@@ -147,18 +184,29 @@ final class AudioSyncCore {
         return n;
     }
 
+    /** por que a última captura falhou (frase curta, para o registro e para o painel) */
+    private volatile String lastCapFail = "";
+
     private Window captureWindow(String url, long startMs, long lenMs, Outcome o) throws Exception {
         AudioCap c;
         synchronized (this) { if (cap == null) cap = new AudioCap(ctx); c = cap; }
         File wav = new File(dir, "w" + startMs + ".wav");
-        long t0 = System.nanoTime();
-        AudioCap.Out co = c.capture(url, startMs, lenMs, wav, Math.min(240_000, lenMs * 3));
-        o.st.captureWallMs += (System.nanoTime() - t0) / 1_000_000;
+        AudioCap.Out co = null;
+        for (int attempt = 1; attempt <= 2; attempt++) {
+            long t0 = System.nanoTime();
+            co = c.capture(url, startMs, lenMs, wav, 420_000, audioTrackId);
+            o.st.captureWallMs += (System.nanoTime() - t0) / 1_000_000;
+            if (co.bytes > 0) o.st.realBytes += co.bytes;
+            if (co.ok || c.isCancelled()) break;
+            log("captura falhou em " + startMs / 1000 + " s (tentativa " + attempt + "): " + co.end + " em " + String.format(Locale.ROOT, "%.1f", co.wallS) + " s; " + co.track);
+            if (attempt == 1) Thread.sleep(2000);
+        }
         try {
-            if (!co.ok) { log("captura falhou em " + startMs / 1000 + " s: " + co.end); return null; }
-            log(String.format(Locale.ROOT, "captura %d s +%d s: %.2f s de PCM em %.2f s (%s)", startMs / 1000, lenMs / 1000, co.pcmS, co.wallS, co.end));
+            if (!co.ok) { lastCapFail = co.end; return null; }
+            log(String.format(Locale.ROOT, "captura %d s +%d s: %.2f s de PCM em %.2f s (%s) leitura=%s | %s", startMs / 1000, lenMs / 1000, co.pcmS, co.wallS, co.end,
+                    co.bytes > 0 ? (co.bytes >> 20) + " MB" : "?", co.track));
             short[] pcm = AudioCap.readWav(wav);
-            if (pcm.length < 16000L * (lenMs / 1000) / 3) return null;
+            if (pcm.length < 16000L * (lenMs / 1000) / 3) { lastCapFail = "o áudio veio curto (" + pcm.length / 16000 + " s de " + lenMs / 1000 + " s)"; log("captura curta: " + lastCapFail); return null; }
             long c0 = Debug.threadCpuTimeNanos(), w0 = System.nanoTime();
             float[] p = vad().speechProb(pcm, pcm.length, 16000);
             o.st.vadCpuMs += (Debug.threadCpuTimeNanos() - c0) / 1_000_000;
@@ -168,6 +216,10 @@ final class AudioSyncCore {
         } finally {
             wav.delete();
         }
+    }
+
+    static String mb(long bytes) {
+        return bytes >= 1L << 30 ? String.format(Locale.ROOT, "%.1f GB", bytes / 1073741824.0).replace('.', ',') : (bytes >> 20) + " MB";
     }
 
     private static long usedJavaKb() { Runtime r = Runtime.getRuntime(); return (r.totalMemory() - r.freeMemory()) >> 10; }
@@ -192,9 +244,9 @@ final class AudioSyncCore {
      * Sincronização completa (3 janelas de 90 s no plano por densidade de falas).
      * @param nowMs        posição do vídeo agora (só para o atraso de escalas diferentes de 1)
      * @param currentDelay atraso aplicado agora (a decisão de mexer compara com ele)
-     * @param force        true = botão do usuário (não pula por tamanho de leitura)
+     * @param maxBytes     pula (SKIPPED) se a leitura estimada das 3 janelas passar disto; NO_LIMIT = botão do usuário (nunca pula)
      */
-    Outcome run(String url, String subText, long durMs, long nowMs, int currentDelay, boolean force) {
+    Outcome run(String url, String subText, long durMs, long nowMs, int currentDelay, long maxBytes) {
         synchronized (lock) {
             busy = true;
             Outcome o = new Outcome();
@@ -203,23 +255,29 @@ final class AudioSyncCore {
                 if (cap != null) cap.reset();
                 begin(o);
                 Cue[] cues = subText == null ? new Cue[0] : Cue.parseSrt(subText);
-                if (countSpeech(cues) < MIN_SPEECH_CUES) { o.kind = Outcome.REFUSED; o.note = "poucas falas na legenda"; return o; }
-                if (durMs < MIN_DURATION_MS) { o.kind = Outcome.SKIPPED; o.note = "vídeo curto ou duração desconhecida"; return o; }
-                long len = contentLength(url);
-                if (len > 0) {
-                    o.st.estBytes = (long) (len / (double) durMs * (WIN_MS * N_WIN));
-                    if (!force && o.st.estBytes > AUTO_MAX_BYTES) { o.kind = Outcome.SKIPPED; o.note = "leitura estimada de " + (o.st.estBytes >> 20) + " MB: só pelo botão"; return o; }
+                if (countSpeech(cues) < MIN_SPEECH_CUES) { o.kind = Outcome.REFUSED; o.note = "poucas falas na legenda"; o.msg = "A legenda tem poucas falas para conferir pelo áudio."; return o; }
+                if (durMs < MIN_DURATION_MS) { o.kind = Outcome.SKIPPED; o.note = "vídeo curto ou duração desconhecida"; o.msg = "O vídeo é curto (ou a duração ainda é desconhecida) para conferir pelo áudio."; return o; }
+                o.st.estBytes = estimateBytes(url, durMs, WIN_MS * N_WIN / 1000);
+                if (o.st.estBytes < 0) log("tamanho do arquivo desconhecido (o servidor não diz): sem estimativa de leitura");
+                if (maxBytes != NO_LIMIT && o.st.estBytes > maxBytes) {
+                    o.kind = Outcome.SKIPPED;
+                    o.note = "leitura estimada de " + (o.st.estBytes >> 20) + " MB passa do limite de " + (maxBytes >> 20) + " MB: só pelo botão";
+                    o.msg = "Ficheiro muito pesado para analisar sozinho (≈ " + mb(o.st.estBytes) + " a ler). Toca em Sincronizar automaticamente para analisar.";
+                    return o;
                 }
+                say(o.st.estBytes > 0 ? "A ouvir o filme… (≈ " + mb(o.st.estBytes) + " a ler)" : "A ouvir o filme…");
                 AudioAligner.Params P = new AudioAligner.Params();
                 long[][] plan = AudioSyncSession.planDense(cues, durMs, N_WIN, WIN_MS);
                 AudioSyncSession ses = new AudioSyncSession(cues, durMs, P);
                 Window[] ws = new Window[plan.length];
                 for (int i = 0; i < plan.length; i++) {
                     if (cap != null && cap.isCancelled()) { o.kind = Outcome.CANCELLED; o.note = "cancelado"; return o; }
+                    say("A ouvir o filme… trecho " + (i + 1) + " de " + plan.length + (o.st.estBytes > 0 ? " (≈ " + mb(o.st.estBytes) + " no total)" : ""));
                     Window w = captureWindow(url, plan[i][0], plan[i][1], o);
                     if (w == null) {
                         o.kind = cap != null && cap.isCancelled() ? Outcome.CANCELLED : Outcome.ERROR;
-                        o.note = "captura da janela " + (i + 1) + " falhou";
+                        o.note = "captura da janela " + (i + 1) + " falhou: " + lastCapFail;
+                        o.msg = "Não consegui ouvir o áudio do filme (" + lastCapFail + ").";
                         return o;
                     }
                     ws[i] = w;
@@ -253,8 +311,8 @@ final class AudioSyncCore {
     /** transforma o resultado do alinhador em decisão: mexer só se aceito e se o atraso certo difere do atual por mais que a banda morta */
     static void fill(Outcome o, Result r, long nowMs, int currentDelay, AudioAligner.Params P) {
         o.note = String.format(Locale.ROOT, "%s z=%.1f janelas=%d/%d%s", r.accepted ? "aceita" : "recusada", r.z, r.winsAgree, r.winsValid, r.accepted ? "" : " (" + r.reason.trim() + ")");
-        if (!r.accepted) { o.kind = Outcome.REFUSED; return; }
-        if (r.segments != null && r.segments.length > 1) { o.kind = Outcome.REFUSED; o.note += " por partes: não aplico"; return; }
+        if (!r.accepted) { o.kind = Outcome.REFUSED; o.msg = "Sem confiança: o áudio não confirma esta legenda (pode ser de outra versão do filme)."; return; }
+        if (r.segments != null && r.segments.length > 1) { o.kind = Outcome.REFUSED; o.note += " por partes: não aplico"; o.msg = "A legenda parece ter cortes em relação ao filme: não mexi. Usa o ajuste manual."; return; }
         double a = r.scale, off = r.rawOffsetMs;
         o.scale = a;
         o.offsetMs = off;
@@ -285,7 +343,7 @@ final class AudioSyncCore {
      * Reverificação (monitor): captura 90 s a partir da posição atual e chama Recheck. Nunca muda nada sozinha; devolve o veredito.
      * @param model (scale, offsetMs) em uso;  failing = janelas recentes que o modelo não explicava (até 2)
      */
-    Check recheck(String url, String subText, long durMs, long posMs, double scale, double offsetMs, Recheck.Out prev, List<Window> failing) {
+    Check recheck(String url, String subText, long durMs, long posMs, double scale, double offsetMs, Recheck.Out prev, List<Window> failing, long maxBytes) {
         synchronized (lock) {
             busy = true;
             Check ck = new Check();
@@ -296,9 +354,15 @@ final class AudioSyncCore {
                 begin(tmp);
                 Cue[] cues = Cue.parseSrt(subText);
                 if (countSpeech(cues) < MIN_SPEECH_CUES || durMs < MIN_DURATION_MS) { ck.kind = Outcome.SKIPPED; ck.note = "sem condições"; return ck; }
+                tmp.st.estBytes = estimateBytes(url, durMs, WIN_MS / 1000);
+                if (maxBytes != NO_LIMIT && tmp.st.estBytes > maxBytes) {
+                    ck.kind = Outcome.SKIPPED;
+                    ck.note = "cada janela leria ≈ " + mb(tmp.st.estBytes) + ", acima do limite de " + mb(maxBytes) + ": não reverifico";
+                    return ck;
+                }
                 long st = Math.max(0, Math.min(posMs, durMs - WIN_MS)) / 10 * 10;
                 Window w = captureWindow(url, st, WIN_MS, tmp);
-                if (w == null) { ck.kind = Outcome.ERROR; ck.note = "captura falhou"; return ck; }
+                if (w == null) { ck.kind = Outcome.ERROR; ck.note = "captura falhou: " + lastCapFail; return ck; }
                 ck.window = w;
                 Result cur = new Result();
                 cur.accepted = true;

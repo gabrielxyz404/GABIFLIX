@@ -25,6 +25,10 @@ final class AudioCap {
         boolean ok;
         String end = "?";
         double wallS, pcmS;
+        /** bytes lidos da rede pelo libVLC nesta janela (-1 = o libVLC não disse) */
+        long bytes = -1;
+        /** qual faixa de áudio a segunda instância usou (para o registro) */
+        String track = "?";
     }
 
     private final Context ctx;
@@ -61,27 +65,60 @@ final class AudioCap {
         if (vlc != null) { try { vlc.release(); } catch (Throwable ignored) {} vlc = null; }
     }
 
-    /** Bloqueia até terminar (ou cancelar/estourar o tempo). */
-    Out capture(String url, long startMs, long durMs, File out, long timeoutMs) {
+    private static void log(String m) { SubtitleSync.log("AUDIOSYNC " + m); }
+
+    /** bytes que o libVLC leu da rede para esta mídia (reflexão: o nome do campo muda entre versões); -1 se não sabe */
+    private static long bytesRead(Media m) {
+        try {
+            Object st = m.getClass().getMethod("getStats").invoke(m);
+            if (st == null) return -1;
+            for (String f : new String[]{"readBytes", "demuxReadBytes"}) {
+                try {
+                    long v = ((Number) st.getClass().getField(f).get(st)).longValue();
+                    if (v > 0) return v;
+                } catch (Throwable ignored) {}
+            }
+        } catch (Throwable ignored) {}
+        return -1;
+    }
+
+    private static String trackInfo(MediaPlayer mp, int wanted) {
+        try {
+            int cur = mp.getAudioTrack();
+            MediaPlayer.TrackDescription[] t = mp.getAudioTracks();
+            StringBuilder b = new StringBuilder("usou a faixa " + cur + (wanted >= 0 ? " (pedida " + wanted + ")" : " (a do arquivo)") + " de [");
+            if (t != null) for (MediaPlayer.TrackDescription d : t) if (d.id != -1) b.append(d.id).append(':').append(d.name).append("; ");
+            return b.append(']').toString();
+        } catch (Throwable e) { return "faixa ?"; }
+    }
+
+    /**
+     * Bloqueia até terminar (ou cancelar). Não há mais um tempo fixo por janela: vale enquanto o arquivo de PCM CRESCE (uma busca lenta num
+     * MKV remoto ou uma rede lenta não derrubam a captura); falha só se ficar parado por muito tempo ou passar do limite total.
+     * @param audioTrackId faixa de áudio a ouvir (a que está tocando no player); -1 = a que o arquivo marca como padrão
+     */
+    Out capture(String url, long startMs, long durMs, File out, long timeoutMs, int audioTrackId) {
         Out r = new Out();
         if (out.exists()) out.delete();
         if (cancelled) { r.end = "cancelado"; return r; }
         LibVLC v = instance();
         Media media = new Media(v, Uri.parse(url));
         media.addOption(":no-video");
+        media.addOption(":no-spu");
         media.addOption(":network-caching=600");
         media.addOption(":http-reconnect");
+        if (audioTrackId >= 0) media.addOption(":audio-track-id=" + audioTrackId);
         media.addOption(":start-time=" + (startMs / 1000.0));
         media.addOption(":stop-time=" + ((startMs + durMs) / 1000.0));
         media.addOption(":sout=#transcode{acodec=s16l,channels=1,samplerate=16000}:std{access=file,mux=wav,dst=" + out.getAbsolutePath() + "}");
         MediaPlayer mp = new MediaPlayer(v);
         final CountDownLatch done = new CountDownLatch(1);
         curLatch = done;
-        final String[] why = {"tempo esgotado"};
+        final String[] why = {"tempo esgotado"}, fin = {null};
         mp.setEventListener(ev -> {
             switch (ev.type) {
                 case MediaPlayer.Event.EndReached: why[0] = "fim"; done.countDown(); break;
-                case MediaPlayer.Event.EncounteredError: why[0] = "erro"; done.countDown(); break;
+                case MediaPlayer.Event.EncounteredError: why[0] = "erro do libVLC"; done.countDown(); break;
                 case MediaPlayer.Event.Stopped: if (!"fim".equals(why[0])) why[0] = "parou"; done.countDown(); break;
                 default: break;
             }
@@ -90,13 +127,27 @@ final class AudioCap {
         long t0 = System.nanoTime();
         try {
             mp.play();
-            if (!cancelled) done.await(timeoutMs, TimeUnit.MILLISECONDS);
+            long lastGrow = t0, lastLen = 0;
+            boolean tracked = false;
+            while (!cancelled) {
+                if (done.await(1000, TimeUnit.MILLISECONDS)) break;
+                long now = System.nanoTime();
+                long len = out.exists() ? out.length() : 0;
+                if (len > lastLen) { lastLen = len; lastGrow = now; }
+                if (!tracked && now - t0 > 3_000_000_000L) { tracked = true; r.track = trackInfo(mp, audioTrackId); }
+                // antes do primeiro dado: a busca no arquivo remoto pode demorar (60 s); depois, 30 s parado = rede ou servidor travou
+                long idleLimit = (lastLen > 44 ? 30_000L : 60_000L) * 1_000_000L;
+                if (now - lastGrow > idleLimit) { why[0] = lastLen > 44 ? "a leitura parou" : "sem dados do servidor"; break; }
+                if (now - t0 > timeoutMs * 1_000_000L) { why[0] = "tempo esgotado"; break; }
+            }
+            fin[0] = why[0];   // o Stopped que o stop() dispara a seguir não pode trocar o motivo
+            if (!tracked) r.track = trackInfo(mp, audioTrackId);
+            r.bytes = bytesRead(media);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         } finally {
             r.wallS = (System.nanoTime() - t0) / 1e9;
-            if (cancelled) why[0] = "cancelado";
-            r.end = why[0];
+            r.end = cancelled ? "cancelado" : fin[0] != null ? fin[0] : why[0];
             try { mp.stop(); } catch (Throwable ignored) {}
             mp.setEventListener(null);
             try { mp.release(); } catch (Throwable ignored) {}
