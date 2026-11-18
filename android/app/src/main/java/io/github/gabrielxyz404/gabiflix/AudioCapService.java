@@ -22,6 +22,7 @@ import java.util.concurrent.Executors;
 public final class AudioCapService extends Service {
     static final int MSG_CAPTURE = 1, MSG_CANCEL = 2, MSG_RESET = 3, MSG_CLOSE = 4, MSG_REPLY = 10;
 
+    private static volatile boolean alive;
     private HandlerThread ctl;
     private Messenger messenger;
     private AudioCapEngine engine;
@@ -29,6 +30,7 @@ public final class AudioCapService extends Service {
 
     @Override public void onCreate() {
         super.onCreate();
+        alive = true;
         engine = new AudioCapEngine(this);
         worker = Executors.newSingleThreadExecutor(r -> {
             Thread t = new Thread(() -> { Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND); r.run(); }, "gf-audiocap");
@@ -86,6 +88,8 @@ public final class AudioCapService extends Service {
         try { AudioCapEngine.close(); } catch (Throwable ignored) {}
         try { ctl.quit(); } catch (Throwable ignored) {}
         super.onDestroy();
-        Process.killProcess(Process.myPid());   // este processo só existe para a captura: não deixa o libVLC ocupando memória
+        alive = false;
+        // este processo só existe para a captura: devolve a memória. Espera um pouco e só mata se a próxima análise não o reabriu entretanto
+        new Handler(android.os.Looper.getMainLooper()).postDelayed(() -> { if (!alive) Process.killProcess(Process.myPid()); }, 2000);
     }
 }

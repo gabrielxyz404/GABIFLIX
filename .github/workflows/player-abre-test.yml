@@ -26,7 +26,7 @@ jobs:
       - name: Pular?
         id: skip
         run: |
-          W="${{ github.event.inputs.which || 'ambos' }}"
+          W="${{ github.event.inputs.which || 'fix' }}"
           if [ "$W" != ambos ] && [ "$W" != "${{ matrix.apk }}" ]; then echo "skip=1" >> $GITHUB_OUTPUT; fi
       - uses: actions/checkout@v4
         if: steps.skip.outputs.skip != '1'

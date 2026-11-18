@@ -58,6 +58,7 @@ final class AudioCapEngine {
                 o.add("--no-lua");
                 o.add("--no-osd");
                 o.add("--no-spu");
+                o.add("--no-video");   // só o áudio: nenhum decodificador de vídeo nem saída de vídeo neste processo
                 o.add("--no-sub-autodetect-file");
                 vlc = new LibVLC(ctx, o);
             }

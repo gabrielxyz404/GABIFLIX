@@ -72,8 +72,6 @@ final class AudioSyncAuto {
     /** o filme tem de estar tocando sem parar por este tempo antes de o automático abrir a captura (só nos testes, com gfAudioStartSec, vale 0) */
     private long needPlayMs = 30_000;
     private long playingSince;
-    /** aparelho com pouca memória (Fire TV Stick de 2 GB): o automático não roda sozinho; o botão do painel continua (a captura é em outro processo) */
-    private final boolean lowRam;
 
     // estado da legenda ativa
     private String key;
@@ -114,7 +112,6 @@ final class AudioSyncAuto {
         v = extra(in, "gfAudioRecheckSec");
         if (v != null) try { recheckMs = Integer.parseInt(v) * 1000L; } catch (NumberFormatException ignored) {}
         if ("true".equals(extra(in, "gfAudioDsp"))) core.forceDsp = true;
-        lowRam = !"true".equals(extra(in, "gfAudioForce")) && isLowRam(act);
         core.progress = s2 -> ui.post(() -> { if (!stopped) h.status(s2, TONE_NEUTRAL); });
     }
 
@@ -127,16 +124,6 @@ final class AudioSyncAuto {
 
     private static void log(String s) { SubtitleSync.log("AUDIOSYNC " + s); }
 
-    /** pouca memória: ActivityManager.isLowRamDevice() ou menos de 2,5 GB no total */
-    private static boolean isLowRam(Activity a) {
-        try {
-            android.app.ActivityManager am = (android.app.ActivityManager) a.getSystemService(android.content.Context.ACTIVITY_SERVICE);
-            if (am == null) return false;
-            android.app.ActivityManager.MemoryInfo mi = new android.app.ActivityManager.MemoryInfo();
-            am.getMemoryInfo(mi);
-            return am.isLowRamDevice() || mi.totalMem < 2_560L * 1024 * 1024;
-        } catch (Throwable t) { return false; }
-    }
 
     /** sem limite de dados: a sincronização automática roda sempre, qualquer que seja o tamanho do arquivo e o tipo de rede (decisão do usuário) */
     private long autoBudget() { return AudioSyncCore.NO_LIMIT; }
@@ -334,12 +321,6 @@ final class AudioSyncAuto {
         switch (st) {
             case NEW:
                 if (running || !pl || now - keySince < startAfterMs || now - playingSince < needPlayMs || (retryPending && now < retryAt)) return;
-                if (lowRam) {
-                    st = OFF;
-                    log("aparelho com pouca memória: o automático não roda sozinho (só pelo botão)");
-                    status("Neste aparelho a legenda só é conferida pelo áudio quando pedes: pausa e toca em Sincronizar automaticamente.", TONE_NEUTRAL);
-                    return;
-                }
                 if (now - lastStallAt < 20_000 && lastStallAt > 0) return;
                 decideStart(cand, k);
                 break;

@@ -349,6 +349,7 @@ final class AudioSyncCore {
             } finally {
                 end(o, cpu0, wall0);
                 busy = false;
+                AudioCap.close();   // solta o processo de captura logo depois da análise: não fica ocupando memória
             }
         }
     }
@@ -432,6 +433,7 @@ final class AudioSyncCore {
                 tmp.st.windows = ck.window == null ? 0 : 1;
                 log("reverificação: " + tmp.st.summary());
                 busy = false;
+                AudioCap.close();
             }
         }
     }
@@ -480,6 +482,7 @@ final class AudioSyncCore {
                 end(o, cpu0, wall0);
                 log("confirmação do reajuste: " + o.st.summary());
                 busy = false;
+                AudioCap.close();
             }
         }
     }

@@ -28,6 +28,8 @@ run_case() {
     sleep 5
     if ! resumed | grep -q PlayerActivity; then alive=0; why="saiu do player: $(resumed)"; break; fi
     if [ "$(mainpid)" != "$pid0" ]; then alive=0; why="o processo do app mudou/caiu"; break; fi
+    cp=$(adb shell pidof $PKG:audiocap | tr -d '\r' | awk '{print $1}')
+    [ -n "$cp" ] && adb shell dumpsys meminfo $cp 2>/dev/null | grep -E "TOTAL PSS|TOTAL  " | head -1 | tr -s ' ' | sed "s/^/$name audiocap pid=$cp: /" >> $OUT/memoria.txt
     if glog | grep -q "AUDIOSYNC resultado:"; then done=1; break; fi
   done
   if [ $alive = 1 ]; then
@@ -38,22 +40,26 @@ run_case() {
       if [ "$(mainpid)" != "$pid0" ]; then alive=0; why="o processo do app caiu depois da analise"; break; fi
     done
   fi
+  sleep 8
+  local sobra=$(adb shell pidof $PKG:audiocap | tr -d '\r')
+  echo "$name: processo de captura depois da analise: '${sobra:-nenhum}'" >> $OUT/resultado.txt
   snap "$name-2-fim"
   glog | grep -E "GabiFlixPlayer|AUDIOSYNC|vlc|libc|DEBUG|AndroidRuntime|am_crash|am_proc_died" | tail -200 > "$OUT/log-$name.txt"
   fatal > "$OUT/fatal-$name.txt"
   adb shell ls /data/tombstones > "$OUT/tombstones-$name.txt" 2>&1
   echo "$name: vivo=$alive analise_terminou=$done $why | linhas fatais=$(wc -l < $OUT/fatal-$name.txt) | $(glog | grep -o 'pos [0-9]*' | tail -1)" | tee -a $OUT/resultado.txt
   [ $alive = 1 ] || FAILS=$((FAILS+1))
+  [ $done = 1 ] || FAILS=$((FAILS+1))
 }
 # 1) caminho real do usuario: Normal, sem nenhum gancho de teste (o automatico espera 30 s tocando + 25 s com a legenda)
-run_case normal-padrao 100 15
+run_case normal-padrao 330 20
 # 2) Normal com a analise forcada a comecar cedo (e a passar do filtro de pouca memoria): espera o fim da analise
-run_case normal-forcado 330 25 --es gfAudioForce true --es gfAudioStartSec 5 --es gfTrace 1
+run_case normal-forcado 330 25 --es gfAudioStartSec 5 --es gfTrace 1
 # 3) Preencher
-run_case preencher-forcado 330 25 --es gfAudioForce true --es gfAudioStartSec 5 --es gfScale 1 --es gfTrace 1
+run_case preencher-forcado 330 25 --es gfAudioStartSec 5 --es gfScale 1 --es gfTrace 1
 # 4) o processo de captura morre no meio da analise: o filme tem de continuar (so no APK com processo separado)
 adb shell am force-stop $PKG; sleep 1; adb shell pm clear $PKG >/dev/null; adb logcat -c
-adb shell am start -n $PKG/.tv.TvHomeActivity --es gfTestUrl "$BASE/film.mkv" --es gfTestSubs "$BASE/film.srt" --es gfAudioForce true --es gfAudioStartSec 5 > $OUT/am-morte.txt 2>&1
+adb shell am start -n $PKG/.tv.TvHomeActivity --es gfTestUrl "$BASE/film.mkv" --es gfTestSubs "$BASE/film.srt" --es gfAudioStartSec 5 > $OUT/am-morte.txt 2>&1
 sleep 14; pid0=$(mainpid); killed=0
 for i in $(seq 1 40); do
   cp=$(adb shell pidof $PKG:audiocap | tr -d '\r' | awk '{print $1}')
