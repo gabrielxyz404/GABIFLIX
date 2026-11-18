@@ -74,6 +74,9 @@ caso_home() {  # $1 nome  $2 legenda  $3 segundos até o HOME  $4 segundos fora
   rep "$n: fora, pid=$(mainpid) (era $pid0)"
   sleep $(( e - $(date +%s) > 0 ? e - $(date +%s) : 0 ))
   rep "$n: antes de voltar: pid=$(mainpid)"
+  glog | grep -E " $pid0 |:$pid0|am_kill|am_proc_died|lowmemorykiller|lmkd|Process .* died|gabiflix|ApplicationExitInfo|exit-info" | grep -v "legenda do app" | cut -c1-300 > "$OUT/$L-$P-morte-$n.txt"
+  adb shell dumpsys activity exit-info $PKG > "$OUT/$L-$P-exitinfo-$n.txt" 2>&1
+  adb shell dumpsys meminfo | head -12 > "$OUT/$L-$P-meminfo-$n.txt" 2>&1
   volta_icone; sleep 5; snap $n-3-voltou
   rep "$n: voltou $(resumed) pid=$(mainpid)"; pilha >> $OUT/$L-$P-resultado.txt
   if resumed | grep -q PlayerActivity; then rep "$n => VOLTOU AO FILME"; else rep "$n => NAO VOLTOU AO FILME"; fi
@@ -89,6 +92,8 @@ case "$P" in
     caso_fg tel-fixed mais3.srt 90
     caso_home tel-home-analise menos2.srt 50 150
     caso_home tel-home-2min certa.srt 20 120
+    caso_home tel-home-2min-b certa.srt 20 120
+    caso_home tel-home-2min-c certa.srt 20 120
     ;;
 esac
 exit 0
