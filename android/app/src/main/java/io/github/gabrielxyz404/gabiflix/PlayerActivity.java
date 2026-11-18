@@ -143,6 +143,8 @@ public class PlayerActivity extends Activity {
     private static final int BAR_MIN_SAMPLES = 3, BAR_MAX_SAMPLES = 8, BAR_LUMA = 40;
     /** na TV a legenda é desenhada dentro da imagem, a ~8% da borda de baixo do quadro: o zoom pode cortar no máximo isto da borda de baixo */
     private static final float SUB_CUT = 0.055f;
+    /** na TV a legenda é desenhada no quadro e cresce junto com o zoom: o zoom só pode cortar isto de cada lado (a linha mais larga da legenda ocupa ~85% do quadro) */
+    private static final float SUB_SAFE_X = 0.04f;
     private final Runnable barTickRun = this::barTick;
 
     private void startBarSampling() {
@@ -263,6 +265,7 @@ public class PlayerActivity extends Activity {
                 if (subsInside && bB > 0f) kb = Math.max(ay1, fy0 + dh * (1f - SUB_CUT));
                 f = Math.max((float) w / aw, (float) h / ah);
                 if (aw * f > COVER_MAX_WIDTH * w) f = COVER_MAX_WIDTH * w / aw;
+                if (subsInside) f = Math.min(f, w / (dw * (1f - 2f * SUB_SAFE_X)));   // TV: legenda nunca cortada nas laterais
                 if (kb > ay1 + 0.5f) f = Math.min(f, h / (kb - ay0));
                 f = Math.max(1f, f);
                 if (f > 1.001f) {
@@ -270,7 +273,11 @@ public class PlayerActivity extends Activity {
                     float wx0 = (ax0 + ax1) / 2f - winW / 2f;
                     if (winW <= dw) wx0 = Math.max(fx0, Math.min(fx0 + dw - winW, wx0)); else wx0 = fx0 + dw / 2f - winW / 2f;
                     float wy0;
-                    if (kb > ay1 + 0.5f) wy0 = kb - winH;                                  // TV com barra: janela termina no fim da faixa da legenda
+                    if (subsInside && winH >= (kb > ay1 + 0.5f ? kb - ay0 : ah) - 0.5f) {  // TV: janela maior que a imagem ativa: centra (letterbox simétrico)
+                        wy0 = (ay0 + ay1) / 2f - winH / 2f;
+                        if (kb > ay1 + 0.5f) wy0 = Math.max(wy0, kb - winH);              // sem cortar a faixa da legenda
+                    }
+                    else if (kb > ay1 + 0.5f) wy0 = kb - winH;                             // TV com barra: janela termina no fim da faixa da legenda
                     else if (!subsInside && (bT > 0f || bB > 0f)) {                       // celular com barras em cima/baixo: imagem ativa centrada
                         wy0 = (ay0 + ay1) / 2f - winH / 2f;
                         if (winH <= dh) wy0 = Math.max(fy0, Math.min(fy0 + dh - winH, wy0));
