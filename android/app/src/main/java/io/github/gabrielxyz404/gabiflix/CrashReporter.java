@@ -165,6 +165,7 @@ public final class CrashReporter {
                 for (ApplicationExitInfo i : list) {
                     int r = i.getReason();
                     if (r == ApplicationExitInfo.REASON_EXIT_SELF || r == ApplicationExitInfo.REASON_USER_REQUESTED || r == 11 /* USER_STOPPED */) continue;
+                    if (i.getProcessName() == null || !i.getProcessName().startsWith(app.getPackageName())) continue;   // processos do WebView e afins não são do app
                     String id = i.getPid() + "@" + i.getTimestamp();
                     if (sent.contains("|" + id + "|") || count >= 6) continue;
                     count++;
