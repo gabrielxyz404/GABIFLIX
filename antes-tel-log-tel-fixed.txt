@@ -1,0 +1,116 @@
+         1795016813.215   490  3471 I ActivityManager: Force stopping io.github.gabrielxyz404.gabiflix appid=10167 user=0: from pid 7705
+         1795016813.216   490  3471 I ActivityManager: Killing 7097:io.github.gabrielxyz404.gabiflix/u0a167 (adj 0): stop io.github.gabrielxyz404.gabiflix due to from pid 7705
+         1795016813.218   490  3471 W ActivityTaskManager: Force removing ActivityRecord{146b04f u0 io.github.gabrielxyz404.gabiflix/.PlayerActivity t10 f}}: app died, no saved state
+         1795016813.227   490  3471 W ActivityTaskManager: Force removing ActivityRecord{72a17b6 u0 io.github.gabrielxyz404.gabiflix/.MainActivity t10 f}}: app died, no saved state
+         1795016813.234  7190  7190 I AndroidRuntime: VM exiting with result code 0, cleanup skipped.
+         1795016813.239   490  3471 I ActivityManager: Killing 7190:com.google.android.webview:sandboxed_process0:org.chromium.content.app.SandboxedProcessService0:0/u0a167i1 (adj 0): isolated not needed
+         1795016813.324   490   523 W ActivityManager: setHasOverlayUi called on unknown pid: 7097
+         1795016813.500   490   523 W ActivityTaskManager: Current config: {1.0 310mcc260mnc [en_US] ldltr sw411dp w866dp h381dp 420dpi nrml long land finger qwerty/v/v -nav/h winConfig={ mBounds=Rect(0, 0 - 2400, 1080) mAppBounds=Rect(0, 0 - 2274, 1080) mWindowingMode=fullscreen mDisplayWindowingMode=fullscreen mActivityType=undefined mAlwaysOnTop=undefined mRotation=ROTATION_90} s.243} unchanged for IME proc com.google.android.inputmethod.latin
+         1795016813.500   490   523 I ActivityTaskManager: Config changes=20000480 {1.0 310mcc260mnc [en_US] ldltr sw411dp w411dp h836dp 420dpi nrml long port finger qwerty/v/v -nav/h winConfig={ mBounds=Rect(0, 0 - 1080, 2400) mAppBounds=Rect(0, 0 - 1080, 2274) mWindowingMode=fullscreen mDisplayWindowingMode=fullscreen mActivityType=undefined mAlwaysOnTop=undefined mRotation=ROTATION_0} s.282}
+         1795016813.502   490   523 W ActivityTaskManager: Current config: {1.0 310mcc260mnc [en_US] ldltr sw411dp w866dp h381dp 420dpi nrml long land finger qwerty/v/v -nav/h winConfig={ mBounds=Rect(0, 0 - 2400, 1080) mAppBounds=Rect(0, 0 - 2274, 1080) mWindowingMode=fullscreen mDisplayWindowingMode=fullscreen mActivityType=undefined mAlwaysOnTop=undefined mRotation=ROTATION_90} s.243} unchanged for IME proc com.google.android.inputmethod.latin
+         1795016813.502   490   523 V ActivityTaskManager: Sending to IME proc com.google.android.inputmethod.latin new config {1.0 310mcc260mnc [en_US] ldltr sw411dp w411dp h836dp 420dpi nrml long port finger qwerty/v/v -nav/h winConfig={ mBounds=Rect(0, 0 - 1080, 2400) mAppBounds=Rect(0, 0 - 1080, 2274) mWindowingMode=fullscreen mDisplayWindowingMode=fullscreen mActivityType=undefined mAlwaysOnTop=undefined mRotation=ROTATION_0} s.282}
+         1795016813.502   490   523 W ActivityTaskManager: Current config: {1.0 310mcc260mnc [en_US] ldltr sw411dp w411dp h836dp 420dpi nrml long port finger qwerty/v/v -nav/h winConfig={ mBounds=Rect(0, 0 - 1080, 2400) mAppBounds=Rect(0, 0 - 1080, 2274) mWindowingMode=fullscreen mDisplayWindowingMode=fullscreen mActivityType=undefined mAlwaysOnTop=undefined mRotation=ROTATION_0} s.282} unchanged for IME proc com.google.android.inputmethod.latin
+         1795016814.289   490   969 I ActivityManager: Force stopping io.github.gabrielxyz404.gabiflix appid=10167 user=0: clear data
+         1795016814.293   490   529 I ActivityManager: Force stopping io.github.gabrielxyz404.gabiflix appid=10167 user=-1: clearApplicationUserData
+         1795016814.503   490  1819 I ActivityTaskManager: START u0 {act=android.intent.action.MAIN cat=[android.intent.category.LAUNCHER] flg=0x10200000 cmp=io.github.gabrielxyz404.gabiflix/.MainActivity} from uid 0
+         1795016814.620   490   530 W ActivityManager: Slow operation: 88ms so far, now at startProcess: returned from zygote!
+         1795016814.620   490   530 W ActivityManager: Slow operation: 88ms so far, now at startProcess: done updating battery stats
+         1795016814.620   490   530 W ActivityManager: Slow operation: 88ms so far, now at startProcess: building log message
+         1795016814.620   490   530 I ActivityManager: Start proc 7750:io.github.gabrielxyz404.gabiflix/u0a167 for pre-top-activity {io.github.gabrielxyz404.gabiflix/io.github.gabrielxyz404.gabiflix.MainActivity}
+         1795016814.620   490   530 W ActivityManager: Slow operation: 88ms so far, now at startProcess: starting to update pids map
+         1795016814.620   490   530 W ActivityManager: Slow operation: 88ms so far, now at startProcess: done updating pids map
+         1795016815.017   490   530 I ActivityManager: Start proc 7784:com.google.android.webview:sandboxed_process0:org.chromium.content.app.SandboxedProcessService0:0/u0i2 for  {io.github.gabrielxyz404.gabiflix/org.chromium.content.app.SandboxedProcessService0:0}
+         1795016815.395   490   528 I ActivityTaskManager: Displayed io.github.gabrielxyz404.gabiflix/.MainActivity: +855ms
+         1795016819.025  7750  7773 I GFCrash : corpo de CRASH_NATIVE:
+         1795016819.025  7750  7773 I GFCrash : FramePlay 1.0 | CRASH_NATIVE | processo io.github.gabrielxyz404.gabiflix:audiocap
+         1795016819.025  7750  7773 I GFCrash : Aparelho: Google sdk_gphone_x86 | Android 11 (API 30) | RAM 1981 MB, livre 1156 MB | tv=false
+         1795016819.025  7750  7773 I GFCrash : ABI: [x86, armeabi-v7a, armeabi] (64 bits: []) processo=32 bits
+         1795016819.025  7750  7773 I GFCrash : Código: 5  estado: 11  importância: 100
+         1795016819.025  7750  7773 I GFCrash : Hora da morte: 2026-11-18 15:45:22
+         1795016819.025  7750  7773 I GFCrash : Descrição: crash
+         1795016819.025  7750  7773 I GFCrash : PSS: 0 kB  RSS: 0 kB
+         1795016819.025  7750  7773 I GFCrash : 
+         1795016819.025  7750  7773 I GFCrash : Registo de queda do sistema (logcat, filtrado):
+         1795016819.025  7750  7773 I GFCrash : (nenhuma linha de queda do pid 7427 no registo do sistema; buffer crash=0 bytes, principal=28 bytes)
+         1795016819.025  7750  7773 I GFCrash : 
+         1795016819.025  7750  7773 I GFCrash : Migalhas do processo audiocap antes da morte:
+         1795016819.025  7750  7773 I GFCrash : (sem migalhas)
+         1795016819.624  7750  7773 I GFCrash : POST CRASH_NATIVE parte 1/1 (568 bytes) -> HTTP 200
+         1795016821.834  6976  7023 E libc    : Access denied finding property "persist.adb.tls_server.enable"
+         1795016821.835  6976  7023 E libc    : Access denied finding property "service.adb.tls.port"
+         1795016822.578   490  1763 I ActivityTaskManager: START u0 {flg=0x10000000 cmp=io.github.gabrielxyz404.gabiflix/.PlayerActivity (has extras)} from uid 0
+         1795016822.592   490  1763 W ActivityTaskManager: Tried to set launchTime (0) < mLastActivityLaunchTime (347176)
+         1795016822.639  7750  7750 I GabiFlixPlayer: ciclo: onStart, tocando=false, tempo=-1, escala=0, atraso=0, vista=SurfaceView 0x0, vout=true
+         1795016822.640  7750  7750 I GabiFlixPlayer: ciclo: onResume, tocando=false, tempo=-1, escala=0, atraso=0, vista=SurfaceView 0x0, vout=true
+         1795016822.816  7750  7879 I GabiFlixPlayer: hash=7ca135ceed9da48f tamanho=39670384 arquivo=clip.mkv
+         1795016822.816  7750  7879 I GabiFlixPlayer: Hash calculado, mas a busca de legendas falhou
+         1795016822.816  7750  7879 I GabiFlixPlayer: candidatas para baixar: 1 (do site: 1)
+         1795016823.201  7750  7879 I GabiFlixPlayer: legendas PT válidas: 1 de 1; referências baixadas: 0
+         1795016823.295   490   528 I ActivityTaskManager: Displayed io.github.gabrielxyz404.gabiflix/.PlayerActivity: +716ms
+         1795016823.307  7750  7879 I GabiFlixPlayer: alinhamento com 0 referência(s):
+         1795016823.307  7750  7879 I GabiFlixPlayer:   sem referência (nem outro idioma, nem PT do hash) e menos de 2 PT para comparar: ranking antigo
+         1795016823.307  7750  7879 I GabiFlixPlayer:   alinhadas: 0
+         1795016823.322   490   523 W ActivityTaskManager: Current config: {1.0 310mcc260mnc [en_US] ldltr sw411dp w411dp h836dp 420dpi nrml long port finger qwerty/v/v -nav/h winConfig={ mBounds=Rect(0, 0 - 1080, 2400) mAppBounds=Rect(0, 0 - 1080, 2274) mWindowingMode=fullscreen mDisplayWindowingMode=fullscreen mActivityType=undefined mAlwaysOnTop=undefined mRotation=ROTATION_0} s.282} unchanged for IME proc com.google.android.inputmethod.latin
+         1795016823.322   490   523 I ActivityTaskManager: Config changes=20000480 {1.0 310mcc260mnc [en_US] ldltr sw411dp w866dp h381dp 420dpi nrml long land finger qwerty/v/v -nav/h winConfig={ mBounds=Rect(0, 0 - 2400, 1080) mAppBounds=Rect(0, 0 - 2274, 1080) mWindowingMode=fullscreen mDisplayWindowingMode=fullscreen mActivityType=undefined mAlwaysOnTop=undefined mRotation=ROTATION_90} s.316}
+         1795016823.325   490   523 W ActivityTaskManager: Current config: {1.0 310mcc260mnc [en_US] ldltr sw411dp w411dp h836dp 420dpi nrml long port finger qwerty/v/v -nav/h winConfig={ mBounds=Rect(0, 0 - 1080, 2400) mAppBounds=Rect(0, 0 - 1080, 2274) mWindowingMode=fullscreen mDisplayWindowingMode=fullscreen mActivityType=undefined mAlwaysOnTop=undefined mRotation=ROTATION_0} s.282} unchanged for IME proc com.google.android.inputmethod.latin
+         1795016823.327   490   523 V ActivityTaskManager: Sending to IME proc com.google.android.inputmethod.latin new config {1.0 310mcc260mnc [en_US] ldltr sw411dp w866dp h381dp 420dpi nrml long land finger qwerty/v/v -nav/h winConfig={ mBounds=Rect(0, 0 - 2400, 1080) mAppBounds=Rect(0, 0 - 2274, 1080) mWindowingMode=fullscreen mDisplayWindowingMode=fullscreen mActivityType=undefined mAlwaysOnTop=undefined mRotation=ROTATION_90} s.316}
+         1795016823.327   490   523 W ActivityTaskManager: Current config: {1.0 310mcc260mnc [en_US] ldltr sw411dp w866dp h381dp 420dpi nrml long land finger qwerty/v/v -nav/h winConfig={ mBounds=Rect(0, 0 - 2400, 1080) mAppBounds=Rect(0, 0 - 2274, 1080) mWindowingMode=fullscreen mDisplayWindowingMode=fullscreen mActivityType=undefined mAlwaysOnTop=undefined mRotation=ROTATION_90} s.316} unchanged for IME proc com.google.android.inputmethod.latin
+         1795016823.801  7750  7750 I GabiFlixPlayer: ciclo: evento Vout, saídas=1
+         1795016825.489  7750  7750 I GabiFlixPlayer: vistas do vídeo: SurfaceView(vídeo) SurfaceView
+         1795016825.490  7750  7750 I GabiFlixPlayer: AUDIOSYNC pronto (sem limite de dados; automático=true, começa 25 s depois de a legenda ficar ativa, reverifica a cada 600 s)
+         1795016825.544  7750  7750 I GabiFlixPlayer: legenda PT embutida: não há
+         1795016825.548  7750  7750 I GabiFlixPlayer: ranking das legendas:
+         1795016825.548  7750  7750 I GabiFlixPlayer:   referência de fim=0ms (sem referência), duração=1200023ms
+         1795016825.548  7750  7750 I GabiFlixPlayer:   #0 fim=6111228ms hash=false corrigida=false nota=0.3000
+         1795016825.549  7750  7750 I GabiFlixPlayer: escolhida: candidata #0; melhor baixada: #0 alinhada=false nota=0.00 deslocamento=0ms hash=false corrigida=false; 1 no menu
+         1795016825.549  7750  7750 I GabiFlixPlayer: atraso da legenda ativa (nenhuma): 0 ms
+         1795016826.003  7750  7750 I GabiFlixPlayer: legenda do app: 1458 falas da faixa ativa
+         1795016826.003  7750  7750 I GabiFlixPlayer: legenda do app: ligada
+         1795016826.506  7750  7750 I GabiFlixPlayer: AUDIOSYNC estado: st=0 executando=false tocando=true carregando=false faixa=2 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 2:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=131MB java=6/512MB nativo=64MB livre=1111MB limiar=144MB poucaMemoria=false
+         1795016826.506  7750  7750 I GabiFlixPlayer: AUDIOSYNC legenda ativa: d3:u|h:7ca135ceed9da48f|http://10.0.2.2:8000/mais3.srt#raw
+         1795016827.051  7750  7750 I GabiFlixPlayer: atraso da legenda ativa (d3:u|h:7ca135ceed9da48f|http://10.0.2.2:8000/mais3.srt#raw): 0 ms
+         1795016846.518  7750  7750 I GabiFlixPlayer: AUDIOSYNC estado: st=0 executando=false tocando=true carregando=false faixa=2 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 2:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=136MB java=6/512MB nativo=64MB livre=1113MB limiar=144MB poucaMemoria=false
+         1795016856.528  7750  7750 I GabiFlixPlayer: AUDIOSYNC antes da análise: saúde da reprodução: amostras=30 paradas=0 razão_mínima=0.75 carregando=0 quadros_perdidos=9
+         1795016856.528  7750  7750 I GabiFlixPlayer: AUDIOSYNC começando: posição 32 s, duração 1200 s, atraso atual 0 ms, faixa de áudio 1
+         1795016856.653   490   530 I ActivityManager: Start proc 7950:io.github.gabrielxyz404.gabiflix:audiocap/u0a167 for service {io.github.gabrielxyz404.gabiflix/io.github.gabrielxyz404.gabiflix.AudioCapService}
+         1795016859.405  7750  7947 I GabiFlixPlayer: AUDIOSYNC captura 275 s +90 s: 90.06 s de PCM em 2.77 s (fim) leitura=2 MB | usou a faixa -1 (pedida 1) de []
+         1795016859.441  7750  7947 I GabiFlixPlayer: AUDIOSYNC Silero indisponível (ARM de 32 bits: só o VAD por DSP): usando o VAD por DSP
+         1795016863.032   490   530 W ActivityManager: Slow operation: 144ms so far, now at startProcess: returned from zygote!
+         1795016863.032   490   530 W ActivityManager: Slow operation: 144ms so far, now at startProcess: done updating battery stats
+         1795016863.032   490   530 W ActivityManager: Slow operation: 144ms so far, now at startProcess: building log message
+         1795016863.032   490   530 I ActivityManager: Start proc 7999:com.google.android.apps.pixelmigrate/u0a115 for broadcast {com.google.android.apps.pixelmigrate/com.google.android.apps.pixelmigrate.component.PhenotypeUpdateReceiver}
+         1795016863.032   490   530 W ActivityManager: Slow operation: 144ms so far, now at startProcess: starting to update pids map
+         1795016863.032   490   530 W ActivityManager: Slow operation: 144ms so far, now at startProcess: done updating pids map
+         1795016863.151   490   530 I ActivityManager: Start proc 8028:com.google.android.apps.restore/u0a111 for broadcast {com.google.android.apps.restore/com.google.android.apps.pixelmigrate.component.PhenotypeUpdateReceiver}
+         1795016863.361   490   530 W ActivityManager: Slow operation: 56ms so far, now at startProcess: returned from zygote!
+         1795016863.366   490   530 W ActivityManager: Slow operation: 61ms so far, now at startProcess: done updating battery stats
+         1795016863.366   490   530 W ActivityManager: Slow operation: 61ms so far, now at startProcess: building log message
+         1795016863.366   490   530 I ActivityManager: Start proc 8061:com.google.android.gms.ui/u0a121 for service {com.google.android.gms/com.google.android.gms.chimera.UiIntentOperationService}
+         1795016863.366   490   530 W ActivityManager: Slow operation: 61ms so far, now at startProcess: starting to update pids map
+         1795016863.366   490   530 W ActivityManager: Slow operation: 62ms so far, now at startProcess: done updating pids map
+         1795016863.904  7750  7947 I GabiFlixPlayer: AUDIOSYNC captura 710 s +90 s: 89.97 s de PCM em 2.99 s (fim) leitura=4 MB | usou a faixa 1 (pedida 1) de [1:Scarlet Street 1945 HD; ]
+         1795016864.068  7750  7947 I GabiFlixPlayer: AUDIOSYNC Silero indisponível (ARM de 32 bits: só o VAD por DSP): usando o VAD por DSP
+         1795016866.564  7750  7750 I GabiFlixPlayer: AUDIOSYNC estado: st=0 executando=true tocando=true carregando=false faixa=2 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 2:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=125MB java=12/512MB nativo=63MB livre=1059MB limiar=144MB poucaMemoria=false
+         1795016867.493   490   518 W ActivityManager: Unable to start service Intent { act=com.google.android.gms.auth.key.retrieval.service.START pkg=com.google.android.gms } U=0: not found
+         1795016867.494   490   518 W ActivityManager: Unbind failed: could not find connection for android.os.BinderProxy@2831b54
+         1795016868.814  7750  7947 I GabiFlixPlayer: AUDIOSYNC captura 1050 s +90 s: 89.99 s de PCM em 2.71 s (fim) leitura=4 MB | usou a faixa 1 (pedida 1) de [1:Scarlet Street 1945 HD; ]
+         1795016868.824  7750  7947 I GabiFlixPlayer: AUDIOSYNC Silero indisponível (ARM de 32 bits: só o VAD por DSP): usando o VAD por DSP
+         1795016870.157  7750  7750 I GabiFlixPlayer: AUDIOSYNC resultado: recusada z=9.0 janelas=2/3 (janelas discordam;) | vad=dsp(reserva) janelas=3 captura=13052 ms vad=3688 ms (cpu 2680) solve=456 ms (cpu 360) cpu_thread=3183 ms total=13616 ms leitura_estimada=8 MB leitura_real=12 MB pss=136->133 MB java=7->19 MB
+         1795016870.158  7750  7750 I GabiFlixPlayer: AUDIOSYNC saúde da reprodução: amostras=13 paradas=0 razão_mínima=0.76 carregando=0 quadros_perdidos=1
+         1795016870.158  7750  7750 I GabiFlixPlayer: AUDIOSYNC o áudio não tem certeza: legenda deixada como estava
+         1795016872.196  7950  7950 I AndroidRuntime: VM exiting with result code 0, cleanup skipped.
+         1795016872.204   490  4522 I ActivityManager: Process io.github.gabrielxyz404.gabiflix:audiocap (pid 7950) has died: cch+5 CEM 
+         1795016874.179  7750  7750 I GabiFlixPlayer: legenda do app: tempo 49715 ms, atraso 0 ms -> "ALMAS PERVERSAS (1945)"
+         1795016879.015   490  4522 I ActivityManager: Killing 2402:com.android.providers.calendar/u0a89 (adj 975): empty #17
+         1795016879.308  7750  7750 I GabiFlixPlayer: legenda do app: tempo 54923 ms, atraso 0 ms -> (nada)
+         1795016882.647   490   786 I ActivityManager: Killing 6773:com.google.android.partnersetup/u0a116 (adj 985): empty #17
+         1795016886.603  7750  7750 I GabiFlixPlayer: AUDIOSYNC estado: st=3 executando=false tocando=true carregando=false faixa=2 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 2:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=139MB java=19/512MB nativo=63MB livre=1087MB limiar=144MB poucaMemoria=false
+         1795016895.779   490   530 I ActivityManager: Start proc 8200:com.google.android.projection.gearhead:shared/u0a122 for service {com.google.android.projection.gearhead/com.google.android.apps.auto.components.app.fzero.LauncherIconStateVerificationService}
+         1795016895.918  8200  8200 I GAv4    :   adb shell setprop log.tag.GAv4 DEBUG
+         1795016896.034   490  4522 I ActivityManager: Killing 6806:com.google.android.videos/u0a147 (adj 985): empty #17
+         1795016896.056   490   517 I ActivityManager: Killing 6736:android.process.media/u0a81 (adj 975): empty #17
+         1795016896.072   490  2189 I ActivityManager: Killing 7206:com.google.android.apps.docs/u0a146 (adj 985): empty #17
+         1795016906.621  7750  7750 I GabiFlixPlayer: AUDIOSYNC estado: st=3 executando=false tocando=true carregando=false faixa=2 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 2:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=139MB java=20/512MB nativo=63MB livre=1115MB limiar=144MB poucaMemoria=false
+         1795016926.636  7750  7750 I GabiFlixPlayer: AUDIOSYNC estado: st=3 executando=false tocando=true carregando=false faixa=2 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 2:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=129MB java=21/512MB nativo=63MB livre=1118MB limiar=144MB poucaMemoria=false
+         1795016946.652  7750  7750 I GabiFlixPlayer: AUDIOSYNC estado: st=3 executando=false tocando=true carregando=false faixa=2 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 2:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=130MB java=21/512MB nativo=63MB livre=1123MB limiar=144MB poucaMemoria=false
+         1795016966.672  7750  7750 I GabiFlixPlayer: AUDIOSYNC estado: st=3 executando=false tocando=true carregando=false faixa=2 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 2:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=129MB java=22/512MB nativo=63MB livre=1118MB limiar=144MB poucaMemoria=false

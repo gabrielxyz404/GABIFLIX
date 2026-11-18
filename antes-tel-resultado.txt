@@ -1,0 +1,188 @@
+aparelho: mem=MemTotal:        2028632 kB api=30
+tel-queda-vad: início  mResumedActivity: ActivityRecord{4d9d82f u0 io.github.gabrielxyz404.gabiflix/.PlayerActivity t9}
+ * Task{ed4edda #9 visible=true type=standard mode=fullscreen translucent=false A=10167:io.github.gabrielxyz404.gabiflix U=0 StackId=9 sz=2}
+ * Hist #1: ActivityRecord{4d9d82f u0 io.github.gabrielxyz404.gabiflix/.PlayerActivity t9}
+ rootOfTask=false task=Task{ed4edda #9 visible=true type=standard mode=fullscreen translucent=false A=10167:io.github.gabrielxyz404.gabiflix U=0 StackId=9 sz=2}
+ * Hist #0: ActivityRecord{d1718fc u0 io.github.gabrielxyz404.gabiflix/.MainActivity t9}
+ rootOfTask=true task=Task{ed4edda #9 visible=true type=standard mode=fullscreen translucent=false A=10167:io.github.gabrielxyz404.gabiflix U=0 StackId=9 sz=2}
+ * Task{4c07355 #8 visible=true type=home mode=fullscreen translucent=false I=com.google.android.apps.nexuslauncher/.NexusLauncherActivity U=0 StackId=1 sz=1}
+ rootOfTask=true task=Task{4c07355 #8 visible=true type=home mode=fullscreen translucent=false I=com.google.android.apps.nexuslauncher/.NexusLauncherActivity U=0 StackId=1 sz=1}
+ topDisplayFocusedStack=Task{ed4edda #9 visible=true type=standard mode=fullscreen translucent=false A=10167:io.github.gabrielxyz404.gabiflix U=0 StackId=9 sz=2}
+ mLastOrientationSource=Task{ed4edda #9 visible=true type=standard mode=fullscreen translucent=false A=10167:io.github.gabrielxyz404.gabiflix U=0 StackId=9 sz=2}
+ mPreferredTopFocusableStack=Task{ed4edda #9 visible=true type=standard mode=fullscreen translucent=false A=10167:io.github.gabrielxyz404.gabiflix U=0 StackId=9 sz=2}
+ mLastFocusedStack=Task{ed4edda #9 visible=true type=standard mode=fullscreen translucent=false A=10167:io.github.gabrielxyz404.gabiflix U=0 StackId=9 sz=2}
+ * Task{ed4edda #9 visible=true type=standard mode=fullscreen translucent=false A=10167:io.github.gabrielxyz404.gabiflix U=0 StackId=9 sz=2}
+tel-queda-vad: resultado_visto=1 vivo=1 
+tel-queda-vad: linhas fatais=0 |          1795016593.828  5001  5001 I GabiFlixPlayer: AUDIOSYNC resultado: recusada z=9.0 janelas=2/3 (janelas discordam;) | vad=dsp(reserva) janelas=3 captura=11664 ms vad=2788 ms (cpu 2464) solve=451 ms (cpu 376) cpu_thread=2958 ms total=12279 ms leitura_est
+tel-queda-vad: ===== PROVA (gancho vad) =====
+         1795016584.358  5001  6557 I GabiFlixPlayer: AUDIOSYNC Silero indisponível (ARM de 32 bits: só o VAD por DSP): usando o VAD por DSP
+         1795016588.542  5001  6557 I GabiFlixPlayer: AUDIOSYNC Silero indisponível (ARM de 32 bits: só o VAD por DSP): usando o VAD por DSP
+         1795016592.580  5001  6557 I GabiFlixPlayer: AUDIOSYNC Silero indisponível (ARM de 32 bits: só o VAD por DSP): usando o VAD por DSP
+         1795016593.828  5001  5001 I GabiFlixPlayer: AUDIOSYNC resultado: recusada z=9.0 janelas=2/3 (janelas discordam;) | vad=dsp(reserva) janelas=3 captura=11664 ms vad=2788 ms (cpu 2464) solve=451 ms (cpu 376) cpu_thread=2958 ms total=12279 ms leitura_estimada=8 MB leitura_real=11 MB pss=108->104 MB java=5->14 MB
+tel-queda-vad: relatórios CAPTURA_CAIU enviados: 0 | respostas: 
+tel-queda-vad: linhas de queda no relatório (Fatal signal/backtrace/#NN pc): 0
+tel-queda-vad: o app ainda está no player?  mResumedActivity: ActivityRecord{4d9d82f u0 io.github.gabrielxyz404.gabiflix/.PlayerActivity t9}
+tel-queda-captura: início  mResumedActivity: ActivityRecord{146b04f u0 io.github.gabrielxyz404.gabiflix/.PlayerActivity t10}
+ * Task{38f4c24 #10 visible=true type=standard mode=fullscreen translucent=false A=10167:io.github.gabrielxyz404.gabiflix U=0 StackId=10 sz=2}
+ * Hist #1: ActivityRecord{146b04f u0 io.github.gabrielxyz404.gabiflix/.PlayerActivity t10}
+ rootOfTask=false task=Task{38f4c24 #10 visible=true type=standard mode=fullscreen translucent=false A=10167:io.github.gabrielxyz404.gabiflix U=0 StackId=10 sz=2}
+ * Hist #0: ActivityRecord{72a17b6 u0 io.github.gabrielxyz404.gabiflix/.MainActivity t10}
+ rootOfTask=true task=Task{38f4c24 #10 visible=true type=standard mode=fullscreen translucent=false A=10167:io.github.gabrielxyz404.gabiflix U=0 StackId=10 sz=2}
+ * Task{4c07355 #8 visible=true type=home mode=fullscreen translucent=false I=com.google.android.apps.nexuslauncher/.NexusLauncherActivity U=0 StackId=1 sz=1}
+ rootOfTask=true task=Task{4c07355 #8 visible=true type=home mode=fullscreen translucent=false I=com.google.android.apps.nexuslauncher/.NexusLauncherActivity U=0 StackId=1 sz=1}
+ topDisplayFocusedStack=Task{38f4c24 #10 visible=true type=standard mode=fullscreen translucent=false A=10167:io.github.gabrielxyz404.gabiflix U=0 StackId=10 sz=2}
+ mLastOrientationSource=Task{38f4c24 #10 visible=true type=standard mode=fullscreen translucent=false A=10167:io.github.gabrielxyz404.gabiflix U=0 StackId=10 sz=2}
+ mPreferredTopFocusableStack=Task{38f4c24 #10 visible=true type=standard mode=fullscreen translucent=false A=10167:io.github.gabrielxyz404.gabiflix U=0 StackId=10 sz=2}
+ mLastFocusedStack=Task{38f4c24 #10 visible=true type=standard mode=fullscreen translucent=false A=10167:io.github.gabrielxyz404.gabiflix U=0 StackId=10 sz=2}
+ * Task{38f4c24 #10 visible=true type=standard mode=fullscreen translucent=false A=10167:io.github.gabrielxyz404.gabiflix U=0 StackId=10 sz=2}
+tel-queda-captura: resultado_visto=1 vivo=1 
+tel-queda-captura: linhas fatais=2 |          1795016736.371  7097  7097 I GabiFlixPlayer: AUDIOSYNC resultado: recusada z=9.0 janelas=2/3 (janelas discordam;) | vad=dsp(reserva) janelas=3 captura=16080 ms vad=2989 ms (cpu 2580) solve=410 ms (cpu 335) cpu_thread=3023 ms total=16610 ms leitura_est
+tel-queda-captura: ===== PROVA (gancho capture) =====
+         1795016722.888  7097  7097 I GabiFlixPlayer: AUDIOSYNC o processo de captura caiu (desconectou) durante: captura cfg=0; o filme continua. Última etapa: 15:45:22.046 pid=7427 TESTE: queda nativa forçada durante a captura (cfg=0)
+         1795016722.889  7097  7424 I GabiFlixPlayer: AUDIOSYNC a captura derrubou o processo com a configuração 0 (padrão); tento a configuração 1 na hora
+         1795016726.162  7097  7424 I GabiFlixPlayer: AUDIOSYNC captura recuperada com a configuração 1 depois de queda(s) do processo
+         1795016726.185  7097  7424 I GabiFlixPlayer: AUDIOSYNC Silero indisponível (ARM de 32 bits: só o VAD por DSP): usando o VAD por DSP
+         1795016731.205  7097  7424 I GabiFlixPlayer: AUDIOSYNC captura recuperada com a configuração 1 depois de queda(s) do processo
+         1795016731.219  7097  7424 I GabiFlixPlayer: AUDIOSYNC Silero indisponível (ARM de 32 bits: só o VAD por DSP): usando o VAD por DSP
+         1795016735.143  7097  7424 I GabiFlixPlayer: AUDIOSYNC captura recuperada com a configuração 1 depois de queda(s) do processo
+         1795016735.155  7097  7424 I GabiFlixPlayer: AUDIOSYNC Silero indisponível (ARM de 32 bits: só o VAD por DSP): usando o VAD por DSP
+         1795016736.371  7097  7097 I GabiFlixPlayer: AUDIOSYNC resultado: recusada z=9.0 janelas=2/3 (janelas discordam;) | vad=dsp(reserva) janelas=3 captura=16080 ms vad=2989 ms (cpu 2580) solve=410 ms (cpu 335) cpu_thread=3023 ms total=16610 ms leitura_estimada=8 MB leitura_real=11 MB pss=134->137 MB java=6->24 MB
+tel-queda-captura: relatórios CAPTURA_CAIU enviados: 2 | respostas:       2 HTTP 200 
+tel-queda-captura: linhas de queda no relatório (Fatal signal/backtrace/#NN pc): 26
+tel-queda-captura: o app ainda está no player?  mResumedActivity: ActivityRecord{146b04f u0 io.github.gabrielxyz404.gabiflix/.PlayerActivity t10}
+tel-fixed: início  mResumedActivity: ActivityRecord{eb7451d u0 io.github.gabrielxyz404.gabiflix/.PlayerActivity t11}
+ * Task{faaff9a #11 visible=true type=standard mode=fullscreen translucent=false A=10167:io.github.gabrielxyz404.gabiflix U=0 StackId=11 sz=2}
+ * Hist #1: ActivityRecord{eb7451d u0 io.github.gabrielxyz404.gabiflix/.PlayerActivity t11}
+ rootOfTask=false task=Task{faaff9a #11 visible=true type=standard mode=fullscreen translucent=false A=10167:io.github.gabrielxyz404.gabiflix U=0 StackId=11 sz=2}
+ * Hist #0: ActivityRecord{d1cd978 u0 io.github.gabrielxyz404.gabiflix/.MainActivity t11}
+ rootOfTask=true task=Task{faaff9a #11 visible=true type=standard mode=fullscreen translucent=false A=10167:io.github.gabrielxyz404.gabiflix U=0 StackId=11 sz=2}
+ * Task{4c07355 #8 visible=true type=home mode=fullscreen translucent=false I=com.google.android.apps.nexuslauncher/.NexusLauncherActivity U=0 StackId=1 sz=1}
+ rootOfTask=true task=Task{4c07355 #8 visible=true type=home mode=fullscreen translucent=false I=com.google.android.apps.nexuslauncher/.NexusLauncherActivity U=0 StackId=1 sz=1}
+ topDisplayFocusedStack=Task{faaff9a #11 visible=true type=standard mode=fullscreen translucent=false A=10167:io.github.gabrielxyz404.gabiflix U=0 StackId=11 sz=2}
+ mLastOrientationSource=Task{faaff9a #11 visible=true type=standard mode=fullscreen translucent=false A=10167:io.github.gabrielxyz404.gabiflix U=0 StackId=11 sz=2}
+ mPreferredTopFocusableStack=Task{faaff9a #11 visible=true type=standard mode=fullscreen translucent=false A=10167:io.github.gabrielxyz404.gabiflix U=0 StackId=11 sz=2}
+ mLastFocusedStack=Task{faaff9a #11 visible=true type=standard mode=fullscreen translucent=false A=10167:io.github.gabrielxyz404.gabiflix U=0 StackId=11 sz=2}
+ * Task{faaff9a #11 visible=true type=standard mode=fullscreen translucent=false A=10167:io.github.gabrielxyz404.gabiflix U=0 StackId=11 sz=2}
+tel-fixed: resultado_visto=1 vivo=1 
+tel-fixed: linhas fatais=0 |          1795016870.157  7750  7750 I GabiFlixPlayer: AUDIOSYNC resultado: recusada z=9.0 janelas=2/3 (janelas discordam;) | vad=dsp(reserva) janelas=3 captura=13052 ms vad=3688 ms (cpu 2680) solve=456 ms (cpu 360) cpu_thread=3183 ms total=13616 ms leitura_est
+tel-home-analise: antes do HOME  mResumedActivity: ActivityRecord{8ce089e u0 io.github.gabrielxyz404.gabiflix/.PlayerActivity t12} pid=8435
+ * Task{55a0116 #12 visible=true type=standard mode=fullscreen translucent=false A=10167:io.github.gabrielxyz404.gabiflix U=0 StackId=12 sz=2}
+ * Hist #1: ActivityRecord{8ce089e u0 io.github.gabrielxyz404.gabiflix/.PlayerActivity t12}
+ rootOfTask=false task=Task{55a0116 #12 visible=true type=standard mode=fullscreen translucent=false A=10167:io.github.gabrielxyz404.gabiflix U=0 StackId=12 sz=2}
+ * Hist #0: ActivityRecord{56652d8 u0 io.github.gabrielxyz404.gabiflix/.MainActivity t12}
+ rootOfTask=true task=Task{55a0116 #12 visible=true type=standard mode=fullscreen translucent=false A=10167:io.github.gabrielxyz404.gabiflix U=0 StackId=12 sz=2}
+ * Task{4c07355 #8 visible=true type=home mode=fullscreen translucent=false I=com.google.android.apps.nexuslauncher/.NexusLauncherActivity U=0 StackId=1 sz=1}
+ rootOfTask=true task=Task{4c07355 #8 visible=true type=home mode=fullscreen translucent=false I=com.google.android.apps.nexuslauncher/.NexusLauncherActivity U=0 StackId=1 sz=1}
+ topDisplayFocusedStack=Task{55a0116 #12 visible=true type=standard mode=fullscreen translucent=false A=10167:io.github.gabrielxyz404.gabiflix U=0 StackId=12 sz=2}
+ mLastOrientationSource=Task{55a0116 #12 visible=true type=standard mode=fullscreen translucent=false A=10167:io.github.gabrielxyz404.gabiflix U=0 StackId=12 sz=2}
+ mPreferredTopFocusableStack=Task{55a0116 #12 visible=true type=standard mode=fullscreen translucent=false A=10167:io.github.gabrielxyz404.gabiflix U=0 StackId=12 sz=2}
+ mLastFocusedStack=Task{55a0116 #12 visible=true type=standard mode=fullscreen translucent=false A=10167:io.github.gabrielxyz404.gabiflix U=0 StackId=12 sz=2}
+ * Task{55a0116 #12 visible=true type=standard mode=fullscreen translucent=false A=10167:io.github.gabrielxyz404.gabiflix U=0 StackId=12 sz=2}
+tel-home-analise: resultado chegou com o app fora
+tel-home-analise: fora, pid=8435 (era 8435)
+tel-home-analise: antes de voltar: pid=8435
+tel-home-analise: voltou  mResumedActivity: ActivityRecord{8ce089e u0 io.github.gabrielxyz404.gabiflix/.PlayerActivity t12} pid=8435
+ * Task{55a0116 #12 visible=true type=standard mode=fullscreen translucent=false A=10167:io.github.gabrielxyz404.gabiflix U=0 StackId=12 sz=2}
+ * Hist #1: ActivityRecord{8ce089e u0 io.github.gabrielxyz404.gabiflix/.PlayerActivity t12}
+ rootOfTask=false task=Task{55a0116 #12 visible=true type=standard mode=fullscreen translucent=false A=10167:io.github.gabrielxyz404.gabiflix U=0 StackId=12 sz=2}
+ * Hist #0: ActivityRecord{56652d8 u0 io.github.gabrielxyz404.gabiflix/.MainActivity t12}
+ rootOfTask=true task=Task{55a0116 #12 visible=true type=standard mode=fullscreen translucent=false A=10167:io.github.gabrielxyz404.gabiflix U=0 StackId=12 sz=2}
+ * Task{4c07355 #8 visible=true type=home mode=fullscreen translucent=false I=com.google.android.apps.nexuslauncher/.NexusLauncherActivity U=0 StackId=1 sz=1}
+ rootOfTask=true task=Task{4c07355 #8 visible=true type=home mode=fullscreen translucent=false I=com.google.android.apps.nexuslauncher/.NexusLauncherActivity U=0 StackId=1 sz=1}
+ topDisplayFocusedStack=Task{55a0116 #12 visible=true type=standard mode=fullscreen translucent=false A=10167:io.github.gabrielxyz404.gabiflix U=0 StackId=12 sz=2}
+ mLastOrientationSource=Task{55a0116 #12 visible=true type=standard mode=fullscreen translucent=false A=10167:io.github.gabrielxyz404.gabiflix U=0 StackId=12 sz=2}
+ mPreferredTopFocusableStack=Task{55a0116 #12 visible=true type=standard mode=fullscreen translucent=false A=10167:io.github.gabrielxyz404.gabiflix U=0 StackId=12 sz=2}
+ mLastFocusedStack=Task{55a0116 #12 visible=true type=standard mode=fullscreen translucent=false A=10167:io.github.gabrielxyz404.gabiflix U=0 StackId=12 sz=2}
+ * Task{55a0116 #12 visible=true type=standard mode=fullscreen translucent=false A=10167:io.github.gabrielxyz404.gabiflix U=0 StackId=12 sz=2}
+tel-home-analise => VOLTOU AO FILME
+tel-home-analise: linhas fatais=0 |          1795017022.914  8435  8435 I GabiFlixPlayer: AUDIOSYNC resultado: recusada z=8.9 janelas=3/3 (z abaixo do limiar de aceitação (9.0);) | vad=dsp(reserva) janelas=3 captura=11679 ms vad=2778 ms (cpu 2489) solve=475 ms (cpu 396) cpu_thread=2987 ms total=
+tel-home-2min: antes do HOME  mResumedActivity: ActivityRecord{260418f u0 io.github.gabrielxyz404.gabiflix/.PlayerActivity t13} pid=8844
+ * Task{3b363b9 #13 visible=true type=standard mode=fullscreen translucent=false A=10167:io.github.gabrielxyz404.gabiflix U=0 StackId=13 sz=2}
+ * Hist #1: ActivityRecord{260418f u0 io.github.gabrielxyz404.gabiflix/.PlayerActivity t13}
+ rootOfTask=false task=Task{3b363b9 #13 visible=true type=standard mode=fullscreen translucent=false A=10167:io.github.gabrielxyz404.gabiflix U=0 StackId=13 sz=2}
+ * Hist #0: ActivityRecord{657ce03 u0 io.github.gabrielxyz404.gabiflix/.MainActivity t13}
+ rootOfTask=true task=Task{3b363b9 #13 visible=true type=standard mode=fullscreen translucent=false A=10167:io.github.gabrielxyz404.gabiflix U=0 StackId=13 sz=2}
+ * Task{4c07355 #8 visible=true type=home mode=fullscreen translucent=false I=com.google.android.apps.nexuslauncher/.NexusLauncherActivity U=0 StackId=1 sz=1}
+ rootOfTask=true task=Task{4c07355 #8 visible=true type=home mode=fullscreen translucent=false I=com.google.android.apps.nexuslauncher/.NexusLauncherActivity U=0 StackId=1 sz=1}
+ topDisplayFocusedStack=Task{3b363b9 #13 visible=true type=standard mode=fullscreen translucent=false A=10167:io.github.gabrielxyz404.gabiflix U=0 StackId=13 sz=2}
+ mLastOrientationSource=Task{3b363b9 #13 visible=true type=standard mode=fullscreen translucent=false A=10167:io.github.gabrielxyz404.gabiflix U=0 StackId=13 sz=2}
+ mPreferredTopFocusableStack=Task{3b363b9 #13 visible=true type=standard mode=fullscreen translucent=false A=10167:io.github.gabrielxyz404.gabiflix U=0 StackId=13 sz=2}
+ mLastFocusedStack=Task{3b363b9 #13 visible=true type=standard mode=fullscreen translucent=false A=10167:io.github.gabrielxyz404.gabiflix U=0 StackId=13 sz=2}
+ * Task{3b363b9 #13 visible=true type=standard mode=fullscreen translucent=false A=10167:io.github.gabrielxyz404.gabiflix U=0 StackId=13 sz=2}
+tel-home-2min: fora, pid=8844 (era 8844)
+tel-home-2min: antes de voltar: pid=8844
+tel-home-2min: voltou  mResumedActivity: ActivityRecord{260418f u0 io.github.gabrielxyz404.gabiflix/.PlayerActivity t13} pid=8844
+ * Task{3b363b9 #13 visible=true type=standard mode=fullscreen translucent=false A=10167:io.github.gabrielxyz404.gabiflix U=0 StackId=13 sz=2}
+ * Hist #1: ActivityRecord{260418f u0 io.github.gabrielxyz404.gabiflix/.PlayerActivity t13}
+ rootOfTask=false task=Task{3b363b9 #13 visible=true type=standard mode=fullscreen translucent=false A=10167:io.github.gabrielxyz404.gabiflix U=0 StackId=13 sz=2}
+ * Hist #0: ActivityRecord{657ce03 u0 io.github.gabrielxyz404.gabiflix/.MainActivity t13}
+ rootOfTask=true task=Task{3b363b9 #13 visible=true type=standard mode=fullscreen translucent=false A=10167:io.github.gabrielxyz404.gabiflix U=0 StackId=13 sz=2}
+ * Task{4c07355 #8 visible=true type=home mode=fullscreen translucent=false I=com.google.android.apps.nexuslauncher/.NexusLauncherActivity U=0 StackId=1 sz=1}
+ rootOfTask=true task=Task{4c07355 #8 visible=true type=home mode=fullscreen translucent=false I=com.google.android.apps.nexuslauncher/.NexusLauncherActivity U=0 StackId=1 sz=1}
+ topDisplayFocusedStack=Task{3b363b9 #13 visible=true type=standard mode=fullscreen translucent=false A=10167:io.github.gabrielxyz404.gabiflix U=0 StackId=13 sz=2}
+ mLastOrientationSource=Task{3b363b9 #13 visible=true type=standard mode=fullscreen translucent=false A=10167:io.github.gabrielxyz404.gabiflix U=0 StackId=13 sz=2}
+ mPreferredTopFocusableStack=Task{3b363b9 #13 visible=true type=standard mode=fullscreen translucent=false A=10167:io.github.gabrielxyz404.gabiflix U=0 StackId=13 sz=2}
+ mLastFocusedStack=Task{3b363b9 #13 visible=true type=standard mode=fullscreen translucent=false A=10167:io.github.gabrielxyz404.gabiflix U=0 StackId=13 sz=2}
+ * Task{3b363b9 #13 visible=true type=standard mode=fullscreen translucent=false A=10167:io.github.gabrielxyz404.gabiflix U=0 StackId=13 sz=2}
+tel-home-2min => VOLTOU AO FILME
+tel-home-2min: linhas fatais=0 | 
+tel-home-2min-b: antes do HOME  mResumedActivity: ActivityRecord{6dd7d32 u0 io.github.gabrielxyz404.gabiflix/.PlayerActivity t14} pid=9239
+ * Task{13bfdc0 #14 visible=true type=standard mode=fullscreen translucent=false A=10167:io.github.gabrielxyz404.gabiflix U=0 StackId=14 sz=2}
+ * Hist #1: ActivityRecord{6dd7d32 u0 io.github.gabrielxyz404.gabiflix/.PlayerActivity t14}
+ rootOfTask=false task=Task{13bfdc0 #14 visible=true type=standard mode=fullscreen translucent=false A=10167:io.github.gabrielxyz404.gabiflix U=0 StackId=14 sz=2}
+ * Hist #0: ActivityRecord{d74a5cb u0 io.github.gabrielxyz404.gabiflix/.MainActivity t14}
+ rootOfTask=true task=Task{13bfdc0 #14 visible=true type=standard mode=fullscreen translucent=false A=10167:io.github.gabrielxyz404.gabiflix U=0 StackId=14 sz=2}
+ * Task{4c07355 #8 visible=true type=home mode=fullscreen translucent=false I=com.google.android.apps.nexuslauncher/.NexusLauncherActivity U=0 StackId=1 sz=1}
+ rootOfTask=true task=Task{4c07355 #8 visible=true type=home mode=fullscreen translucent=false I=com.google.android.apps.nexuslauncher/.NexusLauncherActivity U=0 StackId=1 sz=1}
+ topDisplayFocusedStack=Task{13bfdc0 #14 visible=true type=standard mode=fullscreen translucent=false A=10167:io.github.gabrielxyz404.gabiflix U=0 StackId=14 sz=2}
+ mLastOrientationSource=Task{13bfdc0 #14 visible=true type=standard mode=fullscreen translucent=false A=10167:io.github.gabrielxyz404.gabiflix U=0 StackId=14 sz=2}
+ mPreferredTopFocusableStack=Task{13bfdc0 #14 visible=true type=standard mode=fullscreen translucent=false A=10167:io.github.gabrielxyz404.gabiflix U=0 StackId=14 sz=2}
+ mLastFocusedStack=Task{13bfdc0 #14 visible=true type=standard mode=fullscreen translucent=false A=10167:io.github.gabrielxyz404.gabiflix U=0 StackId=14 sz=2}
+ * Task{13bfdc0 #14 visible=true type=standard mode=fullscreen translucent=false A=10167:io.github.gabrielxyz404.gabiflix U=0 StackId=14 sz=2}
+tel-home-2min-b: fora, pid=9239 (era 9239)
+tel-home-2min-b: antes de voltar: pid=9239
+tel-home-2min-b: voltou  mResumedActivity: ActivityRecord{6dd7d32 u0 io.github.gabrielxyz404.gabiflix/.PlayerActivity t14} pid=9239
+ * Task{13bfdc0 #14 visible=true type=standard mode=fullscreen translucent=false A=10167:io.github.gabrielxyz404.gabiflix U=0 StackId=14 sz=2}
+ * Hist #1: ActivityRecord{6dd7d32 u0 io.github.gabrielxyz404.gabiflix/.PlayerActivity t14}
+ rootOfTask=false task=Task{13bfdc0 #14 visible=true type=standard mode=fullscreen translucent=false A=10167:io.github.gabrielxyz404.gabiflix U=0 StackId=14 sz=2}
+ * Hist #0: ActivityRecord{d74a5cb u0 io.github.gabrielxyz404.gabiflix/.MainActivity t14}
+ rootOfTask=true task=Task{13bfdc0 #14 visible=true type=standard mode=fullscreen translucent=false A=10167:io.github.gabrielxyz404.gabiflix U=0 StackId=14 sz=2}
+ * Task{4c07355 #8 visible=true type=home mode=fullscreen translucent=false I=com.google.android.apps.nexuslauncher/.NexusLauncherActivity U=0 StackId=1 sz=1}
+ rootOfTask=true task=Task{4c07355 #8 visible=true type=home mode=fullscreen translucent=false I=com.google.android.apps.nexuslauncher/.NexusLauncherActivity U=0 StackId=1 sz=1}
+ topDisplayFocusedStack=Task{13bfdc0 #14 visible=true type=standard mode=fullscreen translucent=false A=10167:io.github.gabrielxyz404.gabiflix U=0 StackId=14 sz=2}
+ mLastOrientationSource=Task{13bfdc0 #14 visible=true type=standard mode=fullscreen translucent=false A=10167:io.github.gabrielxyz404.gabiflix U=0 StackId=14 sz=2}
+ mPreferredTopFocusableStack=Task{13bfdc0 #14 visible=true type=standard mode=fullscreen translucent=false A=10167:io.github.gabrielxyz404.gabiflix U=0 StackId=14 sz=2}
+ mLastFocusedStack=Task{13bfdc0 #14 visible=true type=standard mode=fullscreen translucent=false A=10167:io.github.gabrielxyz404.gabiflix U=0 StackId=14 sz=2}
+ * Task{13bfdc0 #14 visible=true type=standard mode=fullscreen translucent=false A=10167:io.github.gabrielxyz404.gabiflix U=0 StackId=14 sz=2}
+tel-home-2min-b => VOLTOU AO FILME
+tel-home-2min-b: linhas fatais=0 | 
+tel-home-2min-c: antes do HOME  mResumedActivity: ActivityRecord{2ebadb9 u0 io.github.gabrielxyz404.gabiflix/.PlayerActivity t15} pid=9634
+ * Task{6e16707 #15 visible=true type=standard mode=fullscreen translucent=false A=10167:io.github.gabrielxyz404.gabiflix U=0 StackId=15 sz=2}
+ * Hist #1: ActivityRecord{2ebadb9 u0 io.github.gabrielxyz404.gabiflix/.PlayerActivity t15}
+ rootOfTask=false task=Task{6e16707 #15 visible=true type=standard mode=fullscreen translucent=false A=10167:io.github.gabrielxyz404.gabiflix U=0 StackId=15 sz=2}
+ * Hist #0: ActivityRecord{e35cfed u0 io.github.gabrielxyz404.gabiflix/.MainActivity t15}
+ rootOfTask=true task=Task{6e16707 #15 visible=true type=standard mode=fullscreen translucent=false A=10167:io.github.gabrielxyz404.gabiflix U=0 StackId=15 sz=2}
+ * Task{4c07355 #8 visible=true type=home mode=fullscreen translucent=false I=com.google.android.apps.nexuslauncher/.NexusLauncherActivity U=0 StackId=1 sz=1}
+ rootOfTask=true task=Task{4c07355 #8 visible=true type=home mode=fullscreen translucent=false I=com.google.android.apps.nexuslauncher/.NexusLauncherActivity U=0 StackId=1 sz=1}
+ topDisplayFocusedStack=Task{6e16707 #15 visible=true type=standard mode=fullscreen translucent=false A=10167:io.github.gabrielxyz404.gabiflix U=0 StackId=15 sz=2}
+ mLastOrientationSource=Task{6e16707 #15 visible=true type=standard mode=fullscreen translucent=false A=10167:io.github.gabrielxyz404.gabiflix U=0 StackId=15 sz=2}
+ mPreferredTopFocusableStack=Task{6e16707 #15 visible=true type=standard mode=fullscreen translucent=false A=10167:io.github.gabrielxyz404.gabiflix U=0 StackId=15 sz=2}
+ mLastFocusedStack=Task{6e16707 #15 visible=true type=standard mode=fullscreen translucent=false A=10167:io.github.gabrielxyz404.gabiflix U=0 StackId=15 sz=2}
+ * Task{6e16707 #15 visible=true type=standard mode=fullscreen translucent=false A=10167:io.github.gabrielxyz404.gabiflix U=0 StackId=15 sz=2}
+tel-home-2min-c: fora, pid=9634 (era 9634)
+tel-home-2min-c: antes de voltar: pid=9634
+tel-home-2min-c: voltou  mResumedActivity: ActivityRecord{2ebadb9 u0 io.github.gabrielxyz404.gabiflix/.PlayerActivity t15} pid=9634
+ * Task{6e16707 #15 visible=true type=standard mode=fullscreen translucent=false A=10167:io.github.gabrielxyz404.gabiflix U=0 StackId=15 sz=2}
+ * Hist #1: ActivityRecord{2ebadb9 u0 io.github.gabrielxyz404.gabiflix/.PlayerActivity t15}
+ rootOfTask=false task=Task{6e16707 #15 visible=true type=standard mode=fullscreen translucent=false A=10167:io.github.gabrielxyz404.gabiflix U=0 StackId=15 sz=2}
+ * Hist #0: ActivityRecord{e35cfed u0 io.github.gabrielxyz404.gabiflix/.MainActivity t15}
+ rootOfTask=true task=Task{6e16707 #15 visible=true type=standard mode=fullscreen translucent=false A=10167:io.github.gabrielxyz404.gabiflix U=0 StackId=15 sz=2}
+ * Task{4c07355 #8 visible=true type=home mode=fullscreen translucent=false I=com.google.android.apps.nexuslauncher/.NexusLauncherActivity U=0 StackId=1 sz=1}
+ rootOfTask=true task=Task{4c07355 #8 visible=true type=home mode=fullscreen translucent=false I=com.google.android.apps.nexuslauncher/.NexusLauncherActivity U=0 StackId=1 sz=1}
+ topDisplayFocusedStack=Task{6e16707 #15 visible=true type=standard mode=fullscreen translucent=false A=10167:io.github.gabrielxyz404.gabiflix U=0 StackId=15 sz=2}
+ mLastOrientationSource=Task{6e16707 #15 visible=true type=standard mode=fullscreen translucent=false A=10167:io.github.gabrielxyz404.gabiflix U=0 StackId=15 sz=2}
+ mPreferredTopFocusableStack=Task{6e16707 #15 visible=true type=standard mode=fullscreen translucent=false A=10167:io.github.gabrielxyz404.gabiflix U=0 StackId=15 sz=2}
+ mLastFocusedStack=Task{6e16707 #15 visible=true type=standard mode=fullscreen translucent=false A=10167:io.github.gabrielxyz404.gabiflix U=0 StackId=15 sz=2}
+ * Task{6e16707 #15 visible=true type=standard mode=fullscreen translucent=false A=10167:io.github.gabrielxyz404.gabiflix U=0 StackId=15 sz=2}
+tel-home-2min-c => VOLTOU AO FILME
+tel-home-2min-c: linhas fatais=0 | 
