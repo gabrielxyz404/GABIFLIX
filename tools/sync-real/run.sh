@@ -78,7 +78,7 @@ if [ -f tools/sync-real/ONLY_E ]; then
       sleep 18
       phase $N-0-antes 24
       adb shell input keyevent KEYCODE_MEDIA_FAST_FORWARD; sleep 7; phase $N-1-avancar 24
-      adb shell input keyevent KEYCODE_MEDIA_REWIND; sleep 1; adb shell input keyevent KEYCODE_MEDIA_REWIND; sleep 7; phase $N-2-voltar 24
+      sleep 9; adb shell input keyevent KEYCODE_MEDIA_REWIND; sleep 4; phase $N-2-voltar 30
       save E-$N
       for ph in 0-antes 1-avancar 2-voltar; do python3 tools/sync-real/seekcheck.py $OUT/E-$N-$ph $OUT/log-$P-E-$N.txt $OUT/clock.txt $n >> $OUT/seek-resumo.txt 2>&1; ls $OUT/E-$N-$ph/*.png | awk 'NR%8!=1' | xargs rm -f; done
       adb exec-out screencap -p > $OUT/foto-$N-final.png
