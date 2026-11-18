@@ -2172,6 +2172,26 @@ public class PlayerActivity extends Activity {
     // ---------- ciclo de vida ----------
     private boolean resumeOnReturn = false;
 
+    /** quem fechou a tela: fica nas migalhas; se não foi o usuário (Voltar) nem o fim do filme, manda um relatório (a causa do "voltou para a página inicial") */
+    @Override
+    public void finish() {
+        try {
+            StringBuilder sb = new StringBuilder();
+            StackTraceElement[] st = new Throwable().getStackTrace();
+            boolean user = false;
+            for (int i = 1; i < Math.min(st.length, 14); i++) {
+                String m = st[i].getClassName().replaceFirst(".*\\.", "") + "." + st[i].getMethodName() + ":" + st[i].getLineNumber();
+                sb.append(m).append(" < ");
+                if (m.contains("onBackPressed") || m.contains("performClick") || m.contains("dispatchKeyEvent")) user = true;
+            }
+            long t = player == null ? -1 : player.getTime(), len = player == null ? -1 : player.getLength();
+            boolean fim = ended || (len > 0 && t > len - 60_000);
+            glog("ciclo: finish() chamado por " + sb + " tempo=" + t + "/" + len + " usuario=" + user + " fim=" + fim);
+            if (!user && !fim && !isFinishing()) CrashReporter.event("PLAYER_FECHOU_SOZINHO", "A tela do player foi fechada sem o usuário pedir.\nfinish() chamado por: " + sb + "\ntempo=" + t + " de " + len);
+        } catch (Throwable ignored) {}
+        super.finish();
+    }
+
     /** diagnóstico do ciclo de vida: estado do player e das vistas de vídeo (aparece no log GabiFlixPlayer) */
     private void lifeLog(String w) {
         try {

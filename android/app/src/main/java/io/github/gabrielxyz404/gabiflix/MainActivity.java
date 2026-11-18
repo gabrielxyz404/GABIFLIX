@@ -38,6 +38,7 @@ public class MainActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        CrashReporter.testHook(this);
         // na TV abre o app nativo da TV (o celular não muda nada)
         if (isTv(this)) {
             startActivity(new android.content.Intent(this, io.github.gabrielxyz404.gabiflix.tv.TvHomeActivity.class));

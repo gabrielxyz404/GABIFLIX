@@ -35,6 +35,7 @@ final class SubtitleSync {
     static final String TAG = "GabiFlixPlayer";
     static void log(String s) {
         try { Log.i(TAG, s); } catch (Throwable ignored) {}
+        try { CrashReporter.crumb(s); } catch (Throwable ignored) {}
         try {
             synchronized (RING) {
                 RING.add(System.currentTimeMillis() + "|" + s);

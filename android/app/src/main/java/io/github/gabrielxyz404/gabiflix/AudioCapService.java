@@ -90,6 +90,6 @@ public final class AudioCapService extends Service {
         super.onDestroy();
         alive = false;
         // este processo só existe para a captura: devolve a memória. Espera um pouco e só mata se a próxima análise não o reabriu entretanto
-        new Handler(android.os.Looper.getMainLooper()).postDelayed(() -> { if (!alive) Process.killProcess(Process.myPid()); }, 2000);
+        new Handler(android.os.Looper.getMainLooper()).postDelayed(() -> { if (!alive) System.exit(0); }, 2000);   // saída normal (o sistema registra EXIT_SELF, não uma morte por sinal)
     }
 }
