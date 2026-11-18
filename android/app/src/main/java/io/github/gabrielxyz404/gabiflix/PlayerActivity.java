@@ -91,19 +91,40 @@ public class PlayerActivity extends Activity {
     // O libVLC 3.6 não tem API de recorte (crop) nem SURFACE_FILL/FIT_SCREEN que mantenham a legenda dentro da tela.
     private static final String[] SCALE_NAMES = {"Normal", "Preencher"};
     private int lastScaleW = -1, lastScaleH = -1;
+    private boolean vlcFitSet = false;
+
+    /** troca o modo de tela (0 Normal, 1 Preencher) e aplica de uma vez só */
+    private void setScaleMode(int mode) {
+        scaleIndex = mode % SCALE_NAMES.length;
+        if (scaleIndex != 1) endFillPending(false);
+        else { fillGaveUp = false; }
+        glog("tela: modo " + SCALE_NAMES[scaleIndex] + (scaleIndex == 1 ? (barsReady ? " (barras já medidas)" : " (mede as barras antes de aplicar)") : ""));
+        applyScale();
+        if (scaleBtn != null) scaleBtn.setLabel("Tela: " + SCALE_NAMES[scaleIndex]);
+    }
     /** Preencher: no máximo quantas vezes a largura da tela pode ter a imagem ampliada (filmes ultra-largos, como 2,76:1 em 16:9, ficariam com cortes demais nas laterais) */
     private static final float COVER_MAX_WIDTH = 1.45f;
+    /**
+     * Preencher: zoom máximo (igual em X e em Y, nunca estica). 1,05x corta no máximo 2,4% de cada lado: não se nota perda de imagem.
+     * Um 1,85:1 num quadro 16:9 (pede 1,04x) fica sem barras; um 2,39:1 (pede 1,34x) só fica com barras um pouco mais finas.
+     * Uma constante por plataforma (celular e TV; o Mac tem a sua).
+     */
+    private static final float ZOOM_MAX_TV = 1.05f, ZOOM_MAX_PHONE = 1.05f;
 
     private void applyScale() {
         if (player == null || videoLayout == null) return;
         int w = videoLayout.getWidth(), h = videoLayout.getHeight();
         lastScaleW = w; lastScaleH = h;
         if (w <= 0 || h <= 0) return;
-        try {
-            player.setVideoScale(MediaPlayer.ScaleType.SURFACE_BEST_FIT);
-            player.setScale(0f);
-            player.setAspectRatio(null);
-        } catch (Throwable t) { glog("escala: " + t); }
+        if (!vlcFitSet) {   // o libVLC já começa assim; mexer de novo a cada troca refazia o layout da vista do vídeo no meio da troca
+            vlcFitSet = true;
+            try {
+                player.setVideoScale(MediaPlayer.ScaleType.SURFACE_BEST_FIT);
+                player.setScale(0f);
+                player.setAspectRatio(null);
+            } catch (Throwable t) { glog("escala: " + t); }
+        }
+        beginFillIfNeeded();
         zoomVideo();
         ui.postDelayed(this::zoomVideo, 300);
         ui.postDelayed(this::zoomVideo, 1000);
@@ -146,6 +167,36 @@ public class PlayerActivity extends Activity {
     /** na TV a legenda é desenhada no quadro e cresce junto com o zoom: o zoom só pode cortar isto de cada lado (medido na TV: a linha mais larga que o libVLC monta ocupa ~95% do quadro, e a legenda cresce junto com o zoom: limite ~4% de zoom) */
     private static final float SUB_SAFE_X = 0.019f;
     private final Runnable barTickRun = this::barTick;
+    private PlayerUi.Btn scaleBtn;
+
+    // Troca para Preencher sem passo intermediário: enquanto as barras gravadas no vídeo ainda não foram medidas, a imagem fica como
+    // está (Normal) e uma rajada rápida de amostras mede as barras; só então o zoom final é aplicado, de uma vez. Se não der para medir
+    // (cena escura, vídeo sem quadro) em FILL_WAIT_MS, aplica mesmo assim, como antes, e a medida normal refina depois.
+    private volatile boolean barsReady = false, fillPending = false;
+    private boolean fillGaveUp = false;
+    private static final long FILL_WAIT_MS = 2500, FILL_BURST_MS = 110;
+    private final Runnable fillBurstRun = new Runnable() {
+        @Override public void run() {
+            if (!fillPending || scaleIndex != 1 || player == null || isFinishing()) return;
+            sampleBarsNow();
+            ui.postDelayed(this, FILL_BURST_MS);
+        }
+    };
+    private final Runnable fillTimeoutRun = () -> { if (fillPending) { glog("zoom Preencher: não deu para medir as barras a tempo; aplica sem elas"); fillGaveUp = true; endFillPending(true); } };
+
+    private void beginFillIfNeeded() {
+        if (scaleIndex != 1 || barsReady || fillPending || fillGaveUp) return;
+        fillPending = true;
+        ui.removeCallbacks(fillBurstRun); ui.removeCallbacks(fillTimeoutRun);
+        ui.post(fillBurstRun);
+        ui.postDelayed(fillTimeoutRun, FILL_WAIT_MS);
+    }
+
+    private void endFillPending(boolean applyNow) {
+        fillPending = false;
+        ui.removeCallbacks(fillBurstRun); ui.removeCallbacks(fillTimeoutRun);
+        if (applyNow) zoomVideo();
+    }
 
     private void startBarSampling() {
         ui.removeCallbacks(barTickRun);
@@ -158,6 +209,14 @@ public class PlayerActivity extends Activity {
         ui.postDelayed(barTickRun, barTicks < 10 ? 2000 : 20000);
         try {
             if (!player.isPlaying() || controlsShown) return;  // com os controles na tela a legenda sobe para o meio da imagem e sujaria a medida
+            sampleBarsNow();
+        } catch (Throwable t) { glog("barras: " + t); }
+    }
+
+    /** pede uma amostra do que a vista do vídeo mostra (o resultado chega em analyzeBars, fora da thread da tela) */
+    private void sampleBarsNow() {
+        try {
+            if (player == null) return;
             View v = findVideoView(videoLayout);
             if (v == null || v.getWidth() <= 0 || v.getHeight() <= 0) return;
             final float va = videoAspect();
@@ -220,12 +279,14 @@ public class PlayerActivity extends Activity {
             // barras de cima/baixo vêm sempre em par: sem a de cima não se confia na de baixo (na TV a legenda "suja" a de baixo)
             if (r[0] == 0f && inTexture) r[1] = 0f;
             if (inTexture && r[0] > r[1]) r[1] = r[0];
+            barsReady = true;
             boolean changed = Math.abs(r[0] - barT) > 0.004f || Math.abs(r[1] - barB) > 0.004f || Math.abs(r[2] - barL) > 0.004f || Math.abs(r[3] - barR) > 0.004f;
             if (changed) {
                 barT = r[0]; barB = r[1]; barL = r[2]; barR = r[3];
                 glog(String.format(Locale.ROOT, "barras: cima %.3f baixo %.3f esq %.3f dir %.3f (amostras %d)", r[0], r[1], r[2], r[3], barRowSamples.size()));
-                ui.post(this::zoomVideo);
             }
+            if (fillPending) ui.post(() -> { if (fillPending) endFillPending(true); });   // medida pronta: aplica o zoom final de uma vez
+            else if (changed) ui.post(this::zoomVideo);
         } catch (Throwable t) { glog("barras: " + t); }
     }
 
@@ -246,12 +307,12 @@ public class PlayerActivity extends Activity {
             if (tex == null) return;
             if (tex.getTag() == null) {
                 tex.setTag("zoom");
-                tex.addOnLayoutChangeListener((v, l, t, r, b, ol, ot, or, ob) -> { if (r - l != or - ol || b - t != ob - ot) ui.post(this::zoomVideo); });
+                tex.addOnLayoutChangeListener((v, l, t, r, b, ol, ot, or, ob) -> { if (r - l != or - ol || b - t != ob - ot || l != ol || t != ot) ui.post(this::zoomVideo); });
             }
             float f = 1f;
             int tw = tex.getWidth(), th = tex.getHeight(), w = videoLayout.getWidth(), h = videoLayout.getHeight();
             float px = tw / 2f, py = th / 2f;
-            if (scaleIndex == 1 && tw > 0 && th > 0 && w > 0 && h > 0) {
+            if (scaleIndex == 1 && !fillPending && tw > 0 && th > 0 && w > 0 && h > 0) {
                 // o quadro do vídeo (proporção real) ajustado dentro da vista (na TV a vista é do tamanho da tela e o VLC desenha o preto em volta)
                 float dw = tw, dh = th, va = videoAspect();
                 if (va > 0) { if ((float) tw / th > va) dw = th * va; else dh = tw / va; }
@@ -266,6 +327,7 @@ public class PlayerActivity extends Activity {
                 if (subsInside && bB > 0f) kb = Math.max(ay1, fy0 + dh * (1f - SUB_CUT));
                 f = Math.max((float) w / aw, (float) h / ah);
                 if (aw * f > COVER_MAX_WIDTH * w) f = COVER_MAX_WIDTH * w / aw;
+                f = Math.min(f, tex instanceof android.view.TextureView ? ZOOM_MAX_TV : ZOOM_MAX_PHONE);
                 if (subsInside) f = Math.min(f, w / (dw * (1f - 2f * SUB_SAFE_X)));   // TV: legenda nunca cortada nas laterais
                 if (kb > ay1 + 0.5f) f = Math.min(f, h / (kb - ay0));
                 f = Math.max(1f, f);
@@ -282,7 +344,8 @@ public class PlayerActivity extends Activity {
                     else if (!subsInside && (bT > 0f || bB > 0f)) {                       // celular com barras em cima/baixo: imagem ativa centrada
                         wy0 = (ay0 + ay1) / 2f - winH / 2f;
                         if (winH <= dh) wy0 = Math.max(fy0, Math.min(fy0 + dh - winH, wy0));
-                    } else wy0 = fy0 + dh - winH;                                          // sem barras: borda de baixo do quadro = borda de baixo da tela
+                    } else if (winH > dh) wy0 = fy0 + dh / 2f - winH / 2f;                // limite de zoom: a imagem não cobre a altura, fica centrada
+                    else wy0 = fy0 + dh - winH;                                            // sem barras: borda de baixo do quadro = borda de baixo da tela
                     // a vista pode não começar no canto da tela (celular: vista 2400x1006 centrada numa tela 2400x1080): conta o deslocamento
                     px = (f * wx0 + tex.getLeft()) / (f - 1f);
                     py = (f * wy0 + tex.getTop()) / (f - 1f);
@@ -357,6 +420,7 @@ public class PlayerActivity extends Activity {
                     glog("teste: " + kind + " " + val + " (tempo " + player.getTime() + " ms)");
                     if ("delay".equals(kind)) changeSubDelay((int) val, false, panelValue);
                     else if ("seek".equals(kind)) player.setTime(val * 1000);
+                    else if ("tela".equals(kind)) setScaleMode((int) val);   // só nos testes: troca o modo de tela como o botão Tela
                 }, Long.parseLong(a[2]));
             } catch (Throwable t) { glog("teste: roteiro inválido " + tok); }
         }
@@ -793,10 +857,9 @@ public class PlayerActivity extends Activity {
         PlayerUi.Btn audioB = new PlayerUi.Btn(this, PlayerUi.Icon.AUDIO, "Áudio", 42, tv);
         audioB.setOnClickListener(v -> chooseAudio());
         PlayerUi.Btn scaleB = new PlayerUi.Btn(this, PlayerUi.Icon.SCALE, "Tela: " + SCALE_NAMES[0], 42, tv);
+        scaleBtn = scaleB;
         scaleB.setOnClickListener(v -> {
-            scaleIndex = (scaleIndex + 1) % SCALE_NAMES.length;
-            applyScale();
-            scaleB.setLabel("Tela: " + SCALE_NAMES[scaleIndex]);
+            setScaleMode(scaleIndex + 1);
             scheduleHide();
         });
         for (PlayerUi.Btn b : new PlayerUi.Btn[]{subsB, audioB, scaleB}) {

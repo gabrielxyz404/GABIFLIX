@@ -107,6 +107,11 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
     private var barTimer: Timer?
     private var barTicks = 0
     private var barBusy = false
+    // Troca para Preencher em um passo só: enquanto as barras gravadas no vídeo não foram medidas, a imagem fica como está (Normal) e as
+    // amostras vêm em rajada; só então o recorte final é aplicado. Sem medida em 2,5 s, aplica como antes e a medida normal refina.
+    private var barsMeasured = false
+    private var fillPending = false
+    private var fillGen = 0
     private var srcSize = CGSize.zero
     private var pixelAspect = 1.0
     private var cropRect: (x0: Double, y0: Double, x1: Double, y1: Double)? = nil   // recorte atual, em fração do quadro
@@ -414,7 +419,7 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
                 playingSince = Date()
                 startOverlay()
                 scaleForce = 6
-                DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) { [weak self] in self?.selectEmbeddedPortuguese() }
+                DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) { [weak self] in self?.selectEmbeddedPortuguese() }
             }
             if !resumeDone && len > 0 {
                 resumeDone = true
@@ -1507,20 +1512,22 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
     // Normal = como vem (com barras pretas se for preciso). Preencher = recorte (videoCropGeometry): a imagem REAL (sem as barras pretas
     // gravadas dentro do ficheiro de vídeo) cobre a janela, centrada e sem esticar. Só se usam propriedades do leitor: nada na hierarquia de vistas.
     private static let scaleNames = ["Normal", "Preencher"]
+    /** Preencher: zoom máximo sobre o modo Normal (igual em X e em Y). 1,05x corta no máximo 2,4% de cada lado: um 1,85:1 num quadro 16:9 (pede 1,04x) fica sem barras, um 2,39:1 só fica com barras um pouco mais finas */
+    private static let zoomMax = 1.05
 
     private func applyScale(force: Bool = false) {
         let w = Int(videoView.bounds.width.rounded()), h = Int(videoView.bounds.height.rounded())
         if w <= 0 || h <= 0 { return }
         // tamanho do quadro (pixels do vídeo) lido enquanto ainda não há recorte, para não confundir com o quadro já recortado
         if lastCropSet == nil { let vs = player.videoSize; if vs.width > 0 && vs.height > 0 { srcSize = vs } }
-        let key = "\(w)x\(h)/\(scaleMode)/\(barsKey())"
+        let key = "\(w)x\(h)/\(scaleMode)/\(barsKey())/\(fillPending)"
         if !force && lastScaleKey == key { return }
         lastScaleKey = key
         videoView.fillScreen = false
         player.videoAspectRatio = nil
         var crop: String? = nil
         var rect: (x0: Double, y0: Double, x1: Double, y1: Double)? = nil
-        if scaleMode == 1, let c = cropGeometry(viewW: w, viewH: h) { crop = c.0; rect = c.1 }
+        if scaleMode == 1, !fillPending, let c = cropGeometry(viewW: w, viewH: h) { crop = c.0; rect = c.1 }
         if crop != lastCropSet || force {
             lastCropSet = crop
             cropRect = rect
@@ -1541,8 +1548,23 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
         scaleMode = m == 1 ? 1 : 0
         scaleButton?.attributedTitle = NSAttributedString(string: "  Tela: \(PlayerWindowController.scaleNames[scaleMode])  ", attributes: [
             .foregroundColor: NSColor.white, .font: NSFont.boldSystemFont(ofSize: 13)])
+        fillGen += 1
+        fillPending = scaleMode == 1 && !barsMeasured && startedPlaying
         applyScale(force: true)
-        if scaleMode == 1 { barTicks = 0; scheduleBarTick(after: 1.5) } else { barTimer?.invalidate(); barTimer = nil }
+        if scaleMode == 1 {
+            barTicks = 0
+            scheduleBarTick(after: fillPending ? 0.12 : 1.5)
+            if fillPending {
+                let g = fillGen
+                DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) { [weak self] in
+                    guard let self = self, self.fillGen == g, self.fillPending else { return }
+                    self.log("tela: sem medir as barras a tempo; aplica sem elas")
+                    self.fillPending = false
+                    self.barsMeasured = true
+                    self.applyScale(force: true)
+                }
+            }
+        } else { barTimer?.invalidate(); barTimer = nil }
     }
 
     // ---------- barras pretas gravadas dentro do vídeo ----------
@@ -1558,7 +1580,7 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
         barTimer?.invalidate()
         barTimer = nil
         guard scaleMode == 1, !finished else { return }
-        let delay = after ?? (barTicks < 10 ? 2.0 : 20.0)
+        let delay = after ?? (fillPending ? 0.12 : (barTicks < 10 ? 2.0 : 20.0))
         let t = Timer(timeInterval: delay, repeats: false) { [weak self] _ in self?.barTick() }
         RunLoop.main.add(t, forMode: .common)
         barTimer = t
@@ -1675,6 +1697,7 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
     private func barResult(_ r: BarResult, gen: Int, rect: (x0: Double, y0: Double, x1: Double, y1: Double)?) {
         if scaleMode != 1 || gen != cropGen { return }   // o recorte mudou entretanto: amostra de outro enquadramento
         if r.samples < PlayerWindowController.barMinSamples { return }
+        barsMeasured = true
         let fw = Double(srcSize.width), fh = Double(srcSize.height)
         let s = Double(r.w) / Double(r.h), frameAspect = fw / fh
         var R = (x0: 0.0, y0: 0.0, x1: 1.0, y1: 1.0)
@@ -1710,6 +1733,7 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
             log("barras: cima \(String(format: "%.3f", t)) baixo \(String(format: "%.3f", b)) esq \(String(format: "%.3f", l)) dir \(String(format: "%.3f", rr)) (amostras \(r.samples), fotografia \(r.w)x\(r.h), mundo \(snapWorld), vídeo \(Int(fw))x\(Int(fh)))")
             applyScale()
         }
+        if fillPending { fillPending = false; applyScale(force: true) }   // medida pronta: aplica o recorte final de uma vez
     }
 
     /** recorte "LxA+X+Y" (pixels do vídeo): a imagem real (sem as barras) cobre a vista com a proporção dela, centrada, sem esticar.
@@ -1726,6 +1750,13 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
         let rp = Double(viewW) / Double(viewH) / pixelAspect
         var cw = aw, ch = aw / rp
         if ch > ah { ch = ah; cw = ah * rp }
+        // limite de zoom (igual em X e em Y): no máximo zoomMax vezes a imagem do modo Normal; se as barras pedirem mais, o recorte
+        // cresce até o limite e sobram barras mais finas (o recorte pode incluir parte das barras)
+        let nFit = min(Double(viewH) / fh, Double(viewW) / (fw * pixelAspect))
+        let minCh = Double(viewH) / (nFit * PlayerWindowController.zoomMax)
+        if ch < minCh { ch = minCh; cw = ch * rp }
+        if cw > fw { cw = fw; ch = cw / rp }
+        if ch > fh { ch = fh; cw = ch * rp }
         let cx = ax + aw / 2, cy = ay + ah / 2
         var x = Int((cx - cw / 2).rounded()), y = Int((cy - ch / 2).rounded())
         var iw = Int(cw.rounded()), ih = Int(ch.rounded())
