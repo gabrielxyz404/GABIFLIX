@@ -1,0 +1,102 @@
+aparelho: mem=MemTotal:        2028624 kB api=30
+tv-queda-vad: início  mResumedActivity: ActivityRecord{f2e9f8f u0 io.github.gabrielxyz404.gabiflix/.PlayerActivity t5}
+ * Task{44d57bb #5 visible=true type=standard mode=fullscreen translucent=false A=10076:io.github.gabrielxyz404.gabiflix U=0 StackId=5 sz=2}
+ * Hist #1: ActivityRecord{f2e9f8f u0 io.github.gabrielxyz404.gabiflix/.PlayerActivity t5}
+ rootOfTask=false task=Task{44d57bb #5 visible=true type=standard mode=fullscreen translucent=false A=10076:io.github.gabrielxyz404.gabiflix U=0 StackId=5 sz=2}
+ * Hist #0: ActivityRecord{9d8a5bc u0 io.github.gabrielxyz404.gabiflix/.tv.TvHomeActivity t5}
+ rootOfTask=true task=Task{44d57bb #5 visible=true type=standard mode=fullscreen translucent=false A=10076:io.github.gabrielxyz404.gabiflix U=0 StackId=5 sz=2}
+ * Task{f57559e #4 visible=true type=home mode=fullscreen translucent=false A=10053:.TvLauncher U=0 StackId=1 sz=1}
+ rootOfTask=true task=Task{f57559e #4 visible=true type=home mode=fullscreen translucent=false A=10053:.TvLauncher U=0 StackId=1 sz=1}
+ topDisplayFocusedStack=Task{44d57bb #5 visible=true type=standard mode=fullscreen translucent=false A=10076:io.github.gabrielxyz404.gabiflix U=0 StackId=5 sz=2}
+ mLastOrientationSource=Task{44d57bb #5 visible=true type=standard mode=fullscreen translucent=false A=10076:io.github.gabrielxyz404.gabiflix U=0 StackId=5 sz=2}
+ mPreferredTopFocusableStack=Task{44d57bb #5 visible=true type=standard mode=fullscreen translucent=false A=10076:io.github.gabrielxyz404.gabiflix U=0 StackId=5 sz=2}
+ mLastFocusedStack=Task{44d57bb #5 visible=true type=standard mode=fullscreen translucent=false A=10076:io.github.gabrielxyz404.gabiflix U=0 StackId=5 sz=2}
+ * Task{44d57bb #5 visible=true type=standard mode=fullscreen translucent=false A=10076:io.github.gabrielxyz404.gabiflix U=0 StackId=5 sz=2}
+tv-queda-vad: resultado_visto=1 vivo=1 
+tv-queda-vad: linhas fatais=2 |          1795016639.133  3345  3345 I GabiFlixPlayer: AUDIOSYNC resultado: recusada z=9.0 janelas=2/3 (janelas discordam;) | vad=dsp(reserva) janelas=3 captura=71538 ms vad=42037 ms (cpu 2436) solve=2559 ms (cpu 339) cpu_thread=2864 ms total=74743 ms leitura_e
+tv-queda-vad: ===== PROVA (gancho vad) =====
+         1795016582.755  3345  3345 I GabiFlixPlayer: AUDIOSYNC o processo de captura caiu (desconectou) durante: vad cfg=0; o filme continua. Última etapa: 15:42:59.113 pid=3591 TESTE: queda nativa forçada no VAD
+         1795016582.867  3345  3588 I GabiFlixPlayer: AUDIOSYNC o Silero derrubou o processo de captura: desligado neste aparelho (versão atual); o VAD por DSP segue a análise
+         1795016582.917  3345  3588 I GabiFlixPlayer: AUDIOSYNC Silero indisponível (ele derrubou o processo de captura neste aparelho): usando o VAD por DSP
+         1795016610.047  3345  3588 I GabiFlixPlayer: AUDIOSYNC Silero indisponível (ele derrubou o processo de captura neste aparelho): usando o VAD por DSP
+         1795016631.307  3345  3588 I GabiFlixPlayer: AUDIOSYNC Silero indisponível (ele derrubou o processo de captura neste aparelho): usando o VAD por DSP
+         1795016639.133  3345  3345 I GabiFlixPlayer: AUDIOSYNC resultado: recusada z=9.0 janelas=2/3 (janelas discordam;) | vad=dsp(reserva) janelas=3 captura=71538 ms vad=42037 ms (cpu 2436) solve=2559 ms (cpu 339) cpu_thread=2864 ms total=74743 ms leitura_estimada=8 MB leitura_real=22 MB pss=114->119 MB java=10->24 MB
+tv-queda-vad: relatórios CAPTURA_CAIU enviados: 2 | respostas:       2 HTTP 200 
+tv-queda-vad: linhas de queda no relatório (Fatal signal/backtrace/#NN pc): 26
+tv-queda-vad: o app ainda está no player?  mResumedActivity: ActivityRecord{f2e9f8f u0 io.github.gabrielxyz404.gabiflix/.PlayerActivity t5}
+tv-queda-captura: início  mResumedActivity: ActivityRecord{ad582aa u0 io.github.gabrielxyz404.gabiflix/.PlayerActivity t6}
+ * Task{6077346 #6 visible=true type=standard mode=fullscreen translucent=false A=10076:io.github.gabrielxyz404.gabiflix U=0 StackId=6 sz=2}
+ * Hist #1: ActivityRecord{ad582aa u0 io.github.gabrielxyz404.gabiflix/.PlayerActivity t6}
+ rootOfTask=false task=Task{6077346 #6 visible=true type=standard mode=fullscreen translucent=false A=10076:io.github.gabrielxyz404.gabiflix U=0 StackId=6 sz=2}
+ * Hist #0: ActivityRecord{9156a5e u0 io.github.gabrielxyz404.gabiflix/.tv.TvHomeActivity t6}
+ rootOfTask=true task=Task{6077346 #6 visible=true type=standard mode=fullscreen translucent=false A=10076:io.github.gabrielxyz404.gabiflix U=0 StackId=6 sz=2}
+ * Task{f57559e #4 visible=true type=home mode=fullscreen translucent=false A=10053:.TvLauncher U=0 StackId=1 sz=1}
+ rootOfTask=true task=Task{f57559e #4 visible=true type=home mode=fullscreen translucent=false A=10053:.TvLauncher U=0 StackId=1 sz=1}
+ topDisplayFocusedStack=Task{6077346 #6 visible=true type=standard mode=fullscreen translucent=false A=10076:io.github.gabrielxyz404.gabiflix U=0 StackId=6 sz=2}
+ mLastOrientationSource=Task{6077346 #6 visible=true type=standard mode=fullscreen translucent=false A=10076:io.github.gabrielxyz404.gabiflix U=0 StackId=6 sz=2}
+ mPreferredTopFocusableStack=Task{6077346 #6 visible=true type=standard mode=fullscreen translucent=false A=10076:io.github.gabrielxyz404.gabiflix U=0 StackId=6 sz=2}
+ mLastFocusedStack=Task{6077346 #6 visible=true type=standard mode=fullscreen translucent=false A=10076:io.github.gabrielxyz404.gabiflix U=0 StackId=6 sz=2}
+ * Task{6077346 #6 visible=true type=standard mode=fullscreen translucent=false A=10076:io.github.gabrielxyz404.gabiflix U=0 StackId=6 sz=2}
+tv-queda-captura: resultado_visto=1 vivo=1 
+tv-queda-captura: linhas fatais=2 |          1795016816.305  4821  4821 I GabiFlixPlayer: AUDIOSYNC resultado: aceita z=11.7 janelas=3/3 escala=1.00000 deslocamento=-3032 ms | vad=silero janelas=3 captura=24258 ms vad=11038 ms (cpu 19) solve=702 ms (cpu 321) cpu_thread=453 ms total=25126 ms leit
+tv-queda-captura: ===== PROVA (gancho capture) =====
+         1795016801.895  4821  4821 I GabiFlixPlayer: AUDIOSYNC o processo de captura caiu (desconectou) durante: captura cfg=0; o filme continua. Última etapa: 15:46:40.694 pid=5258 TESTE: queda nativa forçada durante a captura (cfg=0)
+         1795016801.897  4821  5255 I GabiFlixPlayer: AUDIOSYNC a captura derrubou o processo com a configuração 0 (padrão); tento a configuração 1 na hora
+         1795016806.087  4821  5255 I GabiFlixPlayer: AUDIOSYNC captura recuperada com a configuração 1 depois de queda(s) do processo
+         1795016811.816  4821  5255 I GabiFlixPlayer: AUDIOSYNC captura recuperada com a configuração 1 depois de queda(s) do processo
+         1795016816.305  4821  4821 I GabiFlixPlayer: AUDIOSYNC resultado: aceita z=11.7 janelas=3/3 escala=1.00000 deslocamento=-3032 ms | vad=silero janelas=3 captura=24258 ms vad=11038 ms (cpu 19) solve=702 ms (cpu 321) cpu_thread=453 ms total=25126 ms leitura_estimada=8 MB leitura_real=11 MB pss=118->118 MB java=11->20 MB
+         1795016816.306  4821  4821 I GabiFlixPlayer: AUDIOSYNC aplicado: atraso -3030 ms, escala 1.0
+tv-queda-captura: relatórios CAPTURA_CAIU enviados: 3 | respostas:       3 HTTP 200 
+tv-queda-captura: linhas de queda no relatório (Fatal signal/backtrace/#NN pc): 26
+tv-queda-captura: o app ainda está no player?  mResumedActivity: ActivityRecord{ad582aa u0 io.github.gabrielxyz404.gabiflix/.PlayerActivity t6}
+tv-queda-todas: início  mResumedActivity: ActivityRecord{c0414c7 u0 io.github.gabrielxyz404.gabiflix/.PlayerActivity t7}
+ * Task{1004da9 #7 visible=true type=standard mode=fullscreen translucent=false A=10076:io.github.gabrielxyz404.gabiflix U=0 StackId=7 sz=2}
+ * Hist #1: ActivityRecord{c0414c7 u0 io.github.gabrielxyz404.gabiflix/.PlayerActivity t7}
+ rootOfTask=false task=Task{1004da9 #7 visible=true type=standard mode=fullscreen translucent=false A=10076:io.github.gabrielxyz404.gabiflix U=0 StackId=7 sz=2}
+ * Hist #0: ActivityRecord{aa52a u0 io.github.gabrielxyz404.gabiflix/.tv.TvHomeActivity t7}
+ rootOfTask=true task=Task{1004da9 #7 visible=true type=standard mode=fullscreen translucent=false A=10076:io.github.gabrielxyz404.gabiflix U=0 StackId=7 sz=2}
+ * Task{f57559e #4 visible=true type=home mode=fullscreen translucent=false A=10053:.TvLauncher U=0 StackId=1 sz=1}
+ rootOfTask=true task=Task{f57559e #4 visible=true type=home mode=fullscreen translucent=false A=10053:.TvLauncher U=0 StackId=1 sz=1}
+ topDisplayFocusedStack=Task{1004da9 #7 visible=true type=standard mode=fullscreen translucent=false A=10076:io.github.gabrielxyz404.gabiflix U=0 StackId=7 sz=2}
+ mLastOrientationSource=Task{1004da9 #7 visible=true type=standard mode=fullscreen translucent=false A=10076:io.github.gabrielxyz404.gabiflix U=0 StackId=7 sz=2}
+ mPreferredTopFocusableStack=Task{1004da9 #7 visible=true type=standard mode=fullscreen translucent=false A=10076:io.github.gabrielxyz404.gabiflix U=0 StackId=7 sz=2}
+ mLastFocusedStack=Task{1004da9 #7 visible=true type=standard mode=fullscreen translucent=false A=10076:io.github.gabrielxyz404.gabiflix U=0 StackId=7 sz=2}
+ * Task{1004da9 #7 visible=true type=standard mode=fullscreen translucent=false A=10076:io.github.gabrielxyz404.gabiflix U=0 StackId=7 sz=2}
+tv-queda-todas: resultado_visto=1 vivo=1 
+tv-queda-todas: linhas fatais=0 |          1795016961.549  5558  5558 I GabiFlixPlayer: AUDIOSYNC resultado: aceita z=11.7 janelas=3/3 escala=1.00000 deslocamento=-3032 ms | vad=silero janelas=3 captura=17772 ms vad=10712 ms (cpu 24) solve=962 ms (cpu 337) cpu_thread=451 ms total=19038 ms leit
+tv-queda-todas: ===== PROVA (gancho capture-all) =====
+         1795016961.549  5558  5558 I GabiFlixPlayer: AUDIOSYNC resultado: aceita z=11.7 janelas=3/3 escala=1.00000 deslocamento=-3032 ms | vad=silero janelas=3 captura=17772 ms vad=10712 ms (cpu 24) solve=962 ms (cpu 337) cpu_thread=451 ms total=19038 ms leitura_estimada=8 MB leitura_real=10 MB pss=123->119 MB java=15->22 MB
+         1795016961.550  5558  5558 I GabiFlixPlayer: AUDIOSYNC aplicado: atraso -3030 ms, escala 1.0
+tv-queda-todas: relatórios CAPTURA_CAIU enviados: 0 | respostas: 
+tv-queda-todas: linhas de queda no relatório (Fatal signal/backtrace/#NN pc): 0
+tv-queda-todas: o app ainda está no player?  mResumedActivity: ActivityRecord{c0414c7 u0 io.github.gabrielxyz404.gabiflix/.PlayerActivity t7}
+tv-fixed: início  mResumedActivity: ActivityRecord{ce8e593 u0 io.github.gabrielxyz404.gabiflix/.PlayerActivity t8}
+ * Task{b6c02a #8 visible=true type=standard mode=fullscreen translucent=false A=10076:io.github.gabrielxyz404.gabiflix U=0 StackId=8 sz=2}
+ * Hist #1: ActivityRecord{ce8e593 u0 io.github.gabrielxyz404.gabiflix/.PlayerActivity t8}
+ rootOfTask=false task=Task{b6c02a #8 visible=true type=standard mode=fullscreen translucent=false A=10076:io.github.gabrielxyz404.gabiflix U=0 StackId=8 sz=2}
+ * Hist #0: ActivityRecord{daca8a5 u0 io.github.gabrielxyz404.gabiflix/.tv.TvHomeActivity t8}
+ rootOfTask=true task=Task{b6c02a #8 visible=true type=standard mode=fullscreen translucent=false A=10076:io.github.gabrielxyz404.gabiflix U=0 StackId=8 sz=2}
+ * Task{f57559e #4 visible=true type=home mode=fullscreen translucent=false A=10053:.TvLauncher U=0 StackId=1 sz=1}
+ rootOfTask=true task=Task{f57559e #4 visible=true type=home mode=fullscreen translucent=false A=10053:.TvLauncher U=0 StackId=1 sz=1}
+ topDisplayFocusedStack=Task{b6c02a #8 visible=true type=standard mode=fullscreen translucent=false A=10076:io.github.gabrielxyz404.gabiflix U=0 StackId=8 sz=2}
+ mLastOrientationSource=Task{b6c02a #8 visible=true type=standard mode=fullscreen translucent=false A=10076:io.github.gabrielxyz404.gabiflix U=0 StackId=8 sz=2}
+ mPreferredTopFocusableStack=Task{b6c02a #8 visible=true type=standard mode=fullscreen translucent=false A=10076:io.github.gabrielxyz404.gabiflix U=0 StackId=8 sz=2}
+ mLastFocusedStack=Task{b6c02a #8 visible=true type=standard mode=fullscreen translucent=false A=10076:io.github.gabrielxyz404.gabiflix U=0 StackId=8 sz=2}
+ * Task{b6c02a #8 visible=true type=standard mode=fullscreen translucent=false A=10076:io.github.gabrielxyz404.gabiflix U=0 StackId=8 sz=2}
+tv-fixed: resultado_visto=1 vivo=1 
+tv-fixed: linhas fatais=0 |          1795017099.189  5907  5907 I GabiFlixPlayer: AUDIOSYNC resultado: aceita z=11.7 janelas=3/3 escala=1.00000 deslocamento=-3032 ms | vad=silero janelas=3 captura=17772 ms vad=10753 ms (cpu 21) solve=747 ms (cpu 287) cpu_thread=409 ms total=18666 ms leit
+tv-certa: início  mResumedActivity: ActivityRecord{ef75cc2 u0 io.github.gabrielxyz404.gabiflix/.PlayerActivity t9}
+ * Task{cce4a3f #9 visible=true type=standard mode=fullscreen translucent=false A=10076:io.github.gabrielxyz404.gabiflix U=0 StackId=9 sz=2}
+ * Hist #1: ActivityRecord{ef75cc2 u0 io.github.gabrielxyz404.gabiflix/.PlayerActivity t9}
+ rootOfTask=false task=Task{cce4a3f #9 visible=true type=standard mode=fullscreen translucent=false A=10076:io.github.gabrielxyz404.gabiflix U=0 StackId=9 sz=2}
+ * Hist #0: ActivityRecord{ce56e29 u0 io.github.gabrielxyz404.gabiflix/.tv.TvHomeActivity t9}
+ rootOfTask=true task=Task{cce4a3f #9 visible=true type=standard mode=fullscreen translucent=false A=10076:io.github.gabrielxyz404.gabiflix U=0 StackId=9 sz=2}
+ * Task{f57559e #4 visible=true type=home mode=fullscreen translucent=false A=10053:.TvLauncher U=0 StackId=1 sz=1}
+ rootOfTask=true task=Task{f57559e #4 visible=true type=home mode=fullscreen translucent=false A=10053:.TvLauncher U=0 StackId=1 sz=1}
+ topDisplayFocusedStack=Task{cce4a3f #9 visible=true type=standard mode=fullscreen translucent=false A=10076:io.github.gabrielxyz404.gabiflix U=0 StackId=9 sz=2}
+ mLastOrientationSource=Task{cce4a3f #9 visible=true type=standard mode=fullscreen translucent=false A=10076:io.github.gabrielxyz404.gabiflix U=0 StackId=9 sz=2}
+ mPreferredTopFocusableStack=Task{cce4a3f #9 visible=true type=standard mode=fullscreen translucent=false A=10076:io.github.gabrielxyz404.gabiflix U=0 StackId=9 sz=2}
+ mLastFocusedStack=Task{cce4a3f #9 visible=true type=standard mode=fullscreen translucent=false A=10076:io.github.gabrielxyz404.gabiflix U=0 StackId=9 sz=2}
+ * Task{cce4a3f #9 visible=true type=standard mode=fullscreen translucent=false A=10076:io.github.gabrielxyz404.gabiflix U=0 StackId=9 sz=2}
+tv-certa: resultado_visto=1 vivo=1 
+tv-certa: linhas fatais=0 |          1795017285.527  6668  6668 I GabiFlixPlayer: AUDIOSYNC resultado: aceita z=12.3 janelas=3/3 escala=1.00000 deslocamento=6 ms | vad=silero janelas=3 captura=18449 ms vad=11074 ms (cpu 17) solve=1571 ms (cpu 360) cpu_thread=467 ms total=20344 ms leitura
