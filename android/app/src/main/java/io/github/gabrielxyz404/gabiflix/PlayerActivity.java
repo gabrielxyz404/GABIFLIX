@@ -143,8 +143,8 @@ public class PlayerActivity extends Activity {
     private static final int BAR_MIN_SAMPLES = 3, BAR_MAX_SAMPLES = 8, BAR_LUMA = 40;
     /** na TV a legenda é desenhada dentro da imagem, a ~8% da borda de baixo do quadro: o zoom pode cortar no máximo isto da borda de baixo */
     private static final float SUB_CUT = 0.055f;
-    /** na TV a legenda é desenhada no quadro e cresce junto com o zoom: o zoom só pode cortar isto de cada lado (medido: a linha mais larga que o libVLC monta ocupa ~93% do quadro) */
-    private static final float SUB_SAFE_X = 0.03f;
+    /** na TV a legenda é desenhada no quadro e cresce junto com o zoom: o zoom só pode cortar isto de cada lado (medido na TV: a linha mais larga que o libVLC monta ocupa ~95% do quadro, e a legenda cresce junto com o zoom: limite ~4% de zoom) */
+    private static final float SUB_SAFE_X = 0.019f;
     private final Runnable barTickRun = this::barTick;
 
     private void startBarSampling() {
