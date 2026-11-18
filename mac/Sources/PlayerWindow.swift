@@ -89,7 +89,16 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
     private var announcedKey = ""
     private var scaleMode = 0
     private var scaleButton: NSButton?
-    private var lastScale = (-1, -1, -1)
+    private var lastScaleKey = ""
+    private var lastCropSet: String? = nil
+    private var bars = (t: 0.0, b: 0.0, l: 0.0, r: 0.0)
+    private var barTimer: Timer?
+    private var barTicks = 0
+    private var barBusy = false
+    private var srcSize = CGSize.zero
+    private var pixelAspect = 1.0
+    private let barQueue = DispatchQueue(label: "frameplay.barras", qos: .utility)
+    private var barSamples: [(rows: [Bool], cols: [Bool])] = []   // só mexe na barQueue
     private var scaleForce = 0
     private let noticeLabel = NSTextField(labelWithString: "")
     private var noticeUntil = Date.distantPast
@@ -208,7 +217,7 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
         slider.isContinuous = false
         let audio = button("Áudio", #selector(chooseAudio))
         let subs = button("Legendas", #selector(chooseSubtitles))
-        let scale = button("Tela: Ajustar", #selector(toggleScale(_:)))
+        let scale = button("Tela: Normal", #selector(toggleScale(_:)))
         scaleButton = scale
         let fs = button("Tela cheia", #selector(toggleFullScreen))
 
@@ -1328,6 +1337,7 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
         log("comando de teste: \(line)")
         switch cmd {
         case "scale": setScaleMode(n)
+        case "stats": log("stats: tempo=\(player.time.intValue) perdidos=\(lostVideoFrames()) tocando=\(player.isPlaying) tamanho=\(Int(player.videoSize.width))x\(Int(player.videoSize.height)) janela=\(Int(videoView.bounds.width))x\(Int(videoView.bounds.height))")
         case "sync": showSyncPanel()
         case "speech":
             showSyncPanel()
@@ -1403,36 +1413,193 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
         }
     }
 
-    // ---------- tela: Ajustar / Preencher / Esticar ----------
-    // O VLC desenha as legendas DENTRO da imagem do vídeo. Por isso os 3 modos usam sempre a mesma vista (fillScreen = false, sem ampliar a vista):
-    // Ajustar = como vem (barras pretas); Esticar = proporção do VLC igual à da vista (distorce até encher); Preencher = recorte
-    // (videoCropGeometry com a proporção da vista: corta o excesso, sem distorcer). Assim a legenda fica inteira e dentro da tela nos 3 modos.
-    private static let scaleNames = ["Ajustar", "Preencher", "Esticar"]
+    // ---------- tela: Normal / Preencher (como no Android e na TV) ----------
+    // O VLC desenha as legendas DENTRO da imagem do vídeo. Por isso os 2 modos usam sempre a mesma vista (fillScreen = false, sem ampliar a vista).
+    // Normal = como vem (com barras pretas se for preciso). Preencher = recorte (videoCropGeometry): a imagem REAL (sem as barras pretas
+    // gravadas dentro do ficheiro de vídeo) cobre a janela, centrada e sem esticar. Só se usam propriedades do leitor: nada na hierarquia de vistas.
+    private static let scaleNames = ["Normal", "Preencher"]
 
     private func applyScale(force: Bool = false) {
         let w = Int(videoView.bounds.width.rounded()), h = Int(videoView.bounds.height.rounded())
         if w <= 0 || h <= 0 { return }
-        if !force && lastScale.0 == w && lastScale.1 == h && lastScale.2 == scaleMode { return }
-        lastScale = (w, h, scaleMode)
+        let key = "\(w)x\(h)/\(scaleMode)/\(barsKey())"
+        if !force && lastScaleKey == key { return }
+        lastScaleKey = key
         videoView.fillScreen = false
-        let ratio = "\(w):\(h)"
-        if scaleMode == 2 { ratio.withCString { player.videoAspectRatio = UnsafeMutablePointer(mutating: $0) } }
-        else { player.videoAspectRatio = nil }
-        if scaleMode == 1 { ratio.withCString { player.videoCropGeometry = UnsafeMutablePointer(mutating: $0) } }
-        else { player.videoCropGeometry = nil }
-        log("tela: \(PlayerWindowController.scaleNames[scaleMode]) \(ratio)")
+        player.videoAspectRatio = nil
+        // tamanho do quadro (pixels do vídeo) lido enquanto ainda não há recorte, para não confundir com o quadro já recortado
+        if lastCropSet == nil { let vs = player.videoSize; if vs.width > 0 && vs.height > 0 { srcSize = vs } }
+        var crop: String? = nil
+        if scaleMode == 1 { crop = cropGeometry(viewW: w, viewH: h) }
+        if crop != lastCropSet || force {
+            lastCropSet = crop
+            if let c = crop { c.withCString { player.videoCropGeometry = UnsafeMutablePointer(mutating: $0) } }
+            else { player.videoCropGeometry = nil }
+        }
+        log("tela: \(PlayerWindowController.scaleNames[scaleMode]) \(w):\(h) recorte=\(crop ?? "nenhum") barras=\(barsKey())")
     }
 
     @objc private func toggleScale(_ sender: NSButton) {
-        setScaleMode((scaleMode + 1) % 3)
+        setScaleMode((scaleMode + 1) % 2)
         showControls()
     }
 
+    /** qualquer valor que não seja 1 (Preencher), incluindo o antigo "Esticar", vira Normal */
     func setScaleMode(_ m: Int) {
-        scaleMode = max(0, min(2, m))
+        scaleMode = m == 1 ? 1 : 0
         scaleButton?.attributedTitle = NSAttributedString(string: "  Tela: \(PlayerWindowController.scaleNames[scaleMode])  ", attributes: [
             .foregroundColor: NSColor.white, .font: NSFont.boldSystemFont(ofSize: 13)])
         applyScale(force: true)
+        if scaleMode == 1 { barTicks = 0; scheduleBarTick(after: 1.5) } else { barTimer?.invalidate(); barTimer = nil }
+    }
+
+    // ---------- barras pretas gravadas dentro do vídeo ----------
+    // Amostras pequenas (fotografia do VLC, 192 px de largura) feitas fora da thread principal, de 2 em 2 s no início e depois de 20 em 20 s.
+    // Uma linha/coluna só é "barra" se foi preta em TODAS as últimas 8 amostras (mínimo 3): cenas escuras não criam barras falsas.
+    private static let barMinSamples = 3, barMaxSamples = 8, barLuma = 40
+
+    private func barsKey() -> String { String(format: "%.3f/%.3f/%.3f/%.3f", bars.t, bars.b, bars.l, bars.r) }
+
+    private func scheduleBarTick(after: TimeInterval? = nil) {
+        barTimer?.invalidate()
+        barTimer = nil
+        guard scaleMode == 1, !finished else { return }
+        let delay = after ?? (barTicks < 10 ? 2.0 : 20.0)
+        let t = Timer(timeInterval: delay, repeats: false) { [weak self] _ in self?.barTick() }
+        RunLoop.main.add(t, forMode: .common)
+        barTimer = t
+    }
+
+    private func barTick() {
+        barTicks += 1
+        scheduleBarTick()
+        guard scaleMode == 1, startedPlaying, !finished, player.isPlaying, !barBusy else { return }
+        // tamanho do quadro (pixels do vídeo) medido enquanto ainda não há recorte, para não confundir com o quadro já recortado
+        let vs = player.videoSize
+        if lastCropSet == nil, vs.width > 0, vs.height > 0 { srcSize = vs }
+        barBusy = true
+        let path = NSTemporaryDirectory() + "frameplay-barras-\(ProcessInfo.processInfo.processIdentifier).png"
+        let wasCropped = lastCropSet != nil
+        let vsNow = vs
+        let tickNo = barTicks
+        barQueue.async { [weak self] in
+            guard let self = self else { return }
+            try? FileManager.default.removeItem(atPath: path)
+            self.player.saveVideoSnapshot(at: path, withWidth: 192, andHeight: 0)
+            let res = self.analyzeSnapshot(path: path)
+            // só no teste automático: guarda as primeiras fotografias para se ver o que o VLC mede
+            if PlayerWindowController.testLog && tickNo <= 14 { try? FileManager.default.copyItem(atPath: path, toPath: "/tmp/frameplay-snap-\(tickNo).png") }
+            try? FileManager.default.removeItem(atPath: path)
+            DispatchQueue.main.async {
+                self.barBusy = false
+                if let r = res { self.barResult(r, wasCropped: wasCropped, videoSizeNow: vsNow) }
+            }
+        }
+    }
+
+    private struct BarResult { var t = 0.0, b = 0.0, l = 0.0, r = 0.0, w = 0, h = 0, samples = 0 }
+
+    private static func lead(_ a: [Bool]) -> Int { var n = 0; while n < a.count && !a[n] { n += 1 }; return n == a.count ? 0 : n }
+    private static func trail(_ a: [Bool]) -> Int { var n = 0; while n < a.count && !a[a.count - 1 - n] { n += 1 }; return n == a.count ? 0 : n }
+
+    /** fila de fundo: lê a fotografia, regista que linhas/colunas têm algo que não é preto e, com amostras suficientes, devolve as barras (fração do quadro) */
+    private func analyzeSnapshot(path: String) -> BarResult? {
+        guard let src = CGImageSourceCreateWithURL(URL(fileURLWithPath: path) as CFURL, nil), let img = CGImageSourceCreateImageAtIndex(src, 0, nil) else {
+            log("barras: sem fotografia"); return nil }
+        let w = img.width, h = img.height
+        guard w >= 32, h >= 16, w <= 2000, h <= 2000 else { return nil }
+        var px = [UInt8](repeating: 0, count: w * h * 4)
+        let drawn: Bool = px.withUnsafeMutableBytes { buf in
+            guard let ctx = CGContext(data: buf.baseAddress, width: w, height: h, bitsPerComponent: 8, bytesPerRow: w * 4, space: CGColorSpaceCreateDeviceRGB(),
+                                      bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue) else { return false }
+            ctx.draw(img, in: CGRect(x: 0, y: 0, width: w, height: h))
+            return true
+        }
+        if !drawn { return nil }
+        let pxs = px
+        func luma(_ x: Int, _ y: Int) -> Int { let i = (y * w + x) * 4; return (Int(pxs[i]) * 77 + Int(pxs[i + 1]) * 150 + Int(pxs[i + 2]) * 29) >> 8 }
+        let thr = PlayerWindowController.barLuma
+        var rows = [Bool](repeating: false, count: h), cols = [Bool](repeating: false, count: w)
+        let x0 = w / 5, x1 = w * 4 / 5, y0 = h / 5, y1 = h * 13 / 20   // colunas: só 20%-65% da altura (a legenda fica em baixo)
+        var any = 0
+        for y in 0..<h {
+            var c = 0
+            for x in x0..<x1 where luma(x, y) > thr { c += 1 }
+            rows[y] = c * 100 > (x1 - x0) * 2
+            if rows[y] { any += 1 }
+        }
+        for x in 0..<w {
+            var c = 0
+            for y in y0..<y1 where luma(x, y) > thr { c += 1 }
+            cols[x] = c * 100 > (y1 - y0) * 2
+        }
+        log("barras: fotografia \(w)x\(h) linhas-com-imagem=\(any)")
+        // quadro quase todo preto (fade, transição): não conta
+        if any * 100 < h * 8 { return nil }
+        if let f = barSamples.first, f.rows.count != h || f.cols.count != w { barSamples.removeAll() }
+        barSamples.append((rows, cols))
+        while barSamples.count > PlayerWindowController.barMaxSamples { barSamples.removeFirst() }
+        var res = BarResult(); res.w = w; res.h = h; res.samples = barSamples.count
+        if barSamples.count < PlayerWindowController.barMinSamples { return res }
+        var ur = [Bool](repeating: false, count: h), uc = [Bool](repeating: false, count: w)
+        for s in barSamples {
+            for i in 0..<h where s.rows[i] { ur[i] = true }
+            for i in 0..<w where s.cols[i] { uc[i] = true }
+        }
+        var t = Double(PlayerWindowController.lead(ur)) / Double(h), b = Double(PlayerWindowController.trail(ur)) / Double(h)
+        var l = Double(PlayerWindowController.lead(uc)) / Double(w), r = Double(PlayerWindowController.trail(uc)) / Double(w)
+        // folga de 1 linha/coluna da fotografia: a transição suave da borda não deixa uma risca preta
+        if t > 0 { t += 1.0 / Double(h) }
+        if b > 0 { b += 1.0 / Double(h) }
+        if l > 0 { l += 1.0 / Double(w) }
+        if r > 0 { r += 1.0 / Double(w) }
+        if t < 0.015 { t = 0 }
+        if b < 0.015 { b = 0 }
+        if l < 0.015 { l = 0 }
+        if r < 0.015 { r = 0 }
+        // na dúvida, sem barras: sobraria pouco da imagem
+        if 1 - t - b < 0.35 || 1 - l - r < 0.35 { t = 0; b = 0; l = 0; r = 0 }
+        // barras de cima e de baixo vêm sempre em par (a legenda "suja" a de baixo): sem a de cima não se confia na de baixo
+        if t == 0 { b = 0 } else if t > b { b = t }
+        res.t = t; res.b = b; res.l = l; res.r = r
+        return res
+    }
+
+    private func barResult(_ r: BarResult, wasCropped: Bool, videoSizeNow: CGSize) {
+        if scaleMode != 1 { return }
+        if !wasCropped && srcSize.width > 0 && srcSize.height > 0 && r.h > 0 {
+            // proporção dos pixels (SAR): proporção da fotografia dividida pela do quadro em pixels
+            let pa = (Double(r.w) / Double(r.h)) / (Double(srcSize.width) / Double(srcSize.height))
+            pixelAspect = (pa > 0.5 && pa < 2) ? (abs(pa - 1) < 0.02 ? 1 : pa) : 1
+        }
+        if r.samples < PlayerWindowController.barMinSamples { return }
+        let ch = abs(r.t - bars.t) > 0.004 || abs(r.b - bars.b) > 0.004 || abs(r.l - bars.l) > 0.004 || abs(r.r - bars.r) > 0.004
+        if ch {
+            bars = (r.t, r.b, r.l, r.r)
+            log("barras: cima \(String(format: "%.3f", r.t)) baixo \(String(format: "%.3f", r.b)) esq \(String(format: "%.3f", r.l)) dir \(String(format: "%.3f", r.r)) (amostras \(r.samples), fotografia \(r.w)x\(r.h), vídeo \(Int(srcSize.width))x\(Int(srcSize.height)), agora \(Int(videoSizeNow.width))x\(Int(videoSizeNow.height)), recortado \(wasCropped ? 1 : 0))")
+            applyScale()
+        }
+    }
+
+    /** recorte "LxA+X+Y" (pixels do vídeo): a imagem real (sem as barras) cobre a vista com a proporção dela, centrada, sem esticar */
+    private func cropGeometry(viewW: Int, viewH: Int) -> String? {
+        let ratio = "\(viewW):\(viewH)"
+        let fw = Double(srcSize.width), fh = Double(srcSize.height)
+        // sem o tamanho do vídeo (ainda a abrir): só a proporção da vista (recorte centrado sobre o quadro todo)
+        if fw < 16 || fh < 16 { return ratio }
+        let ax = bars.l * fw, ay = bars.t * fh
+        let aw = fw - ax - bars.r * fw, ah = fh - ay - bars.b * fh
+        if aw < 16 || ah < 16 { return ratio }
+        // proporção da vista em pixels do vídeo (a proporção dos pixels pode não ser 1:1)
+        let rp = Double(viewW) / Double(viewH) / pixelAspect
+        var cw = aw, ch = aw / rp
+        if ch > ah { ch = ah; cw = ah * rp }
+        let cx = ax + aw / 2, cy = ay + ah / 2
+        var x = Int((cx - cw / 2).rounded()), y = Int((cy - ch / 2).rounded())
+        var iw = Int(cw.rounded()), ih = Int(ch.rounded())
+        iw = max(16, min(Int(fw), iw)); ih = max(16, min(Int(fh), ih))
+        x = max(0, min(Int(fw) - iw, x)); y = max(0, min(Int(fh) - ih, y))
+        return "\(iw)x\(ih)+\(x)+\(y)"
     }
 
     private static func get(_ url: URL) -> Data? {
@@ -1683,6 +1850,8 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
         finished = true
         timer?.invalidate()
         timer = nil
+        barTimer?.invalidate()
+        barTimer = nil
         audioAuto?.stop()
         audioAuto = nil
         let t = Int64(player.time.intValue)
