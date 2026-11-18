@@ -1,0 +1,139 @@
+name: Sync real teste
+
+# Prova da sincronizacao da legenda pelo audio com conteudo "de filme real" (bitrate alto, audio multicanal, varias faixas, rede limitada),
+# antes (main) e depois (este branch). Resultados em branches sync-real-out-*. Nunca publica o app.
+on:
+  push:
+    branches: [run-sync-real]
+  workflow_dispatch:
+    inputs:
+      which:
+        description: base, fix ou ambos
+        default: base
+
+permissions:
+  contents: write
+
+env:
+  OUT: sync-real-out
+
+jobs:
+  prep:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/cache@v4
+        with:
+          path: media
+          key: audio-integra-media-detour-v1-${{ hashFiles('tools/audio-integra/prep.py') }}
+      - name: Trecho do filme e legendas
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg >/dev/null
+          mkdir -p /tmp/ort /tmp/pc
+          curl -fsSL -o /tmp/ort/ort.jar https://repo1.maven.org/maven2/com/microsoft/onnxruntime/onnxruntime/1.20.0/onnxruntime-1.20.0.jar
+          D=android/app/src/main/java/io/github/gabrielxyz404/gabiflix/audiosync
+          javac -nowarn -d /tmp/pc -cp /tmp/ort/ort.jar $D/*.java tools/audio-integra/PreCheck.java
+          export PRECHECK="java -cp /tmp/pc:/tmp/ort/ort.jar PreCheck" MODEL=$PWD/android/app/src/main/assets/silero_vad.onnx
+          if [ ! -f media/info.json ]; then
+            for s in his_girl_friday charade freaks scarlet_street the_stranger sherlock_secret_weapon; do
+              rm -rf media; python3 tools/audio-integra/prep.py $s suddenly,manos,meet_john_doe media > prep-$s.log 2>&1 && { cp prep-$s.log prep.log; break; }
+              tail -3 prep-$s.log
+            done
+            if [ ! -f media/info.json ]; then rm -rf media; FALLBACK=1 python3 tools/audio-integra/prep.py his_girl_friday suddenly,manos,meet_john_doe media > prep.log 2>&1 || { tail -30 prep.log; exit 1; }; fi
+            cat prep-*.log >> prep.log 2>/dev/null; tail -15 prep.log
+          fi
+          rm -rf media/_work
+          ls -la media
+          cp media/oracle.json prep-oracle.json || true
+      - uses: actions/upload-artifact@v4
+        with:
+          name: media
+          path: media
+          retention-days: 3
+      - name: Publicar o oraculo (pequeno)
+        if: always()
+        continue-on-error: true
+        run: |
+          mkdir -p res; cp prep.log res/ 2>/dev/null || true; cp prep-oracle.json res/ 2>/dev/null || true; cp media/info.json res/ 2>/dev/null || true; ls media > res/media-ls.txt 2>/dev/null || true; echo ok > res/ok.txt
+          cd res && git init -q -b x && git add -A && git -c user.name=ci -c user.email=ci@x commit -qm prep
+          git push -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" x:${{ env.OUT }}-prep
+
+  teste:
+    needs: prep
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      matrix:
+        apk: [base, fix]
+    steps:
+      - name: Pular?
+        id: skip
+        run: |
+          W="${{ github.event.inputs.which || 'base' }}"
+          if [ "$W" != ambos ] && [ "$W" != "${{ matrix.apk }}" ]; then echo "skip=1" >> $GITHUB_OUTPUT; fi
+      - uses: actions/checkout@v4
+        if: steps.skip.outputs.skip != '1'
+      - uses: actions/checkout@v4
+        if: steps.skip.outputs.skip != '1' && matrix.apk == 'base'
+        with:
+          ref: ${{ vars.BASE_SHA || 'main' }}
+          path: basesrc
+      - uses: actions/setup-java@v5
+        if: steps.skip.outputs.skip != '1'
+        with:
+          distribution: temurin
+          java-version: 17
+      - uses: gradle/actions/setup-gradle@v4
+        if: steps.skip.outputs.skip != '1'
+        with:
+          gradle-version: '8.9'
+      - uses: actions/download-artifact@v4
+        if: steps.skip.outputs.skip != '1'
+        with:
+          name: media
+          path: /tmp/media
+      - name: APK de teste (x86, com ONNX Runtime x86)
+        if: steps.skip.outputs.skip != '1'
+        env:
+          GABIFLIX_ABIS: x86,x86_64
+        run: |
+          if [ "${{ matrix.apk }}" = base ]; then SRC=basesrc; else SRC=.; fi
+          gradle -p $SRC/android assembleRelease --no-daemon -q
+          cp $SRC/android/app/build/outputs/apk/release/app-release.apk /tmp/teste.apk
+      - name: Material de filme real
+        if: steps.skip.outputs.skip != '1'
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg >/dev/null
+          bash tools/sync-real/mk-media.sh /tmp/media 2>&1 | tail -40
+          df -h /tmp | tail -1
+      - name: Servidor dos videos
+        if: steps.skip.outputs.skip != '1'
+        run: |
+          : > /tmp/server-bytes.log
+          nohup python3 tools/audio-integra/server.py /tmp/media 8000 >/tmp/server.out 2>&1 &
+          sleep 2; curl -sI http://127.0.0.1:8000/real-ac3.mkv | head -3
+      - name: KVM
+        if: steps.skip.outputs.skip != '1'
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules && sudo udevadm trigger --name-match=kvm
+      - name: Emulador de celular
+        if: steps.skip.outputs.skip != '1'
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 30
+          target: google_apis
+          arch: x86
+          profile: pixel_4
+          disable-animations: true
+          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
+          script: timeout 6000 bash tools/sync-real/run.sh tel /tmp/teste.apk
+      - name: Publicar
+        if: always() && steps.skip.outputs.skip != '1'
+        run: |
+          cd shots || exit 0
+          git init -q -b x && git add -A
+          git -c user.name=ci -c user.email=ci@x commit -qm fotos
+          git push -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" x:sync-real-out-${{ matrix.apk }}
