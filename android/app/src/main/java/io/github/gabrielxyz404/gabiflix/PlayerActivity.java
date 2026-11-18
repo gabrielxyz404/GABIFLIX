@@ -275,8 +275,9 @@ public class PlayerActivity extends Activity {
                         wy0 = (ay0 + ay1) / 2f - winH / 2f;
                         if (winH <= dh) wy0 = Math.max(fy0, Math.min(fy0 + dh - winH, wy0));
                     } else wy0 = fy0 + dh - winH;                                          // sem barras: borda de baixo do quadro = borda de baixo da tela
-                    px = f * wx0 / (f - 1f);
-                    py = f * wy0 / (f - 1f);
+                    // a vista pode não começar no canto da tela (celular: vista 2400x1006 centrada numa tela 2400x1080): conta o deslocamento
+                    px = (f * wx0 + tex.getLeft()) / (f - 1f);
+                    py = (f * wy0 + tex.getTop()) / (f - 1f);
                 } else f = 1f;
                 glog(String.format(Locale.ROOT, "zoom Preencher: vista %dx%d, tela %dx%d, proporção do vídeo %.3f, barras %.3f/%.3f/%.3f/%.3f, fator %.3f", tw, th, w, h, va, bT, bB, bL, bR, f));
             }
