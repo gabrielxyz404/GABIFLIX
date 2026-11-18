@@ -24,16 +24,23 @@ PERFIS = [
     ("Tablet 4:3 (2048x1536)", 2048, 1536, "comum"),
     ("Mac janela 21:9 ultrawide (2520x1080)", 2520, 1080, "comum"),
 ]
-# conteúdo: proporção da imagem ativa (sem barras gravadas)
-CONTEUDOS = [("2,39:1", 2.39), ("2,00:1", 2.0), ("1,85:1", 1.85), ("16:9", 16 / 9), ("4:3", 4 / 3)]
+# conteúdo: (nome, proporção do QUADRO do arquivo, fração da largura e da altura do quadro ocupada pela imagem ativa, sem as barras gravadas)
+CONTEUDOS = [
+    ("2,39:1 com barras gravadas num quadro 16:9", 16 / 9, 1.0, (1920 / 2.39) / 1080),
+    ("2,39:1 sem barras gravadas (quadro 2,39:1)", 2.39, 1.0, 1.0),
+    ("1,85:1 (quadro 1,85:1)", 1.85, 1.0, 1.0),
+    ("16:9", 16 / 9, 1.0, 1.0),
+    ("4:3 com barras laterais gravadas num quadro 16:9", 16 / 9, 0.75, 1.0),
+]
 
 
-def linha(L, A, asp, zoom_max):
-    # Normal: imagem ativa ajustada dentro da tela
-    if asp >= L / A:
-        aw, ah = float(L), L / asp
+def linha(L, A, frame_asp, fw_act, fh_act, zoom_max):
+    # Normal: o quadro inteiro ajustado dentro da tela; a imagem ativa é a parte dele sem as barras gravadas
+    if frame_asp >= L / A:
+        dw, dh = float(L), L / frame_asp
     else:
-        aw, ah = A * asp, float(A)
+        dw, dh = A * frame_asp, float(A)
+    aw, ah = dw * fw_act, dh * fh_act
     bar_v0 = (A - ah) / 2 / A * 100   # barra de cima (= de baixo), % da altura da tela
     bar_h0 = (L - aw) / 2 / L * 100   # barra de cada lado, % da largura da tela
     f = max(L / aw, A / ah)
@@ -43,8 +50,8 @@ def linha(L, A, asp, zoom_max):
     w2, h2 = aw * f, ah * f
     bar_v1 = max(0.0, (A - h2) / 2 / A * 100)
     bar_h1 = max(0.0, (L - w2) / 2 / L * 100)
-    cut_h = max(0.0, (w2 - L) / 2 / w2 * 100)   # por lado, % da largura da imagem
-    cut_v = max(0.0, (h2 - A) / 2 / h2 * 100)   # por lado, % da altura da imagem
+    cut_h = max(0.0, (w2 - L) / 2 / w2 * 100)   # por lado, % da largura da imagem ativa
+    cut_v = max(0.0, (h2 - A) / 2 / h2 * 100)   # por lado, % da altura da imagem ativa
     return f, bar_v0, bar_h0, bar_v1, bar_h1, cut_h, cut_v
 
 
@@ -58,10 +65,10 @@ def main():
         print("### %s [%s] proporção %s:1" % (nome, tipo, fmt(L / A)))
         print("| Conteúdo | Zoom | Barras antes (por lado) | Barras com limite (por lado) | Corte da imagem por lado |")
         print("|---|---|---|---|---|")
-        for cn, asp in CONTEUDOS:
-            f, v0, h0, v1, h1, ch, cv = linha(L, A, asp, ZOOM)
-            antes = ("%s%% em cima/baixo" % fmt(v0)) if v0 > 0.05 else ("%s%% nas laterais" % fmt(h0)) if h0 > 0.05 else "sem barras"
-            depois = ("%s%% em cima/baixo" % fmt(v1)) if v1 > 0.05 else ("%s%% nas laterais" % fmt(h1)) if h1 > 0.05 else "sem barras"
+        for cn, fa, fwa, fha in CONTEUDOS:
+            f, v0, h0, v1, h1, ch, cv = linha(L, A, fa, fwa, fha, ZOOM)
+            antes = " e ".join(x for x in (("%s%% em cima/baixo" % fmt(v0)) if v0 > 0.05 else "", ("%s%% nas laterais" % fmt(h0)) if h0 > 0.05 else "") if x) or "sem barras"
+            depois = " e ".join(x for x in (("%s%% em cima/baixo" % fmt(v1)) if v1 > 0.05 else "", ("%s%% nas laterais" % fmt(h1)) if h1 > 0.05 else "") if x) or "sem barras"
             corte = []
             if ch > 0.05: corte.append("%s%% nas laterais" % fmt(ch))
             if cv > 0.05: corte.append("%s%% em cima/baixo" % fmt(cv))

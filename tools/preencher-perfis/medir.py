@@ -9,7 +9,7 @@ import modelo
 
 pasta, perfil = sys.argv[1], sys.argv[2]
 ZOOM = 1.10
-ASP = {"barra": 1920 / 804, "wide": 1920 / 804, "hd": 16 / 9, "pilar": 4 / 3, "c185": 1920 / 1038}
+ASP = {"barra": (16 / 9, 1.0, 804 / 1080), "wide": (1920 / 804, 1.0, 1.0), "hd": (16 / 9, 1.0, 1.0), "pilar": (16 / 9, 0.75, 1.0), "c185": (1920 / 1038, 1.0, 1.0)}
 
 
 def caixa(path):
@@ -46,6 +46,6 @@ for v in ("barra", "wide", "hd", "pilar", "c185"):
     if alt_p < h - 4 and alt_n < h - 4: zm = alt_p / alt_n
     elif larg_p < w - 4 and larg_n < w - 4: zm = larg_p / larg_n
     else: zm = None
-    f, v0, h0, v1, h1, ch, cv = modelo.linha(w, h, ASP[v], ZOOM)
+    f, v0, h0, v1, h1, ch, cv = modelo.linha(w, h, ASP[v][0], ASP[v][1], ASP[v][2], ZOOM)
     print("%s | %dx%d | N: %.1f%%/%.1f%% %.1f%%/%.1f%% | P: %.1f%%/%.1f%% %.1f%%/%.1f%% | zoom medido %s | modelo %.3fx barras %.1f%% (cima/baixo) %.1f%% (lados) corte %.1f%% lados %.1f%% cima/baixo" % (
         v, w, h, bn_[0], bn_[1], bn_[2], bn_[3], bp_[0], bp_[1], bp_[2], bp_[3], ("%.3fx" % zm) if zm else "n/d (imagem cobre a tela)", f, v1, h1, ch, cv))
