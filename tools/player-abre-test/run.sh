@@ -21,7 +21,7 @@ FAILS=0
 run_case() {
   local name=$1 maxwait=$2 extra=$3; shift 3
   adb shell am force-stop $PKG; sleep 1; adb shell pm clear $PKG >/dev/null; adb logcat -c
-  adb shell am start -n $PKG/.PlayerActivity --es url "$BASE/film.mkv" --esa subs "$BASE/film.srt" "$@" >/dev/null
+  adb shell am start -n $PKG/.tv.TvHomeActivity --es gfTestUrl "$BASE/film.mkv" --es gfTestSubs "$BASE/film.srt" "$@" > $OUT/am-$name.txt 2>&1
   local t0=$(date +%s) pid0="" done=0 alive=1 why=""
   sleep 12; pid0=$(mainpid); snap "$name-1-abriu"
   while [ $(( $(date +%s) - t0 )) -lt $maxwait ]; do
@@ -53,7 +53,7 @@ run_case normal-forcado 330 25 --es gfAudioForce true --es gfAudioStartSec 5 --e
 run_case preencher-forcado 330 25 --es gfAudioForce true --es gfAudioStartSec 5 --es gfScale 1 --es gfTrace 1
 # 4) o processo de captura morre no meio da analise: o filme tem de continuar (so no APK com processo separado)
 adb shell am force-stop $PKG; sleep 1; adb shell pm clear $PKG >/dev/null; adb logcat -c
-adb shell am start -n $PKG/.PlayerActivity --es url "$BASE/film.mkv" --esa subs "$BASE/film.srt" --es gfAudioForce true --es gfAudioStartSec 5 >/dev/null
+adb shell am start -n $PKG/.tv.TvHomeActivity --es gfTestUrl "$BASE/film.mkv" --es gfTestSubs "$BASE/film.srt" --es gfAudioForce true --es gfAudioStartSec 5 > $OUT/am-morte.txt 2>&1
 sleep 14; pid0=$(mainpid); killed=0
 for i in $(seq 1 40); do
   cp=$(adb shell pidof $PKG:audiocap | tr -d '\r' | awk '{print $1}')
