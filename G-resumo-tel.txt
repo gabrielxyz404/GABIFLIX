@@ -1,0 +1,172 @@
+=== G1a-resultado (tel) 19:46:19 ===
+  análises iniciadas (GATILHO decisão=análise) = 1
+  resultados terminados (AUDIOSYNC resultado:) = 1
+  [versão antiga e nova] começando=1 reverificando=0
+  avisos na tela = 1 (só os de legenda: 1)
+  voltou ao app (onResume) = 1
+         1795031150.500  5424  5424 I GabiFlixPlayer: AUDIOSYNC pronto (sem limite de dados; automático=true, começa 10 s depois de a legenda ficar ativa; resultado confiante vale 30 dias e não se reverifica; sem confiança: 1 nova tentativa em 60 s; salto grande = 600 s)
+         1795031151.506  5424  5424 I GabiFlixPlayer: AUDIOSYNC legenda ativa: 2e10c22300e45|http://10.0.2.2:8000/mais3.srt#raw (nova nesta sessão)
+         1795031151.507  5424  5424 I GabiFlixPlayer: AUDIOSYNC GATILHO motivo=troca-de-legenda legenda=2e10c22300e45|http://10.0.2.2:8000/mais3.srt#raw decisão=avaliar (espera 10 s tocando; se há resultado guardado, não analisa) [análises=0 sem_confiança=0 estado=nova]
+         1795031161.517  5424  5424 I GabiFlixPlayer: AUDIOSYNC GATILHO motivo=início legenda=2e10c22300e45|http://10.0.2.2:8000/mais3.srt#raw decisão=análise [análises=1 sem_confiança=0 estado=nova]
+         1795031170.609  5424  5424 I GabiFlixPlayer: AUDIOSYNC resultado: aceita z=11.7 janelas=3/3 escala=1.00000 deslocamento=-3032 ms | vad=silero janelas=3 captura=8753 ms vad=2099 ms (cpu 9) solve=268 ms (cpu 194) cpu_thread=264 ms total=9073 ms leitura_estimada=8 MB leitura_real=8 MB pss=93->91 MB java=10->21 MB
+         1795031170.609  5424  5424 I GabiFlixPlayer: AVISO na tela: Legenda acertada pelo áudio (−3,0 s)
+         1795031170.609  5424  5424 I GabiFlixPlayer: AUDIOSYNC aplicado: atraso -3030 ms, escala 1.0 (resultado confiante: não será reverificado)
+volta:  mResumedActivity: ActivityRecord{6a0c0fb u0 io.github.gabrielxyz404.gabiflix/.PlayerActivity t9}
+volta:  mResumedActivity: ActivityRecord{6a0c0fb u0 io.github.gabrielxyz404.gabiflix/.PlayerActivity t9}
+=== G1b-home-e-volta (tel) 19:47:25 ===
+  análises iniciadas (GATILHO decisão=análise) = 1
+  resultados terminados (AUDIOSYNC resultado:) = 1
+  [versão antiga e nova] começando=1 reverificando=0
+  avisos na tela = 1 (só os de legenda: 1)
+  voltou ao app (onResume) = 3
+         1795031150.500  5424  5424 I GabiFlixPlayer: AUDIOSYNC pronto (sem limite de dados; automático=true, começa 10 s depois de a legenda ficar ativa; resultado confiante vale 30 dias e não se reverifica; sem confiança: 1 nova tentativa em 60 s; salto grande = 600 s)
+         1795031151.506  5424  5424 I GabiFlixPlayer: AUDIOSYNC legenda ativa: 2e10c22300e45|http://10.0.2.2:8000/mais3.srt#raw (nova nesta sessão)
+         1795031151.507  5424  5424 I GabiFlixPlayer: AUDIOSYNC GATILHO motivo=troca-de-legenda legenda=2e10c22300e45|http://10.0.2.2:8000/mais3.srt#raw decisão=avaliar (espera 10 s tocando; se há resultado guardado, não analisa) [análises=0 sem_confiança=0 estado=nova]
+         1795031161.517  5424  5424 I GabiFlixPlayer: AUDIOSYNC GATILHO motivo=início legenda=2e10c22300e45|http://10.0.2.2:8000/mais3.srt#raw decisão=análise [análises=1 sem_confiança=0 estado=nova]
+         1795031170.609  5424  5424 I GabiFlixPlayer: AUDIOSYNC resultado: aceita z=11.7 janelas=3/3 escala=1.00000 deslocamento=-3032 ms | vad=silero janelas=3 captura=8753 ms vad=2099 ms (cpu 9) solve=268 ms (cpu 194) cpu_thread=264 ms total=9073 ms leitura_estimada=8 MB leitura_real=8 MB pss=93->91 MB java=10->21 MB
+         1795031170.609  5424  5424 I GabiFlixPlayer: AVISO na tela: Legenda acertada pelo áudio (−3,0 s)
+         1795031170.609  5424  5424 I GabiFlixPlayer: AUDIOSYNC aplicado: atraso -3030 ms, escala 1.0 (resultado confiante: não será reverificado)
+         1795031186.370  5424  5424 I GabiFlixPlayer: AUDIOSYNC GATILHO motivo=voltou-ao-app(onStart) legenda=2e10c22300e45|http://10.0.2.2:8000/mais3.srt#raw decisão=ignorado: resultado confiante já guardado [análises=1 sem_confiança=0 estado=confiante]
+         1795031186.370  5424  5424 I GabiFlixPlayer: AUDIOSYNC GATILHO motivo=voltou-ao-app(onResume) legenda=2e10c22300e45|http://10.0.2.2:8000/mais3.srt#raw decisão=ignorado: resultado confiante já guardado [análises=1 sem_confiança=0 estado=confiante]
+         1795031218.998  5424  5424 I GabiFlixPlayer: AUDIOSYNC GATILHO motivo=voltou-ao-app(onStart) legenda=2e10c22300e45|http://10.0.2.2:8000/mais3.srt#raw decisão=ignorado: resultado confiante já guardado [análises=1 sem_confiança=0 estado=confiante]
+         1795031218.999  5424  5424 I GabiFlixPlayer: AUDIOSYNC GATILHO motivo=voltou-ao-app(onResume) legenda=2e10c22300e45|http://10.0.2.2:8000/mais3.srt#raw decisão=ignorado: resultado confiante já guardado [análises=1 sem_confiança=0 estado=confiante]
+=== G1c-soak (tel) 19:58:25 ===
+  análises iniciadas (GATILHO decisão=análise) = 1
+  resultados terminados (AUDIOSYNC resultado:) = 1
+  [versão antiga e nova] começando=1 reverificando=0
+  avisos na tela = 1 (só os de legenda: 1)
+  voltou ao app (onResume) = 3
+         1795031150.500  5424  5424 I GabiFlixPlayer: AUDIOSYNC pronto (sem limite de dados; automático=true, começa 10 s depois de a legenda ficar ativa; resultado confiante vale 30 dias e não se reverifica; sem confiança: 1 nova tentativa em 60 s; salto grande = 600 s)
+         1795031151.506  5424  5424 I GabiFlixPlayer: AUDIOSYNC legenda ativa: 2e10c22300e45|http://10.0.2.2:8000/mais3.srt#raw (nova nesta sessão)
+         1795031151.507  5424  5424 I GabiFlixPlayer: AUDIOSYNC GATILHO motivo=troca-de-legenda legenda=2e10c22300e45|http://10.0.2.2:8000/mais3.srt#raw decisão=avaliar (espera 10 s tocando; se há resultado guardado, não analisa) [análises=0 sem_confiança=0 estado=nova]
+         1795031161.517  5424  5424 I GabiFlixPlayer: AUDIOSYNC GATILHO motivo=início legenda=2e10c22300e45|http://10.0.2.2:8000/mais3.srt#raw decisão=análise [análises=1 sem_confiança=0 estado=nova]
+         1795031170.609  5424  5424 I GabiFlixPlayer: AUDIOSYNC resultado: aceita z=11.7 janelas=3/3 escala=1.00000 deslocamento=-3032 ms | vad=silero janelas=3 captura=8753 ms vad=2099 ms (cpu 9) solve=268 ms (cpu 194) cpu_thread=264 ms total=9073 ms leitura_estimada=8 MB leitura_real=8 MB pss=93->91 MB java=10->21 MB
+         1795031170.609  5424  5424 I GabiFlixPlayer: AVISO na tela: Legenda acertada pelo áudio (−3,0 s)
+         1795031170.609  5424  5424 I GabiFlixPlayer: AUDIOSYNC aplicado: atraso -3030 ms, escala 1.0 (resultado confiante: não será reverificado)
+         1795031186.370  5424  5424 I GabiFlixPlayer: AUDIOSYNC GATILHO motivo=voltou-ao-app(onStart) legenda=2e10c22300e45|http://10.0.2.2:8000/mais3.srt#raw decisão=ignorado: resultado confiante já guardado [análises=1 sem_confiança=0 estado=confiante]
+         1795031186.370  5424  5424 I GabiFlixPlayer: AUDIOSYNC GATILHO motivo=voltou-ao-app(onResume) legenda=2e10c22300e45|http://10.0.2.2:8000/mais3.srt#raw decisão=ignorado: resultado confiante já guardado [análises=1 sem_confiança=0 estado=confiante]
+         1795031218.998  5424  5424 I GabiFlixPlayer: AUDIOSYNC GATILHO motivo=voltou-ao-app(onStart) legenda=2e10c22300e45|http://10.0.2.2:8000/mais3.srt#raw decisão=ignorado: resultado confiante já guardado [análises=1 sem_confiança=0 estado=confiante]
+         1795031218.999  5424  5424 I GabiFlixPlayer: AUDIOSYNC GATILHO motivo=voltou-ao-app(onResume) legenda=2e10c22300e45|http://10.0.2.2:8000/mais3.srt#raw decisão=ignorado: resultado confiante já guardado [análises=1 sem_confiança=0 estado=confiante]
+=== G1d-salto-sem-ajuste (tel) 19:59:11 ===
+  análises iniciadas (GATILHO decisão=análise) = 1
+  resultados terminados (AUDIOSYNC resultado:) = 1
+  [versão antiga e nova] começando=1 reverificando=0
+  avisos na tela = 1 (só os de legenda: 1)
+  voltou ao app (onResume) = 3
+         1795031150.500  5424  5424 I GabiFlixPlayer: AUDIOSYNC pronto (sem limite de dados; automático=true, começa 10 s depois de a legenda ficar ativa; resultado confiante vale 30 dias e não se reverifica; sem confiança: 1 nova tentativa em 60 s; salto grande = 600 s)
+         1795031151.506  5424  5424 I GabiFlixPlayer: AUDIOSYNC legenda ativa: 2e10c22300e45|http://10.0.2.2:8000/mais3.srt#raw (nova nesta sessão)
+         1795031151.507  5424  5424 I GabiFlixPlayer: AUDIOSYNC GATILHO motivo=troca-de-legenda legenda=2e10c22300e45|http://10.0.2.2:8000/mais3.srt#raw decisão=avaliar (espera 10 s tocando; se há resultado guardado, não analisa) [análises=0 sem_confiança=0 estado=nova]
+         1795031161.517  5424  5424 I GabiFlixPlayer: AUDIOSYNC GATILHO motivo=início legenda=2e10c22300e45|http://10.0.2.2:8000/mais3.srt#raw decisão=análise [análises=1 sem_confiança=0 estado=nova]
+         1795031170.609  5424  5424 I GabiFlixPlayer: AUDIOSYNC resultado: aceita z=11.7 janelas=3/3 escala=1.00000 deslocamento=-3032 ms | vad=silero janelas=3 captura=8753 ms vad=2099 ms (cpu 9) solve=268 ms (cpu 194) cpu_thread=264 ms total=9073 ms leitura_estimada=8 MB leitura_real=8 MB pss=93->91 MB java=10->21 MB
+         1795031170.609  5424  5424 I GabiFlixPlayer: AVISO na tela: Legenda acertada pelo áudio (−3,0 s)
+         1795031170.609  5424  5424 I GabiFlixPlayer: AUDIOSYNC aplicado: atraso -3030 ms, escala 1.0 (resultado confiante: não será reverificado)
+         1795031186.370  5424  5424 I GabiFlixPlayer: AUDIOSYNC GATILHO motivo=voltou-ao-app(onStart) legenda=2e10c22300e45|http://10.0.2.2:8000/mais3.srt#raw decisão=ignorado: resultado confiante já guardado [análises=1 sem_confiança=0 estado=confiante]
+         1795031186.370  5424  5424 I GabiFlixPlayer: AUDIOSYNC GATILHO motivo=voltou-ao-app(onResume) legenda=2e10c22300e45|http://10.0.2.2:8000/mais3.srt#raw decisão=ignorado: resultado confiante já guardado [análises=1 sem_confiança=0 estado=confiante]
+         1795031218.998  5424  5424 I GabiFlixPlayer: AUDIOSYNC GATILHO motivo=voltou-ao-app(onStart) legenda=2e10c22300e45|http://10.0.2.2:8000/mais3.srt#raw decisão=ignorado: resultado confiante já guardado [análises=1 sem_confiança=0 estado=confiante]
+         1795031218.999  5424  5424 I GabiFlixPlayer: AUDIOSYNC GATILHO motivo=voltou-ao-app(onResume) legenda=2e10c22300e45|http://10.0.2.2:8000/mais3.srt#raw decisão=ignorado: resultado confiante já guardado [análises=1 sem_confiança=0 estado=confiante]
+         1795031905.116  5424  5424 I GabiFlixPlayer: teste: ação do usuário seek 60
+         1795031905.607  5424  5424 I GabiFlixPlayer: AUDIOSYNC salto na linha do tempo de 682 s (de 742 s para 60 s): só conta se o usuário também mexer no atraso à mão; sozinho não dispara análise
+=== G1e-reabrir (tel) 20:00:53 ===
+  análises iniciadas (GATILHO decisão=análise) = 0
+  resultados terminados (AUDIOSYNC resultado:) = 0
+  [versão antiga e nova] começando=0 reverificando=0
+  avisos na tela = 1 (só os de legenda: 1)
+  voltou ao app (onResume) = 1
+         1795031956.666  6885  6885 I GabiFlixPlayer: AUDIOSYNC pronto (sem limite de dados; automático=true, começa 10 s depois de a legenda ficar ativa; resultado confiante vale 30 dias e não se reverifica; sem confiança: 1 nova tentativa em 60 s; salto grande = 600 s)
+         1795031957.671  6885  6885 I GabiFlixPlayer: AUDIOSYNC legenda ativa: 2e10c22300e45|http://10.0.2.2:8000/mais3.srt#raw (nova nesta sessão)
+         1795031957.671  6885  6885 I GabiFlixPlayer: AUDIOSYNC GATILHO motivo=troca-de-legenda legenda=2e10c22300e45|http://10.0.2.2:8000/mais3.srt#raw decisão=avaliar (espera 10 s tocando; se há resultado guardado, não analisa) [análises=0 sem_confiança=0 estado=nova]
+         1795031958.175  6885  6885 I GabiFlixPlayer: AVISO na tela: Legenda: atraso guardado −3,0 s
+         1795031967.679  6885  6885 I GabiFlixPlayer: AUDIOSYNC GATILHO motivo=início legenda=2e10c22300e45|http://10.0.2.2:8000/mais3.srt#raw decisão=ignorado: resultado confiante guardado (fix, há 0 dias): sem captura e sem reverificação [análises=0 sem_confiança=0 estado=confiante]
+=== G1f-ajuste-manual-e-salto (tel) 20:02:09 ===
+  análises iniciadas (GATILHO decisão=análise) = 1
+  resultados terminados (AUDIOSYNC resultado:) = 1
+  [versão antiga e nova] começando=1 reverificando=0
+  avisos na tela = 2 (só os de legenda: 2)
+  voltou ao app (onResume) = 1
+         1795031956.666  6885  6885 I GabiFlixPlayer: AUDIOSYNC pronto (sem limite de dados; automático=true, começa 10 s depois de a legenda ficar ativa; resultado confiante vale 30 dias e não se reverifica; sem confiança: 1 nova tentativa em 60 s; salto grande = 600 s)
+         1795031957.671  6885  6885 I GabiFlixPlayer: AUDIOSYNC legenda ativa: 2e10c22300e45|http://10.0.2.2:8000/mais3.srt#raw (nova nesta sessão)
+         1795031957.671  6885  6885 I GabiFlixPlayer: AUDIOSYNC GATILHO motivo=troca-de-legenda legenda=2e10c22300e45|http://10.0.2.2:8000/mais3.srt#raw decisão=avaliar (espera 10 s tocando; se há resultado guardado, não analisa) [análises=0 sem_confiança=0 estado=nova]
+         1795031958.175  6885  6885 I GabiFlixPlayer: AVISO na tela: Legenda: atraso guardado −3,0 s
+         1795031967.679  6885  6885 I GabiFlixPlayer: AUDIOSYNC GATILHO motivo=início legenda=2e10c22300e45|http://10.0.2.2:8000/mais3.srt#raw decisão=ignorado: resultado confiante guardado (fix, há 0 dias): sem captura e sem reverificação [análises=0 sem_confiança=0 estado=confiante]
+         1795032053.297  6885  6885 I GabiFlixPlayer: teste: ação do usuário delay 1500
+         1795032058.335  6885  6885 I GabiFlixPlayer: teste: ação do usuário seek 900
+         1795032058.743  6885  6885 I GabiFlixPlayer: AUDIOSYNC salto na linha do tempo de 697 s (de 202 s para 900 s): só conta se o usuário também mexer no atraso à mão; sozinho não dispara análise
+         1795032059.745  6885  6885 I GabiFlixPlayer: AUDIOSYNC GATILHO motivo=ajuste-manual+salto-grande legenda=2e10c22300e45|http://10.0.2.2:8000/mais3.srt#raw decisão=análise [análises=1 sem_confiança=0 estado=manual]
+         1795032068.438  6885  6885 I GabiFlixPlayer: AUDIOSYNC resultado: aceita z=11.7 janelas=3/3 escala=1.00000 deslocamento=-3032 ms | vad=silero janelas=3 captura=8457 ms vad=1693 ms (cpu 9) solve=184 ms (cpu 168) cpu_thread=231 ms total=8684 ms leitura_estimada=8 MB leitura_real=7 MB pss=79->83 MB java=12->21 MB
+         1795032068.438  6885  6885 I GabiFlixPlayer: AVISO na tela: Legenda acertada pelo áudio (−3,0 s)
+         1795032068.439  6885  6885 I GabiFlixPlayer: AUDIOSYNC aplicado: atraso -3030 ms, escala 1.0 (resultado confiante: não será reverificado)
+=== G1g-certa (tel) 20:04:12 ===
+  análises iniciadas (GATILHO decisão=análise) = 1
+  resultados terminados (AUDIOSYNC resultado:) = 1
+  [versão antiga e nova] começando=1 reverificando=0
+  avisos na tela = 1 (só os de legenda: 1)
+  voltou ao app (onResume) = 1
+         1795032135.681  7219  7219 I GabiFlixPlayer: AUDIOSYNC pronto (sem limite de dados; automático=true, começa 10 s depois de a legenda ficar ativa; resultado confiante vale 30 dias e não se reverifica; sem confiança: 1 nova tentativa em 60 s; salto grande = 600 s)
+         1795032140.689  7219  7219 I GabiFlixPlayer: AUDIOSYNC legenda ativa: 2e10c22300e45|http://10.0.2.2:8000/certa.srt#raw (nova nesta sessão)
+         1795032140.689  7219  7219 I GabiFlixPlayer: AUDIOSYNC GATILHO motivo=troca-de-legenda legenda=2e10c22300e45|http://10.0.2.2:8000/certa.srt#raw decisão=avaliar (espera 10 s tocando; se há resultado guardado, não analisa) [análises=0 sem_confiança=0 estado=nova]
+         1795032150.695  7219  7219 I GabiFlixPlayer: AUDIOSYNC GATILHO motivo=início legenda=2e10c22300e45|http://10.0.2.2:8000/certa.srt#raw decisão=análise [análises=1 sem_confiança=0 estado=nova]
+         1795032159.247  7219  7219 I GabiFlixPlayer: AUDIOSYNC resultado: aceita z=12.3 janelas=3/3 escala=1.00000 deslocamento=6 ms | vad=silero janelas=3 captura=8283 ms vad=1774 ms (cpu 10) solve=194 ms (cpu 166) cpu_thread=262 ms total=8545 ms leitura_estimada=8 MB leitura_real=8 MB pss=101->99 MB java=13->20 MB
+         1795032159.247  7219  7219 I GabiFlixPlayer: AVISO na tela: Legenda confirmada pelo áudio
+=== G1h-certa-reabrir (tel) 20:05:43 ===
+  análises iniciadas (GATILHO decisão=análise) = 0
+  resultados terminados (AUDIOSYNC resultado:) = 0
+  [versão antiga e nova] começando=0 reverificando=0
+  avisos na tela = 0 (só os de legenda: 0)
+  voltou ao app (onResume) = 1
+         1795032257.433  7403  7403 I GabiFlixPlayer: AUDIOSYNC pronto (sem limite de dados; automático=true, começa 10 s depois de a legenda ficar ativa; resultado confiante vale 30 dias e não se reverifica; sem confiança: 1 nova tentativa em 60 s; salto grande = 600 s)
+         1795032258.441  7403  7403 I GabiFlixPlayer: AUDIOSYNC legenda ativa: 2e10c22300e45|http://10.0.2.2:8000/certa.srt#raw (nova nesta sessão)
+         1795032258.441  7403  7403 I GabiFlixPlayer: AUDIOSYNC GATILHO motivo=troca-de-legenda legenda=2e10c22300e45|http://10.0.2.2:8000/certa.srt#raw decisão=avaliar (espera 10 s tocando; se há resultado guardado, não analisa) [análises=0 sem_confiança=0 estado=nova]
+         1795032268.446  7403  7403 I GabiFlixPlayer: AUDIOSYNC GATILHO motivo=início legenda=2e10c22300e45|http://10.0.2.2:8000/certa.srt#raw decisão=ignorado: resultado confiante guardado (ok, há 0 dias): sem captura e sem reverificação [análises=0 sem_confiança=0 estado=confiante]
+=== G2-sem-confianca (tel) 20:11:19 ===
+  análises iniciadas (GATILHO decisão=análise) = 2
+  resultados terminados (AUDIOSYNC resultado:) = 2
+  [versão antiga e nova] começando=2 reverificando=0
+  avisos na tela = 0 (só os de legenda: 0)
+  voltou ao app (onResume) = 1
+         1795032349.212  7514  7514 I GabiFlixPlayer: AUDIOSYNC pronto (sem limite de dados; automático=true, começa 10 s depois de a legenda ficar ativa; resultado confiante vale 30 dias e não se reverifica; sem confiança: 1 nova tentativa em 60 s; salto grande = 600 s)
+         1795032350.216  7514  7514 I GabiFlixPlayer: AUDIOSYNC legenda ativa: 2e10c22300e45|http://10.0.2.2:8000/outro.srt#raw (nova nesta sessão)
+         1795032350.216  7514  7514 I GabiFlixPlayer: AUDIOSYNC GATILHO motivo=troca-de-legenda legenda=2e10c22300e45|http://10.0.2.2:8000/outro.srt#raw decisão=avaliar (espera 10 s tocando; se há resultado guardado, não analisa) [análises=0 sem_confiança=0 estado=nova]
+         1795032360.237  7514  7514 I GabiFlixPlayer: AUDIOSYNC GATILHO motivo=início legenda=2e10c22300e45|http://10.0.2.2:8000/outro.srt#raw decisão=análise [análises=1 sem_confiança=0 estado=nova]
+         1795032368.804  7514  7514 I GabiFlixPlayer: AUDIOSYNC resultado: recusada z=5.2 janelas=2/3 (z baixo; pico ambíguo; escala fora das razões de fps; janelas discordam;) | vad=silero janelas=3 captura=8353 ms vad=1687 ms (cpu 9) solve=167 ms (cpu 146) cpu_thread=206 ms total=8558 ms leitura_estimada=8 MB leitura_real=8 MB
+         1795032368.805  7514  7514 I GabiFlixPlayer: AUDIOSYNC GATILHO motivo=sem-confiança legenda=2e10c22300e45|http://10.0.2.2:8000/outro.srt#raw decisão=agendar UMA segunda tentativa em 60 s: o áudio não tem certeza [análises=1 sem_confiança=1 estado=nova]
+         1795032429.263  7514  7514 I GabiFlixPlayer: AUDIOSYNC GATILHO motivo=segunda-tentativa-após-sem-confiança legenda=2e10c22300e45|http://10.0.2.2:8000/outro.srt#raw decisão=análise [análises=2 sem_confiança=1 estado=nova]
+         1795032437.706  7514  7514 I GabiFlixPlayer: AUDIOSYNC resultado: recusada z=5.2 janelas=2/3 (z baixo; pico ambíguo; escala fora das razões de fps; janelas discordam;) | vad=silero janelas=3 captura=8277 ms vad=1714 ms (cpu 7) solve=121 ms (cpu 107) cpu_thread=164 ms total=8437 ms leitura_estimada=8 MB leitura_real=10 M
+         1795032437.706  7514  7514 I GabiFlixPlayer: AUDIOSYNC GATILHO motivo=sem-confiança legenda=2e10c22300e45|http://10.0.2.2:8000/outro.srt#raw decisão=parar: o áudio não tem certeza (2 tentativas feitas) [análises=2 sem_confiança=2 estado=parada]
+=== G3a-queda-recuperada (tel) 20:13:47 ===
+  análises iniciadas (GATILHO decisão=análise) = 1
+  resultados terminados (AUDIOSYNC resultado:) = 1
+  [versão antiga e nova] começando=1 reverificando=0
+  avisos na tela = 1 (só os de legenda: 1)
+  voltou ao app (onResume) = 1
+         1795032685.676  7780  7780 I GabiFlixPlayer: AUDIOSYNC pronto (sem limite de dados; automático=true, começa 10 s depois de a legenda ficar ativa; resultado confiante vale 30 dias e não se reverifica; sem confiança: 1 nova tentativa em 60 s; salto grande = 600 s)
+         1795032686.679  7780  7780 I GabiFlixPlayer: AUDIOSYNC legenda ativa: 2e10c22300e45|http://10.0.2.2:8000/mais3.srt#raw (nova nesta sessão)
+         1795032686.680  7780  7780 I GabiFlixPlayer: AUDIOSYNC GATILHO motivo=troca-de-legenda legenda=2e10c22300e45|http://10.0.2.2:8000/mais3.srt#raw decisão=avaliar (espera 10 s tocando; se há resultado guardado, não analisa) [análises=0 sem_confiança=0 estado=nova]
+         1795032696.682  7780  7780 I GabiFlixPlayer: AUDIOSYNC GATILHO motivo=início legenda=2e10c22300e45|http://10.0.2.2:8000/mais3.srt#raw decisão=análise [análises=1 sem_confiança=0 estado=nova]
+         1795032697.693  7780  7863 I GabiFlixPlayer: AUDIOSYNC a captura derrubou o processo com a configuração 0 (padrão); tento a configuração 1 na hora
+         1795032700.382  7780  7863 I GabiFlixPlayer: AUDIOSYNC captura recuperada com a configuração 1 depois de queda(s) do processo
+         1795032703.138  7780  7863 I GabiFlixPlayer: AUDIOSYNC captura recuperada com a configuração 1 depois de queda(s) do processo
+         1795032705.792  7780  7863 I GabiFlixPlayer: AUDIOSYNC captura recuperada com a configuração 1 depois de queda(s) do processo
+         1795032706.559  7780  7780 I GabiFlixPlayer: AUDIOSYNC resultado: aceita z=11.7 janelas=3/3 escala=1.00000 deslocamento=-3032 ms | vad=silero janelas=3 captura=9599 ms vad=1637 ms (cpu 8) solve=227 ms (cpu 189) cpu_thread=248 ms total=9864 ms leitura_estimada=8 MB leitura_real=8 MB pss=87->91 MB java=8->21 MB
+         1795032706.560  7780  7780 I GabiFlixPlayer: AVISO na tela: Legenda acertada pelo áudio (−3,0 s)
+         1795032706.560  7780  7780 I GabiFlixPlayer: AUDIOSYNC aplicado: atraso -3030 ms, escala 1.0 (resultado confiante: não será reverificado)
+=== G3b-queda-total (tel) 20:18:30 ===
+  análises iniciadas (GATILHO decisão=análise) = 2
+  resultados terminados (AUDIOSYNC resultado:) = 2
+  [versão antiga e nova] começando=2 reverificando=0
+  avisos na tela = 0 (só os de legenda: 0)
+  voltou ao app (onResume) = 1
+         1795032832.849  8047  8047 I GabiFlixPlayer: AUDIOSYNC pronto (sem limite de dados; automático=true, começa 10 s depois de a legenda ficar ativa; resultado confiante vale 30 dias e não se reverifica; sem confiança: 1 nova tentativa em 60 s; salto grande = 600 s)
+         1795032833.858  8047  8047 I GabiFlixPlayer: AUDIOSYNC legenda ativa: 2e10c22300e45|http://10.0.2.2:8000/mais3.srt#raw (nova nesta sessão)
+         1795032833.858  8047  8047 I GabiFlixPlayer: AUDIOSYNC GATILHO motivo=troca-de-legenda legenda=2e10c22300e45|http://10.0.2.2:8000/mais3.srt#raw decisão=avaliar (espera 10 s tocando; se há resultado guardado, não analisa) [análises=0 sem_confiança=0 estado=nova]
+         1795032843.865  8047  8047 I GabiFlixPlayer: AUDIOSYNC GATILHO motivo=início legenda=2e10c22300e45|http://10.0.2.2:8000/mais3.srt#raw decisão=análise [análises=1 sem_confiança=0 estado=nova]
+         1795032844.604  8047  8125 I GabiFlixPlayer: AUDIOSYNC a captura derrubou o processo com a configuração 0 (padrão); tento a configuração 1 na hora
+         1795032846.930  8047  8125 I GabiFlixPlayer: AUDIOSYNC a captura derrubou o processo com a configuração 1 (alternativa); não há mais configurações
+         1795032846.930  8047  8125 I GabiFlixPlayer: AUDIOSYNC captura falhou em 275 s: captura desligada: o processo de captura caiu com todas as 2 configurações (todas as configurações já foram tentadas)
+         1795032846.937  8047  8047 I GabiFlixPlayer: AUDIOSYNC resultado: captura da janela 1 falhou: captura desligada: o processo de captura caiu com todas as 2 configurações | vad=? janelas=0 captura=3034 ms vad=0 ms (cpu 0) solve=0 ms (cpu 0) cpu_thread=30 ms total=3065 ms leitura_estimada=8 MB leitura_real=? pss=88->96 MB 
+         1795032846.937  8047  8047 I GabiFlixPlayer: AUDIOSYNC tentativa 1: houve queda(s) do processo de captura recuperadas na hora; contam como esta única tentativa
+         1795032846.937  8047  8047 I GabiFlixPlayer: AUDIOSYNC GATILHO motivo=sem-confiança legenda=2e10c22300e45|http://10.0.2.2:8000/mais3.srt#raw decisão=agendar UMA segunda tentativa em 60 s: erro: captura da janela 1 falhou: captura desligada: o processo de captura caiu com todas as 2 configurações [análises=1 sem_confianç
+         1795032907.895  8047  8047 I GabiFlixPlayer: AUDIOSYNC GATILHO motivo=segunda-tentativa-após-sem-confiança legenda=2e10c22300e45|http://10.0.2.2:8000/mais3.srt#raw decisão=análise [análises=2 sem_confiança=1 estado=nova]
+         1795032907.932  8047  8125 I GabiFlixPlayer: AUDIOSYNC captura falhou em 275 s: captura desligada: o processo de captura caiu com todas as 2 configurações (todas as configurações já foram tentadas)
+         1795032907.940  8047  8047 I GabiFlixPlayer: AUDIOSYNC resultado: captura da janela 1 falhou: captura desligada: o processo de captura caiu com todas as 2 configurações | vad=? janelas=0 captura=0 ms vad=0 ms (cpu 0) solve=0 ms (cpu 0) cpu_thread=35 ms total=37 ms leitura_estimada=0 MB leitura_real=? pss=87->95 MB java=
+         1795032907.940  8047  8047 I GabiFlixPlayer: AUDIOSYNC tentativa 2: houve queda(s) do processo de captura recuperadas na hora; contam como esta única tentativa
+         1795032907.940  8047  8047 I GabiFlixPlayer: AUDIOSYNC GATILHO motivo=sem-confiança legenda=2e10c22300e45|http://10.0.2.2:8000/mais3.srt#raw decisão=parar: erro: captura da janela 1 falhou: captura desligada: o processo de captura caiu com todas as 2 configurações (2 tentativas feitas) [análises=2 sem_confiança=2 estado
