@@ -1,0 +1,75 @@
+name: Teste Preencher TV com legenda embutida
+
+# A legenda EMBUTIDA no arquivo (desenhada pelo libVLC dentro do quadro) fica cortada nas laterais com o zoom do Preencher? Linhas de varios
+# tamanhos, em Normal e em Preencher, no emulador de TV. Mede a largura do texto e se encosta nas bordas. Nunca publica o app.
+on:
+  workflow_dispatch:
+    inputs:
+      out_branch:
+        description: branch onde as fotos sao publicadas
+        default: preencher-emb-out
+
+permissions:
+  contents: write
+
+jobs:
+  teste:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 17
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+      - name: APK de teste (x86)
+        env:
+          GABIFLIX_ABIS: x86,x86_64
+        run: |
+          set -o pipefail
+          gradle -p android assembleRelease --no-daemon 2>&1 | tee build.log
+          cp android/app/build/outputs/apk/release/app-release.apk /tmp/teste.apk
+      - name: Video com legenda embutida
+        run: |
+          timeout 300 sudo apt-get install -y -qq ffmpeg >/dev/null || (sudo apt-get update -qq && timeout 300 sudo apt-get install -y -qq ffmpeg >/dev/null)
+          mkdir -p /tmp/video && cd /tmp/video
+          python3 - <<'PY'
+          def ts(s, ms=0): return "%02d:%02d:%02d,%03d" % (s // 3600, s // 60 % 60, s % 60, ms)
+          # uma linha só (sem quebra manual) com 30, 45, 60, 75, 90, 110, 130 e 160 caracteres: o libVLC quebra sozinho no limite dele
+          base = "Eu nao sei o que voce quer que eu diga sobre tudo isso que aconteceu naquela noite de chuva forte na cidade velha onde ninguem mais mora hoje em dia "
+          tam = [30, 45, 60, 75, 90, 110, 130, 160]
+          out = []
+          for i, n in enumerate(tam):
+              a = 12 + i * 10
+              t = (base * 2)[:n].rstrip()
+              out.append("%d\n%s --> %s\n%s (%d)\n" % (i + 1, ts(a), ts(a + 8), t, n))
+          # e duas linhas explicitas bem largas (a de baixo é a mais larga do que o libVLC monta sem quebrar)
+          open("emb2.srt", "w").write("\n".join(out))
+          PY
+          ffmpeg -loglevel error -f lavfi -i color=c=black:size=1920x804:rate=24 -f lavfi -i sine=frequency=440:sample_rate=48000 -i emb2.srt -t 120 -vf "pad=1920:1080:0:138:black" -map 0:v -map 1:a -map 2:s -c:v libx264 -preset veryfast -pix_fmt yuv420p -c:a aac -c:s srt -metadata:s:s:0 language=por -metadata:s:s:0 title=Portugues emb2.mkv
+          nohup npx --yes http-server -p 8000 -s /tmp/video >/dev/null 2>&1 &
+          sleep 8; curl -sI http://127.0.0.1:8000/emb2.mkv | head -1
+      - name: KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules && sudo udevadm trigger --name-match=kvm
+      - name: Emulador de TV
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 30
+          target: android-tv
+          arch: x86
+          profile: tv_1080p
+          disable-animations: false
+          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
+          script: bash tools/preencher-emb-test/run.sh /tmp/teste.apk
+      - name: Publicar as fotos
+        if: always()
+        run: |
+          cd shots || exit 0
+          git init -q -b x && git add -A
+          git -c user.name=ci -c user.email=ci@x commit -qm fotos
+          git push -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" x:${{ github.event.inputs.out_branch || 'preencher-emb-out' }}
