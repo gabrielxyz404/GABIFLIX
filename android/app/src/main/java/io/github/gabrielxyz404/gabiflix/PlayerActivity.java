@@ -155,7 +155,7 @@ public class PlayerActivity extends Activity {
         barTicks++;
         ui.postDelayed(barTickRun, barTicks < 10 ? 2000 : 20000);
         try {
-            if (!player.isPlaying()) return;
+            if (!player.isPlaying() || controlsShown) return;  // com os controles na tela a legenda sobe para o meio da imagem e sujaria a medida
             View v = findVideoView(videoLayout);
             if (v == null || v.getWidth() <= 0 || v.getHeight() <= 0) return;
             final float va = videoAspect();
@@ -186,7 +186,7 @@ public class PlayerActivity extends Activity {
             int fW = Math.max(8, Math.round(fw)), fH = Math.max(8, Math.round(fh));
             int fx = (w - fW) / 2, fy = (h - fH) / 2;
             boolean[] rows = new boolean[fH], cols = new boolean[fW];
-            int x0 = fx + fW / 5, x1 = fx + fW * 4 / 5, y0 = fy + fH / 4, y1 = fy + fH * 3 / 4, any = 0;
+            int x0 = fx + fW / 5, x1 = fx + fW * 4 / 5, y0 = fy + fH / 5, y1 = fy + fH * 13 / 20, any = 0;  // colunas: só 20%-65% da altura (a legenda fica embaixo)
             for (int y = 0; y < fH; y++) {
                 int cnt = 0;
                 for (int x = x0; x < x1; x++) if (luma(px[(fy + y) * w + x]) > BAR_LUMA) cnt++;
@@ -198,9 +198,6 @@ public class PlayerActivity extends Activity {
                 for (int y = y0; y < y1; y++) if (luma(px[y * w + fx + x]) > BAR_LUMA) cnt++;
                 cols[x] = cnt * 100 > (y1 - y0) * 2;
             }
-            { StringBuilder sb = new StringBuilder();
-              for (int x = 0; x < 40 && x < fW; x++) { int mx = 0; for (int y = y0; y < y1; y++) mx = Math.max(mx, luma(px[y * w + fx + x])); sb.append(mx).append(cols[x] ? '*' : '.').append(' '); }
-              glog("amostra-col " + w + "x" + h + " frame " + fW + "x" + fH + "+" + fx + " : " + sb); }
             // quadro quase todo preto (fade, transição): não conta
             if (any * 100 < fH * 8) return;
             float[] r;

@@ -56,9 +56,7 @@ for v in barra wide hd pilar; do
   snap $v-normal 0.4
   adb shell input keyevent KEYCODE_MEDIA_PAUSE; sleep 1.5
   showc; tela_click; hidec
-  adb shell input keyevent KEYCODE_MEDIA_PLAY; sleep 14
-  adb shell input keyevent KEYCODE_MEDIA_PAUSE; sleep 1.5
-  dump | grep -q "Tela" && hidec
+  adb shell input keyevent KEYCODE_MEDIA_PLAY; sleep 1; adb shell input keyevent KEYCODE_MEDIA_PLAY; sleep 16
   snap $v-preencher 0.4
 done
 adb logcat -d | grep -E "GFPlayer|zoom Preencher|escala|barras|amostra" > $OUT/$P-log.txt
