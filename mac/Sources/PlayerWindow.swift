@@ -38,7 +38,8 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
     private let startMs: Int64
 
     // o tamanho das legendas só vale se for passado aqui (opção da biblioteca), ver SubStyle
-    private let player = VLCMediaPlayer(options: SubStyle.libraryOptions)
+    // FP_VLC_OPTS (só no teste automático, ex.: --vout=dummy no GitHub, que não tem placa gráfica)
+    private let player = VLCMediaPlayer(options: SubStyle.libraryOptions + (ProcessInfo.processInfo.environment["FP_VLC_OPTS"] ?? "").split(separator: " ").map(String.init))
     private let videoView = VLCVideoView()
     private let root = NSView()
     private let overlay = PlayerRootView()
