@@ -1556,12 +1556,14 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
             scheduleBarTick(after: fillPending ? 0.12 : 1.5)
             if fillPending {
                 let g = fillGen
-                DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) { [weak self] in
+                let wait = Double(ProcessInfo.processInfo.environment["FP_FILL_WAIT"] ?? "") ?? 3.0   // FP_FILL_WAIT só nos testes (fotografias simuladas são lentas)
+                DispatchQueue.main.asyncAfter(deadline: .now() + wait) { [weak self] in
                     guard let self = self, self.fillGen == g, self.fillPending else { return }
                     self.log("tela: sem medir as barras a tempo; aplica sem elas")
                     self.fillPending = false
-                    self.barsMeasured = true
                     self.applyScale(force: true)
+                    self.barTicks = 0   // a rajada gastou os ticks "rápidos": a medida normal recomeça (2 s, 2 s, ...)
+                    self.scheduleBarTick(after: 1.5)
                 }
             }
         } else { barTimer?.invalidate(); barTimer = nil }

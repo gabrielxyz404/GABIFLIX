@@ -13,7 +13,7 @@ run() { # video mundo [subs]
   rm -f /tmp/frameplay-player.log /tmp/frameplay-snap-*.png
   SUBS=$S python3 tools/mac-preencher-test/simsnap.py /tmp/sim /tmp/srv/$V.mkv $W /tmp/srv/leg.srt > "$OUT/$N-sim.log" 2>&1 &
   SIM=$!
-  FP_SNAP_SIM=/tmp/sim $APP --gf-test-play http://127.0.0.1:8765/$V.mkv - --gf-test-sub http://127.0.0.1:8765/leg.srt > "$OUT/$N-app.log" 2>&1 &
+  FP_FILL_WAIT=20 FP_SNAP_SIM=/tmp/sim $APP --gf-test-play http://127.0.0.1:8765/$V.mkv - --gf-test-sub http://127.0.0.1:8765/leg.srt > "$OUT/$N-app.log" 2>&1 &
   sleep 34
   cmd "resize 960 600"; sleep 2
   cmd "stats"
