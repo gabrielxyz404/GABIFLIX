@@ -493,6 +493,8 @@ public class PlayerActivity extends Activity {
         long saved = metaId != null ? startMs : prefs().getLong(key(), 0);
         long len = player.getLength();
         if (saved > 30000 && (len <= 0 || saved < len - 60000)) player.setTime(saved);
+        String sk = getIntent().getStringExtra("gfSeekSec");   // só nos testes: começa depois (onde há fala)
+        if (sk != null) try { player.setTime(Long.parseLong(sk) * 1000); } catch (Throwable ignored) {}
     }
 
     private void savePosition(boolean force) {
@@ -1762,7 +1764,39 @@ public class PlayerActivity extends Activity {
         try {
             if ("toggle".equals(st)) { player.setSpuTrack(-1); player.setSpuTrack(id); }
             else if ("reselect".equals(st)) player.setSpuTrack(id);
+            else if ("ramp".equals(st)) ramp(before, after);
+            else if ("readd".equals(st)) {
+                SubtitleSync.Cand c = candForTrack(id, player.getSpuTracks());
+                if (c != null && c.uri != null) {
+                    player.addSlave(0, c.uri, true);
+                    addedSubs++;
+                    attached.add(c);
+                    subLabels.add("Português " + (subLabels.size() + 1));
+                    glog("AUDIOSYNC legenda: religada como nova faixa (a anterior era " + id + ")");
+                }
+            }
         } catch (Throwable t) { glog("AUDIOSYNC religar a faixa falhou: " + t); }
+    }
+
+    private int rampCur, rampTo;
+    private final Runnable rampStep = new Runnable() {
+        @Override public void run() {
+            if (player == null) return;
+            int diff = rampTo - rampCur;
+            int step = Math.max(400, Math.abs(diff) / 12);
+            rampCur += Math.abs(diff) <= step ? diff : (diff > 0 ? step : -step);
+            try { player.setSpuDelay(rampCur * 1000L); } catch (Throwable ignored) {}
+            if (rampCur != rampTo) ui.postDelayed(this, 300);
+        }
+    };
+
+    /** muda o atraso aos poucos (o VLC só aplica de uma vez o que já passou pela leitura do arquivo) */
+    private void ramp(int from, int to) {
+        ui.removeCallbacks(rampStep);
+        rampCur = from;
+        rampTo = to;
+        try { player.setSpuDelay(from * 1000L); } catch (Throwable ignored) {}
+        ui.postDelayed(rampStep, 300);
     }
 
     private void applySubDelay() {
