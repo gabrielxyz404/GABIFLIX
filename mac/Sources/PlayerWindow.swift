@@ -95,6 +95,13 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
     private var scaleMode = 0
     private var scaleButton: NSButton?
     private var lastScaleKey = ""
+    // legenda desenhada pelo app (SubOverlay.swift)
+    private var overlayWin: NSWindow?
+    private var overlayView: SubtitleOverlayView?
+    private var overlayTimer: Timer?
+    private var overlayCues: [Int: OverlayCues] = [:]   // por rank da candidata
+    private var overlayLast: String? = nil
+    private static let overlayTolEarlyMs: Int64 = 150
     private var lastCropSet: String? = nil
     private var bars = (t: 0.0, b: 0.0, l: 0.0, r: 0.0)
     private var barTimer: Timer?
@@ -405,6 +412,7 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
             if !startedPlaying {
                 startedPlaying = true
                 playingSince = Date()
+                startOverlay()
                 scaleForce = 6
                 DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) { [weak self] in self?.selectEmbeddedPortuguese() }
             }
@@ -792,7 +800,12 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
         let embeddedFirst = embeddedPtId != nil
         for (i, c) in use.enumerated() where i < 6 {
             guard let f = c.file else { continue }
-            _ = player.addPlaybackSlave(f, type: .subtitle, enforce: i == 0 && !embeddedFirst)
+            // o VLC recebe uma legenda EM BRANCO (mesma faixa no menu); o texto verdadeiro é desenhado pelo app (SubOverlay)
+            overlayCues[c.rank] = OverlayCues.parse(c.text ?? "")
+            let blank = f.deletingLastPathComponent().appendingPathComponent("branco-\(c.rank + 1).srt")
+            let blankText = "1\n00:00:00,000 --> 00:00:00,001\n\u{200B}\n"
+            let slave = (try? Data(blankText.utf8).write(to: blank)) != nil ? blank : f
+            _ = player.addPlaybackSlave(slave, type: .subtitle, enforce: i == 0 && !embeddedFirst)
             addedSubs += 1
             attached.append(c)
             subLabels.append("Português \(subLabels.count + 1)" + (c.aligned ? (c.pieced ? " (sincronizada por partes)" : " (sincronizada)") : c.consensus ? " (consenso)" : c.hashMatch ? " (do hash)" : "") + (c.fixed ? " (corrigida)" : "") + (c.sparse ? " (poucas falas)" : ""))
@@ -1361,6 +1374,7 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
             } else {
                 log("snap: main código=\(fpTrySnapshot(player, path as NSString, 192, 0))")
             }
+        case "seek": player.time = VLCTime(int: Int32(truncatingIfNeeded: n)); log("seek: \(n)")
         case "sync": showSyncPanel()
         case "speech":
             showSyncPanel()
@@ -1433,6 +1447,58 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
         case "state":
             log("estado: faixa=\(player.currentVideoSubTitleIndex) atraso=\(subDelayMs) vlcDelay=\(player.currentVideoSubTitleDelay) legendas=\(subTracks()) escolhida=\(candForTrack(Int(player.currentVideoSubTitleIndex))?.rank ?? -1)")
         default: break
+        }
+    }
+
+    // ---------- legenda desenhada pelo app ----------
+    private func startOverlay() {
+        if overlayTimer != nil { return }
+        let t = Timer(timeInterval: 0.1, repeats: true) { [weak self] _ in self?.overlayTick() }
+        RunLoop.main.add(t, forMode: .common)
+        overlayTimer = t
+    }
+
+    private func stopOverlay() {
+        overlayTimer?.invalidate()
+        overlayTimer = nil
+        if let o = overlayWin { window?.removeChildWindow(o); o.orderOut(nil) }
+        overlayWin = nil
+        overlayView = nil
+    }
+
+    /** a cada 100 ms: o que mostrar = falas no tempo do leitor menos o atraso (a janela só existe enquanto há texto de uma legenda baixada) */
+    private func overlayTick() {
+        guard !finished, let win = window else { return }
+        var txt: String? = nil
+        if player.isPlaying || player.state == .paused, let c = candForTrack(Int(player.currentVideoSubTitleIndex)), let cues = overlayCues[c.rank] {
+            let t = Int64(player.time.intValue) - Int64(subDelayMs)
+            txt = cues.at(t, tolEarlyMs: PlayerWindowController.overlayTolEarlyMs)
+        }
+        if txt == nil && overlayWin == nil { return }
+        if overlayWin == nil {
+            let o = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 200, height: 100), styleMask: .borderless, backing: .buffered, defer: false)
+            o.isOpaque = false
+            o.backgroundColor = .clear
+            o.hasShadow = false
+            o.ignoresMouseEvents = true
+            o.isReleasedWhenClosed = false
+            let v = SubtitleOverlayView(frame: NSRect(x: 0, y: 0, width: 200, height: 100))
+            v.autoresizingMask = [.width, .height]
+            o.contentView = v
+            overlayWin = o
+            overlayView = v
+            win.addChildWindow(o, ordered: .above)
+        }
+        guard let o = overlayWin, let v = overlayView else { return }
+        // segue a área do vídeo (janela, tamanho, tela cheia); só se LÊ a vista do vídeo
+        let r = win.convertToScreen(videoView.convert(videoView.bounds, to: nil))
+        if o.frame != r { o.setFrame(r, display: false) }
+        let controlsUp = controls.alphaValue > 0.3 && !controls.isHidden
+        v.bottomMargin = controlsUp ? controls.frame.height + 30 : max(24, (r.height * 0.06).rounded())
+        v.text = txt
+        if txt != overlayLast {
+            overlayLast = txt
+            log("legenda do app: t=\(player.time.intValue) atraso=\(subDelayMs) " + (txt.map { "\"" + String($0.prefix(40)).replacingOccurrences(of: "\n", with: " / ") + "\"" } ?? "nada"))
         }
     }
 
@@ -1918,6 +1984,7 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
         timer = nil
         barTimer?.invalidate()
         barTimer = nil
+        stopOverlay()
         audioAuto?.stop()
         audioAuto = nil
         let t = Int64(player.time.intValue)

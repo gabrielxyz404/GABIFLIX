@@ -10,9 +10,9 @@ l1 = "Você não sabe o que ela fez para nós, mas eu também estou aqui e isso 
 l2 = "e esta é a segunda linha, ainda mais comprida do que a primeira, para ver se o recorte corta alguma letra"
 l3 = "terceira linha: tudo isto tem de ficar inteiro dentro da janela, sem cortes nas pontas (%d)"
 out = []
-for i in range(40):
-    a = 3000 + i * 6000
-    out.append("%d\n%s --> %s\n%s\n%s\n%s\n" % (i + 1, ts(a), ts(a + 5200), l1, l2, l3 % (i + 1)))
+for i in range(24):
+    a = 3000 + i * 10000
+    out.append("%d\n%s --> %s\n%s\n%s\n%s\n" % (i + 1, ts(a), ts(a + 8000), l1, l2, l3 % (i + 1)))
 open("leg.srt", "w", encoding="utf-8").write("\n".join(out))
 PY
 E="-c:v libx264 -preset veryfast -pix_fmt yuv420p -g 48 -c:a aac"

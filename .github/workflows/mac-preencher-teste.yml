@@ -41,6 +41,8 @@ jobs:
           sleep 2; curl -sI http://127.0.0.1:8765/barra.mkv | head -1
       - name: Testar o app (fotografias simuladas)
         run: bash tools/mac-preencher-test/run2.sh /tmp/apps/depois.app /tmp/telas/logs
+      - name: Testar a legenda desenhada pelo app
+        run: bash tools/mac-preencher-test/run3.sh /tmp/apps/depois.app /tmp/telas/overlay
       - name: Compor as imagens
         run: python3 tools/mac-preencher-test/compose.py /tmp/telas/logs /tmp/srv /tmp/telas/imagens
       - name: Guardar no branch mac-preencher-out
