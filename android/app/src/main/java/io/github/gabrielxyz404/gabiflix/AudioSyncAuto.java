@@ -308,7 +308,7 @@ final class AudioSyncAuto {
 
     private void onTick() {
         long now = SystemClock.uptimeMillis();
-        if (now - lastDiag >= 20_000) { lastDiag = now; log("estado: st=" + st + " executando=" + running + " " + h.debug()); }
+        if (now - lastDiag >= 20_000) { lastDiag = now; log("estado: st=" + st + " executando=" + running + " " + h.debug() + " | " + CrashReporter.memLine()); }
         boolean pl = h.playing();
         if (!pl) playingSince = 0; else if (playingSince == 0) playingSince = now;
         sampleHealth(now, pl);

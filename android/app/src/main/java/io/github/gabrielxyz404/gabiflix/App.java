@@ -6,6 +6,17 @@ import android.os.Bundle;
 
 /** Liga o relatório de erros em cada processo (principal e ":audiocap") e deixa migalhas do ciclo de vida de todas as telas. */
 public final class App extends Application {
+    /** o sistema pede memória de volta (a morte do processo por falta de memória não deixa rasto no Android 9): fica nas migalhas */
+    @Override public void onTrimMemory(int level) {
+        super.onTrimMemory(level);
+        CrashReporter.crumb("onTrimMemory nível " + level + " " + CrashReporter.memLine());
+    }
+
+    @Override public void onLowMemory() {
+        super.onLowMemory();
+        CrashReporter.crumb("onLowMemory " + CrashReporter.memLine());
+    }
+
     @Override public void onCreate() {
         super.onCreate();
         CrashReporter.install(this);
