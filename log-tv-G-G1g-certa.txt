@@ -1,0 +1,42 @@
+         1795032239.659  5844  5890 I GabiFlixPlayer: hash=0f32e10c22300e45 tamanho=39671296 arquivo=clip.mkv
+         1795032239.659  5844  5890 I GabiFlixPlayer: Hash calculado, mas a busca de legendas falhou
+         1795032239.659  5844  5890 I GabiFlixPlayer: candidatas para baixar: 1 (do site: 1)
+         1795032239.661  5844  5844 I GabiFlixPlayer: ciclo: onStart, tocando=false, tempo=-1, escala=0, atraso=0, vista=TextureView 0x0, vout=true
+         1795032239.661  5844  5844 I GabiFlixPlayer: ciclo: onResume, tocando=false, tempo=-1, escala=0, atraso=0, vista=TextureView 0x0, vout=true
+         1795032239.837  5844  5890 I GabiFlixPlayer: legendas PT válidas: 1 de 1; referências baixadas: 0
+         1795032239.887  5844  5890 I GabiFlixPlayer: alinhamento com 0 referência(s):
+         1795032239.887  5844  5890 I GabiFlixPlayer:   sem referência (nem outro idioma, nem PT do hash) e menos de 2 PT para comparar: ranking antigo
+         1795032239.887  5844  5890 I GabiFlixPlayer:   alinhadas: 0
+         1795032240.400  5844  5844 I GabiFlixPlayer: ciclo: evento Vout, saídas=1
+         1795032240.435  5844  5844 I GabiFlixPlayer: vistas do vídeo: TextureView(vídeo)
+         1795032240.436  5844  5844 I GabiFlixPlayer: AUDIOSYNC pronto (sem limite de dados; automático=true, começa 10 s depois de a legenda ficar ativa; resultado confiante vale 30 dias e não se reverifica; sem confiança: 1 nova tentativa em 60 s; salto grande = 600 s)
+         1795032241.460  5844  5844 I GabiFlixPlayer: AUDIOSYNC estado: st=- executando=false tocando=true carregando=false faixa=-1 baixadas=0 addedSubs=0 embeddedKnown=false faixas=[] cand=false | pss=117MB java=10/512MB nativo=60MB livre=1113MB limiar=144MB poucaMemoria=false
+         1795032241.830  5844  5844 I GabiFlixPlayer: legenda PT embutida: não há
+         1795032241.830  5844  5844 I GabiFlixPlayer: ranking das legendas:
+         1795032241.830  5844  5844 I GabiFlixPlayer:   referência de fim=0ms (sem referência), duração=1200023ms
+         1795032241.830  5844  5844 I GabiFlixPlayer:   #0 fim=6108228ms hash=false corrigida=false nota=0.3000
+         1795032241.831  5844  5844 I GabiFlixPlayer: escolhida: candidata #0; melhor baixada: #0 alinhada=false nota=0.00 deslocamento=0ms hash=false corrigida=false; 1 no menu
+         1795032241.831  5844  5844 I GabiFlixPlayer: atraso da legenda ativa (nenhuma): 0 ms
+         1795032242.456  5844  5844 I GabiFlixPlayer: legenda do app: 1458 falas da faixa ativa
+         1795032242.456  5844  5844 I GabiFlixPlayer: legenda do app: ligada
+         1795032242.468  5844  5844 I GabiFlixPlayer: AUDIOSYNC legenda ativa: 2e10c22300e45|http://10.0.2.2:8000/certa.srt#raw (nova nesta sessão)
+         1795032242.468  5844  5844 I GabiFlixPlayer: AUDIOSYNC GATILHO motivo=troca-de-legenda legenda=2e10c22300e45|http://10.0.2.2:8000/certa.srt#raw decisão=avaliar (espera 10 s tocando; se há resultado guardado, não analisa) [análises=0 sem_confiança=0 estado=nova]
+         1795032243.345  5844  5844 I GabiFlixPlayer: atraso da legenda ativa (d3:u|h:0f32e10c22300e45|http://10.0.2.2:8000/certa.srt#raw): 0 ms
+         1795032252.641  5844  5844 I GabiFlixPlayer: AUDIOSYNC GATILHO motivo=início legenda=2e10c22300e45|http://10.0.2.2:8000/certa.srt#raw decisão=análise [análises=1 sem_confiança=0 estado=nova]
+         1795032252.641  5844  5844 I GabiFlixPlayer: AUDIOSYNC antes da análise: saúde da reprodução: amostras=11 paradas=0 razão_mínima=0.77 carregando=0 quadros_perdidos=63
+         1795032252.641  5844  5844 I GabiFlixPlayer: AUDIOSYNC começando: posição 12 s, duração 1200 s, atraso atual 0 ms, faixa de áudio 1
+         1795032255.083  5844  5936 I GabiFlixPlayer: AUDIOSYNC captura 270 s +90 s: 90.04 s de PCM em 2.04 s (fim) leitura=4 MB | usou a faixa -1 (pedida 1) de []
+         1795032261.725  5844  5844 I GabiFlixPlayer: AUDIOSYNC estado: st=nova executando=true tocando=true carregando=false faixa=2 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 2:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=108MB java=8/512MB nativo=74MB livre=1077MB limiar=144MB poucaMemoria=false
+         1795032264.276  5844  5936 I GabiFlixPlayer: AUDIOSYNC captura 705 s +90 s: 90.08 s de PCM em 1.75 s (fim) leitura=3 MB | usou a faixa -1 (pedida 1) de []
+         1795032270.375  5844  5936 I GabiFlixPlayer: AUDIOSYNC captura 1045 s +90 s: 89.97 s de PCM em 1.65 s (fim) leitura=3 MB | usou a faixa 1 (pedida 1) de [1:Scarlet Street 1945 HD; ]
+         1795032277.033  5844  5844 I GabiFlixPlayer: AUDIOSYNC resultado: aceita z=12.3 janelas=3/3 escala=1.00000 deslocamento=6 ms | vad=silero janelas=3 captura=22601 ms vad=16339 ms (cpu 16) solve=1347 ms (cpu 347) cpu_thread=497 ms total=24329 ms leitura_estimada=8 MB leitura_real=11 MB pss=111->117 MB java=6->23 MB
+         1795032277.034  5844  5844 I GabiFlixPlayer: AUDIOSYNC saúde da reprodução: amostras=24 paradas=0 razão_mínima=0.74 carregando=0 quadros_perdidos=128
+         1795032277.034  5844  5844 I GabiFlixPlayer: AUDIOSYNC a legenda já estava certa (deslocamento medido 6 ms): não mexi (resultado confiante: não será reverificado)
+         1795032277.034  5844  5844 I GabiFlixPlayer: AVISO na tela: Legenda confirmada pelo áudio
+         1795032282.143  5844  5844 I GabiFlixPlayer: AUDIOSYNC estado: st=confiante executando=false tocando=true carregando=false faixa=2 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 2:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=122MB java=23/512MB nativo=75MB livre=1108MB limiar=144MB poucaMemoria=false
+         1795032287.265  5844  5844 I GabiFlixPlayer: legenda do app: tempo 46872 ms, atraso 0 ms -> "ALMAS PERVERSAS (1945)"
+         1795032292.396  5844  5844 I GabiFlixPlayer: legenda do app: tempo 52090 ms, atraso 0 ms -> (nada)
+         1795032302.460  5844  5844 I GabiFlixPlayer: AUDIOSYNC estado: st=confiante executando=false tocando=true carregando=false faixa=2 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 2:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=123MB java=24/512MB nativo=77MB livre=1108MB limiar=144MB poucaMemoria=false
+         1795032322.811  5844  5844 I GabiFlixPlayer: AUDIOSYNC estado: st=confiante executando=false tocando=true carregando=false faixa=2 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 2:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=124MB java=25/512MB nativo=78MB livre=1106MB limiar=144MB poucaMemoria=false
+         1795032343.260  5844  5844 I GabiFlixPlayer: AUDIOSYNC estado: st=confiante executando=false tocando=true carregando=false faixa=2 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 2:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=126MB java=25/512MB nativo=80MB livre=1096MB limiar=144MB poucaMemoria=false
+         1795032363.605  5844  5844 I GabiFlixPlayer: AUDIOSYNC estado: st=confiante executando=false tocando=true carregando=false faixa=2 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 2:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=128MB java=26/512MB nativo=81MB livre=1095MB limiar=144MB poucaMemoria=false

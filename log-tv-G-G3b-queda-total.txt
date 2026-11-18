@@ -1,0 +1,118 @@
+         1795033004.275  6877  6926 I GabiFlixPlayer: hash=0f32e10c22300e45 tamanho=39671296 arquivo=clip.mkv
+         1795033004.275  6877  6926 I GabiFlixPlayer: Hash calculado, mas a busca de legendas falhou
+         1795033004.275  6877  6926 I GabiFlixPlayer: candidatas para baixar: 1 (do site: 1)
+         1795033004.296  6877  6877 I GabiFlixPlayer: ciclo: onStart, tocando=false, tempo=-1, escala=0, atraso=0, vista=TextureView 0x0, vout=true
+         1795033004.297  6877  6877 I GabiFlixPlayer: ciclo: onResume, tocando=false, tempo=-1, escala=0, atraso=0, vista=TextureView 0x0, vout=true
+         1795033004.354  6877  6926 I GabiFlixPlayer: legendas PT válidas: 1 de 1; referências baixadas: 0
+         1795033004.500  6877  6926 I GabiFlixPlayer: alinhamento com 0 referência(s):
+         1795033004.500  6877  6926 I GabiFlixPlayer:   sem referência (nem outro idioma, nem PT do hash) e menos de 2 PT para comparar: ranking antigo
+         1795033004.500  6877  6926 I GabiFlixPlayer:   alinhadas: 0
+         1795033005.046  6877  6877 I GabiFlixPlayer: ciclo: evento Vout, saídas=1
+         1795033005.062  6877  6877 I GabiFlixPlayer: vistas do vídeo: TextureView(vídeo)
+         1795033005.067  6877  6877 I GabiFlixPlayer: AUDIOSYNC pronto (sem limite de dados; automático=true, começa 10 s depois de a legenda ficar ativa; resultado confiante vale 30 dias e não se reverifica; sem confiança: 1 nova tentativa em 60 s; salto grande = 600 s)
+         1795033006.078  6877  6877 I GabiFlixPlayer: AUDIOSYNC estado: st=- executando=false tocando=true carregando=false faixa=-1 baixadas=0 addedSubs=0 embeddedKnown=false faixas=[] cand=false | pss=114MB java=10/512MB nativo=60MB livre=1113MB limiar=144MB poucaMemoria=false
+         1795033006.378  6877  6877 I GabiFlixPlayer: legenda PT embutida: não há
+         1795033006.379  6877  6877 I GabiFlixPlayer: ranking das legendas:
+         1795033006.379  6877  6877 I GabiFlixPlayer:   referência de fim=0ms (sem referência), duração=1200023ms
+         1795033006.379  6877  6877 I GabiFlixPlayer:   #0 fim=6111228ms hash=false corrigida=false nota=0.3000
+         1795033006.380  6877  6877 I GabiFlixPlayer: escolhida: candidata #0; melhor baixada: #0 alinhada=false nota=0.00 deslocamento=0ms hash=false corrigida=false; 1 no menu
+         1795033006.380  6877  6877 I GabiFlixPlayer: atraso da legenda ativa (nenhuma): 0 ms
+         1795033006.978  6877  6877 I GabiFlixPlayer: legenda do app: 1458 falas da faixa ativa
+         1795033006.978  6877  6877 I GabiFlixPlayer: legenda do app: ligada
+         1795033007.078  6877  6877 I GabiFlixPlayer: AUDIOSYNC legenda ativa: 2e10c22300e45|http://10.0.2.2:8000/mais3.srt#raw (nova nesta sessão)
+         1795033007.078  6877  6877 I GabiFlixPlayer: AUDIOSYNC GATILHO motivo=troca-de-legenda legenda=2e10c22300e45|http://10.0.2.2:8000/mais3.srt#raw decisão=avaliar (espera 10 s tocando; se há resultado guardado, não analisa) [análises=0 sem_confiança=0 estado=nova]
+         1795033007.991  6877  6877 I GabiFlixPlayer: atraso da legenda ativa (d3:u|h:0f32e10c22300e45|http://10.0.2.2:8000/mais3.srt#raw): 0 ms
+         1795033017.277  6877  6877 I GabiFlixPlayer: AUDIOSYNC GATILHO motivo=início legenda=2e10c22300e45|http://10.0.2.2:8000/mais3.srt#raw decisão=análise [análises=1 sem_confiança=0 estado=nova]
+         1795033017.277  6877  6877 I GabiFlixPlayer: AUDIOSYNC antes da análise: saúde da reprodução: amostras=11 paradas=0 razão_mínima=0.81 carregando=0 quadros_perdidos=63
+         1795033017.277  6877  6877 I GabiFlixPlayer: AUDIOSYNC começando: posição 12 s, duração 1200 s, atraso atual 0 ms, faixa de áudio 1
+         1795033019.150  6877  6877 I GabiFlixPlayer: AUDIOSYNC o processo de captura caiu (desconectou) durante: captura cfg=0; o filme continua. Última etapa: 20:16:58.418 pid=6974 TESTE: queda nativa forçada durante a captura (cfg=0)
+         1795033019.150  6877  6971 I GabiFlixPlayer: AUDIOSYNC a captura derrubou o processo com a configuração 0 (padrão); tento a configuração 1 na hora
+         1795033023.259  6877  6877 I GabiFlixPlayer: AUDIOSYNC o processo de captura caiu (desconectou) durante: captura cfg=1; o filme continua. Última etapa: 20:17:01.407 pid=7020 TESTE: queda nativa forçada durante a captura (cfg=1)
+         1795033023.259  6877  6971 I GabiFlixPlayer: AUDIOSYNC a captura derrubou o processo com a configuração 1 (alternativa); não há mais configurações
+         1795033023.260  6877  6971 I GabiFlixPlayer: AUDIOSYNC captura falhou em 275 s: captura desligada: o processo de captura caiu com todas as 2 configurações (todas as configurações já foram tentadas)
+         1795033023.335  6877  6877 I GabiFlixPlayer: AUDIOSYNC resultado: captura da janela 1 falhou: captura desligada: o processo de captura caiu com todas as 2 configurações | vad=? janelas=0 captura=5461 ms vad=0 ms (cpu 0) solve=0 ms (cpu 0) cpu_thread=74 ms total=5812 ms leitura_estimada=8 MB leitura_real=? pss=108->114 MB java=7->10 MB
+         1795033023.335  6877  6877 I GabiFlixPlayer: AUDIOSYNC saúde da reprodução: amostras=5 paradas=0 razão_mínima=0.97 carregando=0 quadros_perdidos=28
+         1795033023.335  6877  6877 I GabiFlixPlayer: AUDIOSYNC tentativa 1: houve queda(s) do processo de captura recuperadas na hora; contam como esta única tentativa
+         1795033023.335  6877  6877 I GabiFlixPlayer: AUDIOSYNC GATILHO motivo=sem-confiança legenda=2e10c22300e45|http://10.0.2.2:8000/mais3.srt#raw decisão=agendar UMA segunda tentativa em 60 s: erro: captura da janela 1 falhou: captura desligada: o processo de captura caiu com todas as 2 configurações [análises=1 sem_confiança=1 estado=nova]
+         1795033026.478  6877  6877 I GabiFlixPlayer: AUDIOSYNC estado: st=nova executando=false tocando=true carregando=false faixa=2 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 2:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=112MB java=11/512MB nativo=81MB livre=1105MB limiar=144MB poucaMemoria=false
+         1795033046.802  6877  6877 I GabiFlixPlayer: AUDIOSYNC estado: st=nova executando=false tocando=true carregando=false faixa=2 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 2:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=114MB java=12/512MB nativo=82MB livre=1104MB limiar=144MB poucaMemoria=false
+         1795033054.913  6877  6877 I GabiFlixPlayer: legenda do app: tempo 49732 ms, atraso 0 ms -> "ALMAS PERVERSAS (1945)"
+         1795033060.188  6877  6877 I GabiFlixPlayer: legenda do app: tempo 54966 ms, atraso 0 ms -> (nada)
+         1795033067.231  6877  6877 I GabiFlixPlayer: AUDIOSYNC estado: st=nova executando=false tocando=true carregando=false faixa=2 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 2:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=103MB java=7/512MB nativo=77MB livre=1112MB limiar=144MB poucaMemoria=false
+         1795033083.408  6877  6877 I GabiFlixPlayer: AUDIOSYNC GATILHO motivo=segunda-tentativa-após-sem-confiança legenda=2e10c22300e45|http://10.0.2.2:8000/mais3.srt#raw decisão=análise [análises=2 sem_confiança=1 estado=nova]
+         1795033083.408  6877  6877 I GabiFlixPlayer: AUDIOSYNC antes da análise: saúde da reprodução: amostras=65 paradas=0 razão_mínima=0.77 carregando=0 quadros_perdidos=256
+         1795033083.408  6877  6877 I GabiFlixPlayer: AUDIOSYNC começando: posição 78 s, duração 1200 s, atraso atual 0 ms, faixa de áudio 1
+         1795033083.597  6877  6971 I GabiFlixPlayer: AUDIOSYNC captura falhou em 275 s: captura desligada: o processo de captura caiu com todas as 2 configurações (todas as configurações já foram tentadas)
+         1795033083.602  6877  6877 I GabiFlixPlayer: AUDIOSYNC resultado: captura da janela 1 falhou: captura desligada: o processo de captura caiu com todas as 2 configurações | vad=? janelas=0 captura=0 ms vad=0 ms (cpu 0) solve=0 ms (cpu 0) cpu_thread=73 ms total=188 ms leitura_estimada=0 MB leitura_real=? pss=105->109 MB java=8->10 MB
+         1795033083.602  6877  6877 I GabiFlixPlayer: AUDIOSYNC saúde da reprodução: amostras=0 paradas=0 razão_mínima=0.00 carregando=0 quadros_perdidos=2
+         1795033083.602  6877  6877 I GabiFlixPlayer: AUDIOSYNC tentativa 2: houve queda(s) do processo de captura recuperadas na hora; contam como esta única tentativa
+         1795033083.602  6877  6877 I GabiFlixPlayer: AUDIOSYNC GATILHO motivo=sem-confiança legenda=2e10c22300e45|http://10.0.2.2:8000/mais3.srt#raw decisão=parar: erro: captura da janela 1 falhou: captura desligada: o processo de captura caiu com todas as 2 configurações (2 tentativas feitas) [análises=2 sem_confiança=2 estado=parada]
+         1795033087.544  6877  6877 I GabiFlixPlayer: AUDIOSYNC estado: st=parada executando=false tocando=true carregando=false faixa=2 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 2:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=110MB java=10/512MB nativo=84MB livre=1107MB limiar=144MB poucaMemoria=false
+         1795033107.986  6877  6877 I GabiFlixPlayer: AUDIOSYNC estado: st=parada executando=false tocando=true carregando=false faixa=2 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 2:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=111MB java=11/512MB nativo=85MB livre=1105MB limiar=144MB poucaMemoria=false
+         1795033128.305  6877  6877 I GabiFlixPlayer: AUDIOSYNC estado: st=parada executando=false tocando=true carregando=false faixa=2 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 2:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=113MB java=12/512MB nativo=87MB livre=1103MB limiar=144MB poucaMemoria=false
+         1795033148.590  6877  6877 I GabiFlixPlayer: AUDIOSYNC estado: st=parada executando=false tocando=true carregando=false faixa=2 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 2:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=114MB java=12/512MB nativo=88MB livre=1101MB limiar=144MB poucaMemoria=false
+         1795033166.702  6877  6877 I GabiFlixPlayer: legenda do app: tempo 161424 ms, atraso 0 ms -> "Bom, rapazes, detesto/interromper uma grande festa..."
+         1795033168.494  6877  6877 I GabiFlixPlayer: legenda do app: tempo 163257 ms, atraso 0 ms -> "Bom, rapazes, detesto/interromper uma grande festa.../mas não é prudente/fazer uma mulher esperar."
+         1795033168.596  6877  6877 I GabiFlixPlayer: legenda do app: tempo 163507 ms, atraso 0 ms -> "mas não é prudente/fazer uma mulher esperar."
+         1795033168.931  6877  6877 I GabiFlixPlayer: AUDIOSYNC estado: st=parada executando=false tocando=true carregando=false faixa=2 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 2:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=110MB java=6/512MB nativo=84MB livre=1104MB limiar=144MB poucaMemoria=false
+         1795033171.204  6877  6877 I GabiFlixPlayer: legenda do app: tempo 165918 ms, atraso 0 ms -> "- Vocês sabem como elas são./- Com certeza, Sr. Hogarth."
+         1795033173.430  6877  6877 I GabiFlixPlayer: legenda do app: tempo 168261 ms, atraso 0 ms -> "- Vocês sabem como elas são./- Com certeza, Sr. Hogarth./- Claro que sabemos./- São todas iguais."
+         1795033173.594  6877  6877 I GabiFlixPlayer: legenda do app: tempo 168542 ms, atraso 0 ms -> "- Claro que sabemos./- São todas iguais."
+         1795033175.792  6877  6877 I GabiFlixPlayer: legenda do app: tempo 170634 ms, atraso 0 ms -> (nada)
+         1795033176.595  6877  6877 I GabiFlixPlayer: legenda do app: tempo 171421 ms, atraso 0 ms -> "Vejo que todos me compreendem."
+         1795033178.894  6877  6877 I GabiFlixPlayer: legenda do app: tempo 173757 ms, atraso 0 ms -> (nada)
+         1795033180.582  6877  6877 I GabiFlixPlayer: legenda do app: tempo 175313 ms, atraso 0 ms -> "Francamente, rapazes, me diverti/como nunca nessas últimas horas."
+         1795033184.156  6877  6877 I GabiFlixPlayer: legenda do app: tempo 178965 ms, atraso 0 ms -> (nada)
+         1795033184.979  6877  6877 I GabiFlixPlayer: legenda do app: tempo 179758 ms, atraso 0 ms -> "E, por falar em horas..."
+         1795033188.003  6877  6877 I GabiFlixPlayer: legenda do app: tempo 182915 ms, atraso 0 ms -> "tenho aqui um relógio/de ouro com 17 rubis..."
+         1795033189.351  6877  6877 I GabiFlixPlayer: AUDIOSYNC estado: st=parada executando=false tocando=true carregando=false faixa=2 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 2:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=111MB java=7/512MB nativo=85MB livre=1103MB limiar=144MB poucaMemoria=false
+         1795033191.232  6877  6877 I GabiFlixPlayer: legenda do app: tempo 186048 ms, atraso 0 ms -> (nada)
+         1795033191.923  6877  6877 I GabiFlixPlayer: legenda do app: tempo 186839 ms, atraso 0 ms -> "um presente adequado porque..."
+         1795033194.844  6877  6877 I GabiFlixPlayer: legenda do app: tempo 189716 ms, atraso 0 ms -> "um presente adequado porque.../é para um caixa de ouro/de 14K e 17 rubis."
+         1795033194.945  6877  6877 I GabiFlixPlayer: legenda do app: tempo 189716 ms, atraso 0 ms -> "é para um caixa de ouro/de 14K e 17 rubis."
+         1795033198.459  6877  6877 I GabiFlixPlayer: legenda do app: tempo 193367 ms, atraso 0 ms -> "- Muito bem./- Ele merece."
+         1795033200.551  6877  6877 I GabiFlixPlayer: legenda do app: tempo 195407 ms, atraso 0 ms -> (nada)
+         1795033200.759  6877  6877 I GabiFlixPlayer: legenda do app: tempo 195663 ms, atraso 0 ms -> "Por favor, entregue-o."
+         1795033202.234  6877  6877 I GabiFlixPlayer: legenda do app: tempo 196963 ms, atraso 0 ms -> "Por favor, entregue-o./- Que relógio lindo./- Que maravilha!"
+         1795033202.383  6877  6877 I GabiFlixPlayer: legenda do app: tempo 197215 ms, atraso 0 ms -> "- Que relógio lindo./- Que maravilha!"
+         1795033205.927  6877  6877 I GabiFlixPlayer: legenda do app: tempo 200869 ms, atraso 0 ms -> (nada)
+         1795033208.453  6877  6877 I GabiFlixPlayer: legenda do app: tempo 203258 ms, atraso 0 ms -> "Chris."
+         1795033209.644  6877  6877 I GabiFlixPlayer: AUDIOSYNC estado: st=parada executando=false tocando=true carregando=false faixa=2 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 2:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=113MB java=8/512MB nativo=86MB livre=1101MB limiar=144MB poucaMemoria=false
+         1795033209.790  6877  6877 I GabiFlixPlayer: legenda do app: tempo 204551 ms, atraso 0 ms -> (nada)
+         1795033215.208  6877  6877 I GabiFlixPlayer: legenda do app: tempo 210006 ms, atraso 0 ms -> "Veja o que está gravado na/parte de dentro, Chris."
+         1795033217.347  6877  6877 I GabiFlixPlayer: legenda do app: tempo 212129 ms, atraso 0 ms -> (nada)
+         1795033220.603  6877  6877 I GabiFlixPlayer: legenda do app: tempo 215526 ms, atraso 0 ms -> "Para meu amigo/Christopher Cross..."
+         1795033224.260  6877  6877 I GabiFlixPlayer: legenda do app: tempo 219218 ms, atraso 0 ms -> (nada)
+         1795033225.224  6877  6877 I GabiFlixPlayer: legenda do app: tempo 219997 ms, atraso 0 ms -> "em reconhecimento a 25/anos de trabalho dedicado..."
+         1795033229.443  6877  6877 I GabiFlixPlayer: legenda do app: tempo 224381 ms, atraso 0 ms -> (nada)
+         1795033229.987  6877  6877 I GabiFlixPlayer: AUDIOSYNC estado: st=parada executando=false tocando=true carregando=false faixa=2 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 2:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=115MB java=8/512MB nativo=87MB livre=1126MB limiar=144MB poucaMemoria=false
+         1795033230.108  6877  6877 I GabiFlixPlayer: legenda do app: tempo 224913 ms, atraso 0 ms -> "de J.J. Hogarth, 1909-1934."
+         1795033235.119  6877  6877 I GabiFlixPlayer: legenda do app: tempo 229884 ms, atraso 0 ms -> (nada)
+         1795033236.738  6877  6877 I GabiFlixPlayer: legenda do app: tempo 231456 ms, atraso 0 ms -> "Que fale, que fale."
+         1795033238.112  6877  6877 I GabiFlixPlayer: legenda do app: tempo 233019 ms, atraso 0 ms -> (nada)
+         1795033238.243  6877  6877 I GabiFlixPlayer: legenda do app: tempo 233019 ms, atraso 0 ms -> "- Sim, Chris, diga alguma coisa./- Vamos, Chris, diga alguma coisa."
+         1795033240.941  6877  6877 I GabiFlixPlayer: legenda do app: tempo 235881 ms, atraso 0 ms -> (nada)
+         1795033241.433  6877  6877 I GabiFlixPlayer: legenda do app: tempo 236141 ms, atraso 0 ms -> "Bem..."
+         1795033242.881  6877  6877 I GabiFlixPlayer: legenda do app: tempo 237715 ms, atraso 0 ms -> (nada)
+         1795033243.728  6877  6877 I GabiFlixPlayer: legenda do app: tempo 238503 ms, atraso 0 ms -> "Eu não sei o que dizer, J.J."
+         1795033245.688  6877  6877 I GabiFlixPlayer: legenda do app: tempo 240595 ms, atraso 0 ms -> (nada)
+         1795033246.456  6877  6877 I GabiFlixPlayer: legenda do app: tempo 241384 ms, atraso 0 ms -> "É... é maravilhoso!"
+         1795033250.298  6877  6877 I GabiFlixPlayer: AUDIOSYNC estado: st=parada executando=false tocando=true carregando=false faixa=2 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 2:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=116MB java=9/512MB nativo=89MB livre=1124MB limiar=144MB poucaMemoria=false
+         1795033250.687  6877  6877 I GabiFlixPlayer: legenda do app: tempo 245393 ms, atraso 0 ms -> (nada)
+         1795033251.256  6877  6877 I GabiFlixPlayer: legenda do app: tempo 246213 ms, atraso 0 ms -> "Nunca pensei em possuir/um relógio como este."
+         1795033253.786  6877  6877 I GabiFlixPlayer: legenda do app: tempo 248584 ms, atraso 0 ms -> (nada)
+         1795033254.606  6877  6877 I GabiFlixPlayer: legenda do app: tempo 249384 ms, atraso 0 ms -> "Isto é como um sonho."
+         1795033256.237  6877  6877 I GabiFlixPlayer: legenda do app: tempo 251176 ms, atraso 0 ms -> (nada)
+         1795033257.127  6877  6877 I GabiFlixPlayer: legenda do app: tempo 251965 ms, atraso 0 ms -> "Tudo o que posso dizer é..."
+         1795033259.655  6877  6877 I GabiFlixPlayer: legenda do app: tempo 254590 ms, atraso 0 ms -> (nada)
+         1795033259.783  6877  6877 I GabiFlixPlayer: legenda do app: tempo 254590 ms, atraso 0 ms -> "que temos o melhor/chefe de Nova York."
+         1795033262.238  6877  6877 I GabiFlixPlayer: legenda do app: tempo 256963 ms, atraso 0 ms -> (nada)
+         1795033270.652  6877  6877 I GabiFlixPlayer: AUDIOSYNC estado: st=parada executando=false tocando=true carregando=false faixa=2 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 2:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=118MB java=10/512MB nativo=90MB livre=1122MB limiar=144MB poucaMemoria=false
+         1795033275.548  6877  6877 I GabiFlixPlayer: legenda do app: tempo 270432 ms, atraso 0 ms -> "Em boa hora."
+         1795033276.657  6877  6877 I GabiFlixPlayer: legenda do app: tempo 271547 ms, atraso 0 ms -> (nada)
+         1795033276.883  6877  6877 I GabiFlixPlayer: legenda do app: tempo 271798 ms, atraso 0 ms -> "Em boa hora, rapaz."
+         1795033278.317  6877  6877 I GabiFlixPlayer: legenda do app: tempo 273079 ms, atraso 0 ms -> "Em boa hora, rapaz./Obrigado, muito obrigado."
+         1795033278.445  6877  6877 I GabiFlixPlayer: legenda do app: tempo 273333 ms, atraso 0 ms -> "Obrigado, muito obrigado."
+         1795033279.982  6877  6877 I GabiFlixPlayer: legenda do app: tempo 274912 ms, atraso 0 ms -> (nada)
+         1795033282.242  6877  6877 I GabiFlixPlayer: legenda do app: tempo 277002 ms, atraso 0 ms -> "Obrigado, Chris./Obrigado, amigo velho."
+         1795033285.455  6877  6877 I GabiFlixPlayer: legenda do app: tempo 280177 ms, atraso 0 ms -> "Obrigado, Chris./Obrigado, amigo velho./- Deus te abençoe/- Obrigado."
