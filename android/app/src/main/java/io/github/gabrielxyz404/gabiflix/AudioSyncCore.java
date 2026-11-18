@@ -141,7 +141,7 @@ final class AudioSyncCore {
         private volatile String last = "silero";
         @Override public String name() { return last; }
         @Override public float[] speechProb(short[] pcm, int n, int rate) {
-            if (!forceDsp) {
+            if (!forceDsp && AudioCap.sileroAllowed(ctx)) {
                 File in = new File(dir, "vad-in.raw"), out = new File(dir, "vad-out.raw");
                 try {
                     java.nio.ByteBuffer bb = java.nio.ByteBuffer.allocate(n * 2).order(java.nio.ByteOrder.LITTLE_ENDIAN);
@@ -165,7 +165,7 @@ final class AudioSyncCore {
             }
             if (dsp == null) dsp = DspVad.forName("dsp");
             last = dsp.name();
-            log("Silero indisponível: usando o VAD por DSP");
+            log("Silero indisponível" + (forceDsp ? " (teste: DSP forçado)" : AudioCap.sileroAllowed(ctx) ? "" : " (" + AudioCap.sileroWhyNot(ctx) + ")") + ": usando o VAD por DSP");
             return dsp.speechProb(pcm, n, rate);
         }
     }
@@ -240,6 +240,7 @@ final class AudioSyncCore {
                 if (co.bytes > 0) o.st.realBytes += co.bytes;
             }
             if (co.ok || c.isCancelled()) break;
+            if (co.end.startsWith("captura desligada")) { log("captura falhou em " + startMs / 1000 + " s: " + co.end + " (todas as configurações já foram tentadas)"); break; }
             log("captura falhou em " + startMs / 1000 + " s (tentativa " + attempt + "): " + co.end + " em " + String.format(Locale.ROOT, "%.1f", co.wallS) + " s; " + co.track);
             if (attempt == 1) Thread.sleep(2000);
         }

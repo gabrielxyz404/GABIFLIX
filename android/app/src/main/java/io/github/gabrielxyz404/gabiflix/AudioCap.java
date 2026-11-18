@@ -32,17 +32,27 @@ final class AudioCap {
         long bytes = -1;
         /** qual faixa de áudio a segunda instância usou (para o registro) */
         String track = "?";
+        /** o processo de captura caiu (ou foi morto) enquanto esta operação corria */
+        boolean crashed;
     }
 
-    /** depois de tantas quedas do processo de captura a análise pelo áudio é desligada até o app reabrir */
-    private static final int MAX_CRASHES = 2;
+    /** só nos testes (extra gfAudioCrash): "vad", "capture" (cai com a configuração 0) ou "capture-all" */
+    static volatile String testHook;
+
+    private static final String FB_PREFS = "audiocap-fallback";
 
     private static final Object L = new Object();
     private static Messenger svc;
     private static boolean binding;
     private static ServiceConnection conn;
     private static volatile Context appCtx;
-    private static volatile int crashes;
+    /** configurações de captura em que o processo já caiu (bit i = configuração i), por aparelho+versão */
+    private static volatile int capBad;
+    /** todas as configurações caíram: a captura fica desligada até o app reabrir */
+    private static volatile boolean capDisabled;
+    /** o Silero (ONNX Runtime) derrubou o processo neste aparelho+versão: nunca mais é usado */
+    private static volatile boolean sileroBroken;
+    private static volatile boolean prefsLoaded;
     private static final AtomicInteger ids = new AtomicInteger();
     private static final ConcurrentHashMap<Integer, Pending> pending = new ConcurrentHashMap<>();
     private static final Messenger reply = new Messenger(new Handler(Looper.getMainLooper()) {
@@ -64,6 +74,10 @@ final class AudioCap {
     private static final class Pending {
         final Out out = new Out();
         final CountDownLatch done = new CountDownLatch(1);
+        /** o que o processo de captura fazia para este pedido: "captura" ou "vad" */
+        final String kind;
+        final int cfg;
+        Pending(String kind, int cfg) { this.kind = kind; this.cfg = cfg; }
     }
 
     private final Context ctx;
@@ -73,15 +87,96 @@ final class AudioCap {
 
     private static void log(String m) { SubtitleSync.log("AUDIOSYNC " + m); }
 
-    /** o processo de captura caiu (ou foi morto): quem esperava recebe o motivo; o app segue */
+    // ------------------------------------------------------------ o que vale neste aparelho (guardado por aparelho + versão do app)
+
+    /** muda com o aparelho e com a versão: uma versão nova volta a tentar o que a anterior desligou */
+    private static String devKey(Context c) {
+        return BuildConfigHelper.versionName(c) + "|" + android.os.Build.FINGERPRINT + "|" + (android.os.Process.is64Bit() ? "64" : "32");
+    }
+
+    private static synchronized void loadPrefs(Context c) {
+        if (prefsLoaded) return;
+        prefsLoaded = true;
+        try {
+            android.content.SharedPreferences sp = c.getSharedPreferences(FB_PREFS, Context.MODE_PRIVATE);
+            String k = devKey(c);
+            sileroBroken = k.equals(sp.getString("silero_broken", ""));
+            String cb = sp.getString("cap_bad", "");
+            int i = cb.lastIndexOf('#');
+            if (i > 0 && cb.substring(0, i).equals(k)) {
+                capBad = Integer.parseInt(cb.substring(i + 1));
+                if (capBad >= (1 << AudioCapEngine.NCFG) - 1) capBad = 0;   // todas desligadas numa vez anterior: tenta de novo (pode ter sido falta de memória)
+            }
+            if (sileroBroken) log("Silero desligado neste aparelho (derrubou o processo antes): VAD por DSP");
+            if (capBad != 0) log("configurações de captura que já derrubaram o processo neste aparelho: máscara " + capBad);
+        } catch (Throwable ignored) {}
+    }
+
+    private static void saveSileroBroken(Context c) {
+        try { c.getSharedPreferences(FB_PREFS, Context.MODE_PRIVATE).edit().putString("silero_broken", devKey(c)).apply(); } catch (Throwable ignored) {}
+    }
+
+    private static void saveCapBad(Context c) {
+        try { c.getSharedPreferences(FB_PREFS, Context.MODE_PRIVATE).edit().putString("cap_bad", devKey(c) + "#" + capBad).apply(); } catch (Throwable ignored) {}
+    }
+
+    /** o Silero é de 64 bits? No ARM de 32 bits (Fire TV com sistema 32 bits) usa-se só o VAD por DSP, que não tem código nativo */
+    private static boolean isArm32() {
+        try {
+            if (android.os.Process.is64Bit()) return false;
+            for (String a : android.os.Build.SUPPORTED_ABIS) if (a.startsWith("arm")) return true;
+        } catch (Throwable ignored) {}
+        return false;
+    }
+
+    /** false = não usar o Silero (ONNX Runtime) neste aparelho: ARM de 32 bits, ou já derrubou o processo antes */
+    static boolean sileroAllowed(Context c) {
+        loadPrefs(c.getApplicationContext());
+        return !sileroBroken && !isArm32();
+    }
+
+    /** por que o Silero não será usado (para o registo) */
+    static String sileroWhyNot(Context c) {
+        loadPrefs(c.getApplicationContext());
+        return sileroBroken ? "ele derrubou o processo de captura neste aparelho" : isArm32() ? "ARM de 32 bits: só o VAD por DSP" : "";
+    }
+
+    private static int nextCfg() {
+        for (int i = 0; i < AudioCapEngine.NCFG; i++) if ((capBad & (1 << i)) == 0) return i;
+        return -1;
+    }
+
+    /**
+     * o processo de captura caiu (ou foi morto): quem esperava recebe o motivo e a etapa em que estava; o app segue e o relatório sai já
+     * (CAPTURA_CAIU, com o motivo da morte, as migalhas, o ABI e o registo de queda do sistema)
+     */
     private static void died(String why) {
-        synchronized (L) { svc = null; binding = false; }
-        crashes++;
-        log("o processo de captura caiu (" + why + "), queda " + crashes + " de " + MAX_CRASHES + ": o filme continua");
+        ServiceConnection old;
+        synchronized (L) { old = conn; conn = null; svc = null; binding = false; }
+        Context a = appCtx;
+        if (old != null && a != null) { try { a.unbindService(old); } catch (Throwable ignored) {} }   // senão o sistema recria o serviço sozinho
+        StringBuilder kinds = new StringBuilder();
         for (Integer id : pending.keySet()) {
             Pending p = pending.remove(id);
-            if (p != null) { p.out.ok = false; p.out.end = "o processo de captura caiu"; p.done.countDown(); }
+            if (p != null) {
+                p.out.ok = false;
+                p.out.crashed = true;
+                p.out.end = "o processo de captura caiu";
+                if (kinds.length() > 0) kinds.append('+');
+                kinds.append(p.kind).append(" cfg=").append(p.cfg);
+                p.done.countDown();
+            }
         }
+        if (kinds.length() == 0) { log("o processo de captura terminou sem nenhuma operação em curso (" + why + ")"); return; }
+        String stage = CrashReporter.readStage("audiocap"), crumbs = CrashReporter.readCrumbsOf("audiocap");
+        log("o processo de captura caiu (" + why + ") durante: " + kinds + "; o filme continua. Última etapa: " + lastLine(stage));
+        CrashReporter.audiocapDied(kinds.toString().split(" ")[0], kinds + " (" + why + ")", stage, crumbs, System.currentTimeMillis());
+    }
+
+    private static String lastLine(String s) {
+        String[] ls = s.split("\n");
+        for (int i = ls.length - 1; i >= 0; i--) if (!ls[i].trim().isEmpty()) return ls[i].trim();
+        return "(sem etapa marcada)";
     }
 
     private Messenger connect(long waitMs) {
@@ -109,16 +204,17 @@ final class AudioCap {
         }
     }
 
-    private static void send(int what, Bundle data, Messenger replyTo) {
+    private static boolean send(int what, Bundle data, Messenger replyTo) {
         Messenger s;
         synchronized (L) { s = svc; }
-        if (s == null) return;
+        if (s == null) return false;
         try {
             Message m = Message.obtain(null, what);
             if (data != null) m.setData(data);
             m.replyTo = replyTo;
             s.send(m);
-        } catch (Throwable ignored) {}
+            return true;
+        } catch (Throwable ignored) { return false; }
     }
 
     /** interrompe a captura em andamento (e as seguintes até {@link #reset()}) */
@@ -146,21 +242,46 @@ final class AudioCap {
 
     /**
      * Bloqueia até terminar (ou cancelar). Qualquer falha (processo caiu, serviço indisponível) volta como captura que não deu certo, nunca
-     * como exceção.
+     * como exceção. Se o processo de captura CAIR (queda nativa), tenta de novo na hora com a próxima configuração de captura (ver
+     * {@link AudioCapEngine#NCFG}); só devolve "captura desligada" depois de todas terem caído.
      * @param audioTrackId faixa de áudio a ouvir (a que está tocando no player); -1 = a que o arquivo marca como padrão
      */
     Out capture(String url, long startMs, long durMs, File out, long timeoutMs, int audioTrackId) {
         appCtx = ctx;
+        loadPrefs(ctx);
         Out r = new Out();
         if (cancelled) { r.end = "cancelado"; return r; }
-        if (crashes >= MAX_CRASHES) { r.end = "captura desligada: o processo de captura caiu " + crashes + " vezes"; return r; }
+        long t0 = System.nanoTime();
+        while (true) {
+            if (capDisabled) { r.end = "captura desligada: o processo de captura caiu com todas as " + AudioCapEngine.NCFG + " configurações"; r.wallS = (System.nanoTime() - t0) / 1e9; return r; }
+            int cfg = nextCfg();
+            if (cfg < 0) { capDisabled = true; continue; }
+            r = captureOnce(cfg, url, startMs, durMs, out, timeoutMs, audioTrackId);
+            if (!r.crashed) {
+                if (r.ok && capBad != 0) log("captura recuperada com a configuração " + cfg + " depois de queda(s) do processo");
+                break;
+            }
+            capBad |= 1 << cfg;
+            saveCapBad(ctx);
+            log("a captura derrubou o processo com a configuração " + cfg + " (" + (cfg == 0 ? "padrão" : "alternativa") + "); "
+                    + (nextCfg() >= 0 ? "tento a configuração " + nextCfg() + " na hora" : "não há mais configurações"));
+            if (nextCfg() < 0) { capDisabled = true; r.end = "captura desligada: o processo de captura caiu com todas as " + AudioCapEngine.NCFG + " configurações"; break; }
+            if (cancelled) { r.end = "cancelado"; break; }
+            try { Thread.sleep(1500); } catch (InterruptedException e) { Thread.currentThread().interrupt(); r.end = "interrompido"; break; }
+        }
+        r.wallS = (System.nanoTime() - t0) / 1e9;
+        return r;
+    }
+
+    private Out captureOnce(int cfg, String url, long startMs, long durMs, File out, long timeoutMs, int audioTrackId) {
+        Out r = new Out();
         long t0 = System.nanoTime();
         try {
             if (out.exists()) out.delete();
             Messenger s = connect(20_000);
             if (s == null) { r.end = "o serviço de captura não abriu"; return r; }
             int id = ids.incrementAndGet();
-            Pending p = new Pending();
+            Pending p = new Pending("captura", cfg);
             pending.put(id, p);
             Bundle b = new Bundle();
             b.putInt("id", id);
@@ -170,7 +291,9 @@ final class AudioCap {
             b.putString("out", out.getAbsolutePath());
             b.putLong("timeout", timeoutMs);
             b.putInt("track", audioTrackId);
-            send(AudioCapService.MSG_CAPTURE, b, reply);
+            b.putInt("cfg", cfg);
+            if (testHook != null) b.putString("hook", testHook);
+            if (!send(AudioCapService.MSG_CAPTURE, b, reply)) { pending.remove(id); r.end = "o serviço de captura não respondeu (sem ligação)"; return r; }
             long limit = System.nanoTime() + (timeoutMs + 90_000L) * 1_000_000L;
             long cancelAt = 0;
             while (true) {
@@ -195,27 +318,36 @@ final class AudioCap {
     /**
      * Roda o Silero no processo de captura: lê o PCM (s16le) de `in` e grava as probabilidades (floats little-endian, 100 por segundo) em `out`.
      * false = não deu (serviço caiu, indisponível, cancelado, sem ONNX): quem chama usa o VAD por DSP, que não tem código nativo.
+     * Se o Silero DERRUBAR o processo, fica gravado (por aparelho + versão) que ele não é mais usado.
      */
     boolean vad(File in, File out) {
         appCtx = ctx;
-        if (cancelled || crashes >= MAX_CRASHES) return false;
+        if (cancelled || !sileroAllowed(ctx)) return false;
         try {
             if (out.exists()) out.delete();
             Messenger s = connect(20_000);
             if (s == null) return false;
             int id = ids.incrementAndGet();
-            Pending p = new Pending();
+            Pending p = new Pending("vad", 0);
             pending.put(id, p);
             Bundle b = new Bundle();
             b.putInt("id", id);
             b.putString("in", in.getAbsolutePath());
             b.putString("out", out.getAbsolutePath());
-            send(AudioCapService.MSG_VAD, b, reply);
+            if (testHook != null) b.putString("hook", testHook);
+            if (!send(AudioCapService.MSG_VAD, b, reply)) { pending.remove(id); return false; }
             long limit = System.nanoTime() + 240_000_000_000L;
             while (!p.done.await(500, TimeUnit.MILLISECONDS)) {
                 if (cancelled || System.nanoTime() > limit) { pending.remove(id); return false; }
             }
-            if (!p.out.ok) log("VAD no processo de captura não deu: " + p.out.end);
+            if (p.out.crashed) {
+                sileroBroken = true;
+                saveSileroBroken(ctx);
+                log("o Silero derrubou o processo de captura: desligado neste aparelho (versão atual); o VAD por DSP segue a análise");
+            } else if (!p.out.ok) {
+                if (p.out.end.startsWith("silero indisponível")) sileroBroken = true;   // erro Java (biblioteca não carregou): não adianta repetir nesta execução
+                log("VAD no processo de captura não deu: " + p.out.end);
+            }
             return p.out.ok && out.exists();
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();

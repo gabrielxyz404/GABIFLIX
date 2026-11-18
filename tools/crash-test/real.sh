@@ -12,6 +12,7 @@ adb shell settings put secure anr_show_background 0 2>/dev/null
 adb shell settings put system screen_off_timeout 600000
 [ "$P" = tel ] && { adb shell wm size 1080x2400; adb shell wm density 420; }
 adb root >/dev/null 2>&1; sleep 3
+adb logcat -G 16M >/dev/null 2>&1
 echo "aparelho: mem=$(adb shell grep MemTotal /proc/meminfo | tr -d '\r') api=$(adb shell getprop ro.build.version.sdk | tr -d '\r')" > $OUT/$L-$P-resultado.txt
 snap() { adb exec-out screencap -p > "$OUT/$L-$P-$1.png"; }
 glog() { adb logcat -v epoch -d 2>/dev/null; }
@@ -23,9 +24,9 @@ abrir() {  # $1 = legenda
   adb shell am force-stop $PKG; sleep 1; adb shell pm clear $PKG >/dev/null; adb logcat -c
   if [ "$P" = tel ]; then
     adb shell am start -a android.intent.action.MAIN -c android.intent.category.LAUNCHER -f 0x10200000 -n $PKG/.MainActivity; sleep 8
-    adb shell am start -n $PKG/.PlayerActivity --es url "$BASE/clip.mkv" --esa subs "$BASE/$1"
+    adb shell am start -n $PKG/.PlayerActivity --es url "$BASE/clip.mkv" --esa subs "$BASE/$1" $EXTRA
   else
-    adb shell am start -n $PKG/.tv.TvHomeActivity --es gfTestUrl "$BASE/clip.mkv" --es gfTestSubs "$BASE/$1"
+    adb shell am start -n $PKG/.tv.TvHomeActivity --es gfTestUrl "$BASE/clip.mkv" --es gfTestSubs "$BASE/$1" $EXTRA
   fi
 }
 volta_icone() {
@@ -83,12 +84,31 @@ caso_home() {  # $1 nome  $2 legenda  $3 segundos até o HOME  $4 segundos fora
   sleep 20; snap $n-4-depois
   fim $n
 }
+# queda nativa de propósito no processo :audiocap (ganchos de teste gfAudioCrash): a análise tem de se recuperar, o filme não pára, e o relatório sai na hora
+queda() {  # $1 nome  $2 gancho (vad|capture|capture-all)  $3 legenda  $4 segundos de vigia depois do resultado
+  local n=$1
+  EXTRA="--es gfAudioCrash $2" caso_fg $n $3 $4
+  # o filme com a legenda na tela, várias capturas seguidas (uma delas pega uma fala)
+  for k in 1 2 3 4 5 6 7 8; do snap $n-4-filme-$k; sleep 3; done
+  rep "$n: ===== PROVA (gancho $2) ====="
+  glog | grep -E 'AUDIOSYNC (o processo de captura caiu|a captura derrubou|o Silero derrubou|captura recuperada|Silero indisponível|Silero desligado|captura falhou|aplicado|resultado:)' | cut -c1-330 >> $OUT/$L-$P-resultado.txt
+  rep "$n: relatórios CAPTURA_CAIU enviados: $(glog | grep -c 'POST CAPTURA_CAIU parte') | respostas: $(glog | grep 'POST CAPTURA_CAIU parte' | grep -o 'HTTP [0-9]*' | sort | uniq -c | tr '\n' ' ')"
+  glog | grep 'GFCrash' | grep -E 'corpo de CAPTURA_CAIU|CAPTURA_CAIU \| processo|Etapa em curso|Última etapa|Motivo da morte|Fatal signal|backtrace|#[0-9]+ +pc|Abort message|ABI:|Registro de queda|Registo de queda|TESTE: queda' | cut -c1-300 > $OUT/$L-$P-relatorio-$n.txt
+  glog | grep 'GFCrash' > $OUT/$L-$P-relatorio-completo-$n.txt
+  rep "$n: linhas de queda no relatório (Fatal signal/backtrace/#NN pc): $(grep -c -E 'Fatal signal|backtrace|#[0-9]+ +pc' $OUT/$L-$P-relatorio-$n.txt)"
+  rep "$n: o app ainda está no player? $(resumed)"
+}
 case "$P" in
   tv)
+    queda tv-queda-vad vad mais3.srt 40
+    queda tv-queda-captura capture mais3.srt 40
+    queda tv-queda-todas capture-all mais3.srt 40
     caso_fg tv-fixed mais3.srt 120
     caso_fg tv-certa certa.srt 120
     ;;
   tel)
+    queda tel-queda-vad vad mais3.srt 40
+    queda tel-queda-captura capture mais3.srt 40
     caso_fg tel-fixed mais3.srt 90
     caso_home tel-home-analise menos2.srt 50 150
     caso_home tel-home-2min certa.srt 20 120

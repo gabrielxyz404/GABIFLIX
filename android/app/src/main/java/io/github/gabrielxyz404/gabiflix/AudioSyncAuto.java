@@ -112,6 +112,7 @@ final class AudioSyncAuto {
         v = extra(in, "gfAudioRecheckSec");
         if (v != null) try { recheckMs = Integer.parseInt(v) * 1000L; } catch (NumberFormatException ignored) {}
         if ("true".equals(extra(in, "gfAudioDsp"))) core.forceDsp = true;
+        AudioCap.testHook = extra(in, "gfAudioCrash");   // só nos testes: vad | capture | capture-all (derruba o processo de captura de propósito)
         core.progress = s2 -> ui.post(() -> { if (!stopped) h.status(s2, TONE_NEUTRAL); });
     }
 

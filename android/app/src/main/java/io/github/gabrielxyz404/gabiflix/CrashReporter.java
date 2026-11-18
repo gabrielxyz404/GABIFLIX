@@ -174,8 +174,7 @@ public final class CrashReporter {
             if (Build.VERSION.SDK_INT >= 30) {
                 ActivityManager am = (ActivityManager) app.getSystemService(Context.ACTIVITY_SERVICE);
                 List<ApplicationExitInfo> list = am.getHistoricalProcessExitReasons(null, 0, 12);
-                String sent = sp.getString("sent", "");
-                StringBuilder newSent = new StringBuilder(sent);
+                String sent = sentIds();
                 int count = 0;
                 for (ApplicationExitInfo i : list) {
                     int r = i.getReason();
@@ -196,8 +195,11 @@ public final class CrashReporter {
                             if (in != null) b.append("\nRasto do sistema (").append(r == ApplicationExitInfo.REASON_ANR ? "ANR" : "tombstone").append("):\n").append(printable(readAll(in, 96 * 1024), STACK_MAX)).append('\n');
                         } catch (Throwable t) { b.append("\n(rasto não lido: ").append(t).append(")\n"); }
                     }
+                    if (r == ApplicationExitInfo.REASON_CRASH_NATIVE) {   // o Android 11 não dá o rasto: o próprio processo escreveu "Fatal signal" no registo do sistema
+                        b.append("\nRegisto de queda do sistema (logcat, filtrado):\n").append(crashLogcat(i.getPid())).append('\n');
+                    }
                     b.append("\nMigalhas do processo ").append(pn).append(" antes da morte:\n").append(readCrumbsPrev(pn));
-                    if (send(name, b.toString())) { newSent.append(id).append('|'); if (!newSent.toString().startsWith("|")) newSent.insert(0, '|'); }
+                    if (send(name, b.toString())) markSent(id);
                     boolean serious = r == ApplicationExitInfo.REASON_CRASH || r == ApplicationExitInfo.REASON_CRASH_NATIVE || r == ApplicationExitInfo.REASON_ANR
                             || r == ApplicationExitInfo.REASON_LOW_MEMORY || r == ApplicationExitInfo.REASON_SIGNALED || r == ApplicationExitInfo.REASON_INITIALIZATION_FAILURE
                             || r == ApplicationExitInfo.REASON_EXCESSIVE_RESOURCE_USAGE;
@@ -206,9 +208,6 @@ public final class CrashReporter {
                         sp.edit().putString("noticed", id).apply();
                     }
                 }
-                String ns = newSent.toString();
-                if (ns.length() > 600) ns = ns.substring(ns.length() - 600);
-                sp.edit().putString("sent", ns).apply();
             }
 
             if (!notice.isEmpty()) {
@@ -269,8 +268,199 @@ public final class CrashReporter {
             case "java": h.postDelayed(() -> { throw new IllegalStateException("queda de teste (Java)"); }, 1500); break;
             case "native": h.postDelayed(() -> android.os.Process.sendSignal(android.os.Process.myPid(), 6), 1500); break;   // SIGABRT
             case "event": event("TESTE_EVENTO", "evento de teste"); break;
+            case "silero": silero(a); break;
             default: break;
         }
+    }
+
+    // ------------------------------------------------------------ etapa nativa em curso (para explicar uma queda sem rasto)
+
+    private static final Object STAGE_LOCK = new Object();
+
+    /**
+     * Marca, de forma SÍNCRONA (com fsync), a etapa nativa que este processo vai começar (por exemplo "captura cfg=0 play" ou "vad ort-inferência"):
+     * se o processo cair sem deixar rasto (Android 11 não dá o tombstone), o ficheiro diz o que estava a correr. Chamado ANTES de cada etapa nativa.
+     * Guarda só as últimas linhas. Cada processo tem o seu ficheiro (stage-main.txt, stage-audiocap.txt).
+     */
+    static void stage(String what) {
+        crumb("ETAPA " + what);
+        File d = dir;
+        if (d == null) return;
+        try {
+            synchronized (STAGE_LOCK) {
+                File f = new File(d, "stage-" + proc + ".txt");
+                String old = "";
+                try { old = readFile(f); } catch (Throwable ignored) {}
+                String[] ls = old.isEmpty() ? new String[0] : old.split("\n");
+                StringBuilder b = new StringBuilder();
+                for (int i = Math.max(0, ls.length - 11); i < ls.length; i++) b.append(ls[i]).append('\n');
+                b.append(HMS.format(new Date())).append(" pid=").append(android.os.Process.myPid()).append(' ').append(what.replace('\n', ' ')).append('\n');
+                writeFile(f, b.toString());
+            }
+        } catch (Throwable ignored) {}
+    }
+
+    /** o conteúdo do ficheiro de etapas do processo `procName` (vazio se não existe) */
+    static String readStage(String procName) {
+        try { return dir == null ? "" : readFile(new File(dir, "stage-" + procName + ".txt")); } catch (Throwable t) { return ""; }
+    }
+
+    /** as migalhas de um processo (do arquivo atual, ou do anterior se o processo já foi substituído por um novo) */
+    static String readCrumbsOf(String procName) {
+        try {
+            File cur = new File(dir, "crumbs-" + procName + ".txt");
+            return cur.exists() ? tail(readFile(cur), CRUMBS_MAX) : readCrumbsPrev(procName);
+        } catch (Throwable t) { return "(sem migalhas)"; }
+    }
+
+    static String abiLine() {
+        try {
+            return java.util.Arrays.toString(Build.SUPPORTED_ABIS) + " (64 bits: " + java.util.Arrays.toString(Build.SUPPORTED_64_BIT_ABIS) + ") processo=" + (android.os.Process.is64Bit() ? "64" : "32") + " bits";
+        } catch (Throwable t) { return "?"; }
+    }
+
+    private static synchronized String sentIds() {
+        return app == null ? "" : app.getSharedPreferences(PREFS, Context.MODE_PRIVATE).getString("sent", "");
+    }
+
+    private static synchronized void markSent(String id) {
+        try {
+            SharedPreferences sp = app.getSharedPreferences(PREFS, Context.MODE_PRIVATE);
+            String ns = sp.getString("sent", "");
+            if (ns.contains("|" + id + "|")) return;
+            ns = (ns.isEmpty() ? "|" : ns) + id + "|";
+            if (ns.length() > 600) ns = ns.substring(ns.length() - 600);
+            if (!ns.startsWith("|")) ns = ns.substring(ns.indexOf('|'));
+            sp.edit().putString("sent", ns).apply();
+        } catch (Throwable ignored) {}
+    }
+
+    private static String runCmd(String[] cmd, long ms) {
+        try {
+            final Process pr = new ProcessBuilder(cmd).redirectErrorStream(true).start();
+            final ByteArrayOutputStream bo = new ByteArrayOutputStream();
+            Thread rd = new Thread(() -> { try (InputStream in = pr.getInputStream()) { bo.write(readAll(in, 600 * 1024)); } catch (Throwable ignored) {} });
+            rd.start();
+            rd.join(ms);
+            pr.destroy();
+            return new String(bo.toByteArray(), StandardCharsets.UTF_8);
+        } catch (Throwable t) { return "(sem registo: " + t + ")"; }
+    }
+
+    private static final java.util.regex.Pattern CRASH_KEY = java.util.regex.Pattern.compile(
+            "Fatal signal|backtrace|#\\d+\\s+pc|Abort message|signal \\d+ \\(|pid: \\d+|Cause:|fault addr|ABI:|Build fingerprint|Cmdline|SIGSEGV|SIGABRT|SIGILL|SIGBUS|\\*\\*\\* \\*\\*\\*");
+
+    /**
+     * O que o sistema registou da queda nativa do processo `pid` (0 = não sei qual), lido do próprio registo do app (uma app enxerga o do seu UID):
+     * o buffer "crash" (bloco do tombstone com "pid:", "signal", "backtrace", "#00 pc ...", "Abort message") e a linha "Fatal signal" do buffer principal.
+     */
+    static String crashLogcat(int pid) {
+        try {
+            String crash = runCmd(new String[]{"logcat", "-d", "-b", "crash", "-v", "time", "-t", "2500"}, 7000);
+            String main = runCmd(new String[]{"logcat", "-d", "-b", "main", "-v", "time", "-t", "6000", "libc:F", "DEBUG:V", "*:S"}, 7000);
+            StringBuilder out = new StringBuilder();
+            java.util.regex.Pattern pp = pid > 0 ? java.util.regex.Pattern.compile("(?<![0-9])" + pid + "(?![0-9])") : null;
+            for (String text : new String[]{main, crash}) {
+                boolean in = pid <= 0;
+                ArrayList<String> keep = new ArrayList<>();
+                for (String l : text.split("\n")) {
+                    if (pp != null) {
+                        boolean mentions = pp.matcher(l).find();
+                        if (l.contains("*** *** ***") && !mentions) in = false;
+                        if (mentions) in = true;
+                    }
+                    if (in && CRASH_KEY.matcher(l).find()) keep.add(l.trim());
+                }
+                int from = Math.max(0, keep.size() - 50);
+                for (int i = from; i < keep.size(); i++) out.append(keep.get(i)).append('\n');
+            }
+            if (out.length() == 0) return "(nenhuma linha de queda do pid " + pid + " no registo do sistema; buffer crash=" + crash.length() + " bytes, principal=" + main.length() + " bytes)";
+            return cut(out.toString(), 5 * 1024);
+        } catch (Throwable t) { return "(sem registo de queda: " + t + ")"; }
+    }
+
+    private static final java.util.concurrent.atomic.AtomicInteger deathReports = new java.util.concurrent.atomic.AtomicInteger();
+
+    /**
+     * O processo de captura (:audiocap) acabou de cair durante uma análise: manda o relatório CAPTURA_CAIU JÁ, sem esperar o próximo arranque.
+     * @param kind       etapa em curso segundo o processo principal ("captura" ou "vad")
+     * @param detail     configuração e circunstâncias (texto livre)
+     * @param stageSnap  ficheiro de etapas do processo que caiu, copiado no momento da queda (o novo processo o reescreve)
+     * @param crumbSnap  migalhas do processo que caiu, copiadas no momento da queda
+     */
+    static void audiocapDied(final String kind, final String detail, final String stageSnap, final String crumbSnap, final long diedAt) {
+        if (app == null || deathReports.incrementAndGet() > 6) return;
+        crumb("CAPTURA_CAIU etapa=" + kind + " " + detail);
+        Thread th = new Thread(() -> {
+            try {
+                String lastStage = "";
+                int deadPid = 0;
+                String[] ls = stageSnap.split("\n");
+                for (int i = ls.length - 1; i >= 0; i--) if (!ls[i].trim().isEmpty()) { lastStage = ls[i]; break; }
+                java.util.regex.Matcher m = java.util.regex.Pattern.compile("pid=(\\d+)").matcher(lastStage);
+                if (m.find()) deadPid = Integer.parseInt(m.group(1));
+                StringBuilder b = new StringBuilder(header("CAPTURA_CAIU", "audiocap"));
+                b.append("Etapa em curso (processo principal): ").append(kind).append("  ").append(detail).append('\n');
+                b.append("Última etapa marcada pelo processo que caiu: ").append(lastStage.isEmpty() ? "(nenhuma)" : lastStage).append('\n');
+                b.append("Hora da queda: ").append(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.ROOT).format(new Date(diedAt))).append('\n');
+                String exitId = null;
+                if (Build.VERSION.SDK_INT >= 30) {
+                    ApplicationExitInfo hit = null;
+                    for (int tries = 0; tries < 4 && hit == null; tries++) {
+                        try { Thread.sleep(tries == 0 ? 1500 : 2000); } catch (InterruptedException ignored) {}
+                        ActivityManager am = (ActivityManager) app.getSystemService(Context.ACTIVITY_SERVICE);
+                        for (ApplicationExitInfo i : am.getHistoricalProcessExitReasons(null, 0, 12)) {
+                            String pn = i.getProcessName();
+                            if (pn == null || !pn.startsWith(app.getPackageName()) || !pn.endsWith(":audiocap")) continue;
+                            if (i.getTimestamp() < diedAt - 15_000L) continue;
+                            if (sentIds().contains("|" + i.getPid() + "@" + i.getTimestamp() + "|")) continue;
+                            if (deadPid > 0 && i.getPid() != deadPid) continue;
+                            hit = i;
+                            break;
+                        }
+                    }
+                    if (hit != null) {
+                        exitId = hit.getPid() + "@" + hit.getTimestamp();
+                        deadPid = hit.getPid();
+                        int r = hit.getReason();
+                        b.append("Motivo da morte (getHistoricalProcessExitReasons): ").append(reasonName(r)).append(" (").append(r).append(")  estado: ").append(hit.getStatus())
+                                .append("  pid: ").append(hit.getPid()).append("  importância: ").append(hit.getImportance()).append('\n');
+                        b.append("Descrição: ").append(hit.getDescription()).append("  PSS: ").append(hit.getPss()).append(" kB  RSS: ").append(hit.getRss()).append(" kB\n");
+                        if (r == ApplicationExitInfo.REASON_CRASH_NATIVE) {
+                            try (InputStream in = hit.getTraceInputStream()) {
+                                if (in != null) b.append("\nRasto do sistema (tombstone):\n").append(printable(readAll(in, 96 * 1024), STACK_MAX)).append('\n');
+                            } catch (Throwable t) { b.append("\n(rasto não lido: ").append(t).append(")\n"); }
+                        }
+                    } else b.append("Motivo da morte: o sistema ainda não registou (getHistoricalProcessExitReasons sem entrada de :audiocap)\n");
+                } else b.append("Motivo da morte: indisponível antes do Android 11 (API ").append(Build.VERSION.SDK_INT).append(")\n");
+                b.append("\nRegisto de queda do sistema (logcat, filtrado, pid ").append(deadPid).append("):\n").append(crashLogcat(deadPid)).append('\n');
+                b.append("\nEtapas marcadas (últimas):\n").append(stageSnap);
+                b.append("\nMigalhas do processo que caiu:\n").append(crumbSnap);
+                if (send("CAPTURA_CAIU", b.toString()) && exitId != null) markSent(exitId);
+            } catch (Throwable t) { crumb("CAPTURA_CAIU: relatório falhou " + t); }
+        }, "gf-capdied-report");
+        th.setPriority(Thread.MIN_PRIORITY);
+        th.start();
+    }
+
+    /** só nos testes (gfCrashTest=silero): roda o Silero de verdade no processo :audiocap sobre 20 s de ruído e registra se funcionou, em que ABI e quanto demorou */
+    private static void silero(final Activity a) {
+        new Thread(() -> {
+            String abi = abiLine();
+            try {
+                AudioCap c = new AudioCap(a);
+                boolean allowed = AudioCap.sileroAllowed(a);
+                File in = new File(a.getCacheDir(), "sv-in.raw"), out = new File(a.getCacheDir(), "sv-out.raw");
+                java.util.Random rnd = new java.util.Random(7);
+                java.nio.ByteBuffer bb = java.nio.ByteBuffer.allocate(16000 * 20 * 2).order(java.nio.ByteOrder.LITTLE_ENDIAN);
+                for (int i = 0; i < 16000 * 20; i++) bb.putShort((short) ((rnd.nextGaussian() * 3000) * (0.5 + 0.5 * Math.sin(i / 1600.0))));
+                try (FileOutputStream fo = new FileOutputStream(in)) { fo.write(bb.array()); }
+                long t0 = System.nanoTime();
+                boolean ok = allowed && c.vad(in, out);
+                android.util.Log.i("GFCrash", "teste silero: abi=" + abi + " permitido=" + allowed + " ok=" + ok + " ms=" + (System.nanoTime() - t0) / 1_000_000 + " saida=" + (out.exists() ? out.length() : -1) + " bytes");
+                AudioCap.close();
+            } catch (Throwable t) { android.util.Log.w("GFCrash", "teste silero: erro " + t + " abi=" + abi); }
+        }, "gf-silero-test").start();
     }
 
     // ------------------------------------------------------------ texto e rede
@@ -286,6 +476,7 @@ public final class CrashReporter {
             b.append(" | RAM ").append(mi.totalMem >> 20).append(" MB, livre ").append(mi.availMem >> 20).append(" MB");
         } catch (Throwable ignored) {}
         b.append(" | tv=").append(MainActivity.isTv(app)).append('\n');
+        b.append("ABI: ").append(abiLine()).append('\n');
         return b.toString();
     }
 
@@ -306,7 +497,7 @@ public final class CrashReporter {
     /** POST de texto simples ao tópico; divide em partes de ~3,6 KB (o ntfy transforma mensagens maiores em anexo). true se todas as partes foram aceitas */
     private static boolean send(String kind, String text) {
         try {
-            android.util.Log.i("GFCrash", "corpo de " + kind + ":\n" + text.substring(0, Math.min(text.length(), 1800)));
+            android.util.Log.i("GFCrash", "corpo de " + kind + ":\n" + text.substring(0, Math.min(text.length(), 15000)));
             byte[] all = text.getBytes(StandardCharsets.UTF_8);
             int parts = Math.max(1, (all.length + PART_MAX - 1) / PART_MAX);
             if (parts > 4) parts = 4;

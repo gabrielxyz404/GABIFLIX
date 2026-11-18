@@ -64,7 +64,10 @@ public final class AudioCapService extends Service {
             Bundle r = new Bundle();
             r.putInt("id", b.getInt("id"));
             try {
-                AudioCapEngine.Out o = engine.capture(b.getString("url"), b.getLong("start"), b.getLong("dur"), new File(b.getString("out")), b.getLong("timeout"), b.getInt("track", -1));
+                int cfg = b.getInt("cfg", 0);
+                String hook = b.getString("hook");   // só nos testes: "capture" (cai com a configuração 0) ou "capture-all" (cai com todas)
+                boolean crashTest = "capture-all".equals(hook) || ("capture".equals(hook) && cfg == 0);
+                AudioCapEngine.Out o = engine.capture(b.getString("url"), b.getLong("start"), b.getLong("dur"), new File(b.getString("out")), b.getLong("timeout"), b.getInt("track", -1), cfg, crashTest);
                 r.putBoolean("ok", o.ok);
                 r.putString("end", o.end);
                 r.putDouble("wallS", o.wallS);
@@ -91,12 +94,14 @@ public final class AudioCapService extends Service {
             Bundle r = new Bundle();
             r.putInt("id", b.getInt("id"));
             try {
+                CrashReporter.stage("vad começando: lendo o PCM");
                 java.io.File in = new java.io.File(b.getString("in")), out = new java.io.File(b.getString("out"));
                 byte[] raw = new byte[(int) in.length()];
                 try (java.io.FileInputStream fi = new java.io.FileInputStream(in)) { int o = 0, n; while (o < raw.length && (n = fi.read(raw, o, raw.length - o)) > 0) o += n; }
                 short[] pcm = new short[raw.length / 2];
                 java.nio.ByteBuffer.wrap(raw).order(java.nio.ByteOrder.LITTLE_ENDIAN).asShortBuffer().get(pcm);
                 if (vad == null) {
+                    CrashReporter.stage("vad lendo o modelo silero_vad.onnx");
                     byte[] model;
                     try (java.io.InputStream is = getAssets().open("silero_vad.onnx")) {
                         java.io.ByteArrayOutputStream bo = new java.io.ByteArrayOutputStream(2_400_000);
@@ -105,9 +110,17 @@ public final class AudioCapService extends Service {
                         while ((n = is.read(buf)) > 0) bo.write(buf, 0, n);
                         model = bo.toByteArray();
                     }
+                    CrashReporter.stage("vad criando a sessão do ONNX Runtime (carrega as bibliotecas nativas)");
                     vad = new io.github.gabrielxyz404.gabiflix.audiosync.SileroVad(model);
                 }
+                CrashReporter.stage("vad ONNX Runtime inferência (nativo), " + pcm.length / 16000 + " s de áudio");
+                if ("vad".equals(b.getString("hook"))) {   // só nos testes
+                    CrashReporter.stage("TESTE: queda nativa forçada no VAD");
+                    android.os.Process.sendSignal(android.os.Process.myPid(), 11);
+                    Thread.sleep(10_000);
+                }
                 float[] p = vad.speechProb(pcm, pcm.length, 16000);
+                CrashReporter.stage("vad terminou");
                 java.nio.ByteBuffer bb = java.nio.ByteBuffer.allocate(p.length * 4).order(java.nio.ByteOrder.LITTLE_ENDIAN);
                 bb.asFloatBuffer().put(p);
                 try (java.io.FileOutputStream fo = new java.io.FileOutputStream(out)) { fo.write(bb.array()); }

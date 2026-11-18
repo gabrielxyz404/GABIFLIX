@@ -34,7 +34,11 @@ final class AudioCapEngine {
     private final Context ctx;
     /** UM libVLC para todas as capturas (cada captura é uma mídia/player próprio nele) */
     private static LibVLC vlc;
+    /** configuração com que o libVLC acima foi criado (ver {@link #NCFG}) */
+    private static int vlcCfg = -1;
     private static int users;
+    /** quantas configurações de captura existem: 0 = padrão; 1 = alternativa só com código de software (sem MediaCodec, 1 thread, reamostrador simples) */
+    static final int NCFG = 2;
     private volatile CountDownLatch curLatch;
     private volatile boolean cancelled;
 
@@ -51,8 +55,9 @@ final class AudioCapEngine {
 
     boolean isCancelled() { return cancelled; }
 
-    private LibVLC instance() {
+    private LibVLC instance(int cfg) {
         synchronized (AudioCapEngine.class) {
+            if (vlc != null && vlcCfg != cfg) { try { vlc.release(); } catch (Throwable ignored) {} vlc = null; }
             if (vlc == null) {
                 ArrayList<String> o = new ArrayList<>();
                 o.add("--no-lua");
@@ -60,7 +65,18 @@ final class AudioCapEngine {
                 o.add("--no-spu");
                 o.add("--no-video");   // só o áudio: nenhum decodificador de vídeo nem saída de vídeo neste processo
                 o.add("--no-sub-autodetect-file");
+                if (cfg == 1) {
+                    // alternativa: tudo por software (sem MediaCodec nem decodificação por hardware), uma só thread de decodificação e o reamostrador mais simples;
+                    // evita os caminhos nativos que mais variam de aparelho para aparelho (usada quando a configuração padrão derrubou o processo)
+                    o.add("--codec=avcodec,all");
+                    o.add("--avcodec-hw=none");
+                    o.add("--avcodec-threads=1");
+                    o.add("--audio-resampler=ugly");
+                    o.add("--no-audio-time-stretch");
+                }
+                CrashReporter.stage("captura cfg=" + cfg + " criando o libVLC (nativo)");
                 vlc = new LibVLC(ctx, o);
+                vlcCfg = cfg;
             }
             return vlc;
         }
@@ -68,7 +84,7 @@ final class AudioCapEngine {
 
     static void close() {
         synchronized (AudioCapEngine.class) {
-            if (vlc != null) { try { vlc.release(); } catch (Throwable ignored) {} vlc = null; }
+            if (vlc != null) { try { vlc.release(); } catch (Throwable ignored) {} vlc = null; vlcCfg = -1; }
         }
     }
 
@@ -103,17 +119,20 @@ final class AudioCapEngine {
      * Bloqueia até terminar (ou cancelar). Não há mais um tempo fixo por janela: vale enquanto o arquivo de PCM CRESCE (uma busca lenta num
      * MKV remoto ou uma rede lenta não derrubam a captura); falha só se ficar parado por muito tempo ou passar do limite total.
      * @param audioTrackId faixa de áudio a ouvir (a que está tocando no player); -1 = a que o arquivo marca como padrão
+     * @param cfg          configuração de captura (0 = padrão, 1 = alternativa de software)
+     * @param crashTest    só nos testes: derruba este processo (SIGSEGV) 2 s depois de começar a tocar, para provar a recuperação
      */
-    Out capture(String url, long startMs, long durMs, File out, long timeoutMs, int audioTrackId) {
+    Out capture(String url, long startMs, long durMs, File out, long timeoutMs, int audioTrackId, int cfg, boolean crashTest) {
         Out r = new Out();
         if (out.exists()) out.delete();
         if (cancelled) { r.end = "cancelado"; return r; }
-        LibVLC v = instance();
+        LibVLC v = instance(cfg);
         Media media = new Media(v, Uri.parse(url));
         media.addOption(":no-video");
         // sem :input-fast-seek: começa no quadro-chave anterior, a janela sai 5-10 s mais longa e deslocada (recusava legenda certa)
         media.addOption(":no-spu");
         media.addOption(":network-caching=600");
+        if (cfg == 1) { media.addOption(":avcodec-hw=none"); media.addOption(":avcodec-threads=1"); }
         media.addOption(":http-reconnect");
         if (audioTrackId >= 0) media.addOption(":audio-track-id=" + audioTrackId);
         media.addOption(":start-time=" + (startMs / 1000.0));
@@ -134,12 +153,18 @@ final class AudioCapEngine {
         mp.setMedia(media);
         long t0 = System.nanoTime();
         try {
+            CrashReporter.stage("captura cfg=" + cfg + " tocando a janela " + startMs / 1000 + " s (nativo: demux, decodificador, transcode)");
             mp.play();
             long lastGrow = t0, lastLen = 0;
             boolean tracked = false;
             while (!cancelled) {
                 if (done.await(1000, TimeUnit.MILLISECONDS)) break;
                 long now = System.nanoTime();
+                if (crashTest && now - t0 > 2_000_000_000L) {   // só nos testes
+                    CrashReporter.stage("TESTE: queda nativa forçada durante a captura (cfg=" + cfg + ")");
+                    android.os.Process.sendSignal(android.os.Process.myPid(), 11);
+                    Thread.sleep(10_000);
+                }
                 long len = out.exists() ? out.length() : 0;
                 if (len > lastLen) { lastLen = len; lastGrow = now; }
                 if (!tracked && now - t0 > 3_000_000_000L) { tracked = true; r.track = trackInfo(mp, audioTrackId); }
@@ -162,6 +187,7 @@ final class AudioCapEngine {
             try { media.release(); } catch (Throwable ignored) {}
             curLatch = null;
         }
+        CrashReporter.stage("captura cfg=" + cfg + " terminou (" + r.end + ")");
         // o arquivo só fecha direito depois do stop
         try { Thread.sleep(300); } catch (InterruptedException ignored) { Thread.currentThread().interrupt(); }
         if (out.exists()) {
