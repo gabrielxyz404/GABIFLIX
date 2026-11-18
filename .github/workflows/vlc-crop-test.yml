@@ -19,7 +19,7 @@ jobs:
       - uses: actions/checkout@v4
       - name: Instalar
         run: |
-          for i in 1 2 3; do sudo apt-get update -qq && sudo apt-get install -y -qq vlc xvfb imagemagick ffmpeg python3-pil python3-numpy && break; sleep 10; done
+          for i in 1 2 3; do sudo apt-get update -qq && sudo apt-get install -y -qq vlc xvfb openbox imagemagick ffmpeg python3-pil python3-numpy && break; sleep 10; done
           vlc --version | head -1
       - name: Vídeo de teste
         run: |
@@ -33,15 +33,17 @@ jobs:
           Xvfb :99 -screen 0 960x600x24 >/dev/null 2>&1 &
           sleep 3
           export DISPLAY=:99
+          openbox >/dev/null 2>&1 &
+          sleep 2
           # nome | vídeo | recorte
-          while IFS='|' read -r nome video crop; do
+          while IFS='|' read -r nome video crop <&3; do
             if [ -n "$crop" ]; then C="--crop=$crop"; else C=""; fi
-            cvlc -I dummy --no-audio --no-video-title-show --vout=xcb_x11 --width=960 --height=600 $C "/tmp/v/$video" >/tmp/vlc-$nome.log 2>&1 &
+            cvlc -I dummy --no-audio --no-video-title-show --vout=xcb_x11 --fullscreen $C "/tmp/v/$video" >/tmp/vlc-$nome.log 2>&1 </dev/null &
             P=$!
             sleep 9
-            import -window root "shots/$nome.png"
+            import -window root "shots/$nome.png" || true
             kill $P 2>/dev/null; sleep 1; pkill -x vlc 2>/dev/null; true
-          done <<'EOF'
+          done 3<<'EOF'
           sem-recorte|circ.mkv|
           mesma-proporcao|circ.mkv|1728x1080+96+0
           limite-1.05|circ.mkv|1829x1080+46+0
