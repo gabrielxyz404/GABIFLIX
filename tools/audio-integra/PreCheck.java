@@ -3,8 +3,10 @@ import java.io.*;
 import java.nio.file.*;
 import java.util.*;
 
-/** Pre-escolha do material da prova (PC): roda o MESMO motor (Silero via ONNX Runtime Java, 3x90 s por densidade) numa legenda contra o audio do trecho.
- *  Uso: PreCheck audio16k.wav legenda.srt silero_vad.onnx -> "PRE accepted=1 raw=... scale=... z=... wins=a/b" */
+/** Pre-escolha do material da prova (PC): roda o MESMO motor (Silero em Java puro, 3x90 s por densidade) numa legenda contra o audio do trecho.
+ *  Uso: PreCheck audio16k.wav legenda.srt silero_vad.onnx -> "PRE accepted=1 raw=... scale=... z=... wins=a/b ... vad=java ms=..."
+ *  O VAD e o do app (JavaSileroVad, pesos em silero_v5_16k.bin ao lado do .onnx, ou em SILERO_WEIGHTS). Com VAD=ort (so para comparar) usa o ONNX Runtime
+ *  de referencia (SileroOrt, tools/silero-java; precisa estar no classpath junto com o ort.jar); com VAD=dsp, o VAD por DSP (ultimo recurso do app). */
 public class PreCheck {
     public static void main(String[] a) throws Exception {
         byte[] b = Files.readAllBytes(Paths.get(a[0]));
@@ -21,14 +23,26 @@ public class PreCheck {
         AudioAligner.Params P = new AudioAligner.Params();
         long[][] plan = AudioSyncSession.planDense(cues, dur, 3, 90000);
         AudioSyncSession ses = new AudioSyncSession(cues, dur, P);
-        try (SileroVad v = new SileroVad(a[2])) {
+        Vad v;
+        if ("ort".equals(System.getenv("VAD"))) v = (Vad) Class.forName("SileroOrt").getConstructor(String.class).newInstance(a[2]);
+        else if ("dsp".equals(System.getenv("VAD"))) v = DspVad.forName("dsp");   // o ultimo recurso do app (modelo de reserva embutido)
+        else {
+            String wp = System.getenv("SILERO_WEIGHTS");
+            Path wf = wp != null && !wp.isEmpty() ? Paths.get(wp) : Paths.get(a[2]).resolveSibling("silero_v5_16k.bin");
+            v = new JavaSileroVad(Files.readAllBytes(wf), Integer.parseInt(System.getenv().getOrDefault("VAD_THREADS", "1")), null);
+        }
+        long t0 = System.nanoTime();
+        try {
             for (long[] w : plan) {
                 int s0 = (int) (w[0] * 16), n = (int) (w[1] * 16);
                 short[] sl = Arrays.copyOfRange(pcm, s0, Math.min(pcm.length, s0 + n));
                 ses.addWindow(new Window(w[0], v.speechProb(sl, sl.length, 16000)));
             }
+        } finally {
+            if (v instanceof AutoCloseable) ((AutoCloseable) v).close();
         }
+        long ms = (System.nanoTime() - t0) / 1_000_000;
         Result r = ses.solve();
-        System.out.printf(Locale.ROOT, "PRE accepted=%d raw=%.0f scale=%.5f z=%.1f wins=%d/%d inSync=%d janelas=%s%n", r.accepted ? 1 : 0, r.rawOffsetMs, r.scale, r.z, r.winsAgree, r.winsValid, r.inSync ? 1 : 0, Arrays.deepToString(plan));
+        System.out.printf(Locale.ROOT, "PRE accepted=%d raw=%.0f scale=%.5f z=%.1f wins=%d/%d inSync=%d vad=%s ms=%d janelas=%s%n", r.accepted ? 1 : 0, r.rawOffsetMs, r.scale, r.z, r.winsAgree, r.winsValid, r.inSync ? 1 : 0, v.name() + (v instanceof JavaSileroVad ? "-java" : v instanceof DspVad ? "" : "-ort"), ms, Arrays.deepToString(plan));
     }
 }

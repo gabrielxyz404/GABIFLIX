@@ -1,0 +1,173 @@
+name: Silero em Java puro
+
+# Prova do Silero VAD em Java puro (audiosync/JavaSileroVad.java) no lugar do ONNX Runtime:
+#  1) pesos: o silero_v5_16k.bin do repositorio e o que export_weights.py tira do silero_vad.onnx; o leitor de ONNX minimo le os mesmos tensores que a biblioteca onnx;
+#  2) paridade: probabilidade de cada bloco de 32 ms (e a versao de 100 Hz) do Java x ONNX Runtime (Python), em audio sintetico (fala flite, ruido, "filme antigo", etc.) de
+#     varios tamanhos, com 1 e 3 fios (diferenca maxima tem de ser < 1e-3);
+#  3) velocidade: tempo para analisar 90 s (1/2/4 fios; JIT completo, sem auto-vetorizacao e so C1 = pior caso);
+#  4) filmes reais de dominio publico (clipes de 20 min, legendas PT do OpenSubtitles): o MESMO AudioAligner do app com o VAD Java, o ONNX Runtime e o DSP:
+#     z, aceita/recusa e deslocamento de cada legenda (certa, +3 s, -2 s, de outro filme).
+# Resultados no branch silero-java-out. Nunca publica o app.
+on:
+  push:
+    branches: [run-silero-java]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  paridade:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 17
+      - name: Dependencias
+        run: |
+          mkdir -p res /tmp/ort /tmp/pc /tmp/a
+          pip install -q numpy onnx onnxruntime 2>&1 | tail -1
+          sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg >/dev/null
+          curl -fsSL -o /tmp/ort/ort.jar https://repo1.maven.org/maven2/com/microsoft/onnxruntime/onnxruntime/1.20.0/onnxruntime-1.20.0.jar
+          pip list 2>/dev/null | grep -i -E "^(onnx|onnxruntime|numpy) " | tee res/versoes.txt
+          echo "nproc=$(nproc)" | tee -a res/versoes.txt; lscpu | grep -E "Model name" | tee -a res/versoes.txt
+      - name: Pesos (arquivo do repositorio == exportacao do .onnx; leitor == biblioteca onnx)
+        run: |
+          A=android/app/src/main/assets
+          python3 tools/silero-java/check_reader.py $A/silero_vad.onnx $A/silero_v5_16k.bin 2>&1 | tee res/pesos.txt
+      - name: Compilar
+        run: |
+          D=android/app/src/main/java/io/github/gabrielxyz404/gabiflix/audiosync
+          javac -nowarn -d /tmp/pc -cp /tmp/ort/ort.jar $D/*.java tools/audio-integra/PreCheck.java tools/silero-java/SileroParity.java tools/silero-java/SileroOrt.java
+      - name: Paridade Java x ONNX Runtime
+        run: |
+          A=android/app/src/main/assets; M=$A/silero_vad.onnx; W=$A/silero_v5_16k.bin
+          cd /tmp/a
+          python3 $GITHUB_WORKSPACE/tools/silero-java/gen_test_audio.py sint300.wav 300
+          python3 $GITHUB_WORKSPACE/tools/silero-java/gen_test_audio.py sint90.wav 90
+          # tamanhos de borda (em amostras): 1 bloco, 1 bloco + 1 amostra, ~3 s e 7 amostras, ~17 s e 123 amostras (o resto que nao fecha um bloco e descartado)
+          for n in 512 513 48007 272123; do
+            ffmpeg -nostdin -loglevel error -y -i sint90.wav -af atrim=end_sample=$n -c:a pcm_s16le borda$n.wav
+          done
+          # "filme antigo": passa-banda 300-3400 Hz e volume baixo, mono
+          ffmpeg -nostdin -loglevel error -y -i sint300.wav -af "highpass=f=300,lowpass=f=3400,volume=0.4" -c:a pcm_s16le velho300.wav
+          R=$GITHUB_WORKSPACE/res/paridade.txt; : > $R
+          fail=0
+          cmpf() { python3 $GITHUB_WORKSPACE/tools/silero-java/compare.py "$@" > /tmp/cmp.txt || fail=1; cat /tmp/cmp.txt | tee -a $R; }
+          for f in sint300 sint90 borda512 borda513 borda48007 borda272123 velho300; do
+            python3 $GITHUB_WORKSPACE/tools/silero-java/ort_raw.py $GITHUB_WORKSPACE/$M $f.wav $f.ort.raw $f.ort.100 > /dev/null
+            for T in 1 3; do
+              java -cp /tmp/pc SileroParity probs $GITHUB_WORKSPACE/$W $f.wav $f.j$T.raw $f.j$T.100 $T > /dev/null
+              cmpf $f.ort.raw $f.j$T.raw 1e-3 "$f bloco(32ms) $T fio(s)"
+              cmpf $f.ort.100 $f.j$T.100 1e-3 "$f 100Hz $T fio(s)"
+            done
+            cmp $f.j1.raw $f.j3.raw && echo "$f: 1 fio == 3 fios (identico bit a bit)" | tee -a $R
+          done
+          exit $fail
+      - name: Velocidade
+        if: always()
+        run: |
+          A=android/app/src/main/assets; W=$GITHUB_WORKSPACE/$A/silero_v5_16k.bin
+          cd /tmp/a
+          ffmpeg -nostdin -loglevel error -y -i sint90.wav -t 90 -c:a pcm_s16le a90.wav
+          {
+            echo "# 90 s de audio por analise (a rep 0 inclui o aquecimento do JIT)"
+            for T in 1 2 4; do echo "## JIT completo (C2, com auto-vetorizacao), $T fio(s)"; java -cp /tmp/pc SileroParity bench $W a90.wav $T 5 | grep BENCH; done
+            echo "## C2 sem auto-vetorizacao (-XX:-UseSuperWord), 1 fio (escalar, como o ART do ARM de 32 bits)"; java -XX:-UseSuperWord -cp /tmp/pc SileroParity bench $W a90.wav 1 5 | grep BENCH
+            echo "## so C1 (-XX:TieredStopAtLevel=1: pior caso razoavel, codigo escalar sem as otimizacoes pesadas), 1 fio"; java -XX:TieredStopAtLevel=1 -cp /tmp/pc SileroParity bench $W a90.wav 1 4 | grep BENCH
+            echo "## interpretador puro (-Xint), 1 fio: limite absurdo de pior caso"; java -Xint -cp /tmp/pc SileroParity bench $W a90.wav 1 1 | grep BENCH
+            echo "## ONNX Runtime (Python, 1 fio) para comparar"
+            python3 - <<'PY'
+          import time, wave, numpy as np, onnxruntime as ort, os
+          so = ort.SessionOptions(); so.intra_op_num_threads = 1; so.inter_op_num_threads = 1
+          s = ort.InferenceSession(os.environ["GITHUB_WORKSPACE"] + "/android/app/src/main/assets/silero_vad.onnx", so, providers=["CPUExecutionProvider"])
+          w = wave.open("a90.wav"); x = np.frombuffer(w.readframes(w.getnframes()), dtype=np.int16).astype(np.float32) / 32768
+          n = len(x) // 512
+          for r in range(3):
+              st = np.zeros((2, 1, 128), np.float32); ctx = np.zeros(64, np.float32); t0 = time.time()
+              for i in range(n):
+                  c = x[i*512:(i+1)*512]
+                  o, st = s.run(None, {"input": np.concatenate([ctx, c])[None], "state": st, "sr": np.array(16000, np.int64)}); ctx = c[-64:]
+              print("ORT-python rep=%d audio=90.0s tempo=%.2fs (inclui o custo do Python por bloco)" % (r, time.time() - t0))
+          PY
+          } 2>&1 | tee $GITHUB_WORKSPACE/res/velocidade.txt
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: res-paridade
+          path: res
+          retention-days: 7
+
+  filmes:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        slug: [his_girl_friday, charade, night_of_the_living_dead, doa, detour, little_shop, plan9, meet_john_doe, carnival_of_souls, the_stranger, my_man_godfrey, brain_that_wouldnt_die, hitch_hiker, suddenly, dementia_13, house_on_haunted_hill, scarlet_street, reefer_madness, sherlock_secret_weapon, its_a_wonderful_life, freaks, white_zombie, santa_claus_martians, last_man_on_earth, manos]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 17
+      - name: Compilar
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg >/dev/null
+          mkdir -p /tmp/ort /tmp/pc res
+          curl -fsSL -o /tmp/ort/ort.jar https://repo1.maven.org/maven2/com/microsoft/onnxruntime/onnxruntime/1.20.0/onnxruntime-1.20.0.jar
+          D=android/app/src/main/java/io/github/gabrielxyz404/gabiflix/audiosync
+          javac -nowarn -d /tmp/pc -cp /tmp/ort/ort.jar $D/*.java tools/audio-integra/PreCheck.java tools/silero-java/SileroOrt.java
+      - name: Trecho do filme e legendas
+        id: prep
+        continue-on-error: true
+        run: |
+          OTHERS=$(echo suddenly,manos,meet_john_doe,detour,freaks | tr , '\n' | grep -v -x ${{ matrix.slug }} | paste -sd,)
+          export PRECHECK="java -cp /tmp/pc:/tmp/ort/ort.jar PreCheck" MODEL=$PWD/android/app/src/main/assets/silero_vad.onnx FALLBACK=1
+          python3 tools/audio-integra/prep.py ${{ matrix.slug }} $OTHERS media 2>&1 | tee prep.log | tail -25
+          test -f media/info.json
+      - name: Avaliar os 3 VADs nas 4 legendas
+        if: steps.prep.outcome == 'success'
+        run: |
+          export PC_CP=/tmp/pc:/tmp/ort/ort.jar MODEL=$PWD/android/app/src/main/assets/silero_vad.onnx
+          bash tools/silero-java/film_eval.sh media res/eval-${{ matrix.slug }}.txt
+          cp media/info.json res/info-${{ matrix.slug }}.json
+      - name: Sem material
+        if: steps.prep.outcome != 'success'
+        run: |
+          tail -5 prep.log > res/sem-material-${{ matrix.slug }}.txt 2>/dev/null || echo "sem log" > res/sem-material-${{ matrix.slug }}.txt
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: filme-${{ matrix.slug }}
+          path: res
+          retention-days: 7
+
+  resumo:
+    needs: [paridade, filmes]
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          path: arts
+      - name: Resumo
+        run: |
+          mkdir -p out
+          cp -r arts out/arts
+          python3 tools/silero-java/summary.py out/arts out/resumo-filmes.md || true
+          cat out/arts/res-paridade/paridade.txt out/arts/res-paridade/velocidade.txt out/arts/res-paridade/pesos.txt 2>/dev/null | tee -a $GITHUB_STEP_SUMMARY | tail -80
+          cat out/resumo-filmes.md >> $GITHUB_STEP_SUMMARY || true
+      - name: Publicar
+        if: always()
+        run: |
+          cd out && git init -q -b x && git add -A
+          git -c user.name=ci -c user.email=ci@x commit -qm "silero-java run ${{ github.run_number }}"
+          git push -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" x:silero-java-out

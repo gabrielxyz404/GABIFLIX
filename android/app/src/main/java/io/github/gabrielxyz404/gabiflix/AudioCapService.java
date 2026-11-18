@@ -27,9 +27,9 @@ public final class AudioCapService extends Service {
     private Messenger messenger;
     private AudioCapEngine engine;
     private ExecutorService worker;
-    /** o Silero (ONNX Runtime, código nativo) também vive AQUI: uma queda ou falta de memória dele nunca fecha o player */
-    private io.github.gabrielxyz404.gabiflix.audiosync.SileroVad vad;
-    /** modo com que {@link #vad} foi criado (0 = normal, 1 = seguro) */
+    /** o Silero (Java puro, sem código nativo) também vive AQUI: uma falta de memória dele nunca fecha o player */
+    private io.github.gabrielxyz404.gabiflix.audiosync.JavaSileroVad vad;
+    /** modo com que {@link #vad} foi criado (0 = normal: até 2 fios; 1 = seguro: 1 fio só) */
     private int vadMode;
 
     @Override public void onCreate() {
@@ -105,20 +105,22 @@ public final class AudioCapService extends Service {
                 final int vmode = b.getInt("vmode", 0);
                 if (vad != null && vadMode != vmode) { try { vad.close(); } catch (Throwable ignored) {} vad = null; }
                 if (vad == null) {
-                    CrashReporter.stage("vad modo " + vmode + " lendo o modelo silero_vad.onnx");
-                    byte[] model;
-                    try (java.io.InputStream is = getAssets().open("silero_vad.onnx")) {
-                        java.io.ByteArrayOutputStream bo = new java.io.ByteArrayOutputStream(2_400_000);
-                        byte[] buf = new byte[65536];
-                        int n;
-                        while ((n = is.read(buf)) > 0) bo.write(buf, 0, n);
-                        model = bo.toByteArray();
+                    CrashReporter.stage("vad modo " + vmode + " lendo os pesos silero_v5_16k.bin");
+                    // modo normal: até 2 fios (em 4 núcleos o player segue folgado); modo seguro: 1 fio. Fios de prioridade baixa: a análise nunca pesa no player
+                    int cores = Runtime.getRuntime().availableProcessors();
+                    int threads = vmode == 1 ? 1 : (cores >= 4 ? 2 : 1);
+                    java.util.concurrent.ThreadFactory tf = task -> {
+                        Thread th = new Thread(() -> { Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND); task.run(); }, "gf-silero");
+                        th.setDaemon(true);
+                        th.setPriority(Thread.MIN_PRIORITY);
+                        return th;
+                    };
+                    try (java.io.InputStream is = getAssets().open("silero_v5_16k.bin")) {
+                        vad = io.github.gabrielxyz404.gabiflix.audiosync.JavaSileroVad.load(is, threads, tf);
                     }
-                    CrashReporter.stage("vad modo " + vmode + " criando a sessão do ONNX Runtime (carrega as bibliotecas nativas)");
-                    vad = new io.github.gabrielxyz404.gabiflix.audiosync.SileroVad(model, vmode == 1);
                     vadMode = vmode;
                 }
-                CrashReporter.stage("vad modo " + vmode + " ONNX Runtime inferência (nativo), " + pcm.length / 16000 + " s de áudio");
+                CrashReporter.stage("vad modo " + vmode + " Silero em Java, " + pcm.length / 16000 + " s de áudio");
                 String vhook = b.getString("hook");
                 if ("vad-all".equals(vhook) || ("vad".equals(vhook) && vmode == 0)) {   // só nos testes
                     CrashReporter.stage("TESTE: queda nativa forçada no VAD (modo " + vmode + ")");
