@@ -390,7 +390,7 @@ public class PlayerActivity extends Activity {
                 if (t < ovLastEst && ovLastEst - t < 300) t = ovLastEst;
                 ovLastEst = t;
                 // atraso positivo = a legenda aparece MAIS TARDE (mesma regra do setSpuDelay e do painel)
-                want = ovCues.at(t - subDelayMs);
+                want = ovCues.at(t - subDelayMs, 150);
             } else want = ovShown;
         }
         if (want == null ? ovShown != null : !want.equals(ovShown)) {

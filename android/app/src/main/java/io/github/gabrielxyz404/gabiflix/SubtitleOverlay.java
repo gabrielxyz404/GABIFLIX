@@ -66,11 +66,14 @@ final class SubtitleOverlay {
     }
 
     /** o que está na tela em ms (já sem o atraso); null se nada. Falas sobrepostas ficam uma embaixo da outra. */
-    String at(long ms) {
+    String at(long ms) { return at(ms, 0); }
+
+    /** tolEarlyMs: a fala já aparece até isto antes do começo dela (o relógio do player anda aos saltos de ~10 ms; no começo exato de uma fala, logo depois de pular, isso fazia a fala piscar) */
+    String at(long ms, long tolEarlyMs) {
         int lo = 0, hi = start.length - 1, last = -1;
         while (lo <= hi) {
             int mid = (lo + hi) >>> 1;
-            if (start[mid] <= ms) { last = mid; lo = mid + 1; } else hi = mid - 1;
+            if (start[mid] <= ms + tolEarlyMs) { last = mid; lo = mid + 1; } else hi = mid - 1;
         }
         if (last < 0) return null;
         String out = null;
