@@ -155,16 +155,17 @@ final class AudioCapEngine {
         try {
             CrashReporter.stage("captura cfg=" + cfg + " tocando a janela " + startMs / 1000 + " s (nativo: demux, decodificador, transcode)");
             mp.play();
+            if (crashTest) {   // só nos testes: o libVLC já está tocando (demux/decodificador/transcode em andamento) quando o processo cai
+                Thread.sleep(400);
+                CrashReporter.stage("TESTE: queda nativa forçada durante a captura (cfg=" + cfg + ")");
+                android.os.Process.sendSignal(android.os.Process.myPid(), 11);
+                Thread.sleep(10_000);
+            }
             long lastGrow = t0, lastLen = 0;
             boolean tracked = false;
             while (!cancelled) {
                 if (done.await(1000, TimeUnit.MILLISECONDS)) break;
                 long now = System.nanoTime();
-                if (crashTest && now - t0 > 2_000_000_000L) {   // só nos testes
-                    CrashReporter.stage("TESTE: queda nativa forçada durante a captura (cfg=" + cfg + ")");
-                    android.os.Process.sendSignal(android.os.Process.myPid(), 11);
-                    Thread.sleep(10_000);
-                }
                 long len = out.exists() ? out.length() : 0;
                 if (len > lastLen) { lastLen = len; lastGrow = now; }
                 if (!tracked && now - t0 > 3_000_000_000L) { tracked = true; r.track = trackInfo(mp, audioTrackId); }

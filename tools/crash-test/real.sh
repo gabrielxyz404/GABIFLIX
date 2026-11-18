@@ -101,6 +101,7 @@ queda() {  # $1 nome  $2 gancho (vad|capture|capture-all)  $3 legenda  $4 segund
 case "$P" in
   tv)
     queda tv-queda-vad vad mais3.srt 40
+    queda tv-queda-vad-certa vad certa.srt 40
     queda tv-queda-captura capture mais3.srt 40
     queda tv-queda-todas capture-all mais3.srt 40
     caso_fg tv-fixed mais3.srt 120
@@ -108,6 +109,7 @@ case "$P" in
     ;;
   tel)
     queda tel-queda-vad vad mais3.srt 40
+    queda tel-queda-vad-certa vad certa.srt 40
     queda tel-queda-captura capture mais3.srt 40
     caso_fg tel-fixed mais3.srt 90
     caso_home tel-home-analise menos2.srt 50 150

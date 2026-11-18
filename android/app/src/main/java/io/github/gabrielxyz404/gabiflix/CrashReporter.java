@@ -369,7 +369,7 @@ public final class CrashReporter {
                         if (l.contains("*** *** ***") && !mentions) in = false;
                         if (mentions) in = true;
                     }
-                    if (in && CRASH_KEY.matcher(l).find()) keep.add(l.trim());
+                    if (in && CRASH_KEY.matcher(l).find()) keep.add(l.trim().replaceAll(" \\(BuildId: [0-9a-f]+\\)", ""));
                 }
                 int from = Math.max(0, keep.size() - 50);
                 for (int i = from; i < keep.size(); i++) out.append(keep.get(i)).append('\n');

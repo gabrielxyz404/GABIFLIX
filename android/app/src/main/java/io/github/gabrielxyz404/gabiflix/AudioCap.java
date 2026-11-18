@@ -120,25 +120,20 @@ final class AudioCap {
         try { c.getSharedPreferences(FB_PREFS, Context.MODE_PRIVATE).edit().putString("cap_bad", devKey(c) + "#" + capBad).apply(); } catch (Throwable ignored) {}
     }
 
-    /** o Silero é de 64 bits? No ARM de 32 bits (Fire TV com sistema 32 bits) usa-se só o VAD por DSP, que não tem código nativo */
-    private static boolean isArm32() {
-        try {
-            if (android.os.Process.is64Bit()) return false;
-            for (String a : android.os.Build.SUPPORTED_ABIS) if (a.startsWith("arm")) return true;
-        } catch (Throwable ignored) {}
-        return false;
-    }
-
-    /** false = não usar o Silero (ONNX Runtime) neste aparelho: ARM de 32 bits, ou já derrubou o processo antes */
+    /**
+     * false = não usar o Silero (ONNX Runtime) neste aparelho: já derrubou o processo antes (nesta versão). Não se proíbe o Silero de antemão no ARM de 32 bits:
+     * o VAD por DSP é bem menos preciso (no clipe de teste recusa a legenda onde o Silero acerta), então o Silero tenta uma vez; se cair, o relatório CAPTURA_CAIU
+     * traz o motivo e o DSP assume.
+     */
     static boolean sileroAllowed(Context c) {
         loadPrefs(c.getApplicationContext());
-        return !sileroBroken && !isArm32();
+        return !sileroBroken;
     }
 
     /** por que o Silero não será usado (para o registo) */
     static String sileroWhyNot(Context c) {
         loadPrefs(c.getApplicationContext());
-        return sileroBroken ? "ele derrubou o processo de captura neste aparelho" : isArm32() ? "ARM de 32 bits: só o VAD por DSP" : "";
+        return sileroBroken ? "ele derrubou o processo de captura neste aparelho" : "";
     }
 
     private static int nextCfg() {
