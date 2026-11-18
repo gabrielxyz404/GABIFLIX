@@ -6,6 +6,21 @@ set -ex
 D=${1:-/tmp/media}
 cd "$D"
 # 5.1 a partir do estereo: fala no centro (como num filme), um pouco nas laterais
+# video preto (so as legendas aparecem na tela: da para medir quando cada fala some e volta) com o audio do trecho; e a legenda certa deslocada +36 s
+ffmpeg -nostdin -loglevel error -y -f lavfi -i color=c=black:s=640x360:r=24 -i clip.mkv -map 0:v -map 1:a -c:v libx264 -preset veryfast -crf 40 -c:a aac -b:a 96k -ac 2 -t 1200 -shortest blk.mkv
+python3 - <<'PY'
+import re
+t = open("certa.srt", encoding="utf-8").read()
+def sh(m):
+    def f(h, mi, s, ms):
+        return (int(h) * 3600 + int(mi) * 60 + int(s)) * 1000 + int(ms)
+    a, b = f(*m.group(1, 2, 3, 4)), f(*m.group(5, 6, 7, 8))
+    a += 36000; b += 36000
+    g = lambda x: "%02d:%02d:%02d,%03d" % (x // 3600000, x // 60000 % 60, x // 1000 % 60, x % 1000)
+    return g(a) + " --> " + g(b)
+open("mais36.srt", "w", encoding="utf-8").write(re.sub(r"(\d+):(\d+):(\d+),(\d+) --> (\d+):(\d+):(\d+),(\d+)", sh, t))
+PY
+if [ -f ONLY_D ]; then ls -la; exit 0; fi
 PAN="pan=5.1|FL=0.45*FL|FR=0.45*FR|FC=0.7*FL+0.7*FR|LFE=0.0*FL|BL=0.2*FL|BR=0.2*FR"
 vid() { # $1 = saida, $2 = bitrate, $3 = duracao (s)
   ffmpeg -nostdin -loglevel error -y -t "$3" -i clip.mkv -an -vf "scale=1280:720,format=yuv420p" -c:v libx264 -preset veryfast \

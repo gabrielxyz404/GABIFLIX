@@ -62,6 +62,27 @@ P_SLOW=1
 DONE='AUDIOSYNC (aplicado|resultado:|desisti|botão:|o áudio não tem|pulado|já foi vista)'
 panel_texts() { pause_v; show_controls; open_subs; sleep 1.5; snap "$1" 0.5; texts "$1"; adb shell input keyevent KEYCODE_BACK; sleep 1; play_v; }
 
+if [ -f tools/sync-real/ONLY_D ]; then
+  # a legenda some depois que o motor aplica o atraso? rajada de fotos (video preto: so o texto da legenda e claro) para cada estrategia
+  python3 -c "import PIL" 2>/dev/null || pip install --user -q pillow
+  CLIP=blk.mkv
+  for st in ${STRATS:-plain reselect toggle}; do
+    for sc in mais3 menos2 mais36; do
+      adb shell pm clear $PKG >/dev/null; sleep 2
+      launch $sc.srt --es gfAudioStartSec 8 --es gfDelayStrategy $st
+      waitlog "AUDIOSYNC legenda: atraso" 200
+      D=$OUT/D-$st-$sc; mkdir -p $D
+      for i in $(seq 1 40); do
+        a=$(date +%s.%N); adb exec-out screencap -p > $D/$(printf %03d $i).png; b=$(date +%s.%N)
+        echo "$(printf %03d $i) $a $b" >> $D/times.txt
+      done
+      save D-$st-$sc
+      python3 tools/sync-real/burst.py $D $OUT/log-$P-D-$st-$sc.txt $OUT/clock.txt $sc >> $OUT/burst-resumo.txt 2>&1
+      ls $D/*.png | awk 'NR%8!=1' | xargs rm -f
+    done
+  done
+  cat $OUT/burst-resumo.txt; exit 0
+fi
 if [ -f tools/sync-real/ONLY_B ]; then
   for c in aac ac3b eac3 dts truehd; do
     CLIP=real-$c.mkv
