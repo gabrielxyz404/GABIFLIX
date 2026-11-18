@@ -1397,6 +1397,14 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
                     self?.log("hold: atraso antes=\(before) depois=\(self?.subDelayMs ?? -1)")
                 }
             }
+        case "mini": window?.miniaturize(nil)
+        case "unmini": window?.deminiaturize(nil)
+        case "hide": NSApp.hide(nil)
+        case "unhide": NSApp.unhide(nil); window?.makeKeyAndOrderFront(nil)
+        case "occlude": window?.orderOut(nil)
+        case "unocclude": window?.makeKeyAndOrderFront(nil)
+        case "vstate":
+            log("video: tocando=\(player.isPlaying) tempo=\(player.time.intValue) vout=\(player.hasVideoOut) visivel=\(window?.occlusionState.contains(.visible) ?? false) mini=\(window?.isMiniaturized ?? false) escala=\(scaleMode) atraso=\(subDelayMs)")
         case "state":
             log("estado: faixa=\(player.currentVideoSubTitleIndex) atraso=\(subDelayMs) vlcDelay=\(player.currentVideoSubTitleDelay) legendas=\(subTracks()) escolhida=\(candForTrack(Int(player.currentVideoSubTitleIndex))?.rank ?? -1)")
         default: break
