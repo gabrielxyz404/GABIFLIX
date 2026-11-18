@@ -34,6 +34,7 @@ public class TvHomeActivity extends TvBase {
     @Override
     protected void onCreate(Bundle b) {
         super.onCreate(b);
+        if (io.github.gabrielxyz404.gabiflix.MainActivity.duplicateLauncher(this)) { finish(); return; }   // ícone tocado com o app (e o filme) já abertos: não cobre a tarefa
         new Thread(io.github.gabrielxyz404.gabiflix.Site::resolve).start(); // descobre já qual endereço do site responde
         LinearLayout root = new LinearLayout(this);
         root.setOrientation(LinearLayout.VERTICAL);
