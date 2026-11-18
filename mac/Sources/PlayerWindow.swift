@@ -1338,6 +1338,22 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
         switch cmd {
         case "scale": setScaleMode(n)
         case "stats": log("stats: tempo=\(player.time.intValue) perdidos=\(lostVideoFrames()) tocando=\(player.isPlaying) tamanho=\(Int(player.videoSize.width))x\(Int(player.videoSize.height)) janela=\(Int(videoView.bounds.width))x\(Int(videoView.bounds.height))")
+        case "snap":
+            // sonda: fotografia do VLC na thread principal ou numa de fundo (w[1] = main|bg), com ou sem recorte
+            let mode = w.count > 1 ? w[1] : "main"
+            let tag = lastCropSet == nil ? "nocrop" : "crop"
+            let path = "/tmp/frameplay-probe-\(mode)-\(tag).png"
+            log("snap: \(mode) \(tag) hasVideoOut=\(player.hasVideoOut) tocando=\(player.isPlaying) tamanho=\(player.videoSize.width)x\(player.videoSize.height)")
+            if mode == "bg" {
+                DispatchQueue.global().async { [weak self] in
+                    guard let self = self else { return }
+                    self.player.saveVideoSnapshot(at: path, withWidth: 192, andHeight: 0)
+                    self.log("snap: bg ok")
+                }
+            } else {
+                player.saveVideoSnapshot(at: path, withWidth: 192, andHeight: 0)
+                log("snap: main ok")
+            }
         case "sync": showSyncPanel()
         case "speech":
             showSyncPanel()
@@ -1473,7 +1489,7 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
     private func barTick() {
         barTicks += 1
         scheduleBarTick()
-        guard scaleMode == 1, startedPlaying, !finished, player.isPlaying, !barBusy else { return }
+        guard scaleMode == 1, startedPlaying, !finished, player.isPlaying, !barBusy, ProcessInfo.processInfo.environment["FP_NO_BARS"] == nil else { return }
         // tamanho do quadro (pixels do vídeo) medido enquanto ainda não há recorte, para não confundir com o quadro já recortado
         let vs = player.videoSize
         if lastCropSet == nil, vs.width > 0, vs.height > 0 { srcSize = vs }

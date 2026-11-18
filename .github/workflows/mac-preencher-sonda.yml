@@ -1,0 +1,50 @@
+name: Mac Preencher sonda (sem publicar)
+
+# Sonda: o que acontece ao pedir uma fotografia ao VLC (thread principal / de fundo, com e sem recorte). NÃO publica o app.
+on:
+  workflow_dispatch:
+  push:
+    branches: [mac-preencher-sonda]
+
+permissions:
+  contents: write
+
+jobs:
+  sonda:
+    runs-on: macos-15
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - name: Montar o app
+        env:
+          FRAMEPLAY_VERSION: 0.0.${{ github.run_number }}
+          FRAMEPLAY_BUILD: ${{ github.run_number }}
+          FRAMEPLAY_NO_ORT: "1"
+        run: |
+          set -o pipefail
+          ./mac/build.sh 2>&1 | tee build.log
+      - name: Mostrar o erro (se houver)
+        if: failure()
+        run: |
+          grep -n -E "error:|fatal|No such|cannot find" build.log | sort -u | head -40 | while IFS= read -r line; do
+            echo "::error::$(echo "$line" | cut -c1-900)"
+          done
+      - name: Vídeos de teste
+        run: |
+          brew install ffmpeg > /dev/null 2>&1 || brew install ffmpeg
+          bash tools/mac-preencher-test/videos.sh /tmp/srv
+          nohup python3 tools/mac-preencher-test/serve.py /tmp/srv > /tmp/srv.log 2>&1 &
+          sleep 2; curl -sI http://127.0.0.1:8765/barra.mkv | head -1
+      - name: Sonda
+        run: bash tools/mac-preencher-test/sonda.sh mac/build/FramePlay.app /tmp/telas
+      - name: Guardar no branch mac-preencher-sonda-out
+        if: always()
+        env:
+          TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p /tmp/telas && cp build.log /tmp/telas/ 2>/dev/null || true
+          cd /tmp/telas
+          git init -q && git checkout -q -b mac-preencher-sonda-out
+          git config user.name "FramePlay CI"; git config user.email "ci@frameplay.local"
+          git add -A && git commit -qm "sonda" || true
+          git push -q -f "https://x-access-token:${TOKEN}@github.com/${{ github.repository }}.git" mac-preencher-sonda-out || echo "::warning::não guardou"
