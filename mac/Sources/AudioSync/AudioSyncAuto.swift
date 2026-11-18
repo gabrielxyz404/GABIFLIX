@@ -354,6 +354,8 @@ final class AudioSyncAuto {
         let k: String? = (cand == nil || cand?.text == nil) ? nil : h.delayKey()
         if k != key { switchSub(k, now) }
         if let kk = k, let c0 = cur { watchManual(c0, kk, now) }
+        // com o automático desligado o modelo com escala (achado pelos ajustes manuais) continua valendo: o atraso acompanha o filme
+        if k != nil, let c1 = cur, !autoOn, c1.st == .done, abs(c1.mScale - 1.0) > 1e-9, now >= c1.nextFollowAt, pl, h.delayMs() == c1.lastWritten { follow(c1, now) }
         guard let kk = k, let cd = cand, let s = cur, autoOn else { return }
         if running && hBuf >= 2 && now - lastStartAt > 5000 { abortForStall(s, kk) }
         let ra = rescanAt.value

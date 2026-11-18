@@ -40,7 +40,9 @@ enum AudioAligner {
         var driftMinWins = 3
         var driftMinSpanFrac = 0.25
         var driftMinSpanMs = 240_000
-        var driftMaxResMs = 150.0
+        var driftMaxResMs = 250.0
+        /** com a deriva provada, o desvio de cada janela para o modelo final pode chegar a isto (ms) sem derrubar a aceitação */
+        var driftGateDevMs = 300.0
         var driftResFloorMs = 50.0
         var driftRatio = 3.0
         var driftContentMs = 800.0
@@ -557,7 +559,7 @@ enum AudioAligner {
         driftCheck(R, cues, windows, ps, fine, mediaDurationMs, P)
         finalEvidence(windows, ps, fine, R, P)
         decide(R, P)
-        analyzeCuts(R, cues, windows, ps, bl, use, nu, P, mediaDurationMs, fine)
+        if !R.driftScale { analyzeCuts(R, cues, windows, ps, bl, use, nu, P, mediaDurationMs, fine) }
         if let sg = R.segments, sg.count > 1 {
             // cortes: só AVISO (a precisão medida do ajuste por partes é baixa); não se aplica nada
             R.cutsWarning = true
@@ -566,7 +568,7 @@ enum AudioAligner {
         } else if R.segments != nil {
             R.segments = nil
         }
-        if R.accepted && R.segments == nil && R.z < P.acceptMinZ {
+        if R.accepted && R.segments == nil && !R.driftScale && R.z < P.acceptMinZ {
             R.accepted = false
             R.reason = (R.reason + " z abaixo do limiar de aceitação (\(javaDouble(P.acceptMinZ)));").trimmingCharacters(in: .whitespaces)
         }
@@ -596,21 +598,23 @@ enum AudioAligner {
     }
 
     /**
-     * Prova de deriva (porte de AudioAligner.driftCheck). Cada janela mede, sozinha, o atraso local da legenda SEM escala (NCC fina de +-3 s em volta do modelo
-     * atual). A família 1,001 só vale com: >= driftMinWins janelas confiáveis cobrindo o filme; resíduo da reta com a inclinação da razão de fps <= driftMaxResMs;
-     * deriva medida > driftRatio x resíduo; deriva no filme todo > driftContentMs; e a reta sem escala deixa o dobro do resíduo ou mais.
+     * Prova de deriva (porte de AudioAligner.driftCheck). Cada janela mede, sozinha, o atraso local da legenda SEM escala (NCC fina em volta do modelo grosso se ele é
+     * de escala ~1, +-10 s; senão em volta do atraso 0, +-15 s). A família 1,001 só vale com: >= driftMinWins janelas confiáveis cobrindo o filme; resíduo da reta com
+     * a inclinação da razão de fps <= driftMaxResMs (podendo descartar UMA janela fora da reta); deriva medida > driftRatio x resíduo; deriva no filme todo >
+     * driftContentMs; e a reta sem escala deixa o dobro do resíduo ou mais.
      */
     private static func driftCheck(_ R: AudioResult, _ cues: [AudioCue], _ ws: [AudioWindow], _ ps: [[Float]], _ fine: [Float], _ durMs: Int, _ P: Params) {
         let W = ws.count
         var info: [AudioResult.Win] = []
         var x = [Double](repeating: 0, count: W), y = [Double](repeating: 0, count: W), wt = [Double](repeating: 0, count: W)
+        var widx = [Int](repeating: 0, count: W)
         var n = 0
+        let nearUnitModel = abs(R.scale - 1.0) < 0.0035
         for w in 0..<W {
             var wi = AudioResult.Win()
             let uc = Double(ws[w].startMs) + Double(ws[w].p.count) * 5.0
-            let sc = (uc - R.offsetMs) / R.scale
-            let d0 = uc - sc
-            let f = fineWindow(ps[w], ws[w].startMs, fine, 1.0, d0, 300)
+            let d0 = nearUnitModel ? uc - (uc - R.offsetMs) / R.scale : 0.0
+            let f = fineWindow(ps[w], ws[w].startMs, fine, 1.0, d0, nearUnitModel ? 1000 : 1500)
             wi.startMs = ws[w].startMs
             wi.centerMs = uc
             wi.delayMs = d0 + f.bestDelta
@@ -619,15 +623,12 @@ enum AudioAligner {
             wi.second = f.nccSecond
             wi.speech = f.speechFrac >= P.minSpeechFrac
             wi.confident = wi.speech && f.ncc >= P.winMinNcc && (f.ncc - f.nccSecond >= P.winMinMargin || f.z >= P.winMinZ)
-            if wi.confident { x[n] = uc; y[n] = wi.delayMs; wt[n] = max(0.01, f.ncc); n += 1 }
+            if wi.confident { x[n] = uc; y[n] = wi.delayMs; wt[n] = max(0.01, f.ncc); widx[n] = w; n += 1 }
             info.append(wi)
         }
         R.wins = info
         R.driftConfident = n
         if n < 2 { R.driftNote = "menos de 2 janelas confiáveis (\(n) de \(W))"; return }
-        var xmin = x[0], xmax = x[0]
-        for i in 1..<n { xmin = min(xmin, x[i]); xmax = max(xmax, x[i]) }
-        let span = xmax - xmin
         let unit = fitFixedAlpha(x, y, wt, n, 0.0)
         R.unitResMs = unit.1
         R.driftResMs = unit.1
@@ -637,43 +638,58 @@ enum AudioAligner {
             let den = sw * sxx - sx * sx
             if den > 1e-6 * sw * sw { R.driftSlope = (sw * sxy - sx * sy) / den }
         }
-        if abs(R.scale - 1.0) >= 0.0035 { R.driftNote = "escala grande (\(R.scale)): a prova de deriva vale só para a família 1,001"; return }
 
         let ks = [24.0 / 23.976, 23.976 / 24.0]
         var best = -1
-        var bestRes = Double.greatestFiniteMagnitude
+        var bestRes = Double.greatestFiniteMagnitude, bestBeta = 0.0, bestSpan = 0.0
+        var bestN = 0, bestDrop = -1
         var nearMiss = false
         var why = ""
         for c in 0..<2 {
             let al = alphaOf(ks[c])
-            let fr = fitFixedAlpha(x, y, wt, n, al)
+            var drop = -1
+            var fr = fitFixedAlpha(x, y, wt, n, al)
+            if fr.1 > P.driftMaxResMs && n > P.driftMinWins {
+                for d in 0..<n {
+                    var xs: [Double] = [], ys: [Double] = [], w2: [Double] = []
+                    for i in 0..<n where i != d { xs.append(x[i]); ys.append(y[i]); w2.append(wt[i]) }
+                    let f2 = fitFixedAlpha(xs, ys, w2, n - 1, al)
+                    if f2.1 < fr.1 { fr = f2; drop = d }
+                }
+            }
+            let nn = drop >= 0 ? n - 1 : n
+            var xmin = Double.greatestFiniteMagnitude, xmax = -Double.greatestFiniteMagnitude
+            var xs: [Double] = [], ys: [Double] = [], w2: [Double] = []
+            for i in 0..<n where i != drop { xs.append(x[i]); ys.append(y[i]); w2.append(wt[i]); xmin = min(xmin, x[i]); xmax = max(xmax, x[i]) }
+            let span = xmax - xmin
+            let un = fitFixedAlpha(xs, ys, w2, nn, 0.0)
             let meas = abs(al) * span, content = abs(al) * Double(durMs)
-            let fits = fr.1 <= P.driftMaxResMs && 2 * fr.1 <= unit.1 && meas >= 2 * max(fr.1, P.driftResFloorMs)
+            let fits = fr.1 <= P.driftMaxResMs && 2 * fr.1 <= un.1 && meas >= 2 * max(fr.1, P.driftResFloorMs)
             let spanOk = span >= max(Double(P.driftMinSpanMs), P.driftMinSpanFrac * Double(durMs))
-            let ok = fits && n >= P.driftMinWins && spanOk && meas >= P.driftRatio * max(fr.1, P.driftResFloorMs) && content >= P.driftContentMs
+            let ok = fits && nn >= P.driftMinWins && spanOk && meas >= P.driftRatio * max(fr.1, P.driftResFloorMs) && content >= P.driftContentMs
             if fits && !ok {
                 nearMiss = true
-                why = (n < P.driftMinWins ? "só \(n) janelas confiáveis; " : "") + (!spanOk ? "janelas cobrem pouco do filme; " : "")
+                why = (nn < P.driftMinWins ? "só \(nn) janelas confiáveis; " : "") + (!spanOk ? "janelas cobrem pouco do filme; " : "")
                     + (meas < P.driftRatio * max(fr.1, P.driftResFloorMs) ? "deriva medida pequena frente ao resíduo; " : "")
                     + (content < P.driftContentMs ? "deriva no filme abaixo de \(Int(P.driftContentMs)) ms; " : "")
             }
-            if ok && fr.1 < bestRes { best = c; bestRes = fr.1 }
+            if ok && fr.1 < bestRes { best = c; bestRes = fr.1; bestBeta = fr.0; bestSpan = span; bestN = nn; bestDrop = drop }
         }
         if best >= 0 {
             let al = alphaOf(ks[best])
-            let fr = fitFixedAlpha(x, y, wt, n, al)
             R.scale = ks[best]
-            R.offsetMs = fr.0 * R.scale
+            R.offsetMs = bestBeta * R.scale
             R.scaleKnown = true
             R.driftScale = true
-            R.driftResMs = fr.1
-            R.driftMeasMs = abs(al) * span
+            R.driftDropWin = bestDrop >= 0 ? widx[bestDrop] : -1
+            R.driftResMs = bestRes
+            R.driftMeasMs = abs(al) * bestSpan
             R.driftContentMs = abs(al) * Double(durMs)
-            R.driftNote = String(format: "deriva provada: escala %.6f, resíduo %.0f ms (reta sem escala deixaria %.0f ms), deriva medida %.0f ms nas janelas e %.0f ms no filme, %d janelas confiáveis",
-                                 R.scale, fr.1, unit.1, R.driftMeasMs, R.driftContentMs, n)
+            R.driftNote = String(format: "deriva provada: escala %.6f, resíduo %.0f ms (reta sem escala deixaria %.0f ms), deriva medida %.0f ms nas janelas e %.0f ms no filme, %d janelas confiáveis%@",
+                                 R.scale, bestRes, unit.1, R.driftMeasMs, R.driftContentMs, bestN, bestDrop >= 0 ? " (1 janela fora da reta descartada)" : "")
             return
         }
-        if abs(R.scale - 1.0) > 1e-9 && unit.1 <= P.driftMaxResMs {
+        if abs(R.scale - 1.0) > 1e-9 && nearUnitModel && unit.1 <= P.driftMaxResMs {
             R.scale = 1.0
             R.offsetMs = unit.0
             R.scaleKnown = true
@@ -790,6 +806,7 @@ enum AudioAligner {
         var cnt = 0
         var tp = 0.0, fp = 0.0, fn = 0.0
         for w in 0..<ws.count {
+            if w == R.driftDropWin { continue }
             let f = fineWindow(ps[w], ws[w].startMs, fine, R.scale, R.offsetMs, 40)
             if f.speechFrac < P.minSpeechFrac { continue }
             let fw = fineWindow(ps[w], ws[w].startMs, fine, R.scale, R.offsetMs, 150)
@@ -816,10 +833,12 @@ enum AudioAligner {
         let agreeFrac = R.blocksValid > 0 ? Double(R.blocksAgree) / Double(R.blocksValid) : 0
         var ok = R.z >= P.minZ && agreeFrac >= P.minAgreeFrac && R.nccMean >= P.minNcc && R.margin >= P.minMargin && R.f1 >= P.minF1
         if !R.scaleKnown && (!P.allowFreeScale || R.z < P.minZFree || R.nccMean < P.minNccFree) { ok = false }
+        // deriva provada pelas janelas: a evidência é a delas (o z e a concordância dos BLOCOS foram medidos contra o modelo grosso e não valem aqui)
+        if R.driftScale { ok = R.nccMean >= P.minNcc && R.f1 >= P.minF1 }
         // família 1,001: só com a prova de deriva (driftCheck); um valor assim sem prova é ruído de ajuste
         let nearUnit = !R.driftScale && abs(R.scale - 1.0) > 1e-9 && abs(R.scale - 1.0) < P.nearUnitEps
         if nearUnit { ok = false }
-        let gateDev = P.gateWinDevMs > 0 && R.winsValid >= 2 && R.winMaxDev > P.gateWinDevMs
+        let gateDev = P.gateWinDevMs > 0 && R.winsValid >= 2 && R.winMaxDev > (R.driftScale ? P.driftGateDevMs : P.gateWinDevMs)
         let gateWin = P.gateMinWinsAgree > 0 && R.winsAgree < P.gateMinWinsAgree
         if gateDev || gateWin { ok = false }
         R.accepted = ok

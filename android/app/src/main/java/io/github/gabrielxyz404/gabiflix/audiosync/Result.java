@@ -43,6 +43,8 @@ public final class Result {
     }
     public Win[] wins = new Win[0];
     /** a escala (1,001 ou outra razão de fps) foi aceita pela evidência das janelas (não por chute) */
+    /** índice da janela confiável que ficou fora da reta de deriva (descartada na prova e na porta de desvio); -1 = nenhuma */
+    public int driftDropWin = -1;
     public boolean driftScale;
     /** inclinação ajustada livremente (ms de atraso por ms de filme), resíduos máximos (ms) com a escala escolhida e com escala 1,0, deriva medida nas janelas e no filme todo (ms) */
     public double driftSlope, driftResMs, unitResMs, driftMeasMs, driftContentMs;

@@ -57,6 +57,8 @@ final class AudioResult {
     var wins: [Win] = []
     /** a escala (1,001 ou outra razão de fps) foi aceita pela evidência das janelas */
     var driftScale = false
+    /** índice da janela confiável que ficou fora da reta de deriva (descartada); -1 = nenhuma */
+    var driftDropWin = -1
     var driftSlope = 0.0, driftResMs = 0.0, unitResMs = 0.0, driftMeasMs = 0.0, driftContentMs = 0.0
     var driftConfident = 0
     /** as janelas confiáveis discordam de uma reta de escala 1,0: vale pedir mais janelas espalhadas */

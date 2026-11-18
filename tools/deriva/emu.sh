@@ -61,8 +61,8 @@ dly() { python3 -c "print(int(round(((1-$G)*$1*1000 - $O)/10.0))*10)"; }
 rx() { adb shell am broadcast -a io.github.gabrielxyz404.gabiflix.TEST --es cmd "$1" --es val "$2" >/dev/null 2>&1; sleep "${3:-2}"; }
 # fotos: perto do inicio (130 s) e perto do fim (1080 s); a fala certa esta queimada no alto do video, a do player embaixo
 shots() {  # $1 = prefixo
-  rx seek 130 3; sleep 20; snap "$1-130s" 0.3; echo "pos130 $(glog | grep -E ' pos ' | tail -1)" >> $OUT/passos.txt
-  rx seek 1080 3; sleep 20; snap "$1-1080s" 0.3; echo "pos1080 $(glog | grep -E ' pos ' | tail -1)" >> $OUT/passos.txt
+  rx seek 130 3; sleep 20; snap "$1-130s-a" 0.2; sleep 1.3; snap "$1-130s-b" 0.2; sleep 1.3; snap "$1-130s-c" 0.2; echo "pos130 $(glog | grep -E ' pos ' | tail -1)" >> $OUT/passos.txt
+  rx seek 1080 3; sleep 20; snap "$1-1080s-a" 0.2; sleep 1.3; snap "$1-1080s-b" 0.2; sleep 1.3; snap "$1-1080s-c" 0.2; echo "pos1080 $(glog | grep -E ' pos ' | tail -1)" >> $OUT/passos.txt
 }
 echo "atraso certo em 130 s = $(dly 130) ms; em 1080 s = $(dly 1080) ms" >> $OUT/passos.txt
 X="--es gfRx 1 --es gfTrace 1 --es gfNoReport true"
@@ -77,12 +77,14 @@ launch deriva.srt $X --es gfAudioAuto false --es gfSubDelay $(dly 130)
 sleep 25; shots 2-antes-manual-no-inicio
 save 2-antes-manual
 
+adb shell pm clear $PKG >/dev/null; sleep 2
 # ---- 3) NOVO: automatico (janelas espalhadas + prova de deriva): a escala 1,001 entra; certa perto do inicio e perto do fim
 launch deriva.srt $X --es gfAudioStartSec 10
 waitlog "AUDIOSYNC aplicado" 240 && snap 3-aviso-deriva 0.3
 shots 3-novo-automatico
 save 3-novo-automatico
 
+adb shell pm clear $PKG >/dev/null; sleep 2
 # ---- 4) NOVO com atraso manual ja presente (certo perto de 130 s): o manual vence, so a escala entra, ancorada no ponto (sem pulo)
 launch deriva.srt $X --es gfSeekSec 120 --es gfSubDelay $(dly 130) --es gfAudioStartSec 15
 waitlog "AUDIOSYNC (aplicado|o áudio sugere|escala .* achada)" 240 || true
@@ -90,6 +92,7 @@ sleep 2; snap 4-manual-presente-depois-da-analise 0.3
 shots 4-novo-com-manual
 save 4-novo-com-manual
 
+adb shell pm clear $PKG >/dev/null; sleep 2
 # ---- 5) NOVO: DOIS ajustes manuais a mais de 10 min um do outro (automatico desligado): o motor deduz a escala e avisa
 launch deriva.srt $X --es gfAudioAuto false
 sleep 12; rx seek 130 3; rx delay $(dly 130) 7; rx seek 1000 3; rx delay $(dly 1000) 1
@@ -98,12 +101,14 @@ snap 5-aviso-dois-pontos 0.2
 sleep 5; shots 5-novo-dois-pontos
 save 5-novo-dois-pontos
 
+adb shell pm clear $PKG >/dev/null; sleep 2
 # ---- 6) legenda CERTA: nada pode mudar
 launch certa.srt $X --es gfAudioStartSec 10
 waitlog "AUDIOSYNC resultado:" 240; sleep 3
 shots 6-certa-intacta
 save 6-certa
 
+adb shell pm clear $PKG >/dev/null; sleep 2
 # ---- 7) legenda de OUTRO filme: recusa, nada muda
 launch outro.srt $X --es gfAudioStartSec 10
 waitlog "AUDIOSYNC resultado:" 240; sleep 3

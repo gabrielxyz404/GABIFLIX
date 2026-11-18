@@ -412,6 +412,8 @@ final class AudioSyncAuto {
         String k = cand == null || cand.text == null ? null : h.delayKey();
         if ((k == null ? key != null : !k.equals(key))) switchSub(k, now);
         if (k != null && cur != null) { try { watchManual(cur, k, now); } catch (Throwable t) { log("erro no vigia do ajuste manual: " + t); } }
+        // com o automático desligado o modelo com escala (achado pelos ajustes manuais) continua valendo: o atraso acompanha o filme
+        if (k != null && cur != null && !autoOn && cur.st == DONE && Math.abs(cur.mScale - 1.0) > 1e-9 && now >= cur.nextFollowAt && pl && h.delayMs() == cur.lastWritten) follow(cur, now);
         if (k == null || !autoOn || cur == null) return;
         Sub s = cur;
         if (running && hBuf >= 2 && now - runStartedAt > 5000) abortForStall(s, k, now);

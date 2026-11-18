@@ -66,7 +66,9 @@ public final class AudioAligner {
         public int driftMinWins = 3;
         public double driftMinSpanFrac = 0.25;
         public long driftMinSpanMs = 240_000;
-        public double driftMaxResMs = 150;
+        public double driftMaxResMs = 250;
+        /** com a deriva provada, o desvio de cada janela para o modelo final pode chegar a isto (ms) sem derrubar a aceitação (o ruído de uma janela de 90 s é de ~100-200 ms) */
+        public double driftGateDevMs = 300;
         public double driftResFloorMs = 50;
         public double driftRatio = 3.0;
         public double driftContentMs = 800;
@@ -564,7 +566,7 @@ public final class AudioAligner {
         finalEvidence(windows, ps, fine, R, P);
         decide(R, P);
         try {
-            analyzeCuts(R, cues, windows, ps, bl, use, nu, P, mediaDurationMs, fine);
+            if (!R.driftScale) analyzeCuts(R, cues, windows, ps, bl, use, nu, P, mediaDurationMs, fine);
         } catch (RuntimeException e) {
             R.segments = null; R.more = null; R.pieceSuspect = true;   // o ajuste global continua valendo
         }
@@ -576,7 +578,7 @@ public final class AudioAligner {
         } else if (R.segments != null) {
             R.segments = null;
         }
-        if (R.accepted && R.segments == null && R.z < P.acceptMinZ) {
+        if (R.accepted && R.segments == null && !R.driftScale && R.z < P.acceptMinZ) {
             R.accepted = false;
             R.reason = (R.reason + " z abaixo do limiar de aceitação (" + P.acceptMinZ + ");").trim();
         }
@@ -614,13 +616,16 @@ public final class AudioAligner {
         int W = ws.length;
         Result.Win[] info = new Result.Win[W];
         double[] x = new double[W], y = new double[W], wt = new double[W];
+        int[] widx = new int[W];
         int n = 0;
+        // o centro da pesquisa de cada janela: o modelo do ajuste grosso se ele é de escala ~1 (a faixa é de +-10 s em volta dele); se não, atraso 0 (+-15 s):
+        // o modelo errado do ajuste grosso não pode impedir a prova (a legenda com deriva é justamente a que o ajuste grosso encaixa mal)
+        final boolean nearUnitModel = Math.abs(R.scale - 1.0) < 0.0035;
         for (int w = 0; w < W; w++) {
             Result.Win wi = new Result.Win();
             double uc = ws[w].startMs + ws[w].p.length * 5.0;
-            double sc = (uc - R.offsetMs) / R.scale;
-            double d0 = uc - sc;
-            Fine f = fineWindow(ps[w], ws[w].startMs, fine, 1.0, d0, 300);
+            double d0 = nearUnitModel ? uc - (uc - R.offsetMs) / R.scale : 0;
+            Fine f = fineWindow(ps[w], ws[w].startMs, fine, 1.0, d0, nearUnitModel ? 1000 : 1500);
             wi.startMs = ws[w].startMs;
             wi.centerMs = uc;
             wi.delayMs = d0 + f.bestDelta;
@@ -629,15 +634,12 @@ public final class AudioAligner {
             wi.speech = f.speechFrac >= P.minSpeechFrac;
             wi.second = f.nccSecond;
             wi.confident = wi.speech && f.ncc >= P.winMinNcc && (f.ncc - f.nccSecond >= P.winMinMargin || f.z >= P.winMinZ);
-            if (wi.confident) { x[n] = uc; y[n] = wi.delayMs; wt[n] = Math.max(0.01, f.ncc); n++; }
+            if (wi.confident) { x[n] = uc; y[n] = wi.delayMs; wt[n] = Math.max(0.01, f.ncc); widx[n] = w; n++; }
             info[w] = wi;
         }
         R.wins = info;
         R.driftConfident = n;
         if (n < 2) { R.driftNote = "menos de 2 janelas confiáveis (" + n + " de " + W + ")"; return; }
-        double xmin = x[0], xmax = x[0];
-        for (int i = 1; i < n; i++) { xmin = Math.min(xmin, x[i]); xmax = Math.max(xmax, x[i]); }
-        double span = xmax - xmin;
         double[] unit = fitFixedAlpha(x, y, wt, n, 0.0);
         R.unitResMs = unit[1];
         R.driftResMs = unit[1];
@@ -648,43 +650,61 @@ public final class AudioAligner {
             double den = sw * sxx - sx * sx;
             if (den > 1e-6 * sw * sw) R.driftSlope = (sw * sxy - sx * sy) / den;
         }
-        if (Math.abs(R.scale - 1.0) >= 0.0035) { R.driftNote = "escala grande (" + R.scale + "): a prova de deriva vale só para a família 1,001"; return; }
 
         final double[] ks = {24.0 / 23.976, 23.976 / 24.0};
         int best = -1;
-        double bestRes = Double.MAX_VALUE;
+        double bestRes = Double.MAX_VALUE, bestBeta = 0, bestSpan = 0;
+        int bestN = 0, bestDrop = -1;
         boolean nearMiss = false;
         String why = "";
         for (int c = 0; c < 2; c++) {
             double al = alphaOf(ks[c]);
+            // melhor subconjunto: todas as janelas confiáveis; se a reta não fecha e há folga, tira UMA (a que mais atrapalha)
+            int drop = -1;
             double[] fr = fitFixedAlpha(x, y, wt, n, al);
+            if (fr[1] > P.driftMaxResMs && n > P.driftMinWins) {
+                for (int d = 0; d < n; d++) {
+                    double[] xs = new double[n - 1], ys = new double[n - 1], ws2 = new double[n - 1];
+                    int q = 0;
+                    for (int i = 0; i < n; i++) if (i != d) { xs[q] = x[i]; ys[q] = y[i]; ws2[q] = wt[i]; q++; }
+                    double[] f2 = fitFixedAlpha(xs, ys, ws2, n - 1, al);
+                    if (f2[1] < fr[1]) { fr = f2; drop = d; }
+                }
+            }
+            int nn = drop >= 0 ? n - 1 : n;
+            double xmin = Double.MAX_VALUE, xmax = -Double.MAX_VALUE;
+            double[] xs = new double[nn], ys = new double[nn], ws2 = new double[nn];
+            int q = 0;
+            for (int i = 0; i < n; i++) if (i != drop) { xs[q] = x[i]; ys[q] = y[i]; ws2[q] = wt[i]; q++; xmin = Math.min(xmin, x[i]); xmax = Math.max(xmax, x[i]); }
+            double span = xmax - xmin;
+            double[] un = fitFixedAlpha(xs, ys, ws2, nn, 0.0);
             double meas = Math.abs(al) * span, content = Math.abs(al) * durMs;
-            boolean fits = fr[1] <= P.driftMaxResMs && 2 * fr[1] <= unit[1] && meas >= 2 * Math.max(fr[1], P.driftResFloorMs);
+            boolean fits = fr[1] <= P.driftMaxResMs && 2 * fr[1] <= un[1] && meas >= 2 * Math.max(fr[1], P.driftResFloorMs);
             boolean spanOk = span >= Math.max((double) P.driftMinSpanMs, P.driftMinSpanFrac * durMs);
-            boolean ok = fits && n >= P.driftMinWins && spanOk && meas >= P.driftRatio * Math.max(fr[1], P.driftResFloorMs) && content >= P.driftContentMs;
+            boolean ok = fits && nn >= P.driftMinWins && spanOk && meas >= P.driftRatio * Math.max(fr[1], P.driftResFloorMs) && content >= P.driftContentMs;
             if (fits && !ok) {
                 nearMiss = true;
-                why = (n < P.driftMinWins ? "só " + n + " janelas confiáveis; " : "") + (!spanOk ? "janelas cobrem pouco do filme; " : "")
+                why = (nn < P.driftMinWins ? "só " + nn + " janelas confiáveis; " : "") + (!spanOk ? "janelas cobrem pouco do filme; " : "")
                         + (meas < P.driftRatio * Math.max(fr[1], P.driftResFloorMs) ? "deriva medida pequena frente ao resíduo; " : "")
                         + (content < P.driftContentMs ? "deriva no filme abaixo de " + (long) P.driftContentMs + " ms; " : "");
             }
-            if (ok && fr[1] < bestRes) { best = c; bestRes = fr[1]; }
+            if (ok && fr[1] < bestRes) { best = c; bestRes = fr[1]; bestBeta = fr[0]; bestSpan = span; bestN = nn; bestDrop = drop; }
         }
         if (best >= 0) {
             double al = alphaOf(ks[best]);
-            double[] fr = fitFixedAlpha(x, y, wt, n, al);
             R.scale = ks[best];
-            R.offsetMs = fr[0] * R.scale;
+            R.offsetMs = bestBeta * R.scale;
             R.scaleKnown = true;
             R.driftScale = true;
-            R.driftResMs = fr[1];
-            R.driftMeasMs = Math.abs(al) * span;
+            R.driftDropWin = bestDrop >= 0 ? widx[bestDrop] : -1;
+            R.driftResMs = bestRes;
+            R.driftMeasMs = Math.abs(al) * bestSpan;
             R.driftContentMs = Math.abs(al) * durMs;
-            R.driftNote = String.format(java.util.Locale.ROOT, "deriva provada: escala %.6f, resíduo %.0f ms (reta sem escala deixaria %.0f ms), deriva medida %.0f ms nas janelas e %.0f ms no filme, %d janelas confiáveis",
-                    R.scale, fr[1], unit[1], R.driftMeasMs, R.driftContentMs, n);
+            R.driftNote = String.format(java.util.Locale.ROOT, "deriva provada: escala %.6f, resíduo %.0f ms (reta sem escala deixaria %.0f ms), deriva medida %.0f ms nas janelas e %.0f ms no filme, %d janelas confiáveis%s",
+                    R.scale, bestRes, unit[1], R.driftMeasMs, R.driftContentMs, bestN, bestDrop >= 0 ? " (1 janela fora da reta descartada)" : "");
             return;
         }
-        if (Math.abs(R.scale - 1.0) > 1e-9) {
+        if (Math.abs(R.scale - 1.0) > 1e-9 && nearUnitModel) {
             // a escala 1,001 que o ajuste fino encaixou não tem prova: se a reta sem escala explica as janelas, é 1,0 (o encaixe era ruído)
             if (unit[1] <= P.driftMaxResMs) {
                 R.scale = 1.0;
@@ -804,6 +824,7 @@ public final class AudioAligner {
         int cnt = 0;
         double tp = 0, fp = 0, fn = 0;
         for (int w = 0; w < ws.length; w++) {
+            if (w == R.driftDropWin) continue;
             Fine f = fineWindow(ps[w], ws[w].startMs, fine, R.scale, R.offsetMs, 40);
             if (f.speechFrac < P.minSpeechFrac) continue;
             Fine fw = fineWindow(ps[w], ws[w].startMs, fine, R.scale, R.offsetMs, 150);
@@ -830,10 +851,13 @@ public final class AudioAligner {
         double agreeFrac = R.blocksValid > 0 ? R.blocksAgree / (double) R.blocksValid : 0;
         boolean ok = R.z >= P.minZ && agreeFrac >= P.minAgreeFrac && R.nccMean >= P.minNcc && R.margin >= P.minMargin && R.f1 >= P.minF1;
         if (!R.scaleKnown && (!P.allowFreeScale || R.z < P.minZFree || R.nccMean < P.minNccFree)) ok = false;
+        // deriva provada pelas janelas (reta de escala conhecida que fecha em todas, ver driftCheck): a evidência é a delas; o z e a concordância dos BLOCOS
+        // foram medidos contra o modelo grosso (que encaixa mal uma legenda com deriva) e não valem aqui
+        if (R.driftScale) ok = R.nccMean >= P.minNcc && R.f1 >= P.minF1;
         // família 1,001: só com a prova de deriva (driftCheck); um valor assim sem prova é ruído de ajuste
         boolean nearUnit = !R.driftScale && Math.abs(R.scale - 1.0) > 1e-9 && Math.abs(R.scale - 1.0) < P.nearUnitEps;
         if (nearUnit) ok = false;
-        boolean gateDev = P.gateWinDevMs > 0 && R.winsValid >= 2 && R.winMaxDev > P.gateWinDevMs;
+        boolean gateDev = P.gateWinDevMs > 0 && R.winsValid >= 2 && R.winMaxDev > (R.driftScale ? P.driftGateDevMs : P.gateWinDevMs);
         boolean gateWin = P.gateMinWinsAgree > 0 && R.winsAgree < P.gateMinWinsAgree;
         if (gateDev || gateWin) ok = false;
         R.accepted = ok;
