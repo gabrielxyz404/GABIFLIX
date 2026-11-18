@@ -63,6 +63,8 @@ jobs:
           cmd "resize 1470 956"; cmd "showforce" 2; shot ecra-1470x956
           cmd "resize 1470 956"; cmd "key 49" 2; cmd "show" 1; shot pausado
           cmd "fs"; sleep 4; cmd "show" 1; shot tela-cheia
+          cmd "fs" 4
+          cmd "resize 1470 956"
           cmd "layout"
           cmd "chrome 1470 956 /tmp/telas/${{ matrix.versao }}-controles-1470x956.png" 3
           cmd "chrome 2560 1600 /tmp/telas/${{ matrix.versao }}-controles-2560x1600.png" 3
