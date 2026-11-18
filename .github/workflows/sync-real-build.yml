@@ -27,4 +27,5 @@ jobs:
           gradle -p android compileReleaseJavaWithJavac --no-daemon 2>&1 | tee build.log | tail -5
       - name: Erros
         if: failure()
-        run: grep -n -E "error:|What went wrong|e: " -A3 build.log | head -60 | while IFS= read -r l; do echo "::error::$(echo "$l" | cut -c1-600)"; done
+        run: |
+          grep -n -E "error:|What went wrong|e: " -A3 build.log | head -60 | while IFS= read -r l; do echo "::error::$(echo "$l" | cut -c1-600)"; done
