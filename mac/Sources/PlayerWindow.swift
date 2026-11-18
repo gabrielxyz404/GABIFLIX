@@ -1425,6 +1425,19 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
         case "dump":
             log("dump: controls alpha=\(controls.alphaValue) hidden=\(controls.isHidden) frame=\(controls.frame) topBar alpha=\(topBar.alphaValue) tocando=\(player.isPlaying) hideEm=\(hideAt.timeIntervalSinceNow) ordem=\(root.subviews.map { NSStringFromClass(type(of: $0)).split(separator: ".").last.map(String.init) ?? "" }) videoLayer=\(String(describing: videoView.layer))")
         case "fs": toggleFullScreen()
+        case "chrome":
+            // só nos testes: fotografa a própria vista do player (controles por cima de preto; o vídeo não entra, o GitHub não tem placa gráfica) com a janela
+            // no tamanho pedido, mesmo maior do que o ecrã do computador: "chrome 2560 1600 /tmp/x.png"
+            let n2 = w.count > 2 ? Int(w[2]) ?? 0 : 0
+            guard n > 0, n2 > 0, w.count > 3, let win = window else { break }
+            win.setFrame(NSRect(x: 0, y: 0, width: n, height: n2 + 28), display: true)
+            testCommand("showforce")
+            root.layoutSubtreeIfNeeded()
+            if let rep = root.bitmapImageRepForCachingDisplay(in: root.bounds) {
+                root.cacheDisplay(in: root.bounds, to: rep)
+                try? rep.representation(using: .png, properties: [:])?.write(to: URL(fileURLWithPath: w[3]))
+            }
+            log("chrome: \(Int(root.bounds.width))x\(Int(root.bounds.height)) -> \(w[3])")
         case "resize":
             let n2 = w.count > 2 ? Int(w[2]) ?? 0 : 0
             if n > 0 && n2 > 0 { window?.setContentSize(NSSize(width: n, height: n2)); window?.center() }
