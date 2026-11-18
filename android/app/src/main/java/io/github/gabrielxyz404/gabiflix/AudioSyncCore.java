@@ -10,7 +10,6 @@ import io.github.gabrielxyz404.gabiflix.audiosync.Cue;
 import io.github.gabrielxyz404.gabiflix.audiosync.DspVad;
 import io.github.gabrielxyz404.gabiflix.audiosync.Recheck;
 import io.github.gabrielxyz404.gabiflix.audiosync.Result;
-import io.github.gabrielxyz404.gabiflix.audiosync.SileroVad;
 import io.github.gabrielxyz404.gabiflix.audiosync.Vad;
 import io.github.gabrielxyz404.gabiflix.audiosync.Window;
 
@@ -124,7 +123,6 @@ final class AudioSyncCore {
                 cap = null;
                 for (int i = 0; i < extraCaps.length; i++) extraCaps[i] = null;
                 if (c != null) AudioCap.close();   // libera o libVLC compartilhado por todas as capturas
-                if (vad instanceof SileroVad) { try { ((SileroVad) vad).close(); } catch (Throwable ignored) {} }
                 vad = null;
             }
         }, "gf-audiosync-close");
@@ -134,26 +132,46 @@ final class AudioSyncCore {
 
     private static void log(String s) { SubtitleSync.log("AUDIOSYNC " + s); }
 
-    private Vad vad() {
-        if (vad != null) return vad;
-        try {
-            if (forceDsp) throw new IllegalStateException("forçado nos testes");
-            byte[] model;
-            try (InputStream in = ctx.getAssets().open("silero_vad.onnx")) {
-                ByteArrayOutputStream bo = new ByteArrayOutputStream(2_400_000);
-                byte[] b = new byte[65536];
-                int n;
-                while ((n = in.read(b)) > 0) bo.write(b, 0, n);
-                model = bo.toByteArray();
+    /**
+     * O Silero (ONNX Runtime) roda no processo de captura (:audiocap), nunca neste: uma queda nativa ou falta de memória dele não fecha o player.
+     * Se o serviço não responder, o VAD por DSP (Java puro, sem biblioteca nativa) faz o trabalho aqui.
+     */
+    private final class RemoteVad implements Vad {
+        private Vad dsp;
+        private volatile String last = "silero";
+        @Override public String name() { return last; }
+        @Override public float[] speechProb(short[] pcm, int n, int rate) {
+            if (!forceDsp) {
+                File in = new File(dir, "vad-in.raw"), out = new File(dir, "vad-out.raw");
+                try {
+                    java.nio.ByteBuffer bb = java.nio.ByteBuffer.allocate(n * 2).order(java.nio.ByteOrder.LITTLE_ENDIAN);
+                    bb.asShortBuffer().put(pcm, 0, n);
+                    try (java.io.FileOutputStream fo = new java.io.FileOutputStream(in)) { fo.write(bb.array()); }
+                    if (capAt(0).vad(in, out)) {
+                        byte[] raw = new byte[(int) out.length()];
+                        try (java.io.FileInputStream fi = new java.io.FileInputStream(out)) { int o = 0, k; while (o < raw.length && (k = fi.read(raw, o, raw.length - o)) > 0) o += k; }
+                        float[] p = new float[raw.length / 4];
+                        java.nio.ByteBuffer.wrap(raw).order(java.nio.ByteOrder.LITTLE_ENDIAN).asFloatBuffer().get(p);
+                        last = "silero";
+                        return p;
+                    }
+                } catch (Throwable t) {
+                    log("VAD remoto falhou (" + t + ")");
+                } finally {
+                    in.delete();
+                    out.delete();
+                }
+                if (cap != null && cap.isCancelled()) return new float[n / 160];
             }
-            vad = new SileroVad(model);
-            vadName = "silero";
-        } catch (Throwable t) {
-            // ONNX Runtime não carregou neste aparelho (biblioteca nativa/ABI/memória): usa o VAD por DSP (sem biblioteca nativa)
-            log("Silero indisponível (" + t + "): usando o VAD por DSP");
-            vad = DspVad.forName("dsp");
-            vadName = vad.name();
+            if (dsp == null) dsp = DspVad.forName("dsp");
+            last = dsp.name();
+            log("Silero indisponível: usando o VAD por DSP");
+            return dsp.speechProb(pcm, n, rate);
         }
+    }
+
+    private Vad vad() {
+        if (vad == null) vad = new RemoteVad();
         return vad;
     }
 
@@ -237,7 +255,7 @@ final class AudioSyncCore {
             synchronized (o.st) {
                 o.st.vadCpuMs += (Debug.threadCpuTimeNanos() - c0) / 1_000_000;
                 o.st.vadMs += (System.nanoTime() - w0) / 1_000_000;
-                o.st.vad = vadName;
+                o.st.vad = vad.name();
             }
             return new Window(startMs, p);
         } finally {

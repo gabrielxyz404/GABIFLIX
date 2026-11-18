@@ -192,6 +192,39 @@ final class AudioCap {
         return r;
     }
 
+    /**
+     * Roda o Silero no processo de captura: lê o PCM (s16le) de `in` e grava as probabilidades (floats little-endian, 100 por segundo) em `out`.
+     * false = não deu (serviço caiu, indisponível, cancelado, sem ONNX): quem chama usa o VAD por DSP, que não tem código nativo.
+     */
+    boolean vad(File in, File out) {
+        appCtx = ctx;
+        if (cancelled || crashes >= MAX_CRASHES) return false;
+        try {
+            if (out.exists()) out.delete();
+            Messenger s = connect(20_000);
+            if (s == null) return false;
+            int id = ids.incrementAndGet();
+            Pending p = new Pending();
+            pending.put(id, p);
+            Bundle b = new Bundle();
+            b.putInt("id", id);
+            b.putString("in", in.getAbsolutePath());
+            b.putString("out", out.getAbsolutePath());
+            send(AudioCapService.MSG_VAD, b, reply);
+            long limit = System.nanoTime() + 240_000_000_000L;
+            while (!p.done.await(500, TimeUnit.MILLISECONDS)) {
+                if (cancelled || System.nanoTime() > limit) { pending.remove(id); return false; }
+            }
+            if (!p.out.ok) log("VAD no processo de captura não deu: " + p.out.end);
+            return p.out.ok && out.exists();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            return false;
+        } catch (Throwable t) {
+            return false;
+        }
+    }
+
     /** lê o WAV (mono s16 16 kHz) para short[]; pula o cabeçalho procurando o bloco "data" */
     static short[] readWav(File f) throws IOException { return AudioCapEngine.readWav(f); }
 }

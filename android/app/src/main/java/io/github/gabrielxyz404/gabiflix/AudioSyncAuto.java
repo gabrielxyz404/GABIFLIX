@@ -377,14 +377,35 @@ final class AudioSyncAuto {
         log("começando: posição " + pos / 1000 + " s, duração " + dur / 1000 + " s, atraso atual " + d0 + " ms, faixa de áudio " + trackId + "");
         status("A verificar a legenda pelo áudio…", TONE_NEUTRAL);
         noticeOnce(k, "verificando", "Legenda: a verificar pelo áudio…");
-        ex.execute(() -> {
+        exec(() -> {
             core.audioTrackId = trackId;
             AudioSyncCore.Outcome o = core.run(url, text, dur, pos, d0, budget);
             ui.post(() -> finishRun(tok, k, d0, o));
         });
     }
 
+    /** nada do que roda aqui pode derrubar o app: uma exceção vira registro + relatório, e a análise desta legenda para */
+    private void fail(String what, Throwable t) {
+        log("ERRO em " + what + ": " + t);
+        try {
+            java.io.StringWriter sw = new java.io.StringWriter();
+            t.printStackTrace(new java.io.PrintWriter(sw));
+            String trace = sw.toString();
+            CrashReporter.event("ERRO_ANALISE", what + ": " + (trace.length() > 3000 ? trace.substring(0, 3000) : trace));
+        } catch (Throwable ignored) {}
+        running = false;
+        st = OFF;
+    }
+
+    private void exec(Runnable r) {
+        ex.execute(() -> { try { r.run(); } catch (Throwable t) { final Throwable e = t; ui.post(() -> fail("thread de análise", e)); } });
+    }
+
     private void finishRun(int tok, String k, int d0, AudioSyncCore.Outcome o) {
+        try { finishRun0(tok, k, d0, o); } catch (Throwable t) { fail("resultado", t); }
+    }
+
+    private void finishRun0(int tok, String k, int d0, AudioSyncCore.Outcome o) {
         if (stopped || tok != token.get()) { log("resultado descartado (outra execução/legenda/tela): " + o.note); return; }
         running = false;
         log("resultado: " + o.note + (o.cuts ? " [aviso: a legenda parece ter cortes]" : "") + " | " + o.st.summary());
@@ -474,7 +495,7 @@ final class AudioSyncAuto {
         runStartedAt = SystemClock.uptimeMillis();
         final long budget = recheckBudget();
         final int trackId = h.audioTrackId();
-        ex.execute(() -> {
+        exec(() -> {
             core.audioTrackId = trackId;
             AudioSyncCore.Check ck = core.recheck(url, text, dur, pos, a, b, prev, fl, budget);
             ui.post(() -> finishRecheck(tok, k, ck, pos, a, b));
@@ -482,6 +503,10 @@ final class AudioSyncAuto {
     }
 
     private void finishRecheck(int tok, String k, AudioSyncCore.Check ck, long pos, double a, double b) {
+        try { finishRecheck0(tok, k, ck, pos, a, b); } catch (Throwable t) { fail("reverificação", t); }
+    }
+
+    private void finishRecheck0(int tok, String k, AudioSyncCore.Check ck, long pos, double a, double b) {
         if (stopped || tok != token.get()) return;
         running = false;
         nextRecheckAt = SystemClock.uptimeMillis() + recheckMs;
@@ -522,7 +547,7 @@ final class AudioSyncAuto {
         final String url = h.url(), text = cand.text;
         final long applyFromSub = ck.out.applyFromSubMs;
         log("reverificação: salto proposto, confirmando com 3 janelas em volta de " + pos / 1000 + " s");
-        ex.execute(() -> {
+        exec(() -> {
             AudioSyncCore.Outcome o = core.confirmChange(url, text, dur, pos, a, b, ck.window);
             ui.post(() -> {
                 if (stopped || tok != token.get()) return;
