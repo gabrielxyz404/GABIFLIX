@@ -1,0 +1,42 @@
+filme scarlet_street legendas PT: 6
+  descartado ScarletStreet1945 (título '')
+  descartado scarlet_street_1945 (título '')
+  escolhido Scarlet.Street.194517 / ScarletStreet1945.ogv (458 MB, 6142 s)
++ curl -fL -sS --retry 6 --retry-delay 4 --retry-all-errors -C - -o media/_work/src_video https://archive.org/download/Scarlet.Street.194517/ScarletStreet1945.ogv
+fonte: {'source': 'https://archive.org/download/Scarlet.Street.194517/ScarletStreet1945.ogv', 'ia': 'Scarlet.Street.194517', 'file': 'ScarletStreet1945.ogv', 'size': 458060283, 'length': 6141.74}
++ ffmpeg -nostdin -loglevel error -y -ss 0 -t 1200 -i media/_work/src_video -map 0:v:0 -map 0:a:0 -vf scale=640:-2 -r 24 -c:v libx264 -preset veryfast -crf 30 -c:a aac -b:a 96k -ac 2 media/clip.mkv
++ ffmpeg -nostdin -loglevel error -y -i media/clip.mkv -vn -ac 1 -ar 16000 -c:a pcm_s16le media/_work/audio16k.wav
+clip: 1200.0 s, 39670384 bytes
++ curl -fL -sS --retry 6 --retry-delay 4 --retry-all-errors -C - -o media/_work/alass https://github.com/kaegi/alass/releases/download/v2.0.0/alass-linux64
+candidatas PT: 6
+{'idx': 0, 'id': '3136746', 'cues_trecho': 281, 'alass_mediana_ms': 20191, 'alass_p75_desvio_ms': 398, 'alass_p90_desvio_ms': 477}
+{'idx': 1, 'id': '6603128', 'cues_trecho': 279, 'alass_mediana_ms': 9477, 'alass_p75_desvio_ms': 0, 'alass_p90_desvio_ms': 0}
+{'idx': 2, 'id': '5844574', 'cues_trecho': 279, 'alass_mediana_ms': -144, 'alass_p75_desvio_ms': 0, 'alass_p90_desvio_ms': 0}
+{'idx': 3, 'id': '6177586', 'cues_trecho': 243, 'alass_mediana_ms': 233, 'alass_p75_desvio_ms': 0, 'alass_p90_desvio_ms': 0}
+{'idx': 4, 'id': '5814834', 'cues_trecho': 279, 'alass_mediana_ms': 477, 'alass_p75_desvio_ms': 0, 'alass_p90_desvio_ms': 0}
+{'idx': 5, 'id': '3134586', 'cues_trecho': 300, 'alass_mediana_ms': 335, 'alass_p75_desvio_ms': 0, 'alass_p90_desvio_ms': 0}
+mais3.srt PRE accepted=1 raw=-3047 scale=1.00000 z=11.7 wins=3/3 inSync=0 janelas=[[275000, 90000], [710000, 90000], [1050000, 90000]]
+menos2.srt PRE accepted=1 raw=1970 scale=1.00000 z=11.7 wins=3/3 inSync=0 janelas=[[270000, 90000], [705000, 90000], [1045000, 90000]]
+certa.srt PRE accepted=1 raw=-30 scale=1.00000 z=12.1 wins=3/3 inSync=1 janelas=[[270000, 90000], [705000, 90000], [1045000, 90000]]
+pronto
+filme scarlet_street legendas PT: 6
+  descartado ScarletStreet1945 (título '')
+  descartado scarlet_street_1945 (título '')
+  escolhido Scarlet.Street.194517 / ScarletStreet1945.ogv (458 MB, 6142 s)
++ curl -fL -sS --retry 6 --retry-delay 4 --retry-all-errors -C - -o media/_work/src_video https://archive.org/download/Scarlet.Street.194517/ScarletStreet1945.ogv
+fonte: {'source': 'https://archive.org/download/Scarlet.Street.194517/ScarletStreet1945.ogv', 'ia': 'Scarlet.Street.194517', 'file': 'ScarletStreet1945.ogv', 'size': 458060283, 'length': 6141.74}
++ ffmpeg -nostdin -loglevel error -y -ss 0 -t 1200 -i media/_work/src_video -map 0:v:0 -map 0:a:0 -vf scale=640:-2 -r 24 -c:v libx264 -preset veryfast -crf 30 -c:a aac -b:a 96k -ac 2 media/clip.mkv
++ ffmpeg -nostdin -loglevel error -y -i media/clip.mkv -vn -ac 1 -ar 16000 -c:a pcm_s16le media/_work/audio16k.wav
+clip: 1200.0 s, 39670384 bytes
++ curl -fL -sS --retry 6 --retry-delay 4 --retry-all-errors -C - -o media/_work/alass https://github.com/kaegi/alass/releases/download/v2.0.0/alass-linux64
+candidatas PT: 6
+{'idx': 0, 'id': '3136746', 'cues_trecho': 281, 'alass_mediana_ms': 20191, 'alass_p75_desvio_ms': 398, 'alass_p90_desvio_ms': 477}
+{'idx': 1, 'id': '6603128', 'cues_trecho': 279, 'alass_mediana_ms': 9477, 'alass_p75_desvio_ms': 0, 'alass_p90_desvio_ms': 0}
+{'idx': 2, 'id': '5844574', 'cues_trecho': 279, 'alass_mediana_ms': -144, 'alass_p75_desvio_ms': 0, 'alass_p90_desvio_ms': 0}
+{'idx': 3, 'id': '6177586', 'cues_trecho': 243, 'alass_mediana_ms': 233, 'alass_p75_desvio_ms': 0, 'alass_p90_desvio_ms': 0}
+{'idx': 4, 'id': '5814834', 'cues_trecho': 279, 'alass_mediana_ms': 477, 'alass_p75_desvio_ms': 0, 'alass_p90_desvio_ms': 0}
+{'idx': 5, 'id': '3134586', 'cues_trecho': 300, 'alass_mediana_ms': 335, 'alass_p75_desvio_ms': 0, 'alass_p90_desvio_ms': 0}
+mais3.srt PRE accepted=1 raw=-3047 scale=1.00000 z=11.7 wins=3/3 inSync=0 janelas=[[275000, 90000], [710000, 90000], [1050000, 90000]]
+menos2.srt PRE accepted=1 raw=1970 scale=1.00000 z=11.7 wins=3/3 inSync=0 janelas=[[270000, 90000], [705000, 90000], [1045000, 90000]]
+certa.srt PRE accepted=1 raw=-30 scale=1.00000 z=12.1 wins=3/3 inSync=1 janelas=[[270000, 90000], [705000, 90000], [1045000, 90000]]
+pronto
