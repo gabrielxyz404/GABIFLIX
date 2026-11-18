@@ -1,0 +1,81 @@
+name: Mac player UI antes/depois (sem publicar)
+
+# Compila o FramePlay.app do Mac (antes = base 1.0.37 + comando de teste; depois = este commit) e fotografa os controles do player com a janela em
+# 1470x956 (MacBook Air 13") e 2560x1600. O GitHub não tem placa gráfica: o vídeo fica preto, só se vêem os controles. NÃO publica o app.
+# Dispara ao enviar um branch chamado mac-ui-run-<nome>; resultados no branch mac-ui-out-<nome>-<antes|depois>
+on:
+  push:
+    branches: ['mac-ui-run-**']
+
+permissions:
+  contents: write
+
+jobs:
+  teste:
+    runs-on: macos-15-intel
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        versao: [antes, depois]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ matrix.versao == 'antes' && 'mac-ui-antes' || github.sha }}
+      - name: Montar o app
+        env:
+          FRAMEPLAY_VERSION: 0.0.${{ github.run_number }}
+          FRAMEPLAY_BUILD: ${{ github.run_number }}
+          FRAMEPLAY_ARCH: x86_64
+        run: |
+          set -o pipefail
+          ./mac/build.sh 2>&1 | tee build.log
+      - name: Mostrar o erro (se houver)
+        if: failure()
+        run: |
+          grep -n -E "error:|fatal|No such|cannot find" build.log | sort -u | head -60 | while IFS= read -r line; do
+            echo "::error::$(echo "$line" | cut -c1-900)"
+          done
+      - name: Vídeo de teste
+        run: |
+          brew install ffmpeg > /dev/null 2>&1 || brew install ffmpeg
+          mkdir -p /tmp/srv && cd /tmp/srv
+          ffmpeg -loglevel error -f lavfi -i "testsrc2=size=1280x720:rate=25:duration=300" -f lavfi -i "sine=frequency=440:duration=300" -c:v libx264 -preset ultrafast -pix_fmt yuv420p -c:a aac -shortest teste.mp4
+          nohup python3 -m http.server 8765 --bind 127.0.0.1 > /tmp/srv.log 2>&1 &
+          sleep 2; curl -sI http://127.0.0.1:8765/teste.mp4 | head -1
+      - name: Fotografar o player
+        run: |
+          xattr -cr mac/build/FramePlay.app
+          mkdir -p /tmp/telas
+          system_profiler SPDisplaysDataType 2>/dev/null | grep -i -E "resolution|display type" | tee /tmp/telas/ecra.txt || true
+          APP=mac/build/FramePlay.app/Contents/MacOS/FramePlay
+          shot() { screencapture -x "/tmp/telas/${{ matrix.versao }}-$1.png" || true; }
+          cmd() { echo "$1" > /tmp/gf-cmd; sleep "${2:-2.5}"; }
+          defaults delete FramePlay 2>/dev/null || true
+          rm -f /tmp/frameplay-player.log
+          $APP --gf-test-play http://127.0.0.1:8765/teste.mp4 - > /tmp/telas/app.log 2>&1 &
+          sleep 30
+          cmd "state"
+          cmd "resize 1470 956"; cmd "showforce" 2; shot ecra-1470x956
+          cmd "chrome 1470 956 /tmp/telas/${{ matrix.versao }}-controles-1470x956.png" 3
+          cmd "chrome 2560 1600 /tmp/telas/${{ matrix.versao }}-controles-2560x1600.png" 3
+          cmd "chrome 1000 650 /tmp/telas/${{ matrix.versao }}-controles-1000x650.png" 3
+          cmd "chrome 820 460 /tmp/telas/${{ matrix.versao }}-controles-820x460.png" 3
+          cmd "resize 1470 956"; cmd "key 49" 2; cmd "show" 1; shot pausado
+          cmd "fs"; sleep 4; cmd "show" 1; shot tela-cheia
+          cmd "layout"
+          pkill -x FramePlay || true
+          sleep 2
+          cp /tmp/frameplay-player.log /tmp/telas/player.log 2>/dev/null || true
+          grep -E "interface:|chrome:|tela:|vout:" /tmp/telas/player.log | cut -c1-300 | head -30 || true
+      - name: Guardar as telas
+        if: always()
+        env:
+          TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p /tmp/telas && cp build.log /tmp/telas/ 2>/dev/null || true
+          cd /tmp/telas
+          git init -q && git checkout -q -b x
+          git config user.name "FramePlay CI"; git config user.email "ci@frameplay.local"
+          git add -A && git commit -qm "telas" || true
+          git push -q -f "https://x-access-token:${TOKEN}@github.com/${{ github.repository }}.git" x:mac-ui-out-${{ github.ref_name }}-${{ matrix.versao }} || echo "::warning::não guardou"
