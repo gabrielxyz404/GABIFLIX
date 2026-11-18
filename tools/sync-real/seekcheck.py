@@ -19,7 +19,7 @@ def media(t):
     if i <= 0 or i >= len(ts): return None
     if ps[i] - ps[i-1] > 5000 or ps[i] - ps[i-1] < 0: return None   # salto (seek) entre as duas amostras
     return ps[i-1] + (ps[i] - ps[i-1]) * (t - ts[i-1]) / max(1e-6, ts[i] - ts[i-1])
-E = EV = FP = N = 0
+E = EV = FP = N = 0; miss = []
 for l in open(os.path.join(d, "times.txt")):
     i, a, b = l.split(); t = (float(a) + float(b)) / 2
     mt = media(t)
@@ -31,5 +31,7 @@ for l in open(os.path.join(d, "times.txt")):
     k = sum(1 for y in range(0, c.size[1], 2) for x in range(0, c.size[0], 2) if px[x, y] > 200)
     txt = k > 40
     exp = any(s0 + 300 <= mt <= e0 - 300 for s0, e0 in cues)
+    if exp and not txt: miss.append(int(mt))
     N += 1; E += exp; EV += (exp and txt); FP += (txt and not exp)
 print("%s %s: fotos=%d, com fala esperada=%d, vistas=%d (%.0f%%), texto sem fala esperada=%d" % (name, os.path.basename(d), N, E, EV, 100.0*EV/max(1, E), FP))
+print("  sem texto mesmo devendo ter (posicoes ms): %s" % miss[:40])

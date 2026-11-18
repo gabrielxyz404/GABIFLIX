@@ -426,7 +426,7 @@ public class PlayerActivity extends Activity {
             if (sd != null) ui.postDelayed(() -> { subDelayMs = Integer.parseInt(sd); applySubDelay(); glog("teste: atraso da legenda posto em " + subDelayMs + " ms"); }, 4000);
             if (getIntent().getStringExtra("gfTrace") != null) ui.post(new Runnable() { @Override public void run() {
                 if (player == null) return;
-                glog("pos " + player.getTime());
+                glog("pos " + player.getTime() + " spu=" + player.getSpuTrack() + " atraso=" + subDelayMs + " buf=" + buffering());
                 ui.postDelayed(this, 400);
             } });
         } catch (Throwable ignored) {}
@@ -645,7 +645,11 @@ public class PlayerActivity extends Activity {
             @Override public void onStop(float frac) {
                 userSeeking = false;
                 long len = player == null ? 0 : player.getLength();
-                if (frac >= 0 && len > 0) { seekHoldUntil = SystemClock.uptimeMillis() + 800; player.setTime((long) (len * (double) frac)); }
+                if (frac >= 0 && len > 0) {
+                    seekHoldUntil = SystemClock.uptimeMillis() + 800;
+                    long from = player.getTime(); player.setTime((long) (len * (double) frac));
+                    glog("seek pela barra: " + from + " -> " + (long) (len * (double) frac) + " ms, faixa " + player.getSpuTrack() + ", atraso " + subDelayMs);
+                }
                 scheduleHide();
             }
         };

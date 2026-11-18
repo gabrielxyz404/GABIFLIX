@@ -62,6 +62,40 @@ P_SLOW=1
 DONE='AUDIOSYNC (aplicado|resultado:|desisti|botão:|o áudio não tem|pulado|já foi vista)'
 panel_texts() { pause_v; show_controls; open_subs; sleep 1.5; snap "$1" 0.5; texts "$1"; adb shell input keyevent KEYCODE_BACK; sleep 1; play_v; }
 
+if [ -f tools/sync-real/ONLY_F ]; then
+  # condicoes reais: video por HTTP lento (rede limitada), legenda por URL (addSlave), sincronizacao automatica ja aplicada E uma nova analise
+  # (re-checagem) capturando audio durante os seeks; seeks arrastando a linha do tempo, varios seguidos e rapidos, inclusive durante o carregamento
+  python3 -c "import PIL" 2>/dev/null || pip install --user -q pillow
+  CLIP=blk.mkv
+  LOG=/tmp/server-bytes-f.log THROTTLE_KBPS=${F_KBPS:-70} nohup python3 tools/audio-integra/server.py /tmp/media 8002 >/tmp/server-f.out 2>&1 &
+  sleep 2; BASE=http://10.0.2.2:8002
+  for modo in 0 1; do
+    N=m$modo-mais3
+    adb shell pm clear $PKG >/dev/null; sleep 2
+    launch mais3.srt --es gfSeekSec 240 --es gfAudioStartSec 240 --es gfAudioRecheckSec 25 --es gfScale $modo --es gfTrace 1
+    P_SLOW=1 waitlog "AUDIOSYNC (aplicado|resultado:)" 300; sleep 2
+    adb exec-out screencap -p > $OUT/foto-F-$N-aplicado.png
+    mkdir -p $OUT/F-$N
+    ( for i in $(seq 1 70); do a=$(date +%s.%N); adb exec-out screencap -p > $OUT/F-$N/$(printf %03d $i).png; b=$(date +%s.%N); echo "$(printf %03d $i) $a $b" >> $OUT/F-$N/times.txt; done ) &
+    SH=$!
+    sleep 3
+    drag() { # $1 = fracao de partida, $2 = fracao de chegada
+      xy=$(dump | python3 $UI xy "Linha do tempo")
+      if [ -z "$xy" ]; then adb shell input tap $((W/2)) $((H/3)); sleep 0.6; xy=$(dump | python3 $UI xy "Linha do tempo"); fi
+      [ -z "$xy" ] && { echo "F: sem linha do tempo" >> $OUT/passos.txt; return; }
+      cx=${xy% *}; cy=${xy#* }; half=$((W/2-250))
+      adb shell input swipe $((cx + (${1} - 50) * half / 50)) $cy $((cx + (${2} - 50) * half / 50)) $cy 250
+    }
+    drag 20 27; sleep 1.5; drag 27 24; sleep 1; drag 24 31; drag 31 22; sleep 6
+    drag 22 29; sleep 5
+    wait $SH
+    save F-$N
+    for i in 1; do python3 tools/sync-real/seekcheck.py $OUT/F-$N $OUT/log-$P-F-$N.txt $OUT/clock.txt F >> $OUT/seek-resumo.txt 2>&1; done
+    ls $OUT/F-$N/*.png | awk 'NR%5!=1' | xargs rm -f
+    adb exec-out screencap -p > $OUT/foto-F-$N-final.png
+  done
+  cat $OUT/seek-resumo.txt; exit 0
+fi
 if [ -f tools/sync-real/ONLY_E ]; then
   # a legenda some depois de avancar/voltar na linha do tempo? video preto (so o texto da legenda e claro). Atraso posto por gancho de teste
   # (positivo e negativo), Normal e Preencher; compara cada foto com o que a legenda certa deveria mostrar naquele instante da midia
