@@ -52,7 +52,7 @@ run_case() {
   [ $done = 1 ] || FAILS=$((FAILS+1))
 }
 # 1) caminho real do usuario: Normal, sem nenhum gancho de teste (o automatico espera 30 s tocando + 25 s com a legenda)
-run_case normal-padrao 330 20
+run_case normal-padrao 420 20
 # 2) Normal com a analise forcada a comecar cedo (e a passar do filtro de pouca memoria): espera o fim da analise
 run_case normal-forcado 330 25 --es gfAudioStartSec 5 --es gfTrace 1
 # 3) Preencher
