@@ -7,6 +7,10 @@ import android.os.Looper;
 import android.os.Process;
 import android.os.SystemClock;
 
+import io.github.gabrielxyz404.gabiflix.audiosync.AudioAligner;
+import io.github.gabrielxyz404.gabiflix.audiosync.ManualDrift;
+
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -28,6 +32,12 @@ import java.util.concurrent.atomic.AtomicInteger;
  *  - as quedas do processo de captura (que a captura já recupera na hora, com outra configuração) contam como UMA tentativa só;
  *  - só aparece aviso na tela quando o atraso muda de verdade; confirmação silenciosa só na primeira conferência de um filme.
  * Toda decisão de iniciar (ou não) uma análise sai no registro, com o motivo: "AUDIOSYNC GATILHO motivo=… decisão=…".
+ *
+ * Deriva (legenda que se afasta aos poucos: escala de fps, 1,001 e afins): a análise usa janelas ESPALHADAS pelo filme e só aceita uma escala com prova
+ * (ver AudioAligner.driftCheck). Com atraso manual já guardado, a análise ainda roda: o deslocamento manual vence, mas a ESCALA achada é aplicada em volta do
+ * ponto de alinhamento do usuário (a legenda não "pula" no instante em que a escala entra). Dois ajustes manuais com mais de 10 min de diferença no filme
+ * valem como dica de deriva (ManualDrift): a inclinação entre eles, se bate com uma razão de fps conhecida, vira escala (aviso na tela).
+ * Cada análise manda um relatório anônimo ANALISE para o ntfy (sem título, endereço ou nome de arquivo).
  *
  * Regras: o atraso manual do usuário sempre vence (atraso guardado que não foi posto por aqui, ou mexido depois, nunca é alterado); na dúvida não
  * mexe; nada disto toca o player (só setSpuDelay pelo mesmo caminho do ajuste manual).
@@ -105,6 +115,10 @@ final class AudioSyncAuto {
         /** gatilho "ajuste manual + salto grande": os dois têm de acontecer depois do resultado confiante */
         boolean manualEdited, farSeek;
         int stallAborts;
+        /** a análise corrente começou com um atraso manual (só a escala pode mudar) */
+        boolean manualRun;
+        /** ajustes manuais do atraso: {tempo do vídeo (ms), atraso (ms), relógio (ms)}; os últimos 4 ficam guardados por legenda */
+        final ArrayList<long[]> pts = new ArrayList<>();
     }
 
     private final Map<String, Sub> subs = new HashMap<>();
@@ -115,6 +129,10 @@ final class AudioSyncAuto {
     private volatile long rescanAt;
     private volatile String keyNow;
     private long lastPosMs = -1, lastPosWall;
+    /** vigia dos ajustes manuais: o atraso que ESPERAMOS (o último que nós ou o player pusemos); qualquer outro valor é do usuário */
+    private int expectDelay;
+    private boolean expectInit;
+    private long baseSince, editSeenAt;
 
     // saúde da reprodução (para medir que a análise não trava o filme)
     private long lastWall, lastT, hN, hStalls, hBuf, lostAtStart, lastStallAt;
@@ -140,6 +158,7 @@ final class AudioSyncAuto {
         v = extra(in, "gfAudioFarSeekSec");
         if (v != null) try { farSeekMs = Integer.parseInt(v) * 1000L; } catch (NumberFormatException ignored) {}
         if ("true".equals(extra(in, "gfAudioDsp"))) core.forceDsp = true;
+        if ("true".equals(extra(in, "gfNoReport"))) CrashReporter.analiseOff = true;   // só nos testes: o relatório ANALISE vai só para o registro, não para o ntfy
         AudioCap.testHook = extra(in, "gfAudioCrash");   // só nos testes: vad | capture | capture-all (derruba o processo de captura de propósito)
         core.progress = s2 -> ui.post(() -> { if (!stopped) h.status(s2, TONE_NEUTRAL); });
     }
@@ -223,6 +242,7 @@ final class AudioSyncAuto {
             core.audioTrackId = h.audioTrackId();
             AudioSyncCore.Outcome o = core.run(h.url(), active.text, h.durationMs(), videoTimeMs, d1, AudioSyncCore.NO_LIMIT);
             log("botão: " + o.note + " | " + o.st.summary());
+            try { CrashReporter.analise(AudioSyncCore.reportBody(o, h.durationMs(), "origem=botao_sincronizar\natraso_ao_iniciar_ms=" + d1 + "\n")); } catch (Throwable ignored) {}
             switch (o.kind) {
                 case AudioSyncCore.Outcome.FIX:
                     if (k != null) mark(k, "fix", o.scale, o.offsetMs, o.targetDelay); // o painel guarda este atraso como qualquer outro
@@ -370,6 +390,10 @@ final class AudioSyncAuto {
             subs.put(k, s);
         }
         cur = s;
+        expectInit = false;
+        editSeenAt = 0;
+        baseSince = now;
+        if (fresh) loadPts(s, k);
         status(null, TONE_NEUTRAL);
         log("legenda ativa: " + shortKey(k) + (fresh ? " (nova nesta sessão)" : " (já vista nesta sessão: " + stName(s.st) + ", análises=" + s.analyses + ")"));
         if (fresh) trigger("troca-de-legenda", k, "avaliar (espera " + startAfterMs / 1000 + " s tocando; se há resultado guardado, não analisa)");
@@ -387,6 +411,7 @@ final class AudioSyncAuto {
         SubtitleSync.Cand cand = h.activeCand();
         String k = cand == null || cand.text == null ? null : h.delayKey();
         if ((k == null ? key != null : !k.equals(key))) switchSub(k, now);
+        if (k != null && cur != null) { try { watchManual(cur, k, now); } catch (Throwable t) { log("erro no vigia do ajuste manual: " + t); } }
         if (k == null || !autoOn || cur == null) return;
         Sub s = cur;
         if (running && hBuf >= 2 && now - runStartedAt > 5000) abortForStall(s, k, now);
@@ -402,6 +427,7 @@ final class AudioSyncAuto {
                 decideStart(s, cand, k, now);
                 break;
             case DONE:
+                if (h.delayMs() != s.lastWritten && Math.abs(s.mScale - 1.0) > 1e-9) return;   // modelo com escala: o ajuste manual em andamento é tratado em watchManual (reancora o modelo no ponto)
                 if (h.delayMs() != s.lastWritten) {
                     s.st = HOLD;
                     s.manualEdited = true;
@@ -455,9 +481,10 @@ final class AudioSyncAuto {
             return;
         }
         if (saved != 0 || h.delayMs() != 0) {
-            s.st = OFF;
-            trigger(second ? "segunda-tentativa" : "início", k, "ignorado: atraso manual guardado (" + (saved != 0 ? saved : h.delayMs()) + " ms)");
-            status("Há um ajuste manual guardado para esta legenda (" + secs(saved != 0 ? saved : h.delayMs()) + "): não mexi.", TONE_NEUTRAL);
+            // atraso manual guardado: o deslocamento dele vence sempre, mas a legenda pode estar DESVIANDO (escala): a análise roda assim mesmo, com janelas espalhadas,
+            // e só a escala pode entrar (ancorada no ponto de alinhamento do usuário)
+            status("A conferir a legenda pelo áudio (o seu ajuste manual de " + secs(saved != 0 ? saved : h.delayMs()) + " fica)…", TONE_NEUTRAL);
+            startRun(s, cand, k, (second ? "segunda-tentativa" : "início") + "-com-atraso-manual(" + (saved != 0 ? saved : h.delayMs()) + " ms)", now);
             return;
         }
         startRun(s, cand, k, second ? "segunda-tentativa-após-" + (s.attempts > 0 ? "sem-confiança" : "erro") : s.interrupted ? "retomada-após-sair-do-app" : "início", now);
@@ -473,6 +500,7 @@ final class AudioSyncAuto {
         s.interrupted = false;
         trigger(why, k, "análise");
         final int d0 = h.delayMs();
+        s.manualRun = d0 != 0 || h.savedDelay(k) != 0;
         final long pos = h.timeMs(), dur = h.durationMs();
         final String url = h.url(), text = cand.text;
         log("antes da análise: " + healthLine());
@@ -545,14 +573,49 @@ final class AudioSyncAuto {
         log(healthLine());
         Sub s = subs.get(k);
         if (s == null || (key != null && !k.equals(key))) return;
-        if (h.delayMs() != d0) { s.st = OFF; log("o usuário mexeu no atraso durante a análise: descartado"); return; }
+        if (h.delayMs() != d0) { s.st = OFF; log("o usuário mexeu no atraso durante a análise: descartado"); sendReport(o, s, d0, "descartado: o usuário mexeu no atraso durante a análise"); return; }
         // as quedas do processo de captura que a captura recuperou sozinha (outra configuração, na hora) fazem parte desta mesma tentativa
         if (o.note != null && (o.note.contains("recuper") || o.note.contains("caiu"))) log("tentativa " + (s.attempts + 1) + ": houve queda(s) do processo de captura, tratadas dentro desta mesma tentativa (a captura troca de configuração na hora); contam como UMA tentativa só");
         switch (o.kind) {
             case AudioSyncCore.Outcome.FIX: {
-                boolean persist = o.scale == 1.0;
+                final boolean scaled = Math.abs(o.scale - 1.0) > 1e-9;
+                final long tNow = h.timeMs();
+                if (s.manualRun) {
+                    // atraso manual presente: o deslocamento do usuário vence; só a escala (deriva) pode entrar, ancorada no ponto de alinhamento dele (agora)
+                    if (!scaled) {
+                        s.mScale = 1.0; s.mOffset = d0; s.lastWritten = d0;
+                        mark(k, "ok", 1.0, o.offsetMs, d0);
+                        s.st = DONE; s.attempts = 0; s.manualEdited = false; s.farSeek = false;
+                        log("o áudio sugere atraso " + o.targetDelay + " ms, mas o ajuste manual de " + d0 + " ms vence: não mexi");
+                        status("Mantive o seu ajuste manual (" + secs(d0) + ").", TONE_NEUTRAL);
+                        sendReport(o, s, d0, "manteve_manual: o áudio sugere " + o.targetDelay + " ms (sem escala)");
+                        break;
+                    }
+                    double engineNow = ManualDrift.delayAt(o.scale, o.offsetMs, tNow);
+                    if (Math.abs(engineNow - d0) > MANUAL_AGREE_MS) {
+                        s.mScale = 1.0; s.mOffset = d0; s.lastWritten = d0;
+                        mark(k, "ok", 1.0, o.offsetMs, d0);
+                        s.st = DONE; s.attempts = 0;
+                        log("escala " + o.scale + " achada, mas o atraso do áudio agora (" + Math.round(engineNow) + " ms) e o manual (" + d0 + " ms) discordam por mais de " + MANUAL_AGREE_MS + " ms: não mexi");
+                        status("O áudio e o seu ajuste manual discordam: não mexi.", TONE_WARN);
+                        sendReport(o, s, d0, "manteve_manual: escala " + o.scale + " mas áudio e manual discordam em " + Math.round(Math.abs(engineNow - d0)) + " ms");
+                        break;
+                    }
+                    s.mScale = o.scale;
+                    s.mOffset = ManualDrift.anchorOffset(o.scale, d0, tNow);
+                    s.lastWritten = d0;
+                    mark(k, "fix", o.scale, s.mOffset, d0);
+                    s.st = DONE; s.attempts = 0; s.manualEdited = false; s.farSeek = false;
+                    s.nextFollowAt = SystemClock.uptimeMillis() + 15_000;
+                    h.notice(DRIFT_MSG);
+                    status(DRIFT_MSG + ".", TONE_GOOD);
+                    log("aplicado em volta do ponto manual: escala " + o.scale + ", atraso " + d0 + " ms em " + tNow / 1000 + " s (o áudio daria " + Math.round(engineNow) + " ms ali); não pula");
+                    sendReport(o, s, d0, "aplicou_escala_ancorada_no_manual: escala " + o.scale + " ancora=" + d0 + " ms em " + tNow / 1000 + " s");
+                    break;
+                }
+                boolean persist = !scaled;
                 boolean changed = o.targetDelay != d0 || !persist;
-                if (changed) h.applyDelay(o.targetDelay, persist);
+                if (changed) writeDelay(o.targetDelay, persist);
                 s.mScale = o.scale;
                 s.mOffset = o.offsetMs;
                 s.lastWritten = changed ? o.targetDelay : d0;
@@ -562,10 +625,11 @@ final class AudioSyncAuto {
                 s.manualEdited = false;
                 s.farSeek = false;
                 s.nextFollowAt = SystemClock.uptimeMillis() + 15_000;
-                String fixMsg = persist ? "Legenda acertada pelo áudio (" + secs(o.targetDelay) + ")" : "Legenda acertada pelo áudio (velocidade e atraso)";
+                String fixMsg = !persist ? (o.drift ? DRIFT_MSG : "Legenda acertada pelo áudio (velocidade e atraso)") : "Legenda acertada pelo áudio (" + secs(o.targetDelay) + ")";
                 if (changed) h.notice(fixMsg);   // o atraso mudou de verdade: único caso em que há aviso (além da primeira confirmação do filme)
                 status(fixMsg + ".", TONE_GOOD);
                 log("aplicado: atraso " + o.targetDelay + " ms, escala " + o.scale + " (resultado confiante: não será reverificado)");
+                sendReport(o, s, d0, !persist ? "aplicou_escala" + (o.drift ? "_por_deriva" : "") + ": " + o.scale + " desl=" + Math.round(o.offsetMs) : "aplicou_atraso: " + o.targetDelay + " ms");
                 break;
             }
             case AudioSyncCore.Outcome.OK:
@@ -580,13 +644,16 @@ final class AudioSyncAuto {
                 log("a legenda já estava certa (deslocamento medido " + Math.round(o.offsetMs) + " ms): não mexi (resultado confiante: não será reverificado)");
                 status("Legenda conferida pelo áudio: já estava certa.", TONE_GOOD);
                 if (firstCheckOfFilm(k)) h.notice("Legenda confirmada pelo áudio");   // confirmação silenciosa: só na primeira conferência do filme
+                sendReport(o, s, d0, "ja_certa: nao_mexeu");
                 break;
             case AudioSyncCore.Outcome.REFUSED:
                 mark(k, "no", 1.0, 0, 0);
                 log("o áudio não tem certeza: legenda deixada como estava");
+                sendReport(o, s, d0, "recusou: manteve" + (s.manualRun ? "_o_manual" : ""));
                 inconclusive(s, k, "o áudio não tem certeza", o.msg.isEmpty() ? "Sem confiança: o áudio não confirma esta legenda." : o.msg);
                 break;
             default: // erro, cancelado, pulado
+                sendReport(o, s, d0, o.kind == AudioSyncCore.Outcome.CANCELLED ? "cancelado" : o.kind == AudioSyncCore.Outcome.SKIPPED ? "pulado" : "erro");
                 if (o.kind == AudioSyncCore.Outcome.CANCELLED) {
                     s.st = NEW; s.retryPending = true; s.retryAt = SystemClock.uptimeMillis() + 30_000; s.interrupted = true;
                     log("análise cancelada (" + o.note + "): recomeça em 30 s (não conta como tentativa)");
@@ -599,6 +666,112 @@ final class AudioSyncAuto {
         }
     }
 
+    /** o áudio e o ajuste manual do usuário podem discordar até isto (ms) no instante da análise para a escala entrar em volta do ponto manual */
+    private static final int MANUAL_AGREE_MS = 1500;
+    private static final String DRIFT_MSG = "Legenda a desviar — corrigi a velocidade";
+
+    /** põe um atraso pelo caminho do ajuste manual e anota que fomos nós (o vigia dos ajustes manuais não confunde com o usuário) */
+    private void writeDelay(int ms, boolean persist) {
+        h.applyDelay(ms, persist);
+        expectDelay = h.delayMs();
+        expectInit = true;
+    }
+
+    // ------------------------------------------------------------ ajustes manuais do atraso (dica de deriva)
+
+    private static final String PTS_PREFIX = "pts|";
+
+    private void loadPts(Sub s, String k) {
+        try {
+            String v = act.getSharedPreferences(PREFS, Activity.MODE_PRIVATE).getString(PTS_PREFIX + k, null);
+            if (v == null || v.isEmpty()) return;
+            for (String it : v.split(";")) {
+                String[] a = it.split(",");
+                if (a.length == 3 && System.currentTimeMillis() - Long.parseLong(a[2]) < CONFIDENT_TTL_MS) s.pts.add(new long[]{Long.parseLong(a[0]), Long.parseLong(a[1]), Long.parseLong(a[2])});
+            }
+        } catch (Throwable ignored) {}
+    }
+
+    private void savePts(Sub s, String k) {
+        try {
+            StringBuilder b = new StringBuilder();
+            for (long[] p : s.pts) b.append(b.length() > 0 ? ";" : "").append(p[0]).append(',').append(p[1]).append(',').append(p[2]);
+            act.getSharedPreferences(PREFS, Activity.MODE_PRIVATE).edit().putString(PTS_PREFIX + k, b.toString()).apply();
+        } catch (Throwable ignored) {}
+    }
+
+    /** vigia o atraso: qualquer valor que não foi posto por nós (nem carregado pelo player ao abrir a legenda) é do usuário; quando assenta (4 s sem mexer) vira um ponto manual */
+    private void watchManual(Sub s, String k, long now) {
+        int d = h.delayMs();
+        if (!expectInit || now - baseSince < 4000) { expectDelay = d; expectInit = true; return; }
+        if (d != expectDelay) { expectDelay = d; editSeenAt = now; return; }
+        if (editSeenAt > 0 && now - editSeenAt >= 4000) {
+            editSeenAt = 0;
+            onManualPoint(s, k, now, d);
+        }
+    }
+
+    private void onManualPoint(Sub s, String k, long now, int d) {
+        final long t = h.timeMs();
+        final long wall = System.currentTimeMillis();
+        log("ajuste manual registrado: posição " + t / 1000 + " s, atraso " + d + " ms");
+        // guarda no máximo 4 pontos por legenda (também entre sessões)
+        s.pts.add(new long[]{t, d, wall});
+        while (s.pts.size() > 4) s.pts.remove(0);
+        savePts(s, k);
+        if (s.st == DONE && Math.abs(s.mScale - 1.0) > 1e-9) {
+            // o modelo com escala está ativo e o usuário reajustou: o modelo passa por este novo ponto (mesma escala)
+            s.mOffset = ManualDrift.anchorOffset(s.mScale, d, t);
+            s.lastWritten = d;
+            s.nextFollowAt = SystemClock.uptimeMillis() + 15_000;
+            mark(k, "fix", s.mScale, s.mOffset, h.savedDelay(k));
+            log("modelo com escala " + s.mScale + " reancorado no ajuste manual (" + d + " ms em " + t / 1000 + " s)");
+            return;
+        }
+        // dica de deriva: outro ponto manual a mais de 10 min de distância no filme, com mudança de atraso que bate com uma razão de fps conhecida
+        ManualDrift.Fit best = null;
+        long[] with = null;
+        for (int i = s.pts.size() - 2; i >= 0; i--) {
+            long[] q = s.pts.get(i);
+            ManualDrift.Fit f = ManualDrift.fit(q[0], q[1], t, d, new AudioAligner.Params().knownScales);
+            if (f != null && (best == null || f.errMs < best.errMs)) { best = f; with = q; }
+        }
+        if (best == null) {
+            log("ajuste manual: " + s.pts.size() + " ponto(s); nenhum par com mais de 10 min e mudança que bata com uma razão de fps conhecida");
+            if (s.st == DONE && Math.abs(s.mScale - 1.0) < 1e-9 && d != s.lastWritten) { s.st = HOLD; s.manualEdited = true; }
+            return;
+        }
+        s.mScale = best.scale;
+        s.mOffset = best.offsetMs;
+        s.lastWritten = d;
+        s.st = DONE;
+        s.attempts = 0;
+        s.retryPending = false;
+        s.nextFollowAt = SystemClock.uptimeMillis() + 15_000;
+        mark(k, "fix", best.scale, best.offsetMs, h.savedDelay(k));
+        h.notice(DRIFT_MSG);
+        status(DRIFT_MSG + ".", TONE_GOOD);
+        log("deriva pelos ajustes manuais: " + with[1] + " ms em " + with[0] / 1000 + " s e " + d + " ms em " + t / 1000 + " s => escala " + best.scale + " (inclinação " + String.format(Locale.ROOT, "%.6f", best.slope) + ", erro " + Math.round(best.errMs) + " ms); modelo ancorado no último ponto");
+        try {
+            CrashReporter.analise("origem=ajustes_manuais\ndecisao=aplicou_escala_dos_ajustes_manuais escala=" + best.scale + " inclinacao=" + String.format(Locale.ROOT, "%.6f", best.slope) + " erro_ms=" + Math.round(best.errMs)
+                    + "\nduracao_s=" + h.durationMs() / 1000 + "\n" + manualLine(s));
+        } catch (Throwable ignored) {}
+    }
+
+    private String manualLine(Sub s) {
+        StringBuilder b = new StringBuilder("manual pontos=[");
+        long nowW = System.currentTimeMillis();
+        for (long[] p : s.pts) b.append("(t_s=").append(p[0] / 1000).append(",atraso_ms=").append(p[1]).append(",ha_s=").append((nowW - p[2]) / 1000).append(")");
+        return b.append("]").toString();
+    }
+
+    private void sendReport(AudioSyncCore.Outcome o, Sub s, int d0, String decision) {
+        try {
+            String extra = "decisao=" + decision + "\natraso_ao_iniciar_ms=" + d0 + " atraso_manual_guardado=" + (s.manualRun ? 1 : 0) + " tentativa=" + (s.attempts + 1) + "\n" + manualLine(s) + "\n";
+            CrashReporter.analise(AudioSyncCore.reportBody(o, h.durationMs(), extra));
+        } catch (Throwable ignored) {}
+    }
+
     // ------------------------------------------------------------ escala diferente de 1: o atraso acompanha o modelo (sem nova análise)
 
     private static int delayAt(double a, double off, long t) {
@@ -609,8 +782,8 @@ final class AudioSyncAuto {
     private void follow(Sub s, long now) {
         s.nextFollowAt = now + 15_000;
         int d = delayAt(s.mScale, s.mOffset, h.timeMs());
-        if (Math.abs(d - h.delayMs()) < 250) return;
-        h.applyDelay(d, false);
+        if (Math.abs(d - h.delayMs()) < 100) return;
+        writeDelay(d, false);
         s.lastWritten = d;
     }
 

@@ -250,6 +250,24 @@ public final class CrashReporter {
         th.start();
     }
 
+    /** nos testes (gfNoReport) o relatório ANALISE só vai para o registro, não para o ntfy */
+    static volatile boolean analiseOff;
+
+    /**
+     * Relatório anônimo de CADA análise da sincronização pelo áudio (vai para o mesmo tópico do ntfy): versão do app, aparelho, duração, atraso e z de cada janela,
+     * escala/inclinação ajustadas, decisão e motivo, VAD usado, atrasos manuais. Sem título, sem endereço e sem nome de arquivo (os endereços que por acaso
+     * apareçam num texto de erro são trocados por "<url>"). Não leva migalhas do registro (elas podem ter nomes).
+     */
+    static void analise(final String body) {
+        if (app == null) return;
+        final String clean = body.replaceAll("https?://\\S+", "<url>").replaceAll("[A-Za-z0-9_.-]+\\.(mkv|mp4|avi|srt|m4v|webm|ts)\\b", "<arquivo>");
+        final String text = header("ANALISE", proc) + clean;
+        if (analiseOff) { android.util.Log.i("GFCrash", "corpo de ANALISE (teste: não enviado):\n" + text); return; }
+        Thread th = new Thread(() -> send("ANALISE", text), "gf-analise-report");
+        th.setPriority(Thread.MIN_PRIORITY);
+        th.start();
+    }
+
     // ------------------------------------------------------------ só nos testes: am start --es gfCrashTest post|java|native|event
 
     static void testHook(Activity a) {

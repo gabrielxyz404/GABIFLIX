@@ -22,14 +22,15 @@ import java.util.List;
 import java.util.Locale;
 
 /**
- * Motor de sincronização pelo áudio (a parte pesada, sem interface): captura 3 janelas de 90 s do filme numa segunda instância do libVLC,
+ * Motor de sincronização pelo áudio (a parte pesada, sem interface): captura 3 janelas de 90 s ESPALHADAS pelo filme (10%, 50%, 90%; até 5 se há suspeita de
+ * deriva de escala, ver AudioSyncSession.analyze) numa segunda instância do libVLC,
  * passa o VAD (Silero; DSP de reserva se o ONNX Runtime não carregar) e resolve com o alinhador validado (z >= 9, porta de concordância de 150 ms
  * entre as janelas, banda morta de 1100 ms, só escalas de fps conhecidas, cortes só como aviso). Corre numa thread de prioridade baixa,
  * uma execução por vez, com memória limitada (16 kHz mono, uma janela de PCM por vez) e cancelável.
  */
 final class AudioSyncCore {
     /** versão do motor + política: muda o que está guardado (cache) sobre cada legenda */
-    static final String VERSION = "a2";
+    static final String VERSION = "a3";
     static final long WIN_MS = 90_000;
     static final int N_WIN = 3;
     /** a leitura estimada das 3 janelas: o automático só roda se couber no orçamento da rede (ver AudioSyncAuto); o botão nunca pula */
@@ -58,6 +59,8 @@ final class AudioSyncCore {
         /** atraso (ms) que a legenda deve ter AGORA para ficar certa (igual a offsetMs com escala 1) */
         int targetDelay;
         boolean cuts;
+        /** a escala (1,001 ou outra razão de fps) foi aceita pela prova de deriva das janelas */
+        boolean drift;
         /** frase pronta, em português simples, para mostrar ao usuário quando nada foi mudado ("" = não há) */
         String msg = "";
         Result result;
@@ -330,30 +333,29 @@ final class AudioSyncCore {
                 }
                 say(o.st.estBytes > 0 ? "A ouvir o filme… (≈ " + mb(o.st.estBytes) + " a ler)" : "A ouvir o filme…");
                 AudioAligner.Params P = new AudioAligner.Params();
-                long[][] plan = AudioSyncSession.planDense(cues, durMs, N_WIN, WIN_MS);
-                AudioSyncSession ses = new AudioSyncSession(cues, durMs, P);
-                Window[] ws = new Window[plan.length];
-                // capturas em fila, uma janela por vez: capturar as 3 ao mesmo tempo (testado no emulador) fez o corte do libVLC perder a exatidão
+                // 3 janelas espalhadas pelo filme (o que mostra a deriva da escala) e, se as janelas confiáveis sugerem deriva sem prova ainda, até 2 extras.
+                // Capturas em fila, uma janela por vez: capturar ao mesmo tempo (testado no emulador) fez o corte do libVLC perder a exatidão
                 // (janelas de 92-98 s em vez de 90 s) e a análise recusou uma legenda que a captura em fila aceita; por isso não se faz em paralelo
-                final int par = 1;
+                final int[] failedAt = {0};
+                final boolean[] first = {true};
                 long cw0 = System.nanoTime();
-                for (int i = 0; i < plan.length; i++) {
-                    if (cap != null && cap.isCancelled()) { o.kind = Outcome.CANCELLED; o.note = "cancelado"; return o; }
-                    say("A ouvir o filme… trecho " + (i + 1) + " de " + plan.length);
-                    Window w = captureWindow(url, plan[i][0], plan[i][1], o);
-                    if (w == null) { return captureFailed(o, i + 1); }
-                    ws[i] = w;
+                Window[][] used = new Window[1][];
+                Result r = AudioSyncSession.analyze(cues, durMs, N_WIN, WIN_MS, (st, ln, i, total) -> {
+                    if (cap != null && cap.isCancelled()) throw new InterruptedException();
+                    if (!first[0]) Thread.sleep(300);
+                    first[0] = false;
+                    say(total > N_WIN && i >= N_WIN ? "A ouvir mais um trecho do filme (a legenda parece desviar)… " + (i + 1) + " de " + total : "A ouvir o filme… trecho " + (i + 1) + " de " + total);
+                    Window w = captureWindow(url, st, ln, o);
+                    if (w == null) { failedAt[0] = i + 1; return null; }
                     o.st.windows++;
-                    if (i + 1 < plan.length) Thread.sleep(300);
-                }
-                if (par == 1) o.st.captureWallMs = (System.nanoTime() - cw0) / 1_000_000;
-                for (Window w : ws) ses.addWindow(w);
+                    return w;
+                }, P, true, used);
+                if (r == null) { return captureFailed(o, failedAt[0]); }
+                o.st.captureWallMs = (System.nanoTime() - cw0) / 1_000_000;
                 if (estThread != null) { estThread.join(1500); }
-                o.windows = ws;
-                long c0 = Debug.threadCpuTimeNanos(), w0 = System.nanoTime();
-                Result r = ses.solve();
-                o.st.solveCpuMs = (Debug.threadCpuTimeNanos() - c0) / 1_000_000;
-                o.st.solveMs = (System.nanoTime() - w0) / 1_000_000;
+                o.windows = used[0];
+                o.st.solveCpuMs = 0;
+                o.st.solveMs = 0;
                 o.result = r;
                 o.cuts = r.cutsWarning;
                 fill(o, r, nowMs, currentDelay, P);
@@ -381,13 +383,41 @@ final class AudioSyncCore {
         double a = r.scale, off = r.rawOffsetMs;
         o.scale = a;
         o.offsetMs = off;
+        o.drift = r.driftScale;
         double cue = (nowMs - off) / a;                    // fala da legenda que aparece agora
         double target = (a - 1.0) * cue + off;             // atraso que a deixa no tempo certo agora
         target = Math.max(-600_000, Math.min(600_000, target));
         o.targetDelay = (int) (Math.round(target / 10.0) * 10);
         boolean scaled = Math.abs(a - 1.0) > 1e-9;
         o.kind = scaled || Math.abs(o.targetDelay - currentDelay) >= P.deadbandMs ? Outcome.FIX : Outcome.OK;
-        o.note += String.format(Locale.ROOT, " escala=%.5f deslocamento=%.0f ms", a, off);
+        o.note += String.format(Locale.ROOT, " escala=%.5f deslocamento=%.0f ms", a, off) + (r.driftScale ? " (deriva provada pelas janelas)" : "");
+    }
+
+    /**
+     * Corpo do relatório anônimo ANALISE (vai para o ntfy como o CrashReporter): só números do motor. Sem título, sem endereço, sem nome de arquivo.
+     * @param durMs duração do conteúdo; o resto (decisão final, atrasos manuais) vem de quem decide, em extra
+     */
+    static String reportBody(Outcome o, long durMs, String extra) {
+        StringBuilder b = new StringBuilder();
+        Result r = o.result;
+        b.append("duracao_s=").append(durMs / 1000).append(" janelas=").append(o.windows == null ? 0 : o.windows.length).append(" rodadas=").append(r == null ? 0 : r.rounds)
+                .append(" vad=").append(o.st.vad).append(" motor=").append(VERSION).append('\n');
+        if (r != null && r.wins != null) {
+            for (int i = 0; i < r.wins.length; i++) {
+                Result.Win w = r.wins[i];
+                b.append(String.format(Locale.ROOT, "j%d inicio_s=%d centro_s=%d atraso_ms=%.0f ncc=%.2f segundo=%.2f z=%.1f confiavel=%d%n", i + 1, w.startMs / 1000, Math.round(w.centerMs / 1000), w.delayMs, w.ncc, w.second, w.z, w.confident ? 1 : 0));
+            }
+            b.append(String.format(Locale.ROOT, "ajuste escala=%.6f deslocamento_ms=%.0f inclinacao=%.6f residuo_ms=%.0f residuo_sem_escala_ms=%.0f deriva_janelas_ms=%.0f deriva_filme_ms=%.0f confiaveis=%d deriva_provada=%d%n",
+                    r.scale, r.rawOffsetMs, r.driftSlope, r.driftResMs, r.unitResMs, r.driftMeasMs, r.driftContentMs, r.driftConfident, r.driftScale ? 1 : 0));
+            b.append(String.format(Locale.ROOT, "motor aceita=%d inSync=%d z=%.1f margem=%.2f ncc=%.2f janelas_concordam=%d/%d desvio_max_ms=%.0f escala_conhecida=%d suspeita_deriva=%d cortes=%d%n",
+                    r.accepted ? 1 : 0, r.inSync ? 1 : 0, r.z, r.margin, r.nccMean, r.winsAgree, r.winsValid, r.winMaxDev, r.scaleKnown ? 1 : 0, r.driftSuspect ? 1 : 0, r.cutsWarning ? 1 : 0));
+            b.append("motivo=").append(r.reason == null ? "" : r.reason.trim()).append(" | ").append(r.driftNote).append('\n');
+        }
+        b.append("resultado=").append(o.kind == Outcome.FIX ? "corrigir" : o.kind == Outcome.OK ? "ja_certa" : o.kind == Outcome.REFUSED ? "sem_confianca" : o.kind == Outcome.ERROR ? "erro" : o.kind == Outcome.CANCELLED ? "cancelado" : "pulado")
+                .append(" nota=").append(o.note).append('\n');
+        b.append(String.format(Locale.ROOT, "tempos captura_ms=%d vad_ms=%d total_ms=%d leitura_mb=%d%n", o.st.captureWallMs, o.st.vadMs, o.st.totalWallMs, o.st.realBytes >> 20));
+        if (extra != null && !extra.isEmpty()) b.append(extra);
+        return b.toString();
     }
 
     // ------------------------------------------------------------ reverificação

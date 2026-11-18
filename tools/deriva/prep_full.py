@@ -8,7 +8,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."
 import corpus as C
 
 slug, others, out = sys.argv[1], sys.argv[2].split(","), sys.argv[3]
-CLIP_S = int(os.environ.get("CLIP_S", "0"))
+CLIP_S = int(os.environ.get("CLIP_S") or 0)
 os.makedirs(out, exist_ok=True)
 work = os.path.join(out, "_work"); os.makedirs(work, exist_ok=True)
 F = {f["slug"]: f for f in C.FILMS}
