@@ -62,6 +62,21 @@ P_SLOW=1
 DONE='AUDIOSYNC (aplicado|resultado:|desisti|botão:|o áudio não tem|pulado|já foi vista)'
 panel_texts() { pause_v; show_controls; open_subs; sleep 1.5; snap "$1" 0.5; texts "$1"; adb shell input keyevent KEYCODE_BACK; sleep 1; play_v; }
 
+# ---- C) fechar o painel logo depois de apertar "Sincronizar automaticamente": a analise segue e o resultado aparece como aviso sobre o filme
+CLIP=clip.mkv
+for sc in "C1:menos2.srt" "C2:certa.srt"; do
+  n=${sc%%:*}; f=${sc#*:}
+  launch $f --es gfAudioAuto false
+  sleep 22; pause_v; show_controls; open_subs; sleep 1.5
+  click "Sincronizar automaticamente"
+  sleep 1.6; snap $n-painel-fechou-aviso-sincronizando 0.2; texts $n-depois-de-apertar
+  play_v
+  waitlog "AUDIOSYNC botão:" 200; sleep 1.2
+  snap $n-aviso-do-resultado 0.1; texts $n-aviso
+  sleep 6; pause_v; show_controls; open_subs; sleep 1.5; snap $n-painel-reaberto 0.5; texts $n-painel-reaberto
+  save $n
+done
+
 # ---- A) 20 Mbit/s, AC3 5.1 + AAC (dublagem). A1: +3 s automatico, rede sem limite
 CLIP=real-ac3.mkv
 cpu_start; bytes_mark A1a

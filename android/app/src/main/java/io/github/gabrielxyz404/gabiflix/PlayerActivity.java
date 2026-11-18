@@ -1117,6 +1117,9 @@ public class PlayerActivity extends Activity {
         statusFixed = false;
         panelTrack = player.getSpuTrack();
         buildSubPanel();
+        // a sincronização do botão continua por trás do painel fechado: ao reabrir, mostra o andamento ou o último resultado
+        if (autoRunning) setAutoStatus(audioStatus != null ? audioStatus : "A sincronizar…", 0xFFFFFFFF);
+        else if (lastAutoMsg != null && lastAutoTrack == panelTrack) setAutoStatus(lastAutoMsg, lastAutoColor);
         ((ViewGroup) controls.getParent()).addView(subPanel, match());
         setControlsVisible(false);
         controls.setVisibility(View.GONE); // não deixa os botões de baixo roubarem o foco enquanto o painel está aberto
@@ -1455,6 +1458,7 @@ public class PlayerActivity extends Activity {
         ui.postDelayed(() -> { if (player != null) glog("painel: 2 s depois o VLC está na faixa " + player.getSpuTrack() + ", tempo " + player.getTime() + " ms"); }, 2000);
         panelTrack = id;
         statusFixed = false;
+        lastAutoMsg = null;
         syncDelayToTrack(id);
         refreshSubPanel();
     }
@@ -1466,9 +1470,16 @@ public class PlayerActivity extends Activity {
         panelStatus.setText(s);
     }
 
+    private String lastAutoMsg;
+    private int lastAutoColor, lastAutoTrack = -2;
+
     private void onAutoClick() {
         SubtitleSync.Cand a = activeCand();
-        if (a != null) runAutoSync(a);
+        if (a == null || autoRunning) return;
+        runAutoSync(a);
+        // volta direto ao filme: a análise segue por trás e o resultado aparece como aviso sobre o filme
+        notice("A sincronizar a legenda pelo áudio…", 4000);
+        ui.postDelayed(() -> { if (subPanelOpen) closeSubPanel(); }, 1000);
     }
 
     /**
@@ -1510,15 +1521,17 @@ public class PlayerActivity extends Activity {
             setSubDelay(res.delayMs, panelValue);
             msg = (res.note != null && res.note.startsWith("áudio") ? "Legenda acertada pelo áudio (" : "Legenda acertada (") + signedSecs(res.delayMs) + ")";
             color = 0xFF7BD88F;
-            if (!subPanelOpen) notice(msg);
+            if (!subPanelOpen) notice(msg, 5000);
         } else if (res.status == AutoSync.OK) {
-            msg = "Já estava certa";
+            msg = subDelayMs != 0 ? "Já estava certa: o atraso de " + signedSecs(subDelayMs) + " confere com o áudio." : "Já estava certa.";
             color = 0xFF7BD88F;
         } else {
             msg = res.userMsg != null ? res.userMsg + " Usa o ajuste manual abaixo." : "Não consegui acertar — usa os botões abaixo";
             color = 0xFFFFC857;
         }
         setAutoStatus(msg, color);
+        lastAutoMsg = msg; lastAutoColor = color; lastAutoTrack = track;
+        if (!subPanelOpen && res.status != AutoSync.FIXED) notice(res.status == AutoSync.OK ? "Legenda já estava certa" + (subDelayMs != 0 ? " (" + signedSecs(subDelayMs) + " confere com o áudio)" : "") : "Não consegui confirmar pelo áudio", 5000);
         if (subPanelOpen) refreshSubPanel();
     }
 
@@ -1584,12 +1597,14 @@ public class PlayerActivity extends Activity {
         }
     }
 
-    private void notice(String s) {
+    private void notice(String s) { notice(s, 3000); }
+
+    private void notice(String s, long ms) {
         if (noticeLabel == null) return;
         noticeLabel.setText(s);
         noticeLabel.setVisibility(View.VISIBLE);
         ui.removeCallbacks(hideNotice);
-        ui.postDelayed(hideNotice, 3000);
+        ui.postDelayed(hideNotice, ms);
     }
 
     private void applySubDelay() {
