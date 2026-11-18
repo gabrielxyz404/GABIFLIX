@@ -173,7 +173,7 @@ public class MainActivity extends Activity {
      * O ícone do app foi tocado e já existe uma tarefa do app (com o filme aberto, por exemplo), mas o sistema criou uma tela inicial nova POR CIMA dela
      * (acontece quando a tarefa nasceu de outra intent, como o "Abrir" do instalador). Esta cópia some e a tela de baixo (o filme) volta a aparecer.
      */
-    static boolean duplicateLauncher(Activity a) {
+    public static boolean duplicateLauncher(Activity a) {
         Intent i = a.getIntent();
         return !a.isTaskRoot() && i != null && Intent.ACTION_MAIN.equals(i.getAction())
                 && (i.hasCategory(Intent.CATEGORY_LAUNCHER) || i.hasCategory("android.intent.category.LEANBACK_LAUNCHER"));
