@@ -428,6 +428,7 @@ public class PlayerActivity extends Activity {
                 scheduleHide();
                 break;
             case MediaPlayer.Event.Vout:
+                glog("ciclo: evento Vout, saídas=" + event.getVoutCount());
                 if (loading && playing) ui.post(this::endLoading);
                 if (scaleIndex != 0) ui.post(this::applyScale);
                 if (controlsShown) ui.post(() -> raiseSubs(true));
@@ -1966,9 +1967,33 @@ public class PlayerActivity extends Activity {
     // ---------- ciclo de vida ----------
     private boolean resumeOnReturn = false;
 
+    /** diagnóstico do ciclo de vida: estado do player e das vistas de vídeo (aparece no log GabiFlixPlayer) */
+    private void lifeLog(String w) {
+        try {
+            View v = videoLayout == null ? null : findVideoView(videoLayout);
+            glog(String.format(Locale.ROOT, "ciclo: %s, tocando=%s, tempo=%d, escala=%d, atraso=%d, vista=%s %dx%d, vout=%s", w,
+                    player != null && player.isPlaying(), player == null ? -1 : player.getTime(), scaleIndex, subDelayMs,
+                    v == null ? "nenhuma" : v.getClass().getSimpleName(), v == null ? 0 : v.getWidth(), v == null ? 0 : v.getHeight(),
+                    player != null && player.getVLCVout().areViewsAttached()));
+        } catch (Throwable t) { glog("ciclo: " + w + " (erro " + t + ")"); }
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        lifeLog("onStart");
+    }
+
+    @Override
+    protected void onStop() {
+        lifeLog("onStop");
+        super.onStop();
+    }
+
     @Override
     protected void onPause() {
         super.onPause();
+        lifeLog("onPause");
         if (audioSync != null) audioSync.onPause();
         if (player != null) { resumeOnReturn = player.isPlaying(); savePosition(true); player.pause(); }
     }
@@ -1976,6 +2001,7 @@ public class PlayerActivity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
+        lifeLog("onResume");
         if (player != null && resumeOnReturn) { resumeOnReturn = false; player.play(); }
     }
 
