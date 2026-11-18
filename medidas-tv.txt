@@ -1,0 +1,128 @@
+# Medidas (tv) - aparelho: abi=x86 cpus=2 mem=MemTotal:        2028624 kB
+
+## cenario 1-mais3
+  1795032117.7 AUDIOSYNC antes da análise: saúde da reprodução: amostras=11 paradas=0 razão_mínima=0.77 carregando=0 quadros_perdidos=19
+  1795032117.7 AUDIOSYNC começando: posição 12 s, duração 1200 s, atraso atual 0 ms, faixa de áudio 1
+  1795032120.5 AUDIOSYNC captura 275 s +90 s: 90.06 s de PCM em 2.01 s (fim) leitura=2 MB | usou a faixa 1 (pedida 1) de [1:Scarlet Street 1945 HD; ]
+  1795032126.8 AUDIOSYNC estado: st=0 executando=true tocando=true carregando=false faixa=2 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 2:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=130MB java=25/512MB nativo=85MB livre=1057MB limiar=144MB poucaMemoria=false
+  1795032132.9 AUDIOSYNC captura 710 s +90 s: 89.97 s de PCM em 3.14 s (fim) leitura=8 MB | usou a faixa 1 (pedida 1) de [1:Scarlet Street 1945 HD; ]
+  1795032146.9 AUDIOSYNC estado: st=0 executando=true tocando=true carregando=false faixa=2 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 2:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=111MB java=12/512MB nativo=76MB livre=1034MB limiar=144MB poucaMemoria=false
+  1795032152.9 AUDIOSYNC captura 1050 s +90 s: 89.99 s de PCM em 4.93 s (fim) leitura=5 MB | usou a faixa 1 (pedida 1) de [1:Scarlet Street 1945 HD; ]
+  1795032167.0 AUDIOSYNC estado: st=0 executando=true tocando=true carregando=false faixa=2 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 2:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=116MB java=21/512MB nativo=78MB livre=1036MB limiar=144MB poucaMemoria=false
+  1795032171.8 AUDIOSYNC resultado: aceita z=11.7 janelas=3/3 escala=1.00000 deslocamento=-3032 ms | vad=silero janelas=3 captura=51452 ms vad=40508 ms (cpu 10) solve=1775 ms (cpu 205) cpu_thread=283 ms total=53993 ms leitura_estimada=8 MB leitura_real=16 MB pss=120->118 MB java=14->21 MB
+  1795032171.8 AUDIOSYNC saúde da reprodução: amostras=53 paradas=0 razão_mínima=0.76 carregando=0 quadros_perdidos=14
+  1795032171.8 AUDIOSYNC legenda: atraso 0 -> -3030 ms, estratégia plain, faixa 2, posição 66465 ms
+  1795032171.8 AUDIOSYNC aplicado: atraso -3030 ms, escala 1.0
+  1795032187.2 AUDIOSYNC estado: st=2 executando=false tocando=false carregando=false faixa=2 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 2:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=127MB java=22/512MB nativo=80MB livre=1028MB limiar=144MB poucaMemoria=false
+  1795032207.4 AUDIOSYNC estado: st=2 executando=false tocando=true carregando=false faixa=2 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 2:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=128MB java=22/512MB nativo=81MB livre=1033MB limiar=144MB poucaMemoria=false
+  1795032217.4 AUDIOSYNC reverificando na posição 97 s
+  1795032218.5 AUDIOSYNC captura 97 s +90 s: 89.99 s de PCM em 1.08 s (fim) leitura=2 MB | usou a faixa 1 (pedida 1) de [1:Scarlet Street 1945 HD; ]
+  1795032222.1 AUDIOSYNC reverificação: vad=silero janelas=1 captura=1082 ms vad=3545 ms (cpu 4) solve=0 ms (cpu 0) cpu_thread=51 ms total=4744 ms leitura_estimada=2 MB leitura_real=2 MB pss=129->127 MB java=23->26 MB
+  1795032222.1 AUDIOSYNC reverificação: KEEP (ok) ncc=0.67 z=0.0 análise=15 ms | saúde da reprodução: amostras=4 paradas=0 razão_mínima=1.02 carregando=0 quadros_perdidos=0
+  1795032227.4 AUDIOSYNC estado: st=2 executando=false tocando=true carregando=false faixa=2 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 2:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=135MB java=26/512MB nativo=83MB livre=1043MB limiar=144MB poucaMemoria=false
+  rede (servidor): 43.0 MB enviados entre o comeco e o fim da analise (54 s), incluindo a reproducao (~0,24 MB/s)
+  estimativa so da captura: 30.0 MB
+
+## cenario 2-menos2
+  1795032234.5 AUDIOSYNC pronto (sem limite de dados; automático=false, começa 25 s depois de a legenda ficar ativa, reverifica a cada 600 s)
+  1795032235.6 AUDIOSYNC estado: st=0 executando=false tocando=true carregando=false faixa=-1 baixadas=0 addedSubs=0 embeddedKnown=false faixas=[] cand=false | pss=110MB java=6/512MB nativo=60MB livre=1048MB limiar=144MB poucaMemoria=false
+  1795032236.6 AUDIOSYNC legenda ativa: d3:u|h:deea472cd3c9ce1b|http://10.0.2.2:8000/menos2.srt#raw
+  1795032255.6 AUDIOSYNC estado: st=0 executando=false tocando=false carregando=false faixa=2 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 2:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=114MB java=10/512MB nativo=78MB livre=1050MB limiar=144MB poucaMemoria=false
+  1795032271.3 AUDIOSYNC captura 270 s +90 s: 90.04 s de PCM em 0.81 s (fim) leitura=0 MB | usou a faixa -1 (pedida 1) de []
+  1795032273.5 AUDIOSYNC captura 705 s +90 s: 90.08 s de PCM em 0.73 s (fim) leitura=0 MB | usou a faixa 1 (pedida 1) de [1:Scarlet Street 1945 HD; ]
+  1795032275.7 AUDIOSYNC estado: st=0 executando=false tocando=false carregando=false faixa=2 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 2:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=113MB java=11/512MB nativo=76MB livre=1047MB limiar=144MB poucaMemoria=false
+  1795032275.8 AUDIOSYNC captura 1045 s +90 s: 89.97 s de PCM em 0.77 s (fim) leitura=0 MB | usou a faixa 1 (pedida 1) de [1:Scarlet Street 1945 HD; ]
+  1795032277.2 AUDIOSYNC botão: aceita z=11.9 janelas=3/3 escala=1.00000 deslocamento=2006 ms | vad=silero janelas=3 captura=6567 ms vad=3562 ms (cpu 9) solve=213 ms (cpu 154) cpu_thread=219 ms total=6827 ms leitura_estimada=8 MB leitura_real=1 MB pss=123->122 MB java=13->21 MB
+  1795032277.3 AUDIOSYNC legenda: atraso 0 -> 2010 ms, estratégia plain, faixa 2, posição 130174 ms
+  rede (servidor): 0.0 MB enviados entre o comeco e o fim da analise (0 s), incluindo a reproducao (~0,24 MB/s)
+  estimativa so da captura: 0.0 MB
+
+## cenario 3-certa
+  1795032286.0 AUDIOSYNC pronto (sem limite de dados; automático=true, começa 10 s depois de a legenda ficar ativa, reverifica a cada 45 s)
+  1795032287.1 AUDIOSYNC estado: st=0 executando=false tocando=true carregando=false faixa=-1 baixadas=0 addedSubs=0 embeddedKnown=false faixas=[] cand=false | pss=109MB java=6/512MB nativo=60MB livre=1070MB limiar=144MB poucaMemoria=false
+  1795032288.1 AUDIOSYNC legenda ativa: d3:u|h:deea472cd3c9ce1b|http://10.0.2.2:8000/certa.srt#raw
+  1795032298.1 AUDIOSYNC antes da análise: saúde da reprodução: amostras=11 paradas=0 razão_mínima=0.78 carregando=0 quadros_perdidos=11
+  1795032298.1 AUDIOSYNC começando: posição 142 s, duração 1200 s, atraso atual 0 ms, faixa de áudio 1
+  1795032299.5 AUDIOSYNC captura 270 s +90 s: 90.04 s de PCM em 1.28 s (fim) leitura=6 MB | usou a faixa -1 (pedida 1) de []
+  1795032303.9 AUDIOSYNC captura 705 s +90 s: 90.08 s de PCM em 1.14 s (fim) leitura=4 MB | usou a faixa 1 (pedida 1) de [1:Scarlet Street 1945 HD; ]
+  1795032307.2 AUDIOSYNC estado: st=0 executando=true tocando=true carregando=false faixa=2 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 2:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=97MB java=5/512MB nativo=74MB livre=1056MB limiar=144MB poucaMemoria=false
+  1795032307.9 AUDIOSYNC captura 1045 s +90 s: 89.97 s de PCM em 1.17 s (fim) leitura=4 MB | usou a faixa 1 (pedida 1) de [1:Scarlet Street 1945 HD; ]
+  1795032310.9 AUDIOSYNC resultado: aceita z=12.3 janelas=3/3 escala=1.00000 deslocamento=6 ms | vad=silero janelas=3 captura=12232 ms vad=7925 ms (cpu 10) solve=401 ms (cpu 170) cpu_thread=246 ms total=12778 ms leitura_estimada=8 MB leitura_real=14 MB pss=116->111 MB java=10->20 MB
+  1795032310.9 AUDIOSYNC saúde da reprodução: amostras=12 paradas=0 razão_mínima=0.76 carregando=0 quadros_perdidos=2
+  1795032310.9 AUDIOSYNC a legenda já estava certa (deslocamento medido 6 ms): não mexi
+  1795032327.2 AUDIOSYNC estado: st=2 executando=false tocando=false carregando=false faixa=2 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 2:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=118MB java=21/512MB nativo=77MB livre=1042MB limiar=144MB poucaMemoria=false
+  1795032347.3 AUDIOSYNC estado: st=2 executando=false tocando=true carregando=false faixa=2 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 2:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=119MB java=22/512MB nativo=78MB livre=1061MB limiar=144MB poucaMemoria=false
+  1795032356.3 AUDIOSYNC reverificando na posição 186 s
+  1795032357.8 AUDIOSYNC captura 186 s +90 s: 89.97 s de PCM em 1.35 s (fim) leitura=2 MB | usou a faixa 1 (pedida 1) de [1:Scarlet Street 1945 HD; ]
+  1795032361.1 AUDIOSYNC reverificação: vad=silero janelas=1 captura=1350 ms vad=3219 ms (cpu 2) solve=0 ms (cpu 0) cpu_thread=75 ms total=4790 ms leitura_estimada=2 MB leitura_real=2 MB pss=120->119 MB java=22->26 MB
+  1795032361.1 AUDIOSYNC reverificação: KEEP (ok) ncc=0.44 z=0.0 análise=47 ms | saúde da reprodução: amostras=4 paradas=0 razão_mínima=0.79 carregando=0 quadros_perdidos=3
+  rede (servidor): 39.3 MB enviados entre o comeco e o fim da analise (13 s), incluindo a reproducao (~0,24 MB/s)
+  estimativa so da captura: 36.2 MB
+
+## cenario 3b-certa-botao
+  1795032370.1 AUDIOSYNC pronto (sem limite de dados; automático=false, começa 25 s depois de a legenda ficar ativa, reverifica a cada 600 s)
+  1795032371.1 AUDIOSYNC estado: st=0 executando=false tocando=true carregando=false faixa=2 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 2:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=124MB java=9/512MB nativo=78MB livre=1062MB limiar=144MB poucaMemoria=false
+  1795032371.1 AUDIOSYNC legenda ativa: d3:u|h:deea472cd3c9ce1b|http://10.0.2.2:8000/certa.srt#raw
+  1795032391.1 AUDIOSYNC estado: st=0 executando=false tocando=false carregando=false faixa=2 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 2:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=111MB java=10/512MB nativo=79MB livre=1074MB limiar=144MB poucaMemoria=false
+  1795032405.8 AUDIOSYNC captura 270 s +90 s: 90.04 s de PCM em 0.86 s (fim) leitura=0 MB | usou a faixa 1 (pedida 1) de [1:Scarlet Street 1945 HD; ]
+  1795032408.0 AUDIOSYNC captura 705 s +90 s: 90.08 s de PCM em 0.69 s (fim) leitura=0 MB | usou a faixa -1 (pedida 1) de []
+  1795032410.1 AUDIOSYNC captura 1045 s +90 s: 89.97 s de PCM em 0.72 s (fim) leitura=5 MB | usou a faixa -1 (pedida 1) de []
+  1795032411.1 AUDIOSYNC estado: st=0 executando=false tocando=false carregando=false faixa=2 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 2:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=112MB java=14/512MB nativo=76MB livre=1043MB limiar=144MB poucaMemoria=false
+  1795032411.5 AUDIOSYNC botão: aceita z=12.3 janelas=3/3 escala=1.00000 deslocamento=6 ms | vad=silero janelas=3 captura=6387 ms vad=3438 ms (cpu 12) solve=200 ms (cpu 191) cpu_thread=256 ms total=6650 ms leitura_estimada=8 MB leitura_real=6 MB pss=120->123 MB java=13->26 MB
+  rede (servidor): 0.0 MB enviados entre o comeco e o fim da analise (0 s), incluindo a reproducao (~0,24 MB/s)
+  estimativa so da captura: 0.0 MB
+
+## cenario 4-outro
+  1795032418.9 AUDIOSYNC pronto (sem limite de dados; automático=true, começa 10 s depois de a legenda ficar ativa, reverifica a cada 600 s)
+  1795032419.9 AUDIOSYNC estado: st=0 executando=false tocando=true carregando=false faixa=2 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 2:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=137MB java=28/512MB nativo=98MB livre=1047MB limiar=144MB poucaMemoria=false
+  1795032419.9 AUDIOSYNC legenda ativa: d3:u|h:deea472cd3c9ce1b|http://10.0.2.2:8000/outro.srt#raw
+  1795032430.0 AUDIOSYNC antes da análise: saúde da reprodução: amostras=10 paradas=0 razão_mínima=0.79 carregando=0 quadros_perdidos=14
+  1795032430.0 AUDIOSYNC começando: posição 225 s, duração 1200 s, atraso atual 0 ms, faixa de áudio 1
+  1795032431.5 AUDIOSYNC captura 135 s +90 s: 89.99 s de PCM em 1.30 s (fim) leitura=4 MB | usou a faixa -1 (pedida 1) de []
+  1795032435.0 AUDIOSYNC captura 555 s +90 s: 89.97 s de PCM em 0.98 s (fim) leitura=2 MB | usou a faixa 1 (pedida 1) de [1:Scarlet Street 1945 HD; ]
+  1795032439.4 AUDIOSYNC captura 975 s +90 s: 89.99 s de PCM em 1.16 s (fim) leitura=3 MB | usou a faixa 1 (pedida 1) de [1:Scarlet Street 1945 HD; ]
+  1795032440.0 AUDIOSYNC estado: st=0 executando=true tocando=true carregando=false faixa=2 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 2:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=106MB java=13/512MB nativo=73MB livre=1065MB limiar=144MB poucaMemoria=false
+  1795032442.5 AUDIOSYNC resultado: recusada z=5.2 janelas=2/3 (z baixo; pico ambíguo; escala fora das razões de fps; janelas discordam;) | vad=silero janelas=3 captura=11810 ms vad=7646 ms (cpu 12) solve=518 ms (cpu 204) cpu_thread=285 ms total=12518 ms leitura_estimada=8 MB leitura_real=10 MB pss=109->116 MB java=6->23 MB
+  1795032442.5 AUDIOSYNC saúde da reprodução: amostras=12 paradas=0 razão_mínima=0.79 carregando=0 quadros_perdidos=2
+  1795032442.5 AUDIOSYNC o áudio não tem certeza: legenda deixada como estava
+  rede (servidor): 40.2 MB enviados entre o comeco e o fim da analise (13 s), incluindo a reproducao (~0,24 MB/s)
+  estimativa so da captura: 37.2 MB
+
+## cenario 5-dsp
+  1795032465.3 AUDIOSYNC pronto (sem limite de dados; automático=true, começa 10 s depois de a legenda ficar ativa, reverifica a cada 600 s)
+  1795032466.3 AUDIOSYNC estado: st=0 executando=false tocando=true carregando=false faixa=-1 baixadas=0 addedSubs=0 embeddedKnown=false faixas=[] cand=false | pss=109MB java=6/512MB nativo=60MB livre=1088MB limiar=144MB poucaMemoria=false
+  1795032467.3 AUDIOSYNC legenda ativa: d3:u|h:deea472cd3c9ce1b|http://10.0.2.2:8000/mais3.srt#raw
+  1795032477.3 AUDIOSYNC antes da análise: saúde da reprodução: amostras=11 paradas=0 razão_mínima=0.79 carregando=0 quadros_perdidos=12
+  1795032477.3 AUDIOSYNC começando: posição 11 s, duração 1200 s, atraso atual 0 ms, faixa de áudio 1
+  1795032479.0 AUDIOSYNC captura 275 s +90 s: 90.06 s de PCM em 1.62 s (fim) leitura=3 MB | usou a faixa 1 (pedida 1) de [1:Scarlet Street 1945 HD; ]
+  1795032479.0 AUDIOSYNC Silero indisponível (teste: DSP forçado): usando o VAD por DSP
+  1795032481.4 AUDIOSYNC captura 710 s +90 s: 89.97 s de PCM em 1.16 s (fim) leitura=4 MB | usou a faixa 1 (pedida 1) de [1:Scarlet Street 1945 HD; ]
+  1795032481.4 AUDIOSYNC Silero indisponível (teste: DSP forçado): usando o VAD por DSP
+  1795032483.6 AUDIOSYNC captura 1050 s +90 s: 89.99 s de PCM em 1.12 s (fim) leitura=4 MB | usou a faixa 1 (pedida 1) de [1:Scarlet Street 1945 HD; ]
+  1795032483.6 AUDIOSYNC Silero indisponível (teste: DSP forçado): usando o VAD por DSP
+  1795032484.8 AUDIOSYNC resultado: recusada z=9.0 janelas=2/3 (janelas discordam;) | vad=dsp(reserva) janelas=3 captura=6987 ms vad=2389 ms (cpu 1384) solve=388 ms (cpu 202) cpu_thread=1650 ms total=7438 ms leitura_estimada=8 MB leitura_real=12 MB pss=118->108 MB java=11->13 MB
+  1795032484.8 AUDIOSYNC saúde da reprodução: amostras=7 paradas=0 razão_mínima=0.79 carregando=0 quadros_perdidos=0
+  1795032484.8 AUDIOSYNC o áudio não tem certeza: legenda deixada como estava
+  1795032486.4 AUDIOSYNC estado: st=3 executando=false tocando=true carregando=false faixa=2 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 2:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=108MB java=14/512MB nativo=75MB livre=1076MB limiar=144MB poucaMemoria=false
+  rede (servidor): 36.7 MB enviados entre o comeco e o fim da analise (7 s), incluindo a reproducao (~0,24 MB/s)
+  estimativa so da captura: 34.9 MB
+
+## cenario 6-rede-lenta
+  1795032495.3 AUDIOSYNC pronto (sem limite de dados; automático=true, começa 30 s depois de a legenda ficar ativa, reverifica a cada 600 s)
+  1795032496.3 AUDIOSYNC estado: st=0 executando=false tocando=true carregando=false faixa=-1 baixadas=0 addedSubs=0 embeddedKnown=false faixas=[] cand=false | pss=91MB java=6/512MB nativo=60MB livre=1106MB limiar=144MB poucaMemoria=false
+  1795032497.3 AUDIOSYNC legenda ativa: d3:u|h:deea472cd3c9ce1b|http://10.0.2.2:8001/mais3.srt#raw
+  1795032516.4 AUDIOSYNC estado: st=0 executando=false tocando=true carregando=false faixa=2 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 2:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=109MB java=10/512MB nativo=79MB livre=1092MB limiar=144MB poucaMemoria=false
+  1795032527.4 AUDIOSYNC antes da análise: saúde da reprodução: amostras=31 paradas=0 razão_mínima=0.78 carregando=0 quadros_perdidos=11
+  1795032527.4 AUDIOSYNC começando: posição 31 s, duração 1200 s, atraso atual 0 ms, faixa de áudio 1
+  1795032536.5 AUDIOSYNC estado: st=0 executando=true tocando=true carregando=false faixa=2 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 2:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=111MB java=14/512MB nativo=86MB livre=1073MB limiar=144MB poucaMemoria=false
+  1795032548.5 AUDIOSYNC captura 275 s +90 s: 90.06 s de PCM em 20.81 s (fim) leitura=3 MB | usou a faixa 1 (pedida 1) de [1:Scarlet Street 1945 HD; ]
+  1795032556.6 AUDIOSYNC estado: st=0 executando=true tocando=true carregando=false faixa=2 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 2:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=123MB java=23/512MB nativo=87MB livre=1050MB limiar=144MB poucaMemoria=false
+  1795032571.9 AUDIOSYNC captura 710 s +90 s: 89.97 s de PCM em 19.91 s (fim) leitura=3 MB | usou a faixa 1 (pedida 1) de [1:Scarlet Street 1945 HD; ]
+  1795032576.6 AUDIOSYNC estado: st=0 executando=true tocando=true carregando=false faixa=2 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 2:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=103MB java=11/512MB nativo=79MB livre=1064MB limiar=144MB poucaMemoria=false
+  1795032586.1 AUDIOSYNC captura 1050 s +90 s: 89.99 s de PCM em 11.37 s (fim) leitura=3 MB | usou a faixa 1 (pedida 1) de [1:Scarlet Street 1945 HD; ]
+  1795032589.4 AUDIOSYNC resultado: aceita z=11.7 janelas=3/3 escala=1.00000 deslocamento=-3032 ms | vad=silero janelas=3 captura=61292 ms vad=8465 ms (cpu 11) solve=392 ms (cpu 178) cpu_thread=270 ms total=61924 ms leitura_estimada=8 MB leitura_real=9 MB pss=108->113 MB java=11->19 MB
+  1795032589.4 AUDIOSYNC saúde da reprodução: amostras=61 paradas=0 razão_mínima=0.76 carregando=0 quadros_perdidos=2
+  1795032589.4 AUDIOSYNC legenda: atraso 0 -> -3030 ms, estratégia plain, faixa 2, posição 93820 ms
+  1795032589.4 AUDIOSYNC aplicado: atraso -3030 ms, escala 1.0
+  rede (servidor): 11.3 MB enviados entre o comeco e o fim da analise (62 s), incluindo a reproducao (~0,24 MB/s)
+  estimativa so da captura: 0.0 MB
