@@ -547,7 +547,7 @@ final class AudioSyncAuto {
         if (s == null || (key != null && !k.equals(key))) return;
         if (h.delayMs() != d0) { s.st = OFF; log("o usuário mexeu no atraso durante a análise: descartado"); return; }
         // as quedas do processo de captura que a captura recuperou sozinha (outra configuração, na hora) fazem parte desta mesma tentativa
-        if (o.note != null && (o.note.contains("recuper") || o.note.contains("caiu"))) log("tentativa " + (s.attempts + 1) + ": houve queda(s) do processo de captura recuperadas na hora; contam como esta única tentativa");
+        if (o.note != null && (o.note.contains("recuper") || o.note.contains("caiu"))) log("tentativa " + (s.attempts + 1) + ": houve queda(s) do processo de captura, tratadas dentro desta mesma tentativa (a captura troca de configuração na hora); contam como UMA tentativa só");
         switch (o.kind) {
             case AudioSyncCore.Outcome.FIX: {
                 boolean persist = o.scale == 1.0;
