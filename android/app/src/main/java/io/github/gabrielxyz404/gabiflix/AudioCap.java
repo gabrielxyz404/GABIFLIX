@@ -110,7 +110,7 @@ final class AudioCap {
         LibVLC v = instance();
         Media media = new Media(v, Uri.parse(url));
         media.addOption(":no-video");
-        media.addOption(":input-fast-seek");
+        // sem :input-fast-seek: começa no quadro-chave anterior, a janela sai 5-10 s mais longa e deslocada (recusava legenda certa)
         media.addOption(":no-spu");
         media.addOption(":network-caching=600");
         media.addOption(":http-reconnect");

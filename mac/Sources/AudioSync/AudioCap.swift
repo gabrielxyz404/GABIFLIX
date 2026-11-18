@@ -51,7 +51,7 @@ final class AudioCap {
         try? FileManager.default.removeItem(at: out)
         if isCancelled { r.end = "cancelado"; return r }
         let startS = Double(startMs) / 1000.0, durS = Double(durMs) / 1000.0
-        let opts: [String] = [":no-video", ":input-fast-seek", ":no-spu", ":network-caching=600", ":http-reconnect",
+        let opts: [String] = [":no-video", ":no-spu", ":network-caching=600", ":http-reconnect",
                               ":start-time=\(String(format: "%.3f", startS))", ":stop-time=\(String(format: "%.3f", startS + durS))",
                               ":sout=#transcode{acodec=s16l,channels=1,samplerate=16000}:std{access=file,mux=wav,dst=\(out.path)}"]
         var pl: VLCMediaPlayer! = nil
