@@ -385,12 +385,13 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
         controls.addSubview(slider)
         controls.addSubview(lengthLabel)
 
+        let syncB = glass("arrow.triangle.2.circlepath", "Sincronizar", false, #selector(autoSyncPicked))   // igual ao Android; a mesma ação de "Sincronizar automaticamente" do menu de legendas
         let subs = glass("captions.bubble", "Legendas", false, #selector(chooseSubtitles))
         let audio = glass("speaker.wave.2.fill", "Áudio", false, #selector(chooseAudio))
         let scale = glass("aspectratio", "Tela: Normal", false, #selector(toggleScale(_:)))
         let fs = glass("arrow.up.left.and.arrow.down.right", "Tela cheia", false, #selector(toggleFullScreen))
         scaleButton = scale
-        optBtns = [subs, audio, scale, fs]
+        optBtns = [syncB, subs, audio, scale, fs]
         optsRow.orientation = .horizontal
         optsRow.alignment = .centerY
         optsRow.translatesAutoresizingMaskIntoConstraints = false
@@ -464,31 +465,40 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
     }
 
     /** tamanhos de toda a barra em função da janela (referência: MacBook Air 13" em tela cheia, 1470x956 pontos): nada em pixels fixos */
-    private func applyUiScale() {
+    private func applyUiScale(shrink: CGFloat = 1) {
         let w = root.bounds.width, h = root.bounds.height
         guard w > 0, h > 0 else { return }
-        let k = max(0.8, min(1.7, min(w / 1470, h / 956)))
-        if abs(k - uiK) < 0.01 { return }
+        let k = max(0.55, min(1.7, min(w / 1470, h / 956)))
+        let kb = k * 1.4 * shrink   // botões das opções e do centro: ~1,5x os do Android em relação à janela
+        if abs(k - uiK) < 0.01 && shrink == 1 { return }
         uiK = k
         func set(_ key: String, _ v: CGFloat) { uiC[key]?.constant = (v * k).rounded() }
         set("topH", 120); set("backLead", 28); set("backTop", 18); set("backW", 46); set("backH", 46); set("titleLead", 16)
-        set("rwW", 60); set("rwH", 60); set("ffW", 60); set("ffH", 60); set("playW", 84); set("playH", 84)
-        set("ctlH", 150); set("seekLead", 28); set("seekH", 30); set("seekGap", 6); set("optsH", 42)
-        set("timeW", 48); set("lenW", 48); set("seekSp1", 14); set("seekSp2", 14)
+        func setB(_ key: String, _ v: CGFloat) { uiC[key]?.constant = (v * kb).rounded() }
+        setB("rwW", 60); setB("rwH", 60); setB("ffW", 60); setB("ffH", 60); setB("playW", 84); setB("playH", 84); setB("optsH", 42)
+        uiC["ctlH"]?.constant = (42 * kb + 80 * k).rounded()
+        set("seekLead", 28); set("seekH", 34); set("seekGap", 6)
+        set("timeW", 64); set("lenW", 64); set("seekSp1", 14); set("seekSp2", 14)
         uiC["seekTrail"]?.constant = -(28 * k).rounded()
         uiC["titleTrail"]?.constant = -(28 * k).rounded()
         uiC["optsTrail"]?.constant = -(28 * k).rounded()
         uiC["optsBottom"]?.constant = -(22 * k).rounded()
-        centerBox.spacing = (28 * k).rounded()
-        optsRow.spacing = (12 * k).rounded()
-        for g in [backBtn, rwBtn, ffBtn, playButton] { g.iconPt = ((g === playButton ? 34 : (g === backBtn ? 20 : 26)) * k).rounded(); g.refresh() }
-        for g in optBtns { g.iconPt = (17 * k).rounded(); g.fontPt = (15 * k).rounded(); g.refresh() }
+        centerBox.spacing = (28 * kb).rounded()
+        optsRow.spacing = (12 * kb).rounded()
+        for g in [backBtn, rwBtn, ffBtn, playButton] { g.iconPt = ((g === playButton ? 34 * kb : (g === backBtn ? 20 * k : 26 * kb))).rounded(); g.refresh() }
+        for g in optBtns { g.iconPt = (17 * kb).rounded(); g.fontPt = (15 * kb).rounded(); g.refresh() }
         titleLabel.font = .systemFont(ofSize: (21 * k).rounded(), weight: .semibold)
-        for l in [timeLabel, lengthLabel] { l.font = .monospacedDigitSystemFont(ofSize: (14 * k).rounded(), weight: .medium) }
+        for l in [timeLabel, lengthLabel] { l.font = .monospacedDigitSystemFont(ofSize: (16 * k).rounded(), weight: .medium) }
         timeLabel.alignment = .left
         lengthLabel.alignment = .right
         timeLabel.textColor = .white
         lengthLabel.textColor = NSColor(white: 1, alpha: 0.85)
+        // janela estreita: se a linha de opções não cabe, encolhe só os botões (nunca corta)
+        if shrink == 1 {
+            let avail = w - 56 * k
+            let fit = optsRow.fittingSize.width
+            if fit > avail && fit > 0 { uiK = 0; applyUiScale(shrink: max(0.5, avail / fit)); return }
+        }
         root.needsLayout = true
         log("interface: escala \(String(format: "%.2f", k)) janela=\(Int(w))x\(Int(h)) título=\"\(titleText)\"")
     }
