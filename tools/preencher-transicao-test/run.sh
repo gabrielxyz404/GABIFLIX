@@ -41,6 +41,7 @@ for v in barra circ circwide; do
   wait $RP; sleep 2
   adb pull /sdcard/rec.mp4 "$OUT/$L-$P-$v.mp4"; adb shell rm -f /sdcard/rec.mp4
   adb logcat -v epoch -d | grep -E "tela: modo|zoom Preencher|barras:|amostra:" > $OUT/$L-$P-$v-log.txt
+  adb logcat -b all -v epoch -d | grep -E "am_proc_died|am_kill|am_crash|am_anr|Fatal signal|ANR in|has died|lowmemorykiller|FATAL|CrashReporter|Start proc.*gabiflix" | cut -c1-300 > $OUT/$L-$P-$v-morte.txt
 done
 adb logcat -d | grep -E "FATAL EXCEPTION|AndroidRuntime" | head -40 > $OUT/$P-crash.txt
 exit 0
