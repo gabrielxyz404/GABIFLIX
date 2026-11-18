@@ -427,6 +427,7 @@ public class PlayerActivity extends Activity {
             if (getIntent().getStringExtra("gfTrace") != null) ui.post(new Runnable() { @Override public void run() {
                 if (player == null) return;
                 glog("pos " + player.getTime() + " spu=" + player.getSpuTrack() + " atraso=" + subDelayMs);
+                if (seek != null && (traceN++ % 5) == 0) { int[] xy = new int[2]; seek.getLocationOnScreen(xy); glog("barra " + xy[0] + " " + xy[1] + " " + seek.getWidth() + " " + seek.getHeight()); }
                 ui.postDelayed(this, 400);
             } });
         } catch (Throwable ignored) {}
@@ -711,6 +712,7 @@ public class PlayerActivity extends Activity {
     private final ArrayList<View> optBtns = new ArrayList<>();
     /** depois de um salto, o VLC ainda avisa por um instante o tempo antigo: a barra ignora isso até esta hora */
     private long seekHoldUntil = 0;
+    private int traceN = 0;
 
     /** botões que o controle remoto alcança (na TV): o próprio botão desenha o foco (branco, maior) */
     private void remote(View v) {

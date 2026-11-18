@@ -67,24 +67,24 @@ if [ -f tools/sync-real/ONLY_F ]; then
   # (re-checagem) capturando audio durante os seeks; seeks arrastando a linha do tempo, varios seguidos e rapidos, inclusive durante o carregamento
   python3 -c "import PIL" 2>/dev/null || pip install --user -q pillow
   CLIP=blk.mkv
-  LOG=/tmp/server-bytes-f.log THROTTLE_KBPS=${F_KBPS:-70} nohup python3 tools/audio-integra/server.py /tmp/media 8002 >/tmp/server-f.out 2>&1 &
+  LOG=/tmp/server-bytes-f.log THROTTLE_KBPS=${F_KBPS:-150} nohup python3 tools/audio-integra/server.py /tmp/media 8002 >/tmp/server-f.out 2>&1 &
   sleep 2; BASE=http://10.0.2.2:8002
   for modo in 0 1; do
     N=m$modo-mais3
     adb shell pm clear $PKG >/dev/null; sleep 2
-    launch mais3.srt --es gfSeekSec 240 --es gfAudioStartSec 240 --es gfAudioRecheckSec 25 --es gfScale $modo --es gfTrace 1
-    P_SLOW=1 waitlog "AUDIOSYNC (aplicado|resultado:)" 300; sleep 2
+    launch mais3.srt --es gfSeekSec 240 --es gfAudioStartSec 240 --es gfAudioRecheckSec 25 --es gfScale $modo --es gfSubDelay -3000 --es gfTrace 1
+    sleep 20
     adb exec-out screencap -p > $OUT/foto-F-$N-aplicado.png
     mkdir -p $OUT/F-$N
     ( for i in $(seq 1 70); do a=$(date +%s.%N); adb exec-out screencap -p > $OUT/F-$N/$(printf %03d $i).png; b=$(date +%s.%N); echo "$(printf %03d $i) $a $b" >> $OUT/F-$N/times.txt; done ) &
     SH=$!
     sleep 3
-    drag() { # $1 = fracao de partida, $2 = fracao de chegada
-      xy=$(dump | python3 $UI xy "Linha do tempo")
-      if [ -z "$xy" ]; then adb shell input tap $((W/2)) $((H/3)); sleep 0.6; xy=$(dump | python3 $UI xy "Linha do tempo"); fi
-      [ -z "$xy" ] && { echo "F: sem linha do tempo" >> $OUT/passos.txt; return; }
-      cx=${xy% *}; cy=${xy#* }; half=$((W/2-250))
-      adb shell input swipe $((cx + (${1} - 50) * half / 50)) $cy $((cx + (${2} - 50) * half / 50)) $cy 250
+    drag() { # $1 = fracao de partida, $2 = fracao de chegada (em %); a posicao da barra vem do proprio app (registro "barra x y w h")
+      adb shell input tap $((W/2)) $((H/3)); sleep 0.5
+      b=$(adb logcat -v epoch -d -s GabiFlixPlayer | grep " barra " | tail -1 | sed 's/.*barra //')
+      [ -z "$b" ] && { echo "F: sem posicao da barra" >> $OUT/passos.txt; return; }
+      set -- $1 $2 $b; bx=$3; by=$4; bw=$5; bh=$6
+      adb shell input swipe $((bx + $1 * bw / 100)) $((by + bh / 2)) $((bx + $2 * bw / 100)) $((by + bh / 2)) 250
     }
     drag 20 27; sleep 1.5; drag 27 24; sleep 1; drag 24 31; drag 31 22; sleep 6
     drag 22 29; sleep 5
