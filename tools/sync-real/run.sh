@@ -62,6 +62,26 @@ P_SLOW=1
 DONE='AUDIOSYNC (aplicado|resultado:|desisti|botão:|o áudio não tem|pulado|já foi vista)'
 panel_texts() { pause_v; show_controls; open_subs; sleep 1.5; snap "$1" 0.5; texts "$1"; adb shell input keyevent KEYCODE_BACK; sleep 1; play_v; }
 
+if [ -f tools/sync-real/ONLY_G ]; then
+  # tempo do toque ate o resultado (botao "Sincronizar automaticamente") e MB lidos, em arquivo de 20 Mbit/s e em arquivo pequeno
+  : > $OUT/tempo.txt
+  for CLIP in real-ac3.mkv clip.mkv blk.mkv; do
+    for rep in 1 2; do
+      adb shell pm clear $PKG >/dev/null; sleep 2
+      B0=$(curl -s http://127.0.0.1:8000/__bytes | awk -v f="/$CLIP" -v g="$CLIP" '$1==f||$1==g{print $2}' | head -1); B0=${B0:-0}
+      launch menos2.srt --es gfAudioAuto false
+      sleep 25; pause_v; show_controls; open_subs; sleep 1.5
+      T0=$(adb shell date +%s.%N | tr -d '\r')
+      click "Sincronizar automaticamente"
+      waitlog "AUDIOSYNC botão:" 420; sleep 1
+      T1=$(glog | grep "AUDIOSYNC botão:" | tail -1 | awk '{print $1}')
+      B1=$(curl -s http://127.0.0.1:8000/__bytes | awk -v f="/$CLIP" -v g="$CLIP" '$1==f||$1==g{print $2}' | head -1); B1=${B1:-0}
+      echo "$CLIP rep$rep: toque->resultado $(python3 -c "print(round($T1-$T0,1))") s, lidos $(python3 -c "print(round(($B1-$B0)/1048576,1))") MB | $(glog | grep 'AUDIOSYNC botão:' | tail -1 | cut -c20-220)" >> $OUT/tempo.txt
+      save G-$CLIP-$rep
+    done
+  done
+  cat $OUT/tempo.txt; exit 0
+fi
 if [ -f tools/sync-real/ONLY_F ]; then
   # condicoes reais: video por HTTP lento (rede limitada), legenda por URL (addSlave), sincronizacao automatica ja aplicada E uma nova analise
   # (re-checagem) capturando audio durante os seeks; seeks arrastando a linha do tempo, varios seguidos e rapidos, inclusive durante o carregamento
@@ -72,11 +92,11 @@ if [ -f tools/sync-real/ONLY_F ]; then
   for modo in 0 1; do
     N=m$modo-mais3
     adb shell pm clear $PKG >/dev/null; sleep 2
-    launch mais3.srt --es gfSeekSec 240 --es gfAudioStartSec 240 --es gfAudioRecheckSec 25 --es gfScale $modo --es gfSubDelay -3000 --es gfTrace 1
+    launch mais3.srt --es gfSeekSec 240 --es gfAudioStartSec 3 --es gfAudioRecheckSec 25 --es gfScale $modo --es gfSubDelay -3000 --es gfTrace 1
     sleep 20
     adb exec-out screencap -p > $OUT/foto-F-$N-aplicado.png
     mkdir -p $OUT/F-$N
-    ( for i in $(seq 1 70); do a=$(date +%s.%N); adb exec-out screencap -p > $OUT/F-$N/$(printf %03d $i).png; b=$(date +%s.%N); echo "$(printf %03d $i) $a $b" >> $OUT/F-$N/times.txt; done ) &
+    ( for i in $(seq 1 90); do a=$(date +%s.%N); adb exec-out screencap -p > $OUT/F-$N/$(printf %03d $i).png; b=$(date +%s.%N); echo "$(printf %03d $i) $a $b" >> $OUT/F-$N/times.txt; done ) &
     SH=$!
     sleep 3
     drag() { # $1 = fracao de partida, $2 = fracao de chegada (em %); a posicao da barra vem do proprio app (registro "barra x y w h")
@@ -87,7 +107,7 @@ if [ -f tools/sync-real/ONLY_F ]; then
       adb shell input swipe $((bx + $1 * bw / 100)) $((by + bh / 2)) $((bx + $2 * bw / 100)) $((by + bh / 2)) 250
     }
     drag 20 27; sleep 1.5; drag 27 24; sleep 1; drag 24 31; drag 31 22; sleep 6
-    drag 22 29; sleep 5
+    drag 22 29; sleep 2; drag 29 21; drag 21 33; sleep 4; drag 33 26; sleep 5
     wait $SH
     save F-$N
     for i in 1; do python3 tools/sync-real/seekcheck.py $OUT/F-$N $OUT/log-$P-F-$N.txt $OUT/clock.txt F >> $OUT/seek-resumo.txt 2>&1; done
