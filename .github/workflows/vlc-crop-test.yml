@@ -49,6 +49,11 @@ jobs:
           limite-1.05|circ.mkv|1829x1080+46+0
           wide-sem-recorte|circwide.mkv|
           wide-limite-1.05|circwide.mkv|1829x800+46+0
+          x0|circ.mkv|1829x1080+0+0
+          x91|circ.mkv|1829x1080+91+0
+          y0|circ.mkv|1920x900+0+0
+          y90|circ.mkv|1920x900+0+90
+          y180|circ.mkv|1920x900+0+180
           EOF
           python3 - <<'PY' | tee shots/medidas.txt
           import numpy as np, glob
@@ -60,7 +65,7 @@ jobs:
                   ys, xs = np.where(c)
                   if len(xs) < 200: r.append(nome + ": nao achado"); continue
                   w = xs.max() - xs.min() + 1; h = ys.max() - ys.min() + 1
-                  r.append("%s %dx%d razao %.3f" % (nome, w, h, w / h))
+                  r.append("%s %dx%d razao %.3f centro %d,%d" % (nome, w, h, w / h, (xs.min() + xs.max()) // 2, (ys.min() + ys.max()) // 2))
               print(f.split("/")[-1], a.shape[1], a.shape[0], " | ".join(r))
           PY
           cp /tmp/vlc-*.log shots/ 2>/dev/null || true
