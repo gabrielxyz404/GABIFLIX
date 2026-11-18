@@ -40,7 +40,13 @@ final class AudioCap {
     static volatile String testHook;
 
     private static final String FB_PREFS = "audiocap-fallback";
-    /** quantos modos do Silero existem: 0 = normal; 1 = seguro (sem otimização do grafo, sem arena de memória, execução sequencial) */
+    /**
+     * qual motor de VAD gravou os marcadores silero_broken/silero_bad. Até a 1.0.N o Silero rodava no ONNX Runtime (nativo) e, no Fire TV Stick 4K Max
+     * (ARM de 32 bits), a criação da sessão derrubava o processo nos dois modos: o aparelho ficou marcado como "silero_broken" e passou a usar o DSP, que recusa
+     * a maioria das legendas. Agora o Silero é Java puro: esses marcadores velhos não valem mais e são apagados uma vez.
+     */
+    private static final String VAD_ENGINE = "java1";
+    /** quantos modos do Silero existem: 0 = normal (Java puro, até 2 fios); 1 = seguro (Java puro, 1 fio só) */
     static final int NVAD = 2;
 
     private static final Object L = new Object();
@@ -52,9 +58,9 @@ final class AudioCap {
     private static volatile int capBad;
     /** todas as configurações caíram: a captura fica desligada até o app reabrir */
     private static volatile boolean capDisabled;
-    /** modos do Silero em que o processo já caiu (bit i = modo i; 0 = normal, 1 = seguro: sem otimização do grafo, sem arena de memória), por aparelho+versão */
+    /** modos do Silero em que o processo já caiu (bit i = modo i; 0 = normal, 1 = seguro: 1 fio só), por aparelho+versão */
     private static volatile int sileroBad;
-    /** o Silero não carregou por erro Java (biblioteca ausente etc.): não adianta repetir até o app reabrir */
+    /** o Silero não carregou por erro Java (pesos ausentes, falta de memória etc.): não adianta repetir até o app reabrir */
     private static volatile boolean sileroUnavail;
     /** todos os modos do Silero derrubaram o processo neste aparelho+versão: nunca mais é usado (gravado) */
     private static volatile boolean sileroBroken;
@@ -105,6 +111,11 @@ final class AudioCap {
         prefsLoaded = true;
         try {
             android.content.SharedPreferences sp = c.getSharedPreferences(FB_PREFS, Context.MODE_PRIVATE);
+            if (!VAD_ENGINE.equals(sp.getString("vad_engine", ""))) {
+                boolean had = sp.contains("silero_broken") || sp.contains("silero_bad");
+                sp.edit().remove("silero_broken").remove("silero_bad").putString("vad_engine", VAD_ENGINE).apply();
+                if (had) log("Silero: marcadores de queda do ONNX Runtime apagados (agora é Java puro, sem código nativo)");
+            }
             String k = devKey(c);
             sileroBroken = k.equals(sp.getString("silero_broken", ""));
             String sb = sp.getString("silero_bad", "");
@@ -142,9 +153,8 @@ final class AudioCap {
     }
 
     /**
-     * false = não usar o Silero (ONNX Runtime) neste aparelho: já derrubou o processo antes (nesta versão). Não se proíbe o Silero de antemão no ARM de 32 bits:
-     * o VAD por DSP é bem menos preciso (no clipe de teste recusa a legenda onde o Silero acerta), então o Silero tenta uma vez; se cair, o relatório CAPTURA_CAIU
-     * traz o motivo e o DSP assume.
+     * false = não usar o Silero neste aparelho: já derrubou o processo antes (nesta versão) ou não carregou. O Silero é Java puro (sem código nativo), então vale em
+     * qualquer ABI, inclusive o ARM de 32 bits; o VAD por DSP é bem menos preciso (recusa legendas que o Silero acerta) e só entra como último recurso.
      */
     static boolean sileroAllowed(Context c) {
         loadPrefs(c.getApplicationContext());
@@ -154,7 +164,7 @@ final class AudioCap {
     /** por que o Silero não será usado (para o registo) */
     static String sileroWhyNot(Context c) {
         loadPrefs(c.getApplicationContext());
-        return sileroUnavail ? "o ONNX Runtime não carregou" : sileroBroken || sileroBad != 0 ? "ele derrubou o processo de captura neste aparelho" : "";
+        return sileroUnavail ? "o Silero em Java não carregou" : sileroBroken || sileroBad != 0 ? "ele derrubou o processo de captura neste aparelho" : "";
     }
 
     private static int nextCfg() {
@@ -332,10 +342,10 @@ final class AudioCap {
     }
 
     /**
-     * Roda o Silero no processo de captura: lê o PCM (s16le) de `in` e grava as probabilidades (floats little-endian, 100 por segundo) em `out`.
-     * false = não deu (serviço caiu, indisponível, cancelado, sem ONNX): quem chama usa o VAD por DSP, que não tem código nativo.
-     * Se o Silero DERRUBAR o processo, tenta na hora o modo seguro (ONNX Runtime sem otimizações do grafo nem arena de memória); se esse também derrubar,
-     * fica gravado (por aparelho + versão) que o Silero não é mais usado e o VAD por DSP assume.
+     * Roda o Silero (Java puro) no processo de captura: lê o PCM (s16le) de `in` e grava as probabilidades (floats little-endian, 100 por segundo) em `out`.
+     * false = não deu (serviço caiu, indisponível, cancelado, sem os pesos): quem chama usa o VAD por DSP (último recurso).
+     * Se o processo cair durante o Silero, tenta na hora o modo seguro (1 fio só); se esse também cair, fica gravado (por aparelho + versão) que o Silero
+     * não é mais usado e o VAD por DSP assume.
      */
     boolean vad(File in, File out) {
         appCtx = ctx;

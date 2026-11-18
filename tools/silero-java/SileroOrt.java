@@ -1,4 +1,8 @@
-package io.github.gabrielxyz404.gabiflix.audiosync;
+/*
+ * REFERÊNCIA para a CI (não faz parte do app): o Silero v5 rodando no ONNX Runtime, exatamente como o app fazia até a troca pelo Java puro
+ * (era audiosync/SileroVad.java). Serve para comparar, bloco a bloco, com audiosync/JavaSileroVad.java.
+ */
+import io.github.gabrielxyz404.gabiflix.audiosync.Vad;
 
 import ai.onnxruntime.OnnxTensor;
 import ai.onnxruntime.OrtEnvironment;
@@ -15,12 +19,12 @@ import java.util.Map;
  * o corpus faz em Python (corpus.py, vad_tracks), de modo que os números da avaliação valem para este código.
  * Uma instância por thread (guarda a sessão, mas o estado é local a cada chamada de speechProb).
  */
-public final class SileroVad implements Vad, AutoCloseable {
+public final class SileroOrt implements Vad, AutoCloseable {
     private final OrtEnvironment env;
     private final OrtSession session;
     private final String inName = "input", stName = "state", srName = "sr";
 
-    public SileroVad(String modelPath) throws OrtException {
+    public SileroOrt(String modelPath) throws OrtException {
         env = OrtEnvironment.getEnvironment();
         OrtSession.SessionOptions so = new OrtSession.SessionOptions();
         so.setIntraOpNumThreads(1);
@@ -28,13 +32,13 @@ public final class SileroVad implements Vad, AutoCloseable {
         session = env.createSession(modelPath, so);
     }
 
-    public SileroVad(byte[] model) throws OrtException { this(model, false); }
+    public SileroOrt(byte[] model) throws OrtException { this(model, false); }
 
     /**
      * @param safe modo seguro (só para aparelhos em que o modo normal derrubou o processo): sem otimização do grafo, sem arena de memória, sem
      *             padrão de memória e execução sequencial; mais lento, mas passa por menos código nativo "esperto" do ONNX Runtime
      */
-    public SileroVad(byte[] model, boolean safe) throws OrtException {
+    public SileroOrt(byte[] model, boolean safe) throws OrtException {
         env = OrtEnvironment.getEnvironment();
         OrtSession.SessionOptions so = new OrtSession.SessionOptions();
         so.setIntraOpNumThreads(1);
