@@ -290,6 +290,7 @@ public final class CrashReporter {
     /** POST de texto simples ao tópico; divide em partes de ~3,6 KB (o ntfy transforma mensagens maiores em anexo). true se todas as partes foram aceitas */
     private static boolean send(String kind, String text) {
         try {
+            android.util.Log.i("GFCrash", "corpo de " + kind + ":\n" + text.substring(0, Math.min(text.length(), 1800)));
             byte[] all = text.getBytes(StandardCharsets.UTF_8);
             int parts = Math.max(1, (all.length + PART_MAX - 1) / PART_MAX);
             if (parts > 4) parts = 4;

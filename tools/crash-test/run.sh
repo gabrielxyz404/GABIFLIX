@@ -13,7 +13,7 @@ caso() {   # $1 nome  $2 valor de gfCrashTest  $3 segundos até relançar
   adb shell am start -n $PKG/.MainActivity --es gfCrashTest "$2" > /dev/null; sleep "$3"
   echo "== $1 (antes de relançar)" >> $OUT/$L-resultado.txt; gc >> $OUT/$L-resultado.txt
   if [ "$2" != post ]; then
-    adb shell am start -n $PKG/.MainActivity > /dev/null; sleep 2; snap "$1-aviso"; sleep 14
+    adb shell am start -n $PKG/.MainActivity > /dev/null; sleep 7; snap "$1-aviso"; sleep 10
     echo "== $1 (depois de relançar)" >> $OUT/$L-resultado.txt; gc >> $OUT/$L-resultado.txt
   fi
   adb logcat -d | grep -E "FATAL EXCEPTION|Fatal signal|am_crash|am_proc_died" | head -10 >> $OUT/$L-resultado.txt
