@@ -1,0 +1,102 @@
+name: Teste Preencher com barras gravadas
+
+# Fotos do botão "Tela" (antes = main, depois = este commit) com 3 vídeos (2,39:1, 16:9, 4:3) e legenda de 2 linhas, em celular (20:9) e TV (16:9). Nunca publica o app.
+on:
+  push:
+    branches: [preencher-run]
+  workflow_dispatch:
+    inputs:
+      out_branch:
+        description: prefixo do branch onde as fotos são publicadas
+        default: preencher-out
+      antes_ref:
+        description: commit do app "antes"
+        default: main
+
+permissions:
+  contents: write
+
+jobs:
+  teste:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        perfil: [tel, tv]
+        versao: [antes, depois]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ matrix.versao == 'antes' && (github.event.inputs.antes_ref || 'main') || github.sha }}
+          path: appsrc
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 17
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+      - name: APK de teste (x86)
+        env:
+          GABIFLIX_ABIS: x86,x86_64
+        run: |
+          set -o pipefail
+          gradle -p appsrc/android assembleRelease --no-daemon 2>&1 | tee build.log
+      - name: Mostrar o erro (se houver)
+        if: failure()
+        run: |
+          grep -n -E "error:|What went wrong|Could not|FAILURE|e: |> .*" build.log | head -25 | while IFS= read -r line; do
+            echo "::error::$(echo "$line" | cut -c1-900)"
+          done
+      - name: Vídeos de teste
+        run: |
+          timeout 300 sudo apt-get install -y -qq ffmpeg >/dev/null || (sudo apt-get update -qq && timeout 300 sudo apt-get install -y -qq ffmpeg >/dev/null)
+          mkdir -p /tmp/video && cd /tmp/video
+          python3 - <<'PY'
+          def ts(s): return "%02d:%02d:%02d,%03d"%(s//3600,s//60%60,s%60,0)
+          out=[]
+          for i in range(30):
+              a=i*10; out.append("%d\n%s --> %s\nVocê não sabe o que ela fez para nós, mas eu também estou aqui (%d)\ne isso é uma linha de baixo que tem de ficar inteira, com você\n"%(i+1,ts(a),ts(a+10)[:-3]+"999",i+1))
+          open("teste.srt","w").write("\n".join(out))
+          PY
+          ffmpeg -loglevel error -f lavfi -i testsrc2=size=1920x804:rate=24 -f lavfi -i sine=frequency=440:sample_rate=48000 -t 300 -vf "pad=1920:1080:0:138:black" -c:v libx264 -preset veryfast -pix_fmt yuv420p -c:a aac barra.mkv
+          ffmpeg -loglevel error -f lavfi -i testsrc2=size=1920x804:rate=24 -f lavfi -i sine=frequency=440:sample_rate=48000 -t 300 -c:v libx264 -preset veryfast -pix_fmt yuv420p -c:a aac wide.mkv
+          ffmpeg -loglevel error -f lavfi -i testsrc2=size=1280x720:rate=24 -f lavfi -i sine=frequency=440:sample_rate=48000 -t 300 -c:v libx264 -preset veryfast -pix_fmt yuv420p -c:a aac hd.mkv
+          ffmpeg -loglevel error -f lavfi -i testsrc2=size=960x720:rate=24 -f lavfi -i sine=frequency=440:sample_rate=48000 -t 300 -vf "pad=1280:720:160:0:black" -c:v libx264 -preset veryfast -pix_fmt yuv420p -c:a aac pilar.mkv
+          nohup npx --yes http-server -p 8000 -s /tmp/video >/dev/null 2>&1 &
+          sleep 8; curl -sI http://127.0.0.1:8000/wide.mkv | head -1
+      - name: KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules && sudo udevadm trigger --name-match=kvm
+      - name: Emulador de celular
+        if: matrix.perfil == 'tel'
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          target: google_apis
+          arch: x86_64
+          profile: pixel_4
+          disable-animations: false
+          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
+          script: bash tools/preencher-barras-test/run.sh tel appsrc/android/app/build/outputs/apk/release/app-release.apk ${{ matrix.versao }} 2
+      - name: Emulador de TV
+        if: matrix.perfil == 'tv'
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 30
+          target: android-tv
+          arch: x86
+          profile: tv_1080p
+          disable-animations: false
+          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
+          script: bash tools/preencher-barras-test/run.sh tv appsrc/android/app/build/outputs/apk/release/app-release.apk ${{ matrix.versao }} 2
+      - name: Publicar as fotos
+        if: always()
+        run: |
+          cd shots || exit 0
+          git init -q -b x && git add -A
+          git -c user.name=ci -c user.email=ci@x commit -qm fotos
+          git push -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" x:${{ github.event.inputs.out_branch || 'preencher-out' }}-${{ matrix.perfil }}-${{ matrix.versao }}

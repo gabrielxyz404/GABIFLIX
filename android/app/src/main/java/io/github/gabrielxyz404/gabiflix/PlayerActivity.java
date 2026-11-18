@@ -107,6 +107,7 @@ public class PlayerActivity extends Activity {
         zoomVideo();
         ui.postDelayed(this::zoomVideo, 300);
         ui.postDelayed(this::zoomVideo, 1000);
+        startBarSampling();
     }
 
     /** a vista do vídeo: a TextureView (TV) ou, no celular, a primeira SurfaceView (a segunda é a das legendas) */
@@ -132,7 +133,111 @@ public class PlayerActivity extends Activity {
         } catch (Throwable t) { glog("proporção: " + t); return 0f; }
     }
 
-    /** Preencher: amplia a imagem (centrada) até cobrir a tela inteira; nos outros modos volta a 1 */
+    // ---- barras pretas gravadas dentro do vídeo (filme 2,39:1 dentro de um quadro 16:9, ou 4:3 com laterais pretas) ----
+    // Fração do quadro ocupada por cada barra (0 = sem barra). Medidas por amostras do que a vista do vídeo mostra, fora da thread da tela.
+    private volatile float barT, barB, barL, barR;
+    private final ArrayList<boolean[]> barRowSamples = new ArrayList<>(), barColSamples = new ArrayList<>();
+    private android.os.HandlerThread barThread;
+    private Handler barHandler;
+    private int barTicks = 0;
+    private static final int BAR_MIN_SAMPLES = 3, BAR_MAX_SAMPLES = 8, BAR_LUMA = 40;
+    /** na TV a legenda é desenhada dentro da imagem, a ~8% da borda de baixo do quadro: o zoom pode cortar no máximo isto da borda de baixo */
+    private static final float SUB_CUT = 0.055f;
+    private final Runnable barTickRun = this::barTick;
+
+    private void startBarSampling() {
+        ui.removeCallbacks(barTickRun);
+        if (scaleIndex == 1) ui.postDelayed(barTickRun, 1500);
+    }
+
+    private void barTick() {
+        if (scaleIndex != 1 || player == null || isFinishing()) return;
+        barTicks++;
+        ui.postDelayed(barTickRun, barTicks < 10 ? 2000 : 20000);
+        try {
+            if (!player.isPlaying()) return;
+            View v = findVideoView(videoLayout);
+            if (v == null || v.getWidth() <= 0 || v.getHeight() <= 0) return;
+            final float va = videoAspect();
+            final int bw = 192, bh = Math.max(36, Math.round(bw * (float) v.getHeight() / v.getWidth()));
+            if (barHandler == null) { barThread = new android.os.HandlerThread("barras"); barThread.start(); barHandler = new Handler(barThread.getLooper()); }
+            if (v instanceof android.view.TextureView) {
+                android.view.TextureView tv2 = (android.view.TextureView) v;
+                if (!tv2.isAvailable()) return;
+                final android.graphics.Bitmap bmp = tv2.getBitmap(bw, bh);
+                if (bmp != null) barHandler.post(() -> analyzeBars(bmp, va, true));
+            } else if (v instanceof android.view.SurfaceView && android.os.Build.VERSION.SDK_INT >= 24) {
+                final android.graphics.Bitmap bmp = android.graphics.Bitmap.createBitmap(bw, bh, android.graphics.Bitmap.Config.ARGB_8888);
+                android.view.PixelCopy.request((android.view.SurfaceView) v, bmp, res -> {
+                    if (res == android.view.PixelCopy.SUCCESS) analyzeBars(bmp, va, false);
+                }, barHandler);
+            }
+        } catch (Throwable t) { glog("barras: " + t); }
+    }
+
+    /** thread de fundo: uma amostra (quais linhas/colunas do quadro têm algo que não é preto) e, com amostras suficientes, o resultado */
+    private void analyzeBars(android.graphics.Bitmap bmp, float va, boolean inTexture) {
+        try {
+            int w = bmp.getWidth(), h = bmp.getHeight();
+            int[] px = new int[w * h];
+            bmp.getPixels(px, 0, w, 0, 0, w, h);
+            float fw = w, fh = h;
+            if (va > 0) { if ((float) w / h > va) fw = h * va; else fh = w / va; }
+            int fW = Math.max(8, Math.round(fw)), fH = Math.max(8, Math.round(fh));
+            int fx = (w - fW) / 2, fy = (h - fH) / 2;
+            boolean[] rows = new boolean[fH], cols = new boolean[fW];
+            int x0 = fx + fW / 5, x1 = fx + fW * 4 / 5, y0 = fy + fH / 4, y1 = fy + fH * 3 / 4, any = 0;
+            for (int y = 0; y < fH; y++) {
+                int cnt = 0;
+                for (int x = x0; x < x1; x++) if (luma(px[(fy + y) * w + x]) > BAR_LUMA) cnt++;
+                rows[y] = cnt * 100 > (x1 - x0) * 2;
+                if (rows[y]) any++;
+            }
+            for (int x = 0; x < fW; x++) {
+                int cnt = 0;
+                for (int y = y0; y < y1; y++) if (luma(px[y * w + fx + x]) > BAR_LUMA) cnt++;
+                cols[x] = cnt * 100 > (y1 - y0) * 2;
+            }
+            // quadro quase todo preto (fade, transição): não conta
+            if (any * 100 < fH * 8) return;
+            float[] r;
+            synchronized (barRowSamples) {
+                if (!barRowSamples.isEmpty() && (barRowSamples.get(0).length != fH || barColSamples.get(0).length != fW)) { barRowSamples.clear(); barColSamples.clear(); }
+                barRowSamples.add(rows); barColSamples.add(cols);
+                while (barRowSamples.size() > BAR_MAX_SAMPLES) { barRowSamples.remove(0); barColSamples.remove(0); }
+                if (barRowSamples.size() < BAR_MIN_SAMPLES) return;
+                // união das amostras: linha/coluna só é "barra" se foi preta em TODAS (cenas escuras não criam barras falsas)
+                boolean[] ur = new boolean[fH], uc = new boolean[fW];
+                for (boolean[] a : barRowSamples) for (int i = 0; i < fH; i++) ur[i] |= a[i];
+                for (boolean[] a : barColSamples) for (int i = 0; i < fW; i++) uc[i] |= a[i];
+                r = new float[]{lead(ur) / (float) fH, trail(ur) / (float) fH, lead(uc) / (float) fW, trail(uc) / (float) fW};
+            }
+            for (int i = 0; i < 4; i++) if (r[i] < 0.015f) r[i] = 0f;
+            // não confiável: sobraria pouco da imagem (ou imagem inteira preta)
+            if (1f - r[0] - r[1] < 0.35f || 1f - r[2] - r[3] < 0.35f) r[0] = r[1] = r[2] = r[3] = 0f;
+            // barras de cima/baixo vêm sempre em par: sem a de cima não se confia na de baixo (na TV a legenda "suja" a de baixo)
+            if (r[0] == 0f && inTexture) r[1] = 0f;
+            if (inTexture && r[0] > r[1]) r[1] = r[0];
+            boolean changed = Math.abs(r[0] - barT) > 0.004f || Math.abs(r[1] - barB) > 0.004f || Math.abs(r[2] - barL) > 0.004f || Math.abs(r[3] - barR) > 0.004f;
+            if (changed) {
+                barT = r[0]; barB = r[1]; barL = r[2]; barR = r[3];
+                glog(String.format(Locale.ROOT, "barras: cima %.3f baixo %.3f esq %.3f dir %.3f (amostras %d)", r[0], r[1], r[2], r[3], barRowSamples.size()));
+                ui.post(this::zoomVideo);
+            }
+        } catch (Throwable t) { glog("barras: " + t); }
+    }
+
+    private static int luma(int c) { return (((c >> 16) & 255) * 77 + ((c >> 8) & 255) * 150 + (c & 255) * 29) >> 8; }
+    private static int lead(boolean[] a) { int n = 0; while (n < a.length && !a[n]) n++; return n == a.length ? 0 : n; }
+    private static int trail(boolean[] a) { int n = 0; while (n < a.length && !a[a.length - 1 - n]) n++; return n == a.length ? 0 : n; }
+
+    /**
+     * Preencher: amplia a imagem ATIVA (sem as barras pretas gravadas no vídeo) até cobrir a tela; nos outros modos volta a 1.
+     * Sem barras gravadas o comportamento é o de sempre (corte por cima, borda de baixo da imagem na borda de baixo da tela).
+     * Com barras: a imagem ativa fica centrada; na TV, onde a legenda é desenhada dentro do quadro (dentro da barra de baixo), o zoom
+     * deixa visível a faixa da legenda (só corta SUB_CUT do fim do quadro) e o corte de cima é feito só nas barras; no celular a legenda
+     * fica numa camada separada, presa à tela, então a imagem ativa pode cobrir a tela inteira.
+     */
     private void zoomVideo() {
         try {
             View tex = findVideoView(videoLayout);
@@ -143,20 +248,39 @@ public class PlayerActivity extends Activity {
             }
             float f = 1f;
             int tw = tex.getWidth(), th = tex.getHeight(), w = videoLayout.getWidth(), h = videoLayout.getHeight();
-            float py = th / 2f;
+            float px = tw / 2f, py = th / 2f;
             if (scaleIndex == 1 && tw > 0 && th > 0 && w > 0 && h > 0) {
-                // a imagem real ocupa só um retângulo dentro da vista (na TV a TextureView é do tamanho da tela e o VLC desenha as barras pretas
-                // dentro dela: com vídeo 2,39:1 o zoom tinha de ser > 1 e dava 1). Retângulo = o vídeo (proporção real) ajustado dentro da vista.
+                // o quadro do vídeo (proporção real) ajustado dentro da vista (na TV a vista é do tamanho da tela e o VLC desenha o preto em volta)
                 float dw = tw, dh = th, va = videoAspect();
                 if (va > 0) { if ((float) tw / th > va) dw = th * va; else dh = tw / va; }
-                f = Math.max((float) w / dw, (float) h / dh);
-                if (dw * f > COVER_MAX_WIDTH * w) f = Math.max(1f, COVER_MAX_WIDTH * w / dw);
-                // a legenda vem desenhada dentro da imagem, perto da borda de baixo: o corte vertical sai todo por cima (a borda de baixo
-                // da imagem fica na borda de baixo da tela) e as legendas não são cortadas
-                if (f > 1.001f && dh * f - h > 1f) py = ((th + dh) / 2f * f - h) / (f - 1f);
-                glog(String.format(Locale.ROOT, "zoom Preencher: vista %dx%d, tela %dx%d, proporção do vídeo %.3f, fator %.3f", tw, th, w, h, va, f));
+                float fx0 = (tw - dw) / 2f, fy0 = (th - dh) / 2f;
+                float bT = barT, bB = barB, bL = barL, bR = barR;
+                float ax0 = fx0 + dw * bL, ax1 = fx0 + dw * (1f - bR), ay0 = fy0 + dh * bT, ay1 = fy0 + dh * (1f - bB);
+                float aw = ax1 - ax0, ah = ay1 - ay0;
+                boolean subsInside = tex instanceof android.view.TextureView;
+                // fim da janela visível (em baixo): sem barra de baixo, o fim da imagem; com ela, na TV, ainda um pedaço da barra para a legenda
+                float kb = ay1;
+                if (subsInside && bB > 0f) kb = Math.max(ay1, fy0 + dh * (1f - SUB_CUT));
+                f = Math.max((float) w / aw, (float) h / ah);
+                if (aw * f > COVER_MAX_WIDTH * w) f = COVER_MAX_WIDTH * w / aw;
+                if (kb > ay1 + 0.5f) f = Math.min(f, h / (kb - ay0));
+                f = Math.max(1f, f);
+                if (f > 1.001f) {
+                    float winW = w / f, winH = h / f;
+                    float wx0 = (ax0 + ax1) / 2f - winW / 2f;
+                    if (winW <= dw) wx0 = Math.max(fx0, Math.min(fx0 + dw - winW, wx0)); else wx0 = fx0 + dw / 2f - winW / 2f;
+                    float wy0;
+                    if (kb > ay1 + 0.5f) wy0 = kb - winH;                                  // TV com barra: janela termina no fim da faixa da legenda
+                    else if (!subsInside && (bT > 0f || bB > 0f)) {                       // celular com barras em cima/baixo: imagem ativa centrada
+                        wy0 = (ay0 + ay1) / 2f - winH / 2f;
+                        if (winH <= dh) wy0 = Math.max(fy0, Math.min(fy0 + dh - winH, wy0));
+                    } else wy0 = fy0 + dh - winH;                                          // sem barras: borda de baixo do quadro = borda de baixo da tela
+                    px = f * wx0 / (f - 1f);
+                    py = f * wy0 / (f - 1f);
+                } else f = 1f;
+                glog(String.format(Locale.ROOT, "zoom Preencher: vista %dx%d, tela %dx%d, proporção do vídeo %.3f, barras %.3f/%.3f/%.3f/%.3f, fator %.3f", tw, th, w, h, va, bT, bB, bL, bR, f));
             }
-            tex.setPivotX(tw / 2f); tex.setPivotY(py);
+            tex.setPivotX(px); tex.setPivotY(py);
             tex.setScaleX(f); tex.setScaleY(f);
         } catch (Throwable t) { glog("escala: " + t); }
     }
@@ -1857,6 +1981,7 @@ public class PlayerActivity extends Activity {
     @Override
     protected void onDestroy() {
         ui.removeCallbacksAndMessages(null);
+        if (barThread != null) { barThread.quit(); barThread = null; }
         if (audioSync != null) audioSync.stop();
         if (player != null) {
             savePosition(true);
