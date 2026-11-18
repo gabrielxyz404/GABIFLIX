@@ -1,0 +1,24 @@
+motor: 118cacdeaa326357b707a165aa843151c6d4838b
+identico: AudioAligner
+identico: AudioSyncSession
+identico: Recheck
+identico: Result
+identico: Segment
+identico: Window
+identico: Cue
+identico: Vad
+identico: DspVad
+identico: Fft
+OK   pos0: motor accepted=true off=0.0 raw=-3.6 k=1.000000 z=11.48 | esperado accepted=true off=0.0 k=1.000000 z=11.48 | 
+OK   pos1: motor accepted=true off=6997.5 raw=6997.5 k=1.000000 z=14.51 | esperado accepted=true off=6997.5 k=1.000000 z=14.51 | 
+OK   pos2: motor accepted=true off=-45000.9 raw=-45000.9 k=1.000000 z=13.20 | esperado accepted=true off=-45000.9 k=1.000000 z=13.20 | 
+OK   pos3: motor accepted=true off=119997.0 raw=119997.0 k=1.000000 z=14.93 | esperado accepted=true off=119997.0 k=1.000000 z=14.93 | 
+OK   pos4: motor accepted=true off=-56.0 raw=-56.0 k=1.042709 z=12.26 | esperado accepted=true off=-56.0 k=1.042709 z=12.26 | 
+OK   pos5: motor accepted=true off=12050.2 raw=12050.2 k=0.959040 z=10.37 | esperado accepted=true off=12050.2 k=0.959040 z=10.37 | 
+OK   pos6: motor accepted=true off=-2066.0 raw=-2066.0 k=1.041667 z=11.83 | esperado accepted=true off=-2066.0 k=1.041667 z=11.83 | 
+OK   pos7: motor accepted=true off=0.0 raw=-2.7 k=1.000000 z=14.18 | esperado accepted=true off=0.0 k=1.000000 z=14.18 | 
+OK   neg8: motor accepted=false off=-112627.1 raw=-112627.1 k=0.914273 z=5.81 | esperado accepted=false off=-112627.1 k=0.914273 z=5.81 | z baixo; pico ambíguo; escala fora das razões de fps; janelas discordam; 
+OK   neg9: motor accepted=false off=-300070.1 raw=-300070.1 k=0.934063 z=5.22 | esperado accepted=false off=-300070.1 k=0.934063 z=5.22 | z baixo; pico ambíguo; escala fora das razões de fps; janelas discordam; 
+OK   neg10: motor accepted=false off=-75762.4 raw=-75762.4 k=0.926149 z=5.08 | esperado accepted=false off=-75762.4 k=0.926149 z=5.08 | z baixo; pico ambíguo; escala fora das razões de fps; janelas discordam; 
+OK   neg11: motor accepted=false off=-308648.8 raw=-308648.8 k=1.000000 z=5.39 | esperado accepted=false off=-308648.8 k=1.000000 z=5.39 | z baixo; pico ambíguo; janelas discordam; 
+vetores: 12, divergentes: 0
