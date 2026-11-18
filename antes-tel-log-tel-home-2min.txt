@@ -1,0 +1,400 @@
+         1795009885.720   478   498 D ActivityManagerTiming: OnBootPhase_1000_com.android.server.clipboard.ClipboardService took to complete: 0ms
+         1795009885.720   478   498 I ActivityManagerTiming: OnBootPhase_1000_com.android.server.appbinding.AppBindingService$Lifecycle
+         1795009885.720   478   498 D ActivityManagerTiming: OnBootPhase_1000_com.android.server.appbinding.AppBindingService$Lifecycle took to complete: 0ms
+         1795009885.720   478   498 I ActivityManagerTiming: OnBootPhase_1000_com.android.server.policy.PermissionPolicyService
+         1795009885.720   478   498 D ActivityManagerTiming: OnBootPhase_1000_com.android.server.policy.PermissionPolicyService took to complete: 0ms
+         1795009885.720   478   498 I ActivityManagerTiming: OnBootPhase_1000_com.android.server.pm.StagingManager$Lifecycle
+         1795009885.720   478   498 D ActivityManagerTiming: OnBootPhase_1000_com.android.server.pm.StagingManager$Lifecycle took to complete: 0ms
+         1795009885.720   478   498 D ActivityManagerTiming: OnBootPhase_1000 took to complete: 13ms
+         1795009885.720   478   498 D ActivityManagerTiming: TotalBootTime took to complete: 7336ms
+         1795009885.726   478   498 I ActivityManager: User 0 state changed from BOOTING to RUNNING_LOCKED
+         1795009885.726   478   498 W ActivityManager: UserLifecycleEvent 4 received without an active userJourneySession.
+         1795009885.744   478   498 W ActivityManager: UserLifecycleEvent 5 received without an active userJourneySession.
+         1795009885.744   478   498 D ActivityManager: Started unlocking user 0
+         1795009885.744   478   498 D ActivityManager: Unlocking user 0 progress 0
+         1795009885.745   478   498 D ActivityManager: Unlocking user 0 progress 5
+         1795009885.745   478   498 D ActivityManagerTiming: FinishBooting took to complete: 42ms
+         1795009885.747   478   498 I ActivityTaskManager: Config changes=400 {1.0 310mcc260mnc [en_US] ldltr sw411dp w411dp h836dp 420dpi nrml long port finger qwerty/v/v -nav/h winConfig={ mBounds=Rect(0, 0 - 1080, 2400) mAppBounds=Rect(0, 0 - 1080, 2274) mWindowingMode=fullscreen mDisplayWindowingMode=fullscreen mActivityType=undefined mAlwaysOnTop=undefined mRotation=ROTATION_0} s.19}
+         1795009885.749   478   505 I ActivityManager: Start proc 1244:com.google.android.apps.wellbeing/u0a113 for on-hold
+         1795009885.905   478   505 W ActivityManager: Slow operation: 151ms so far, now at startProcess: returned from zygote!
+         1795009886.305   478   495 I ActivityManager: User 0 state changed from RUNNING_LOCKED to RUNNING_UNLOCKING
+         1795009886.306   478   495 D ActivityManager: Unlocking user 0 progress 20
+         1795009886.306   478   504 I SystemServerTimingAsync: ssm.onUnlockingUser-0_com.android.server.wm.ActivityTaskManagerService$Lifecycle
+         1795009886.380   478   498 I ActivityTaskManager: Config changes=20000400 {1.0 310mcc260mnc [en_US] ldltr sw411dp w411dp h790dp 420dpi nrml long port finger qwerty/v/v -nav/h winConfig={ mBounds=Rect(0, 0 - 1080, 2280) mAppBounds=Rect(0, 0 - 1080, 2154) mWindowingMode=fullscreen mDisplayWindowingMode=fullscreen mActivityType=undefined mAlwaysOnTop=undefined mRotation=ROTATION_0} s.33}
+         1795009886.422   478   504 W SystemServiceManager: Service com.android.server.wm.ActivityTaskManagerService$Lifecycle took 116 ms in onUnlockingUser-0
+         1795009886.422   478   504 D SystemServerTimingAsync: ssm.onUnlockingUser-0_com.android.server.wm.ActivityTaskManagerService$Lifecycle took to complete: 116ms
+         1795009886.422   478   504 I SystemServerTimingAsync: ssm.onUnlockingUser-0_com.android.server.am.ActivityManagerService$Lifecycle
+         1795009886.422   478   504 D SystemServerTimingAsync: ssm.onUnlockingUser-0_com.android.server.am.ActivityManagerService$Lifecycle took to complete: 0ms
+         1795009886.423   478   804 W ActivityManager: Slow operation: 566ms so far, now at attachApplicationLocked: immediately before bindApplication
+         1795009886.423   478   804 W ActivityManager: Slow operation: 566ms so far, now at attachApplicationLocked: immediately after bindApplication
+         1795009886.423   478   804 W ActivityManager: Slow operation: 566ms so far, now at attachApplicationLocked: after updateLruProcessLocked
+         1795009886.426   478   804 W ActivityManager: Slow operation: 569ms so far, now at attachApplicationLocked: after mServices.attachApplicationLocked
+         1795009886.426   478   804 W ActivityManager: Slow operation: 569ms so far, now at attachApplicationLocked: after sendPendingBroadcastsLocked
+         1795009886.426   478   503 W system_server: Long monitor contention with owner Binder:478_8 (804) at void com.android.server.am.ActivityManagerService.notifyPackageUse(java.lang.String, int)(ActivityManagerService.java:3134) waiters=1 in java.lang.String com.android.server.am.ActivityManagerService.checkContentProviderAccess(java.lang.String, int) for 558ms
+         1795009886.429   478   505 W ActivityManager: Slow operation: 675ms so far, now at startProcess: done updating battery stats
+         1795009886.429   478   505 W ActivityManager: Slow operation: 675ms so far, now at startProcess: building log message
+         1795009886.429   478   505 I ActivityManager: Start proc 1268:com.google.android.inputmethod.latin/u0a141 for service {com.google.android.inputmethod.latin/com.android.inputmethod.latin.LatinIME}
+         1795009886.429   478   505 W ActivityManager: Slow operation: 675ms so far, now at startProcess: starting to update pids map
+         1795009886.429   478   505 W ActivityManager: Slow operation: 675ms so far, now at startProcess: done updating pids map
+         1795009886.590   478   505 W ActivityManager: Slow operation: 140ms so far, now at startProcess: returned from zygote!
+         1795009886.742   478   505 W ActivityManager: Slow operation: 292ms so far, now at startProcess: done updating battery stats
+         1795009886.742   478   505 W ActivityManager: Slow operation: 292ms so far, now at startProcess: building log message
+         1795009886.742   478   505 I ActivityManager: Start proc 1304:com.google.android.providers.media.module/u0a165 for service {com.google.android.providers.media.module/com.android.providers.media.fuse.ExternalStorageServiceImpl}
+         1795009886.742   478   505 W ActivityManager: Slow operation: 292ms so far, now at startProcess: starting to update pids map
+         1795009886.743   478   505 W ActivityManager: Slow operation: 293ms so far, now at startProcess: done updating pids map
+         1795009886.743   478   504 W system_server: Long monitor contention with owner ActivityManager:procStart (505) at void com.android.server.am.ProcessList.handleProcessStart(com.android.server.am.ProcessRecord, java.lang.String, int[], int, int, int, java.lang.String, java.lang.String, java.lang.String, long)(ProcessList.java:2062) waiters=0 in android.content.Intent com.android.server.am.ActivityManagerService.registerReceiverWithFeature(android.app.IApplicationThread, java.lang.String, java.lang.String, android.content.IIntentReceiver, android.content.IntentFilter, java.lang.String, int, int) for 149ms
+         1795009887.223   478   492 W ActivityManager: Slow operation: 433ms so far, now at attachApplicationLocked: after mServices.attachApplicationLocked
+         1795009887.224   478   478 W ActivityManager: Unable to start service Intent { act=android.service.contentcapture.ContentCaptureService cmp=com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiContentCaptureService } U=0: not found
+         1795009887.224   478   478 W ActivityManager: Unable to start service Intent { act=android.service.contentcapture.ContentCaptureService cmp=com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiContentCaptureService } U=0: not found
+         1795009887.225   478   478 W ActivityManager: Unable to start service Intent { act=android.service.systemcaptions.SystemCaptionsManagerService cmp=com.google.android.as/com.google.android.apps.miphone.aiai.captions.SystemCaptionsManagerService } U=0: not found
+         1795009887.230   478   570 W system_server: Long monitor contention with owner Binder:478_1 (492) at void com.android.server.am.ActivityManagerService.notifyPackageUse(java.lang.String, int)(ActivityManagerService.java:3134) waiters=5 in int com.android.server.am.ActivityManagerService.broadcastIntentWithFeature(android.app.IApplicationThread, java.lang.String, android.content.Intent, java.lang.String, android.content.IIntentReceiver, int, java.lang.String, android.os.Bundle, java.lang.String[], int, android.os.Bundle, boolean, boolean, int) for 378ms
+         1795009887.230   478   588 W system_server: Long monitor contention with owner Binder:478_1 (492) at void com.android.server.am.ActivityManagerService.notifyPackageUse(java.lang.String, int)(ActivityManagerService.java:3134) waiters=6 in java.lang.String com.android.server.am.ActivityManagerService.checkContentProviderAccess(java.lang.String, int) for 375ms
+         1795009887.268   478   504 W ActivityManager: UserLifecycleEvent 5 received without an active userJourneySession.
+         1795009887.268   478   504 W ActivityManager: UserLifecycleEvent 6 received without an active userJourneySession.
+         1795009887.268   478   504 I ActivityManager: User 0 state changed from RUNNING_UNLOCKING to RUNNING_UNLOCKED
+         1795009887.268   478   505 I ActivityManager: Start proc 1339:com.google.android.googlequicksearchbox:interactor/u0a123 for service {com.google.android.googlequicksearchbox/com.google.android.voiceinteraction.GsaVoiceInteractionService}
+         1795009887.269   478   495 I ActivityTaskManager: Loading recents for user 0 into memory.
+         1795009887.276   478   504 V ActivityManager: Skipping ContentProviderInfo{name=com.google.android.gms.fileprovider className=com.google.android.gms.common.app.GmsFileProvider}
+         1795009887.276   478   504 V ActivityManager: Skipping ContentProviderInfo{name=com.google.android.gms.appstate className=com.google.android.gms.appstate.provider.AppStateContentProvider}
+         1795009887.276   478   504 V ActivityManager: Installing ContentProviderInfo{name=com.google.android.gms.auth.accountstate className=com.google.android.gms.auth.account.be.accountstate.AccountStateContentProvider}
+         1795009887.276   478   504 V ActivityManager: Installing ContentProviderInfo{name=com.google.android.gms.auth.confirm className=com.google.android.gms.auth.account.be.accountstate.CredentialStateContentProvider}
+         1795009887.276   478   504 V ActivityManager: Installing ContentProviderInfo{name=com.google.android.gms.auth.accounts className=com.google.android.gms.auth.account.be.legacy.AccountContentProvider}
+         1795009887.276   478   504 V ActivityManager: Skipping ContentProviderInfo{name=com.google.android.gms.auth.proximity.multidevice.settings.provider className=com.google.android.gms.auth.proximity.multidevice.SettingsContentProvider}
+         1795009887.276   478   504 V ActivityManager: Skipping ContentProviderInfo{name=com.google.android.gms.chromesync className=com.google.android.gms.chromesync.sync.SyncContentProvider}
+         1795009887.276   478   504 V ActivityManager: Skipping ContentProviderInfo{name=com.google.android.gms.download className=com.google.android.gms.common.download.provider.DownloadsProvider}
+         1795009887.276   478   504 V ActivityManager: Skipping ContentProviderInfo{name=com.google.android.gms.common.stats.net.contentprovider className=com.google.android.gms.common.stats.net.contentprovider.NetworkUsageContentProvider}
+         1795009887.276   478   504 V ActivityManager: Skipping ContentProviderInfo{name=com.google.android.gms className=com.google.android.gms.app.search.GmsSearchIndexablesProvider}
+         1795009887.276   478   504 V ActivityManager: Skipping ContentProviderInfo{name=com.google.android.gms.drive.sync className=com.google.android.gms.drive.metadata.sync.syncadapter.StubContentProvider}
+         1795009887.276   478   504 V ActivityManager: Installing ContentProviderInfo{name=com.google.android.gms.fitness className=com.google.android.gms.fitness.sync.FitnessContentProvider}
+         1795009887.276   478   504 V ActivityManager: Skipping ContentProviderInfo{name=com.google.android.gms.fonts className=com.google.android.gms.fonts.provider.FontsProvider}
+         1795009887.276   478   504 V ActivityManager: Skipping ContentProviderInfo{name=com.google.android.gms.games.background className=com.google.android.gms.games.chimera.GamesContentProviderProxy}
+         1795009887.276   478   504 V ActivityManager: Skipping ContentProviderInfo{name=com.google.android.gms.games className=com.google.android.gms.games.provider.NotificationStubContentProvider}
+         1795009887.276   478   504 V ActivityManager: Skipping ContentProviderInfo{name=com.google.android.gms.icing.indexapi className=com.google.android.gms.icing.indexapi.IndexApiContentProvider}
+         1795009887.276   478   504 V ActivityManager: Skipping ContentProviderInfo{name=com.google.android.gms.icing.proxy.sms className=com.google.android.gms.icing.proxy.SmsContentProvider}
+         1795009887.276   478   504 V ActivityManager: Skipping ContentProviderInfo{name=com.google.android.gms.icing.proxy.apps className=com.google.android.gms.icing.proxy.AppsContentProvider}
+         1795009887.276   478   504 V ActivityManager: Skipping ContentProviderInfo{name=com.google.android.gms.icing.proxy className=com.google.android.gms.icing.proxy.InternalIcingCorporaProvider}
+         1795009887.276   478   504 V ActivityManager: Installing ContentProviderInfo{name=com.google.android.gms.instantapps.provider.api className=com.google.android.gms.instantapps.routing.InstantAppsContentProvider}
+         1795009887.276   478   504 V ActivityManager: Installing ContentProviderInfo{name=com.google.android.gms.location.preferences className=com.google.android.gms.location.preferences.LocationPreferencesContentProvider}
+         1795009887.276   478   504 V ActivityManager: Installing ContentProviderInfo{name=com.google.android.location.internal className=com.google.android.location.internal.LocationContentProvider}
+         1795009887.276   478   504 V ActivityManager: Installing ContentProviderInfo{name=com.google.android.location.reporting className=com.google.android.location.reporting.service.utils.ReportingContentProvider}
+         1795009887.276   478   504 V ActivityManager: Skipping ContentProviderInfo{name=com.google.android.gms.matchstick.dataprovider className=com.google.android.gms.matchstick.data.DatabaseProvider}
+         1795009887.276   478   504 V ActivityManager: Skipping ContentProviderInfo{name=com.google.android.gms.matchstick.appdataprovider className=com.google.android.gms.matchstick.data.AppDataProvider}
+         1795009887.276   478   504 V ActivityManager: Skipping ContentProviderInfo{name=com.google.android.gms.lighter.data className=com.google.android.gms.matchstick.data.LighterContentProvider}
+         1795009887.276   478   504 V ActivityManager: Skipping ContentProviderInfo{name=com.google.android.gms.nearby.fastpair className=com.google.android.gms.nearby.discovery.fastpair.slice.FastPairSliceProvider}
+         1795009887.276   478   504 V ActivityManager: Skipping ContentProviderInfo{name=com.google.android.gms.update.phone className=com.google.android.gms.update.OtaSuggestionSummaryProvider}
+         1795009887.276   478   504 V ActivityManager: Skipping ContentProviderInfo{name=com.google.android.gms.people className=com.google.android.gms.people.service.PeopleContentProvider}
+         1795009887.276   478   504 V ActivityManager: Skipping ContentProviderInfo{name=com.google.android.gms.people.gal.provider className=com.google.android.gms.people.service.galprovider.PeopleGalProvider}
+         1795009887.276   478   504 V ActivityManager: Skipping ContentProviderInfo{name=com.google.android.gms.plus;com.google.android.gms.plus.action className=com.google.android.gms.plus.provider.PlusProvider}
+         1795009887.276   478   504 V ActivityManager: Skipping ContentProviderInfo{name=com.google.android.gms.reminders className=com.google.android.gms.reminders.provider.RemindersProvider}
+         1795009887.276   478   504 V ActivityManager: Installing ContentProviderInfo{name=com.google.android.gms.security.provider className=com.google.android.gms.security.provider.SecurityProvider}
+         1795009887.276   478   504 V ActivityManager: Skipping ContentProviderInfo{name=com.google.android.gms.subscribedfeeds className=com.google.android.gms.subscribedfeeds.GmsSubscribedFeedsProvider}
+         1795009887.276   478   504 V ActivityManager: Skipping ContentProviderInfo{name=com.google.android.gms.thunderbird.config className=com.google.android.gms.thunderbird.config.EmergencyConfigContentProvider}
+         1795009887.276   478   504 V ActivityManager: Skipping ContentProviderInfo{name=com.google.android.gms.thunderbird.settings className=com.google.android.gms.thunderbird.settings.ThunderbirdSettingsContentProvider}
+         1795009887.276   478   504 V ActivityManager: Installing ContentProviderInfo{name=com.google.android.gms.trustagent.framework.model.be.provider className=com.google.android.gms.trustagent.framework.model.be.ModelContentProvider}
+         1795009887.276   478   504 V ActivityManager: Skipping ContentProviderInfo{name=com.google.android.gms.wallet className=com.google.android.gms.wallet.setupwizard.PaymentsSetupWizardSuggestionStateProvider}
+         1795009887.276   478   504 V ActivityManager: Skipping ContentProviderInfo{name=com.google.android.gms.chimera.container.sharedmoduleprovider className=com.google.android.gms.chimera.container.SharedModuleProvider}
+         1795009887.276   478   504 V ActivityManager: Installing ContentProviderInfo{name=com.google.android.gms.lifecycle-process className=android.arch.lifecycle.ProcessLifecycleOwnerInitializer}
+         1795009887.276   478   504 V ActivityManager: Installing ContentProviderInfo{name=com.android.dialer.files className=android.support.v4.content.FileProvider}
+         1795009887.278   478   504 V ActivityManager: Installing ContentProviderInfo{name=com.android.dialer.blocking.filterednumberprovider className=com.android.dialer.blocking.FilteredNumberProvider}
+         1795009887.278   478   504 V ActivityManager: Installing ContentProviderInfo{name=com.android.dialer.annotatedcalllog className=com.android.dialer.calllog.database.AnnotatedCallLogContentProvider}
+         1795009887.279   478   504 V ActivityManager: Installing ContentProviderInfo{name=com.android.dialer.phonelookuphistory className=com.android.dialer.phonelookup.database.PhoneLookupHistoryContentProvider}
+         1795009887.279   478   504 V ActivityManager: Installing ContentProviderInfo{name=com.android.dialer.preferredsimfallback className=com.android.dialer.preferredsim.impl.PreferredSimFallbackProvider}
+         1795009887.279   478   504 V ActivityManager: Installing ContentProviderInfo{name=com.google.android.gms.fileprovider className=com.google.android.gms.common.app.GmsFileProvider}
+         1795009887.279   478   504 V ActivityManager: Installing ContentProviderInfo{name=com.google.android.gms.appstate className=com.google.android.gms.appstate.provider.AppStateContentProvider}
+         1795009887.279   478   504 V ActivityManager: Skipping ContentProviderInfo{name=com.google.android.gms.auth.accountstate className=com.google.android.gms.auth.account.be.accountstate.AccountStateContentProvider}
+         1795009887.279   478   504 V ActivityManager: Skipping ContentProviderInfo{name=com.google.android.gms.auth.confirm className=com.google.android.gms.auth.account.be.accountstate.CredentialStateContentProvider}
+         1795009887.279   478   504 V ActivityManager: Skipping ContentProviderInfo{name=com.google.android.gms.auth.accounts className=com.google.android.gms.auth.account.be.legacy.AccountContentProvider}
+         1795009887.279   478   504 V ActivityManager: Installing ContentProviderInfo{name=com.google.android.gms.auth.proximity.multidevice.settings.provider className=com.google.android.gms.auth.proximity.multidevice.SettingsContentProvider}
+         1795009887.279   478   504 V ActivityManager: Installing ContentProviderInfo{name=com.google.android.gms.chromesync className=com.google.android.gms.chromesync.sync.SyncContentProvider}
+         1795009887.279   478   504 V ActivityManager: Installing ContentProviderInfo{name=com.google.android.gms.download className=com.google.android.gms.common.download.provider.DownloadsProvider}
+         1795009887.279   478   504 V ActivityManager: Installing ContentProviderInfo{name=com.google.android.gms.common.stats.net.contentprovider className=com.google.android.gms.common.stats.net.contentprovider.NetworkUsageContentProvider}
+         1795009887.279   478   504 V ActivityManager: Skipping ContentProviderInfo{name=com.google.android.gms className=com.google.android.gms.app.search.GmsSearchIndexablesProvider}
+         1795009887.279   478   504 V ActivityManager: Installing ContentProviderInfo{name=com.google.android.gms.drive.sync className=com.google.android.gms.drive.metadata.sync.syncadapter.StubContentProvider}
+         1795009887.280   478   504 V ActivityManager: Skipping ContentProviderInfo{name=com.google.android.gms.fitness className=com.google.android.gms.fitness.sync.FitnessContentProvider}
+         1795009887.280   478   504 V ActivityManager: Installing ContentProviderInfo{name=com.google.android.gms.fonts className=com.google.android.gms.fonts.provider.FontsProvider}
+         1795009887.280   478   504 V ActivityManager: Installing ContentProviderInfo{name=com.google.android.gms.games.background className=com.google.android.gms.games.chimera.GamesContentProviderProxy}
+         1795009887.280   478   504 V ActivityManager: Skipping ContentProviderInfo{name=com.google.android.gms.games className=com.google.android.gms.games.provider.NotificationStubContentProvider}
+         1795009887.280   478   504 V ActivityManager: Installing ContentProviderInfo{name=com.google.android.gms.icing.indexapi className=com.google.android.gms.icing.indexapi.IndexApiContentProvider}
+         1795009887.280   478   504 V ActivityManager: Installing ContentProviderInfo{name=com.google.android.gms.icing.proxy.sms className=com.google.android.gms.icing.proxy.SmsContentProvider}
+         1795009887.280   478   504 V ActivityManager: Installing ContentProviderInfo{name=com.google.android.gms.icing.proxy.apps className=com.google.android.gms.icing.proxy.AppsContentProvider}
+         1795009887.280   478   504 V ActivityManager: Installing ContentProviderInfo{name=com.google.android.gms.icing.proxy className=com.google.android.gms.icing.proxy.InternalIcingCorporaProvider}
+         1795009887.280   478   504 V ActivityManager: Skipping ContentProviderInfo{name=com.google.android.gms.instantapps.provider.api className=com.google.android.gms.instantapps.routing.InstantAppsContentProvider}
+         1795009887.280   478   504 V ActivityManager: Skipping ContentProviderInfo{name=com.google.android.gms.location.preferences className=com.google.android.gms.location.preferences.LocationPreferencesContentProvider}
+         1795009887.280   478   504 V ActivityManager: Skipping ContentProviderInfo{name=com.google.android.location.internal className=com.google.android.location.internal.LocationContentProvider}
+         1795009887.280   478   504 V ActivityManager: Skipping ContentProviderInfo{name=com.google.android.location.reporting className=com.google.android.location.reporting.service.utils.ReportingContentProvider}
+         1795009887.280   478   504 V ActivityManager: Installing ContentProviderInfo{name=com.google.android.gms.matchstick.dataprovider className=com.google.android.gms.matchstick.data.DatabaseProvider}
+         1795009887.280   478   504 V ActivityManager: Installing ContentProviderInfo{name=com.google.android.gms.matchstick.appdataprovider className=com.google.android.gms.matchstick.data.AppDataProvider}
+         1795009887.280   478   504 V ActivityManager: Installing ContentProviderInfo{name=com.google.android.gms.lighter.data className=com.google.android.gms.matchstick.data.LighterContentProvider}
+         1795009887.280   478   504 V ActivityManager: Installing ContentProviderInfo{name=com.google.android.gms.nearby.fastpair className=com.google.android.gms.nearby.discovery.fastpair.slice.FastPairSliceProvider}
+         1795009887.280   478   504 V ActivityManager: Installing ContentProviderInfo{name=com.google.android.gms.update.phone className=com.google.android.gms.update.OtaSuggestionSummaryProvider}
+         1795009887.281   478   504 V ActivityManager: Installing ContentProviderInfo{name=com.google.android.gms.people className=com.google.android.gms.people.service.PeopleContentProvider}
+         1795009887.281   478   504 V ActivityManager: Installing ContentProviderInfo{name=com.google.android.gms.people.gal.provider className=com.google.android.gms.people.service.galprovider.PeopleGalProvider}
+         1795009887.281   478   504 V ActivityManager: Installing ContentProviderInfo{name=com.google.android.gms.plus;com.google.android.gms.plus.action className=com.google.android.gms.plus.provider.PlusProvider}
+         1795009887.281   478   504 V ActivityManager: Installing ContentProviderInfo{name=com.google.android.gms.reminders className=com.google.android.gms.reminders.provider.RemindersProvider}
+         1795009887.281   478   504 V ActivityManager: Skipping ContentProviderInfo{name=com.google.android.gms.security.provider className=com.google.android.gms.security.provider.SecurityProvider}
+         1795009887.281   478   504 V ActivityManager: Installing ContentProviderInfo{name=com.google.android.gms.subscribedfeeds className=com.google.android.gms.subscribedfeeds.GmsSubscribedFeedsProvider}
+         1795009887.281   478   504 V ActivityManager: Installing ContentProviderInfo{name=com.google.android.gms.thunderbird.config className=com.google.android.gms.thunderbird.config.EmergencyConfigContentProvider}
+         1795009887.282   478   504 V ActivityManager: Installing ContentProviderInfo{name=com.google.android.gms.thunderbird.settings className=com.google.android.gms.thunderbird.settings.ThunderbirdSettingsContentProvider}
+         1795009887.282   478   504 V ActivityManager: Skipping ContentProviderInfo{name=com.google.android.gms.trustagent.framework.model.be.provider className=com.google.android.gms.trustagent.framework.model.be.ModelContentProvider}
+         1795009887.282   478   504 V ActivityManager: Installing ContentProviderInfo{name=com.google.android.gms.wallet className=com.google.android.gms.wallet.setupwizard.PaymentsSetupWizardSuggestionStateProvider}
+         1795009887.282   478   504 V ActivityManager: Installing ContentProviderInfo{name=com.google.android.gms.chimera.container.sharedmoduleprovider className=com.google.android.gms.chimera.container.SharedModuleProvider}
+         1795009887.282   478   504 V ActivityManager: Installing ContentProviderInfo{name=com.google.android.gms.lifecycle-process className=android.arch.lifecycle.ProcessLifecycleOwnerInitializer}
+         1795009887.282   478   504 V ActivityManager: Installing ContentProviderInfo{name=com.google.android.apps.nexuslauncher.appssearch className=com.google.android.apps.nexuslauncher.search.AppSearchProvider}
+         1795009887.282   478   504 V ActivityManager: Installing ContentProviderInfo{name=com.google.android.apps.nexuslauncher.settings className=com.android.launcher3.LauncherProvider}
+         1795009887.283   478   504 V ActivityManager: Installing ContentProviderInfo{name=com.google.android.apps.nexuslauncher className=com.android.quickstep.LauncherSearchIndexablesProvider}
+         1795009887.283   478   504 V ActivityManager: Installing ContentProviderInfo{name=com.google.android.apps.nexuslauncher.overview.fileprovider className=androidx.core.content.FileProvider}
+         1795009887.283   478   504 V ActivityManager: Installing ContentProviderInfo{name=contacts;com.android.contacts className=com.android.providers.contacts.ContactsProvider2}
+         1795009887.283   478   504 V ActivityManager: Installing ContentProviderInfo{name=call_log className=com.android.providers.contacts.CallLogProvider}
+         1795009887.283   478   504 V ActivityManager: Installing ContentProviderInfo{name=com.android.voicemail className=com.android.providers.contacts.VoicemailContentProvider}
+         1795009887.283   478   504 V ActivityManager: Installing ContentProviderInfo{name=com.android.contacts.metadata className=com.android.providers.contacts.ContactMetadataProvider}
+         1795009887.283   478   504 V ActivityManager: Installing ContentProviderInfo{name=com.android.contacts.dumpfile className=com.android.providers.contacts.debug.DumpFileProvider}
+         1795009887.284   478   504 I ActivityManager: Posting BOOT_COMPLETED user #0
+         1795009887.309   478   804 I ActivityTaskManager: START u0 {act=android.intent.action.MAIN cat=[android.intent.category.HOME] flg=0x10000100 cmp=com.google.android.apps.nexuslauncher/.NexusLauncherActivity} from uid 0
+         1795009887.336   478   505 W ActivityManager: Slow operation: 61ms so far, now at startProcess: done updating battery stats
+         1795009887.336   478   505 W ActivityManager: Slow operation: 61ms so far, now at startProcess: building log message
+         1795009887.336   478   505 I ActivityManager: Start proc 1351:com.android.ims.rcsservice/1001 for added application com.android.ims.rcsservice
+         1795009887.336   478   505 W ActivityManager: Slow operation: 61ms so far, now at startProcess: starting to update pids map
+         1795009887.337   478   505 W ActivityManager: Slow operation: 61ms so far, now at startProcess: done updating pids map
+         1795009887.337   478   505 W ActivityManager: Slow operation: 61ms so far, now at startProcess: asking zygote to start proc
+         1795009887.439   478   505 W ActivityManager: Slow operation: 164ms so far, now at startProcess: returned from zygote!
+         1795009887.456   478   505 W ActivityManager: Slow operation: 181ms so far, now at startProcess: done updating battery stats
+         1795009887.456   478   505 W ActivityManager: Slow operation: 181ms so far, now at startProcess: building log message
+         1795009887.456   478   505 I ActivityManager: Start proc 1396:com.android.emulator.multidisplay/1000 for added application com.android.emulator.multidisplay
+         1795009887.456   478   505 W ActivityManager: Slow operation: 181ms so far, now at startProcess: starting to update pids map
+         1795009887.456   478   505 W ActivityManager: Slow operation: 181ms so far, now at startProcess: done updating pids map
+         1795009887.456   478   505 W ActivityManager: Slow operation: 128ms so far, now at startProcess: asking zygote to start proc
+         1795009887.461   478   504 I SystemServerTimingAsync: ssm.onUnlockedUser-0_com.android.server.wm.ActivityTaskManagerService$Lifecycle
+         1795009887.461   478   504 D SystemServerTimingAsync: ssm.onUnlockedUser-0_com.android.server.wm.ActivityTaskManagerService$Lifecycle took to complete: 0ms
+         1795009887.475   478   504 I SystemServerTimingAsync: ssm.onUnlockedUser-0_com.android.server.am.ActivityManagerService$Lifecycle
+         1795009887.475   478   504 D SystemServerTimingAsync: ssm.onUnlockedUser-0_com.android.server.am.ActivityManagerService$Lifecycle took to complete: 0ms
+         1795009887.566   478   504 W ActivityManager: UserLifecycleEvent 6 received without an active userJourneySession.
+         1795009887.570   478   505 W ActivityManager: Slow operation: 242ms so far, now at startProcess: returned from zygote!
+         1795009887.570   478   505 W ActivityManager: Slow operation: 242ms so far, now at startProcess: done updating battery stats
+         1795009887.570   478   505 W ActivityManager: Slow operation: 242ms so far, now at startProcess: building log message
+         1795009887.570   478   505 I ActivityManager: Start proc 1428:com.google.process.gservices/u0a122 for content provider {com.google.android.gsf/com.google.android.gsf.gservices.GservicesProvider}
+         1795009887.570   478   505 W ActivityManager: Slow operation: 242ms so far, now at startProcess: starting to update pids map
+         1795009887.570   478   505 W ActivityManager: Slow operation: 242ms so far, now at startProcess: done updating pids map
+         1795009887.570   478   505 W ActivityManager: Slow operation: 231ms so far, now at startProcess: asking zygote to start proc
+         1795009887.687   478   505 W ActivityManager: Slow operation: 348ms so far, now at startProcess: done updating battery stats
+         1795009887.687   478   505 W ActivityManager: Slow operation: 348ms so far, now at startProcess: building log message
+         1795009887.687   478   505 I ActivityManager: Start proc 1468:com.android.keychain/1000 for service {com.android.keychain/com.android.keychain.KeyChainService}
+         1795009887.687   478   505 W ActivityManager: Slow operation: 348ms so far, now at startProcess: starting to update pids map
+         1795009887.691   478   505 W ActivityManager: Slow operation: 352ms so far, now at startProcess: done updating pids map
+         1795009887.905   478   505 I ActivityManager: Start proc 1516:com.google.android.apps.youtube.music/u0a127 for service {com.google.android.apps.youtube.music/com.google.android.apps.youtube.music.mediabrowser.MusicBrowserService}
+         1795009887.945   478   505 I ActivityManager: Start proc 1536:com.google.android.googlequicksearchbox:search/u0a123 for service {com.google.android.googlequicksearchbox/com.google.android.apps.gsa.staticplugins.mediabrowser.PodcastsMediaBrowserService}
+         1795009887.998   478   505 W ActivityManager: Slow operation: 97ms so far, now at startProcess: returned from zygote!
+         1795009887.998   478   505 W ActivityManager: Slow operation: 97ms so far, now at startProcess: done updating battery stats
+         1795009887.998   478   505 W ActivityManager: Slow operation: 97ms so far, now at startProcess: building log message
+         1795009887.998   478   505 I ActivityManager: Start proc 1555:com.google.android.youtube/u0a140 for service {com.google.android.youtube/com.google.android.apps.youtube.app.extensions.mediabrowser.impl.MainAppMediaBrowserService}
+         1795009887.998   478   505 W ActivityManager: Slow operation: 97ms so far, now at startProcess: starting to update pids map
+         1795009887.998   478   505 W ActivityManager: Slow operation: 97ms so far, now at startProcess: done updating pids map
+         1795009888.281   478   505 I ActivityManager: Start proc 1596:com.android.printspooler/u0a96 for service {com.android.printspooler/com.android.printspooler.model.PrintSpoolerService}
+         1795009888.312   478   505 I ActivityManager: Start proc 1624:com.google.process.gapps/u0a122 for content provider {com.google.android.gsf/com.google.android.gsf.settings.GoogleSettingsProvider}
+         1795009888.354   478   505 W ActivityManager: Slow operation: 66ms so far, now at startProcess: returned from zygote!
+         1795009888.568   478   785 W ActivityManager: Slow operation: 119ms so far, now at attachApplicationLocked: immediately after bindApplication
+         1795009888.568   478   785 W ActivityManager: Slow operation: 119ms so far, now at attachApplicationLocked: after updateLruProcessLocked
+         1795009888.637   478   785 W ActivityManager: Slow operation: 188ms so far, now at attachApplicationLocked: after mServices.attachApplicationLocked
+         1795009888.637   478   505 W ActivityManager: Slow operation: 349ms so far, now at startProcess: done updating battery stats
+         1795009888.637   478   505 W ActivityManager: Slow operation: 349ms so far, now at startProcess: building log message
+         1795009888.637   478   505 I ActivityManager: Start proc 1641:com.google.android.deskclock/u0a131 for broadcast {com.google.android.deskclock/com.android.deskclock.AlarmInitReceiver}
+         1795009888.637   478   505 W ActivityManager: Slow operation: 349ms so far, now at startProcess: starting to update pids map
+         1795009888.637   478   505 W ActivityManager: Slow operation: 349ms so far, now at startProcess: done updating pids map
+         1795009888.803   478   496 W Looper  : Slow dispatch took 170ms android.ui h=com.android.server.am.ActivityManagerService$UiHandler c=null m=53
+         1795009889.154  1641  1733 I GAv4    :   adb shell setprop log.tag.GAv4 DEBUG
+         1795009889.225  1516  1633 E GEL_DELAYED_EVENT_DEBUG: Failed delayed event dispatch, no dispatchers.
+         1795009889.788   478   828 W system_server: Long monitor contention with owner backup (588) at boolean com.android.server.am.ActivityManagerService.isAppBad(android.content.pm.ApplicationInfo)(ActivityManagerService.java:6019) waiters=1 in void com.android.server.am.ActivityManagerService.publishService(android.os.IBinder, android.content.Intent, android.os.IBinder) for 119ms
+         1795009889.792  1555  1706 E GEL_DELAYED_EVENT_DEBUG: Failed delayed event dispatch, no dispatchers.
+         1795009890.630  1268  1858 W DataFileManager: 	at libcore.io.IoBridge.open(IoBridge.java:492)
+         1795009890.630  1268  1858 W DataFileManager: 	at libcore.io.Linux.open(Native Method)
+         1795009890.630  1268  1858 W DataFileManager: 	at libcore.io.ForwardingOs.open(ForwardingOs.java:166)
+         1795009890.630  1268  1858 W DataFileManager: 	at libcore.io.BlockGuardOs.open(BlockGuardOs.java:254)
+         1795009890.630  1268  1858 W DataFileManager: 	at libcore.io.ForwardingOs.open(ForwardingOs.java:166)
+         1795009890.630  1268  1858 W DataFileManager: 	at libcore.io.IoBridge.open(IoBridge.java:478)
+         1795009890.913   478   478 W ActivityManager: Unable to start service Intent { act=android.service.contentsuggestions.ContentSuggestionsService cmp=com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiContentSuggestionsService } U=0: not found
+         1795009891.589   478   503 I ActivityTaskManager: Displayed com.google.android.apps.nexuslauncher/.NexusLauncherActivity: +3s818ms
+         1795009891.734   478  1326 W ActivityManager: Slow operation: 547ms so far, now at startProcess: done creating new process record
+         1795009891.734   478  1326 W ActivityManager: Slow operation: 547ms so far, now at startProcess: stepping in to startProcess
+         1795009891.735   478  1326 W ActivityManager: Slow operation: 548ms so far, now at startProcess: done starting proc!
+         1795009891.735   478   828 W system_server: Long monitor contention with owner backup-0 (1326) at int com.android.server.am.ActivityManagerService.bindIsolatedService(android.app.IApplicationThread, android.os.IBinder, android.content.Intent, java.lang.String, android.app.IServiceConnection, int, java.lang.String, java.lang.String, int)(ActivityManagerService.java:15183) waiters=1 in int com.android.server.am.ActivityManagerService.bindIsolatedService(android.app.IApplicationThread, android.os.IBinder, android.content.Intent, java.lang.String, android.app.IServiceConnection, int, java.lang.String, java.lang.String, int) for 613ms
+         1795009891.738   478   735 W system_server: Long monitor contention with owner backup-0 (1326) at int com.android.server.am.ActivityManagerService.bindIsolatedService(android.app.IApplicationThread, android.os.IBinder, android.content.Intent, java.lang.String, android.app.IServiceConnection, int, java.lang.String, java.lang.String, int)(ActivityManagerService.java:15183) waiters=2 in boolean com.android.server.am.ActivityManagerService.refContentProvider(android.os.IBinder, int, int) for 613ms
+         1795009891.738   478   498 W system_server: Long monitor contention with owner backup-0 (1326) at int com.android.server.am.ActivityManagerService.bindIsolatedService(android.app.IApplicationThread, android.os.IBinder, android.content.Intent, java.lang.String, android.app.IServiceConnection, int, java.lang.String, java.lang.String, int)(ActivityManagerService.java:15183) waiters=3 in void com.android.server.am.ActivityManagerService$LocalService.scheduleAppGcs() for 595ms
+         1795009891.738   478  1708 W system_server: Long monitor contention with owner backup-0 (1326) at int com.android.server.am.ActivityManagerService.bindIsolatedService(android.app.IApplicationThread, android.os.IBinder, android.content.Intent, java.lang.String, android.app.IServiceConnection, int, java.lang.String, java.lang.String, int)(ActivityManagerService.java:15183) waiters=4 in java.lang.String com.android.server.am.ActivityManagerService.checkContentProviderAccess(java.lang.String, int) for 595ms
+         1795009891.738   478   493 W system_server: Long monitor contention with owner backup-0 (1326) at int com.android.server.am.ActivityManagerService.bindIsolatedService(android.app.IApplicationThread, android.os.IBinder, android.content.Intent, java.lang.String, android.app.IServiceConnection, int, java.lang.String, java.lang.String, int)(ActivityManagerService.java:15183) waiters=5 in int com.android.server.am.ActivityManagerService.bindIsolatedService(android.app.IApplicationThread, android.os.IBinder, android.content.Intent, java.lang.String, android.app.IServiceConnection, int, java.lang.String, java.lang.String, int) for 582ms
+         1795009891.739   478   493 W ActivityManager: Unable to start service Intent { act=android.service.appprediction.AppPredictionService cmp=com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiPredictionService } U=0: not found
+         1795009891.739   478  1910 W ActivityManager: Unable to start service Intent { act=android.service.appprediction.AppPredictionService cmp=com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiPredictionService } U=0: not found
+         1795009891.742   478  1108 W system_server: Long monitor contention with owner backup-0 (1326) at int com.android.server.am.ActivityManagerService.bindIsolatedService(android.app.IApplicationThread, android.os.IBinder, android.content.Intent, java.lang.String, android.app.IServiceConnection, int, java.lang.String, java.lang.String, int)(ActivityManagerService.java:15183) waiters=8 in boolean com.android.server.am.ActivityManagerService.refContentProvider(android.os.IBinder, int, int) for 568ms
+         1795009891.742   478  1502 W system_server: Long monitor contention with owner backup-0 (1326) at int com.android.server.am.ActivityManagerService.bindIsolatedService(android.app.IApplicationThread, android.os.IBinder, android.content.Intent, java.lang.String, android.app.IServiceConnection, int, java.lang.String, java.lang.String, int)(ActivityManagerService.java:15183) waiters=9 in void com.android.server.am.ActivityManagerService.getMyMemoryState(android.app.ActivityManager$RunningAppProcessInfo) for 556ms
+         1795009891.791   478   505 W ActivityManager: Slow operation: 57ms so far, now at startProcess: returned from zygote!
+         1795009891.831   478   528 W ActivityManager: Unable to start service Intent { act=android.service.appprediction.AppPredictionService cmp=com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiPredictionService } U=0: not found
+         1795009891.836   478   492 W ActivityManager: Unable to start service Intent { act=android.service.appprediction.AppPredictionService cmp=com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiPredictionService } U=0: not found
+         1795009891.836   478  1920 W ActivityManager: Slow operation: 102ms so far, now at startProcess: done updating battery stats
+         1795009891.836   478  1920 W ActivityManager: Slow operation: 102ms so far, now at startProcess: building log message
+         1795009891.836   478  1920 I ActivityManager: Start proc 1928:com.android.localtransport/1000 for service {com.android.localtransport/com.android.localtransport.LocalTransportService}
+         1795009891.836   478  1920 W ActivityManager: Slow operation: 102ms so far, now at startProcess: starting to update pids map
+         1795009891.836   478  1920 W ActivityManager: Slow operation: 102ms so far, now at startProcess: done updating pids map
+         1795009891.853   478   528 W ActivityManager: Unable to start service Intent { act=android.service.appprediction.AppPredictionService cmp=com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiPredictionService } U=0: not found
+         1795009891.858   478   478 W ActivityManager: Unable to start service Intent { act=android.service.appprediction.AppPredictionService cmp=com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiPredictionService } U=0: not found
+         1795009891.984   478   828 V ActivityTaskManager: Sending to IME proc com.google.android.inputmethod.latin new config {1.0 310mcc260mnc [en_US] ldltr sw411dp w411dp h790dp 420dpi nrml long port finger qwerty/v/v -nav/h winConfig={ mBounds=Rect(0, 0 - 1080, 2280) mAppBounds=Rect(0, 0 - 1080, 2154) mWindowingMode=fullscreen mDisplayWindowingMode=fullscreen mActivityType=undefined mAlwaysOnTop=undefined mRotation=ROTATION_0} s.33}
+         1795009891.984   478   828 W ActivityTaskManager: Current config: {1.0 310mcc260mnc [en_US] ldltr sw411dp w411dp h790dp 420dpi nrml long port finger qwerty/v/v -nav/h winConfig={ mBounds=Rect(0, 0 - 1080, 2280) mAppBounds=Rect(0, 0 - 1080, 2154) mWindowingMode=fullscreen mDisplayWindowingMode=fullscreen mActivityType=undefined mAlwaysOnTop=undefined mRotation=ROTATION_0} s.33} unchanged for IME proc com.google.android.inputmethod.latin
+         1795009893.579   478   505 I ActivityManager: Start proc 2044:android.process.media/u0a80 for content provider {com.android.providers.downloads/com.android.providers.downloads.DownloadProvider}
+         1795009893.624   478   792 W ActivityManager: Unable to start service Intent { act=android.service.appprediction.AppPredictionService cmp=com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiPredictionService } U=0: not found
+         1795009893.624   478   478 W ActivityManager: Unable to start service Intent { act=android.service.appprediction.AppPredictionService cmp=com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiPredictionService } U=0: not found
+         1795009893.624   478   828 W ActivityManager: Unable to start service Intent { act=android.service.appprediction.AppPredictionService cmp=com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiPredictionService } U=0: not found
+         1795009894.051  1536  1840 D StrictMode: 	at libcore.io.BlockGuardOs.open(BlockGuardOs.java:249)
+         1795009894.051  1536  1840 D StrictMode: 	at libcore.io.ForwardingOs.open(ForwardingOs.java:166)
+         1795009894.051  1536  1840 D StrictMode: 	at libcore.io.IoBridge.open(IoBridge.java:478)
+         1795009894.051  1536  1840 D StrictMode: 	at libcore.io.BlockGuardOs.fstat(BlockGuardOs.java:174)
+         1795009894.051  1536  1840 D StrictMode: 	at libcore.io.ForwardingOs.fstat(ForwardingOs.java:106)
+         1795009894.051  1536  1840 D StrictMode: 	at libcore.io.IoBridge.open(IoBridge.java:481)
+         1795009894.056  1536  1840 D StrictMode: 	at libcore.io.BlockGuardOs.read(BlockGuardOs.java:304)
+         1795009894.056  1536  1840 D StrictMode: 	at libcore.io.ForwardingOs.read(ForwardingOs.java:176)
+         1795009894.056  1536  1840 D StrictMode: 	at libcore.io.IoBridge.read(IoBridge.java:509)
+         1795009895.201   478   505 I ActivityManager: Start proc 2188:com.android.camera2/u0a132 for broadcast {com.android.camera2/com.android.camera.SetActivitiesCameraReceiver}
+         1795009895.504   478   505 W ActivityManager: Slow operation: 201ms so far, now at startProcess: returned from zygote!
+         1795009895.533   478   934 W system_server: Long monitor contention with owner android.bg (503) at void com.android.server.am.ActivityManagerService$5.handleMessage(android.os.Message)(ActivityManagerService.java:2067) waiters=8 in java.lang.String com.android.server.am.ActivityManagerService.checkContentProviderAccess(java.lang.String, int) for 185ms
+         1795009895.533   478   505 W ActivityManager: Slow operation: 230ms so far, now at startProcess: done updating battery stats
+         1795009895.533   478   505 W ActivityManager: Slow operation: 230ms so far, now at startProcess: building log message
+         1795009895.533   478   505 I ActivityManager: Start proc 2226:com.android.contacts/u0a117 for broadcast {com.android.contacts/com.android.contacts.interactions.OnBootOrUpgradeReceiver}
+         1795009895.533   478   505 W ActivityManager: Slow operation: 230ms so far, now at startProcess: starting to update pids map
+         1795009895.535   478   505 W ActivityManager: Slow operation: 232ms so far, now at startProcess: done updating pids map
+         1795009895.752   478   505 W ActivityManager: Slow operation: 97ms so far, now at startProcess: done updating battery stats
+         1795009895.752   478   505 W ActivityManager: Slow operation: 97ms so far, now at startProcess: building log message
+         1795009895.752   478   505 I ActivityManager: Start proc 2279:com.android.dynsystem/1000 for broadcast {com.android.dynsystem/com.android.dynsystem.BootCompletedReceiver}
+         1795009895.752   478   505 W ActivityManager: Slow operation: 97ms so far, now at startProcess: starting to update pids map
+         1795009895.754   478   505 W ActivityManager: Slow operation: 99ms so far, now at startProcess: done updating pids map
+         1795009895.899   478   505 I ActivityManager: Start proc 2303:com.android.managedprovisioning/u0a88 for broadcast {com.android.managedprovisioning/com.android.managedprovisioning.BootReminder}
+         1795009895.941   478   505 I ActivityManager: Start proc 2321:com.google.android.apps.messaging/u0a134 for broadcast {com.google.android.apps.messaging/com.google.android.apps.messaging.shared.receiver.RestoreReceiver}
+         1795009896.060   478   505 I ActivityManager: Start proc 2355:com.android.providers.calendar/u0a89 for broadcast {com.android.providers.calendar/com.android.providers.calendar.CalendarReceiver}
+         1795009896.286   478   505 I ActivityManager: Start proc 2395:com.android.shell/2000 for broadcast {com.android.shell/com.android.shell.HeapDumpReceiver}
+         1795009896.443   478   505 I ActivityManager: Start proc 2429:com.android.traceur/u0a110 for broadcast {com.android.traceur/com.android.traceur.Receiver}
+         1795009896.534   478   505 I ActivityManager: Start proc 2465:com.google.android.gms.unstable/u0a122 for service {com.google.android.gms/com.google.android.gms.droidguard.DroidGuardService}
+         1795009896.576   478   505 I ActivityManager: Start proc 2487:com.google.android.apps.docs/u0a145 for broadcast {com.google.android.apps.docs/com.google.android.libraries.internal.growth.growthkit.inject.GrowthKitBootCompletedBroadcastReceiver}
+         1795009896.900   478  1897 I ActivityManager: Killing 1641:com.google.android.deskclock/u0a131 (adj 985): empty #17
+         1795009896.917   478   505 I ActivityManager: Start proc 2541:com.google.android.ims/u0a118 for broadcast {com.google.android.ims/com.google.android.ims.receivers.CarrierConfigChangedReceiver}
+         1795009896.955  2487  2536 I GAv4    :   adb shell setprop log.tag.GAv4 DEBUG
+         1795009897.545   478  1108 I ActivityManager: Killing 1468:com.android.keychain/1000 (adj 985): empty #17
+         1795009897.557   478   505 I ActivityManager: Start proc 2658:com.google.android.apps.maps/u0a136 for broadcast {com.google.android.apps.maps/com.google.android.apps.gmm.navigation.service.detection.StartDetectionReceiver}
+         1795009897.766   478  1108 W ActivityManager: Unable to start service Intent { act=com.google.android.ims.SIM_LOADED cmp=com.google.android.ims/eew (has extras) } U=0: not found
+         1795009897.768   478  1895 W ActivityManager: Receiver with filter android.content.IntentFilter@a2e36a3 already registered for pid 2541, callerPackage is com.google.android.ims
+         1795009897.854  2465  2485 E libc    : Access denied finding property "persist.adb.tls_server.enable"
+         1795009897.854  2465  2485 E libc    : Access denied finding property "service.adb.tls.port"
+         1795009898.243  2321  2628 E BugleRcsEngine: 	at libcore.io.IoBridge.open(IoBridge.java:492)
+         1795009898.243  2321  2628 E BugleRcsEngine: 	at libcore.io.Linux.open(Native Method)
+         1795009898.243  2321  2628 E BugleRcsEngine: 	at libcore.io.ForwardingOs.open(ForwardingOs.java:166)
+         1795009898.243  2321  2628 E BugleRcsEngine: 	at libcore.io.BlockGuardOs.open(BlockGuardOs.java:254)
+         1795009898.243  2321  2628 E BugleRcsEngine: 	at libcore.io.ForwardingOs.open(ForwardingOs.java:166)
+         1795009898.243  2321  2628 E BugleRcsEngine: 	at libcore.io.IoBridge.open(IoBridge.java:478)
+         1795009898.721   478   735 W ActivityManager: Background start not allowed: service Intent { cmp=com.google.android.apps.messaging/.shared.datamodel.action.execution.ActionExecutorImpl$EmptyService } to com.google.android.apps.messaging/.shared.datamodel.action.execution.ActionExecutorImpl$EmptyService from pid=2321 uid=10134 pkg=com.google.android.apps.messaging startFg?=false
+         1795009898.760   478  1367 W ActivityManager: Background start not allowed: service Intent { cmp=com.google.android.apps.messaging/.shared.datamodel.action.execution.ActionExecutorImpl$EmptyService } to com.google.android.apps.messaging/.shared.datamodel.action.execution.ActionExecutorImpl$EmptyService from pid=2321 uid=10134 pkg=com.google.android.apps.messaging startFg?=false
+         1795009898.891   478  1252 W ActivityManager: Background start not allowed: service Intent { cmp=com.google.android.apps.messaging/.shared.datamodel.action.execution.ActionExecutorImpl$EmptyService } to com.google.android.apps.messaging/.shared.datamodel.action.execution.ActionExecutorImpl$EmptyService from pid=2321 uid=10134 pkg=com.google.android.apps.messaging startFg?=false
+         1795009898.897   478  1108 W ActivityManager: Background start not allowed: service Intent { cmp=com.google.android.apps.messaging/.shared.datamodel.action.execution.ActionExecutorImpl$EmptyService } to com.google.android.apps.messaging/.shared.datamodel.action.execution.ActionExecutorImpl$EmptyService from pid=2321 uid=10134 pkg=com.google.android.apps.messaging startFg?=false
+         1795009898.903   478   505 I ActivityManager: Start proc 2785:com.google.android.apps.messaging:rcs/u0a134 for broadcast {com.google.android.apps.messaging/com.google.android.ims.receiver.AutoStartReceiver}
+         1795009898.961   478  1897 I ActivityManager: Killing 1516:com.google.android.apps.youtube.music/u0a127 (adj 985): empty #17
+         1795009899.123   478   505 I ActivityManager: Start proc 2828:com.google.android.apps.photos/u0a133 for broadcast {com.google.android.apps.photos/com.google.android.apps.photos.backup.freestorage.full.PixelOfferReceiver}
+         1795009899.269   478   505 I ActivityManager: Start proc 2864:com.google.android.apps.wallpaper/u0a152 for broadcast {com.google.android.apps.wallpaper/com.android.wallpaper.module.RotationWallpaperUpdateReceiver}
+         1795009899.317   478  2814 I ActivityManager: Killing 1928:com.android.localtransport/1000 (adj 985): empty #17
+         1795009899.418   478   505 I ActivityManager: Start proc 2904:com.google.android.apps.youtube.music/u0a127 for broadcast {com.google.android.apps.youtube.music/com.google.android.libraries.youtube.mdx.background.MdxBackgroundScanBootReceiver}
+         1795009899.502  2904  2950 E GEL_DELAYED_EVENT_DEBUG: Failed delayed event dispatch, no dispatchers.
+         1795009899.623   478   505 I ActivityManager: Start proc 2993:com.google.android.calendar/u0a143 for broadcast {com.google.android.calendar/com.google.android.apps.calendar.sync.SyncOnUnlockReceiver}
+         1795009899.651   478  2814 I ActivityManager: Killing 1555:com.google.android.youtube/u0a140 (adj 925): empty #17
+         1795009899.818   478  1914 I ActivityManager: Killing 1596:com.android.printspooler/u0a96 (adj 985): empty #17
+         1795009899.821   478   505 I ActivityManager: Start proc 3041:com.google.android.configupdater/u0a121 for broadcast {com.google.android.configupdater/com.google.android.configupdater.MainReceiver}
+         1795009899.924   478  2814 I ActivityManager: Killing 2188:com.android.camera2/u0a132 (adj 985): empty #17
+         1795009899.933   478   505 I ActivityManager: Start proc 3095:com.google.android.deskclock/u0a131 for broadcast {com.google.android.deskclock/com.android.deskclock.AlarmInitReceiver}
+         1795009900.010  3095  3116 I GAv4    :   adb shell setprop log.tag.GAv4 DEBUG
+         1795009900.054   478  2814 I ActivityManager: Killing 2226:com.android.contacts/u0a117 (adj 985): empty #17
+         1795009900.063   478   505 I ActivityManager: Start proc 3124:com.google.android.gm/u0a130 for broadcast {com.google.android.gm/com.google.android.gm.GoogleMailDeviceStartupReceiver}
+         1795009900.241   478  2814 W ActivityManager: Unable to start service Intent { cmp=com.google.android.gm/com.android.email.service.AttachmentService } U=0: not found
+         1795009900.313   478  1683 I ActivityManager: Killing 2279:com.android.dynsystem/1000 (adj 985): empty #17
+         1795009900.365   478   505 I ActivityManager: Start proc 3189:com.android.chrome/u0a128 for service {com.android.chrome/org.chromium.chrome.browser.customtabs.CustomTabsConnectionService}
+         1795009900.414   478   505 I ActivityManager: Start proc 3211:com.google.android.onetimeinitializer/u0a151 for broadcast {com.google.android.onetimeinitializer/com.google.android.onetimeinitializer.OneTimeInitializerReceiver}
+         1795009900.421   478  1683 W ActivityManager: Unable to start service Intent { act=com.google.android.gms.auth.key.retrieval.service.START pkg=com.google.android.gms } U=0: not found
+         1795009900.421   478  1914 W ActivityManager: Unbind failed: could not find connection for android.os.BinderProxy@f1e4abd
+         1795009900.477   478   505 I ActivityManager: Start proc 3243:com.google.android.packageinstaller/u0a81 for broadcast {com.google.android.packageinstaller/com.android.packageinstaller.TemporaryFileManager}
+         1795009900.514   478  2814 I ActivityManager: Killing 2303:com.android.managedprovisioning/u0a88 (adj 985): empty #17
+         1795009900.519   478  2814 I ActivityManager: Killing 1177:com.android.dialer/u0a115 (adj 975): empty #17
+         1795009900.541   478   505 I ActivityManager: Start proc 3268:com.google.android.partnersetup/u0a116 for broadcast {com.google.android.partnersetup/com.google.android.partnersetup.GooglePartnerSetup}
+         1795009900.662   478  1683 I ActivityManager: Killing 861:com.android.settings/1000 (adj 985): empty #17
+         1795009900.677   478   505 I ActivityManager: Start proc 3295:com.google.android.permissioncontroller/u0a162 for broadcast {com.google.android.permissioncontroller/com.android.permissioncontroller.permission.service.LocationAccessCheck$SetupPeriodicBackgroundLocationAccessCheck}
+         1795009900.678   478   498 W ActivityManager: setHasOverlayUi called on unknown pid: 861
+         1795009900.758   478   505 I ActivityManager: Start proc 3323:com.google.android.projection.gearhead:shared/u0a120 for broadcast {com.google.android.projection.gearhead/com.google.android.apps.auto.components.app.fzero.FzeroReceiver}
+         1795009900.825  2321  2896 E BugleRcsEngine: 	at libcore.io.IoBridge.open(IoBridge.java:492)
+         1795009900.825  2321  2896 E BugleRcsEngine: 	at libcore.io.Linux.open(Native Method)
+         1795009900.825  2321  2896 E BugleRcsEngine: 	at libcore.io.ForwardingOs.open(ForwardingOs.java:166)
+         1795009900.825  2321  2896 E BugleRcsEngine: 	at libcore.io.BlockGuardOs.open(BlockGuardOs.java:254)
+         1795009900.825  2321  2896 E BugleRcsEngine: 	at libcore.io.ForwardingOs.open(ForwardingOs.java:166)
+         1795009900.825  2321  2896 E BugleRcsEngine: 	at libcore.io.IoBridge.open(IoBridge.java:478)
+         1795009900.881   478   828 I ActivityManager: Killing 2395:com.android.shell/2000 (adj 975): empty #17
+         1795009900.932   478   505 I ActivityManager: Start proc 3373:com.google.android.gms.ui/u0a122 for service {com.google.android.gms/com.google.android.gms.chimera.UiIntentOperationService}
+         1795009901.091  3323  3323 I GAv4    :   adb shell setprop log.tag.GAv4 DEBUG
+         1795009901.241   478   505 I ActivityManager: Start proc 3429:com.google.android.projection.gearhead:car/u0a120 for broadcast {com.google.android.projection.gearhead/com.google.android.apps.auto.carservice.frx.FrxReceiver}
+         1795009901.359   478   735 I ActivityManager: Killing 2429:com.android.traceur/u0a110 (adj 975): empty #17
+         1795009901.548   478  1910 I ActivityManager: Killing 1128:com.google.android.cellbroadcastreceiver/u0a161 (adj 985): empty #17
+         1795009901.562   478   505 I ActivityManager: Start proc 3496:com.google.android.syncadapters.contacts/u0a135 for broadcast {com.google.android.syncadapters.contacts/com.google.android.syncadapters.contacts.ContactsSyncAdapterBroadcastReceiver}
+         1795009901.855   478   505 W ActivityManager: Slow operation: 62ms so far, now at startProcess: returned from zygote!
+         1795009901.855   478   505 W ActivityManager: Slow operation: 62ms so far, now at startProcess: done updating battery stats
+         1795009901.855   478   505 W ActivityManager: Slow operation: 62ms so far, now at startProcess: building log message
+         1795009901.855   478   505 I ActivityManager: Start proc 3559:com.google.android.videos/u0a146 for broadcast {com.google.android.videos/androidx.work.impl.background.systemalarm.RescheduleReceiver}
+         1795009901.855   478   505 W ActivityManager: Slow operation: 62ms so far, now at startProcess: starting to update pids map
+         1795009901.855   478   505 W ActivityManager: Slow operation: 62ms so far, now at startProcess: done updating pids map
+         1795009901.950   478  1910 I ActivityManager: Killing 2487:com.google.android.apps.docs/u0a145 (adj 945): empty #17
+         1795009902.053  2465  3521 E libc    : Access denied finding property "persist.adb.tls_server.enable"
+         1795009902.053  2465  3521 E libc    : Access denied finding property "service.adb.tls.port"
+         1795009902.157  2465  2578 E libc    : Access denied finding property "persist.adb.tls_server.enable"
+         1795009902.157  2465  2578 E libc    : Access denied finding property "service.adb.tls.port"
+         1795009902.245   478  2814 W ActivityManager: Unable to start service Intent { act=com.android.vending.contentfilters.IContentFiltersService.BIND pkg=com.android.vending } U=0: not found
+         1795009902.391   478  2814 I ActivityManager: Killing 2658:com.google.android.apps.maps/u0a136 (adj 985): empty #17
+         1795009902.421   478   505 I ActivityManager: Start proc 3633:com.google.android.youtube/u0a140 for broadcast {com.google.android.youtube/com.google.android.libraries.youtube.mdx.background.MdxBackgroundScanBootReceiver}
+         1795009902.535   478   785 W ActivityManager: Background start not allowed: service Intent { cmp=com.google.android.apps.messaging/.shared.datamodel.action.execution.ActionExecutorImpl$EmptyService } to com.google.android.apps.messaging/.shared.datamodel.action.execution.ActionExecutorImpl$EmptyService from pid=2321 uid=10134 pkg=com.google.android.apps.messaging startFg?=false
+         1795009902.552   478  2814 W ActivityManager: Background start not allowed: service Intent { cmp=com.google.android.apps.messaging/.shared.datamodel.action.execution.ActionExecutorImpl$EmptyService } to com.google.android.apps.messaging/.shared.datamodel.action.execution.ActionExecutorImpl$EmptyService from pid=2321 uid=10134 pkg=com.google.android.apps.messaging startFg?=false
+         1795009902.557  3633  3673 E GEL_DELAYED_EVENT_DEBUG: Failed delayed event dispatch, no dispatchers.
+         1795009902.949   478   934 I ActivityManager: Finished processing BOOT_COMPLETED for u0
+         1795009902.951   478   934 I ActivityManager: Killing 2785:com.google.android.apps.messaging:rcs/u0a134 (adj 985): empty #17
+         1795009902.967   478   505 I ActivityManager: Start proc 3757:com.android.externalstorage/u0a91 for broadcast {com.android.externalstorage/com.android.externalstorage.MountReceiver}
+         1795009903.125   478   505 I ActivityManager: Start proc 3784:com.android.dialer/u0a115 for broadcast {com.android.dialer/com.android.voicemail.impl.scheduling.TaskReceiver}
+         1795009903.219   478  1893 I ActivityManager: Killing 2864:com.google.android.apps.wallpaper/u0a152 (adj 975): empty #17
+         1795009903.258   478   505 I ActivityManager: Start proc 3817:com.google.android.apps.maps/u0a136 for broadcast {com.google.android.apps.maps/com.google.android.apps.gmm.ugc.ataplace.AtAPlaceService}
+         1795009903.368   478   934 I ActivityManager: Killing 2904:com.google.android.apps.youtube.music/u0a127 (adj 945): empty #17
+         1795009903.611   478  1361 I ActivityManager: Killing 2993:com.google.android.calendar/u0a143 (adj 985): empty #17
+         1795009903.706   478  1361 W ActivityManager: Background start not allowed: service Intent { cmp=com.google.android.apps.messaging/.shared.datamodel.action.execution.ActionExecutorImpl$EmptyService } to com.google.android.apps.messaging/.shared.datamodel.action.execution.ActionExecutorImpl$EmptyService from pid=2321 uid=10134 pkg=com.google.android.apps.messaging startFg?=false
+         1795009903.831   478  1361 W ActivityManager: Background start not allowed: service Intent { cmp=com.google.android.apps.messaging/.shared.datamodel.action.execution.ActionExecutorImpl$EmptyService } to com.google.android.apps.messaging/.shared.datamodel.action.execution.ActionExecutorImpl$EmptyService from pid=2321 uid=10134 pkg=com.google.android.apps.messaging startFg?=false
+         1795009903.839   478  1361 W ActivityManager: Background start not allowed: service Intent { cmp=com.google.android.apps.messaging/.shared.datamodel.action.execution.ActionExecutorImpl$EmptyService } to com.google.android.apps.messaging/.shared.datamodel.action.execution.ActionExecutorImpl$EmptyService from pid=2321 uid=10134 pkg=com.google.android.apps.messaging startFg?=false
+         1795009903.867   478   505 I ActivityManager: Start proc 3886:com.google.android.calendar/u0a143 for broadcast {com.google.android.calendar/com.google.android.apps.calendar.config.phenotypesupport.broadcast.PhenotypeBroadcastReceiver}
+         1795009904.174   478  1708 I ActivityManager: Killing 3041:com.google.android.configupdater/u0a121 (adj 975): empty #17
+         1795009904.262   478   505 I ActivityManager: Start proc 3935:com.google.android.cellbroadcastreceiver/u0a161 for broadcast {com.google.android.cellbroadcastreceiver/com.android.cellbroadcastreceiver.CellBroadcastReceiver}
+         1795009904.344   478  1683 I ActivityManager: Killing 3095:com.google.android.deskclock/u0a131 (adj 985): empty #17
+         1795009904.394   478  1252 W ActivityManager: Background start not allowed: service Intent { cmp=com.google.android.apps.messaging/.shared.datamodel.action.execution.ActionExecutorImpl$EmptyService } to com.google.android.apps.messaging/.shared.datamodel.action.execution.ActionExecutorImpl$EmptyService from pid=2321 uid=10134 pkg=com.google.android.apps.messaging startFg?=false
+         1795009904.395   478  1252 W ActivityManager: Background start not allowed: service Intent { cmp=com.google.android.apps.messaging/.shared.datamodel.action.execution.ActionExecutorImpl$EmptyService } to com.google.android.apps.messaging/.shared.datamodel.action.execution.ActionExecutorImpl$EmptyService from pid=2321 uid=10134 pkg=com.google.android.apps.messaging startFg?=false
+         1795009904.422   478  1908 W ActivityManager: Unable to start service Intent { act=com.google.android.c2dm.intent.REGISTRATION pkg=com.google.android.apps.maps } U=0: not found
+         1795009904.624   478  1910 W ActivityManager: Unable to start service Intent { act=com.google.android.gms.auth.key.retrieval.service.START pkg=com.google.android.gms } U=0: not found
+         1795009904.628   478  1908 W ActivityManager: Unbind failed: could not find connection for android.os.BinderProxy@bf3bcea
+         1795009904.752   478  1683 W ActivityManager: Background start not allowed: service Intent { cmp=com.google.android.apps.messaging/.shared.datamodel.action.execution.ActionExecutorImpl$EmptyService } to com.google.android.apps.messaging/.shared.datamodel.action.execution.ActionExecutorImpl$EmptyService from pid=2321 uid=10134 pkg=com.google.android.apps.messaging startFg?=false
+         1795009905.255  2465  2484 E libc    : Access denied finding property "persist.adb.tls_server.enable"
+         1795009905.256  2465  2484 E libc    : Access denied finding property "service.adb.tls.port"
+         1795009906.905   478  1361 W ActivityManager: Background start not allowed: service Intent { cmp=com.google.android.apps.messaging/.shared.datamodel.action.execution.ActionExecutorImpl$EmptyService } to com.google.android.apps.messaging/.shared.datamodel.action.execution.ActionExecutorImpl$EmptyService from pid=2321 uid=10134 pkg=com.google.android.apps.messaging startFg?=false
+         1795009906.906   478  1361 W ActivityManager: Background start not allowed: service Intent { cmp=com.google.android.apps.messaging/.shared.datamodel.action.execution.ActionExecutorImpl$EmptyService } to com.google.android.apps.messaging/.shared.datamodel.action.execution.ActionExecutorImpl$EmptyService from pid=2321 uid=10134 pkg=com.google.android.apps.messaging startFg?=false
+         1795009906.906   478  1252 W ActivityManager: Background start not allowed: service Intent { cmp=com.google.android.apps.messaging/.shared.datamodel.action.execution.ActionExecutorImpl$EmptyService } to com.google.android.apps.messaging/.shared.datamodel.action.execution.ActionExecutorImpl$EmptyService from pid=2321 uid=10134 pkg=com.google.android.apps.messaging startFg?=false
+         1795009906.908   478  1252 W ActivityManager: Background start not allowed: service Intent { cmp=com.google.android.apps.messaging/.shared.datamodel.action.execution.ActionExecutorImpl$EmptyService } to com.google.android.apps.messaging/.shared.datamodel.action.execution.ActionExecutorImpl$EmptyService from pid=2321 uid=10134 pkg=com.google.android.apps.messaging startFg?=false
+         1795009908.821   478   493 W ActivityManager: Background start not allowed: service Intent { cmp=com.google.android.apps.messaging/.shared.datamodel.action.execution.ActionExecutorImpl$EmptyService } to com.google.android.apps.messaging/.shared.datamodel.action.execution.ActionExecutorImpl$EmptyService from pid=2321 uid=10134 pkg=com.google.android.apps.messaging startFg?=false
+         1795009917.158   478   493 I ActivityManager: Killing 3189:com.android.chrome/u0a128 (adj 975): empty #17
+         1795009918.122   478   493 I ActivityManager: Killing 1244:com.google.android.apps.wellbeing/u0a113 (adj 985): empty #17
+         1795009923.001   478   804 I ActivityManager: Killing 3211:com.google.android.onetimeinitializer/u0a151 (adj 985): empty #17
+         1795009926.077   478   804 I ActivityManager: Killing 3373:com.google.android.gms.ui/u0a122 (adj 985): empty #17
+         1795009926.080   478   804 I ActivityManager: Killing 3243:com.google.android.packageinstaller/u0a81 (adj 985): empty #18
+         1795009926.098   478  1252 I ActivityManager: Killing 3268:com.google.android.partnersetup/u0a116 (adj 975): empty #17
+         1795009929.961   478  1252 I ActivityManager: Killing 3429:com.google.android.projection.gearhead:car/u0a120 (adj 985): empty #17
+         1795009932.143   478  1361 I ActivityManager: Killing 3323:com.google.android.projection.gearhead:shared/u0a120 (adj 985): empty #17
+         1795009952.062   478   505 I ActivityManager: Start proc 4071:com.google.android.apps.youtube.music/u0a127 for service {com.google.android.apps.youtube.music/androidx.work.impl.background.systemjob.SystemJobService}
+         1795009952.136  4071  4114 E GEL_DELAYED_EVENT_DEBUG: Failed delayed event dispatch, no dispatchers.
+         1795009953.781  2465  2484 E libc    : Access denied finding property "persist.adb.tls_server.enable"
+         1795009953.781  2465  2484 E libc    : Access denied finding property "service.adb.tls.port"
+         1795009958.800   478  1361 I ActivityManager: Killing 1216:android.process.acore/u0a78 (adj 975): empty #17
+         1795009968.380   478   505 I ActivityManager: Start proc 4207:android.process.acore/u0a78 for content provider {com.android.providers.contacts/com.android.providers.contacts.VoicemailContentProvider}
+         1795009983.540   478   546 W ActivityManager: Unable to start service Intent { act=com.google.android.gms.drive.ApiService.RESET_AFTER_BOOT flg=0x4 cmp=com.google.android.gms/.drive.api.ApiService (has extras) } U=0: not found
+         1795009985.283   478   828 I ActivityTaskManager: START u0 {act=android.intent.action.MAIN cat=[android.intent.category.LAUNCHER] flg=0x10200000 cmp=io.github.gabrielxyz404.gabiflix/.MainActivity} from uid 2000
+         1795009985.327   478   505 I ActivityManager: Start proc 4275:io.github.gabrielxyz404.gabiflix/u0a167 for pre-top-activity {io.github.gabrielxyz404.gabiflix/io.github.gabrielxyz404.gabiflix.MainActivity}
+         1795009985.495   478   505 I ActivityManager: Start proc 4305:com.google.android.webview:sandboxed_process0:org.chromium.content.app.SandboxedProcessService0:0/u0ai9000 for  {io.github.gabrielxyz404.gabiflix/org.chromium.content.app.SandboxedProcessService0:0}
+         1795009986.059   478   503 I ActivityTaskManager: Displayed io.github.gabrielxyz404.gabiflix/.MainActivity: +737ms
+         1795009990.038   478  1898 I ActivityManager: Killing 3496:com.google.android.syncadapters.contacts/u0a135 (adj 985): empty #17
+         1795010000.799   478  1361 I ActivityManager: Killing 3559:com.google.android.videos/u0a146 (adj 985): empty #17
+         1795010000.812   478  1898 I ActivityManager: Killing 3757:com.android.externalstorage/u0a91 (adj 975): empty #17
