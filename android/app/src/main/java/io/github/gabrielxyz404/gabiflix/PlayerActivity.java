@@ -306,7 +306,7 @@ public class PlayerActivity extends Activity {
     /** a legenda ativa está sendo desenhada pelo app (então o zoom do Preencher não precisa guardar folga para a legenda) */
     private volatile boolean appSubs = false;
     private int ovTicks = 0;
-    private long ovLastGet = Long.MIN_VALUE, ovLastWall = 0;
+    private long ovLastGet = Long.MIN_VALUE, ovLastWall = 0, ovLastEst = 0;
     private String ovShown = null;
     private final Runnable ovTickRun = new Runnable() {
         @Override public void run() {
@@ -386,6 +386,9 @@ public class PlayerActivity extends Activity {
             if (t >= 0) {
                 if (t != ovLastGet) { ovLastGet = t; ovLastWall = now; }
                 else if (player.isPlaying()) t += Math.min(500, now - ovLastWall);   // o relógio do libVLC anda aos saltos: entre um e outro, estima
+                // a estimativa não volta para trás por ruído (< 300 ms): senão a fala some por um instante na borda dela; um salto de verdade (pular para trás) vale na hora
+                if (t < ovLastEst && ovLastEst - t < 300) t = ovLastEst;
+                ovLastEst = t;
                 // atraso positivo = a legenda aparece MAIS TARDE (mesma regra do setSpuDelay e do painel)
                 want = ovCues.at(t - subDelayMs);
             } else want = ovShown;
