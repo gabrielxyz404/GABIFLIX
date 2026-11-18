@@ -4,8 +4,9 @@ Uso: mk-media.py PASTA"""
 import os, subprocess, sys, wave
 out = sys.argv[1]; os.makedirs(out, exist_ok=True)
 tmp = os.path.join(out, '_w'); os.makedirs(tmp, exist_ok=True)
-phrases = ["Eu disse que não devias ir lá esta noite.", "Temos de sair daqui antes que a manhã chegue.", "Tu nunca ouves nada do que eu te digo.",
-           "Por favor, dá-me mais uma oportunidade para explicar.", "O comboio parte às seis, por isso temos de nos despachar.", "Eu não acredito numa única palavra desta história."]
+phrases = ["Não, você não está entendendo isso, eu já disse que não vai dar.", "Então porque você está aqui? Eu estou com muito medo, tá bem?",
+           "Obrigado, mas isso não é tudo, ele também tem uma filha.", "Nós já fomos até lá, meu amigo, e foi muito bem, sim.",
+           "Ela vai ficar aqui, minha casa é dela também, pra mim tudo bem.", "Isso são coisas que você tem que saber, porque nós não temos tempo."]
 DUR = 720
 cues = []
 t = 18.0
@@ -16,7 +17,7 @@ pcm = {}
 SR = None
 for k, ph in enumerate(phrases):
     f = os.path.join(tmp, 'p%d.wav' % k)
-    subprocess.run(['espeak-ng', '-v', 'pt', '-s', '150', '-w', f, ph], check=True)
+    subprocess.run(['espeak-ng', '-v', 'pt-br', '-s', '150', '-w', f, ph], check=True)
     w = wave.open(f); SR = w.getframerate(); pcm[ph] = w.readframes(w.getnframes()); w.close()
 buf = bytearray(b'\0\0' * SR * DUR)
 for (t, ph) in cues:
