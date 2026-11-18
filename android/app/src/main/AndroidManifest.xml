@@ -58,6 +58,9 @@
             android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboardHidden|uiMode|density"
             android:theme="@style/GabiFlix.Player" />
 
+        <!-- captura de áudio da sincronização pelo áudio: processo separado, para uma queda nativa do libVLC nunca fechar o player -->
+        <service android:name=".AudioCapService" android:process=":audiocap" android:exported="false" />
+
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.files"

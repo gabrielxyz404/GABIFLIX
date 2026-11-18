@@ -69,6 +69,11 @@ final class AudioSyncAuto {
     // configuração (os extras só existem nos testes)
     private final boolean autoOn;
     private long startAfterMs = 25_000, recheckMs = 600_000;
+    /** o filme tem de estar tocando sem parar por este tempo antes de o automático abrir a captura (só nos testes, com gfAudioStartSec, vale 0) */
+    private long needPlayMs = 30_000;
+    private long playingSince;
+    /** aparelho com pouca memória (Fire TV Stick de 2 GB): o automático não roda sozinho; o botão do painel continua (a captura é em outro processo) */
+    private final boolean lowRam;
 
     // estado da legenda ativa
     private String key;
@@ -105,10 +110,11 @@ final class AudioSyncAuto {
         android.content.Intent in = act.getIntent();
         autoOn = !"false".equals(extra(in, "gfAudioAuto"));
         String v = extra(in, "gfAudioStartSec");
-        if (v != null) try { startAfterMs = Integer.parseInt(v) * 1000L; } catch (NumberFormatException ignored) {}
+        if (v != null) try { startAfterMs = Integer.parseInt(v) * 1000L; needPlayMs = 0; } catch (NumberFormatException ignored) {}
         v = extra(in, "gfAudioRecheckSec");
         if (v != null) try { recheckMs = Integer.parseInt(v) * 1000L; } catch (NumberFormatException ignored) {}
         if ("true".equals(extra(in, "gfAudioDsp"))) core.forceDsp = true;
+        lowRam = !"true".equals(extra(in, "gfAudioForce")) && isLowRam(act);
         core.progress = s2 -> ui.post(() -> { if (!stopped) h.status(s2, TONE_NEUTRAL); });
     }
 
@@ -120,6 +126,17 @@ final class AudioSyncAuto {
     }
 
     private static void log(String s) { SubtitleSync.log("AUDIOSYNC " + s); }
+
+    /** pouca memória: ActivityManager.isLowRamDevice() ou menos de 2,5 GB no total */
+    private static boolean isLowRam(Activity a) {
+        try {
+            android.app.ActivityManager am = (android.app.ActivityManager) a.getSystemService(android.content.Context.ACTIVITY_SERVICE);
+            if (am == null) return false;
+            android.app.ActivityManager.MemoryInfo mi = new android.app.ActivityManager.MemoryInfo();
+            am.getMemoryInfo(mi);
+            return am.isLowRamDevice() || mi.totalMem < 2_560L * 1024 * 1024;
+        } catch (Throwable t) { return false; }
+    }
 
     /** sem limite de dados: a sincronização automática roda sempre, qualquer que seja o tamanho do arquivo e o tipo de rede (decisão do usuário) */
     private long autoBudget() { return AudioSyncCore.NO_LIMIT; }
@@ -306,6 +323,7 @@ final class AudioSyncAuto {
         long now = SystemClock.uptimeMillis();
         if (now - lastDiag >= 20_000) { lastDiag = now; log("estado: st=" + st + " executando=" + running + " " + h.debug()); }
         boolean pl = h.playing();
+        if (!pl) playingSince = 0; else if (playingSince == 0) playingSince = now;
         sampleHealth(now, pl);
         SubtitleSync.Cand cand = h.activeCand();
         String k = cand == null || cand.text == null ? null : h.delayKey();
@@ -315,7 +333,13 @@ final class AudioSyncAuto {
         if (rescanAt > 0 && now >= rescanAt && !running) { rescanAt = 0; st = NEW; keySince = 0; retries = 0; }
         switch (st) {
             case NEW:
-                if (running || !pl || now - keySince < startAfterMs || (retryPending && now < retryAt)) return;
+                if (running || !pl || now - keySince < startAfterMs || now - playingSince < needPlayMs || (retryPending && now < retryAt)) return;
+                if (lowRam) {
+                    st = OFF;
+                    log("aparelho com pouca memória: o automático não roda sozinho (só pelo botão)");
+                    status("Neste aparelho a legenda só é conferida pelo áudio quando pedes: pausa e toca em Sincronizar automaticamente.", TONE_NEUTRAL);
+                    return;
+                }
                 if (now - lastStallAt < 20_000 && lastStallAt > 0) return;
                 decideStart(cand, k);
                 break;

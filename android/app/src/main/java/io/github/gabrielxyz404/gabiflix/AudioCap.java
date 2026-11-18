@@ -1,24 +1,27 @@
 package io.github.gabrielxyz404.gabiflix;
 
+import android.content.ComponentName;
 import android.content.Context;
-import android.net.Uri;
-
-import org.videolan.libvlc.LibVLC;
-import org.videolan.libvlc.Media;
-import org.videolan.libvlc.MediaPlayer;
+import android.content.Intent;
+import android.content.ServiceConnection;
+import android.os.Bundle;
+import android.os.Handler;
+import android.os.IBinder;
+import android.os.Looper;
+import android.os.Message;
+import android.os.Messenger;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * Captura de áudio para a sincronização pelo áudio: PCM mono 16 kHz de uma janela [início, início+duração) do MESMO endereço do vídeo,
- * numa SEGUNDA instância do libVLC (o player de reprodução não é tocado). A mídia vai para uma cadeia de saída "transcode -> WAV em arquivo":
- * sem saída de áudio o VLC não segue o relógio e lê/decodifica o mais rápido que a rede e a CPU deixam, com o corte exato (:start-time / :stop-time).
- * Uma captura por vez. Sempre chamada fora da thread principal.
+ * Captura de áudio para a sincronização pelo áudio (PCM mono 16 kHz de uma janela do MESMO endereço do vídeo). O trabalho em si (segunda
+ * instância do libVLC, em {@link AudioCapEngine}) roda em OUTRO PROCESSO ({@link AudioCapService}, ":audiocap"): uma queda nativa ali
+ * (memória, decodificador) nunca fecha o player. Aqui só se fala com o serviço. Uma captura por vez. Sempre chamada fora da thread principal.
  */
 final class AudioCap {
     static final class Out {
@@ -31,165 +34,164 @@ final class AudioCap {
         String track = "?";
     }
 
+    /** depois de tantas quedas do processo de captura a análise pelo áudio é desligada até o app reabrir */
+    private static final int MAX_CRASHES = 2;
+
+    private static final Object L = new Object();
+    private static Messenger svc;
+    private static boolean binding;
+    private static ServiceConnection conn;
+    private static volatile Context appCtx;
+    private static volatile int crashes;
+    private static final AtomicInteger ids = new AtomicInteger();
+    private static final ConcurrentHashMap<Integer, Pending> pending = new ConcurrentHashMap<>();
+    private static final Messenger reply = new Messenger(new Handler(Looper.getMainLooper()) {
+        @Override public void handleMessage(Message m) {
+            if (m.what != AudioCapService.MSG_REPLY) return;
+            Bundle b = m.getData();
+            Pending p = pending.remove(b.getInt("id"));
+            if (p == null) return;
+            p.out.ok = b.getBoolean("ok");
+            p.out.end = b.getString("end", "?");
+            p.out.wallS = b.getDouble("wallS");
+            p.out.pcmS = b.getDouble("pcmS");
+            p.out.bytes = b.getLong("bytes", -1);
+            p.out.track = b.getString("track", "?");
+            p.done.countDown();
+        }
+    });
+
+    private static final class Pending {
+        final Out out = new Out();
+        final CountDownLatch done = new CountDownLatch(1);
+    }
+
     private final Context ctx;
-    /** UM libVLC para todas as capturas (cada captura é uma mídia/player próprio nele) */
-    private static LibVLC vlc;
-    private static int users;
-    private volatile CountDownLatch curLatch;
     private volatile boolean cancelled;
 
     AudioCap(Context ctx) { this.ctx = ctx.getApplicationContext(); }
 
+    private static void log(String m) { SubtitleSync.log("AUDIOSYNC " + m); }
+
+    /** o processo de captura caiu (ou foi morto): quem esperava recebe o motivo; o app segue */
+    private static void died(String why) {
+        synchronized (L) { svc = null; binding = false; }
+        crashes++;
+        log("o processo de captura caiu (" + why + "), queda " + crashes + " de " + MAX_CRASHES + ": o filme continua");
+        for (Integer id : pending.keySet()) {
+            Pending p = pending.remove(id);
+            if (p != null) { p.out.ok = false; p.out.end = "o processo de captura caiu"; p.done.countDown(); }
+        }
+    }
+
+    private Messenger connect(long waitMs) {
+        synchronized (L) {
+            if (svc != null) return svc;
+            if (!binding) {
+                binding = true;
+                conn = new ServiceConnection() {
+                    @Override public void onServiceConnected(ComponentName n, IBinder b) { synchronized (L) { svc = new Messenger(b); binding = false; L.notifyAll(); } }
+                    @Override public void onServiceDisconnected(ComponentName n) { died("desconectou"); }
+                    @Override public void onBindingDied(ComponentName n) { died("ligação morreu"); }
+                    @Override public void onNullBinding(ComponentName n) { synchronized (L) { binding = false; L.notifyAll(); } }
+                };
+                try {
+                    if (!ctx.bindService(new Intent(ctx, AudioCapService.class), conn, Context.BIND_AUTO_CREATE)) { binding = false; return null; }
+                } catch (Throwable t) { binding = false; return null; }
+            }
+            long end = System.nanoTime() + waitMs * 1_000_000L;
+            while (svc == null && binding) {
+                long left = (end - System.nanoTime()) / 1_000_000L;
+                if (left <= 0) break;
+                try { L.wait(left); } catch (InterruptedException e) { Thread.currentThread().interrupt(); break; }
+            }
+            return svc;
+        }
+    }
+
+    private static void send(int what, Bundle data, Messenger replyTo) {
+        Messenger s;
+        synchronized (L) { s = svc; }
+        if (s == null) return;
+        try {
+            Message m = Message.obtain(null, what);
+            if (data != null) m.setData(data);
+            m.replyTo = replyTo;
+            s.send(m);
+        } catch (Throwable ignored) {}
+    }
+
     /** interrompe a captura em andamento (e as seguintes até {@link #reset()}) */
     void cancel() {
         cancelled = true;
-        CountDownLatch l = curLatch;
-        if (l != null) l.countDown();
+        send(AudioCapService.MSG_CANCEL, null, null);
     }
 
-    void reset() { cancelled = false; }
+    void reset() {
+        cancelled = false;
+        send(AudioCapService.MSG_RESET, null, null);
+    }
 
     boolean isCancelled() { return cancelled; }
 
-    private LibVLC instance() {
-        synchronized (AudioCap.class) {
-            if (vlc == null) {
-                ArrayList<String> o = new ArrayList<>();
-                o.add("--no-lua");
-                o.add("--no-osd");
-                o.add("--no-spu");
-                o.add("--no-sub-autodetect-file");
-                vlc = new LibVLC(ctx, o);
-            }
-            return vlc;
-        }
-    }
-
+    /** solta a ligação com o serviço (o processo de captura termina e devolve a memória) */
     static void close() {
-        synchronized (AudioCap.class) {
-            if (vlc != null) { try { vlc.release(); } catch (Throwable ignored) {} vlc = null; }
-        }
-    }
-
-    private static void log(String m) { SubtitleSync.log("AUDIOSYNC " + m); }
-
-    /** bytes que o libVLC leu da rede para esta mídia (reflexão: o nome do campo muda entre versões); -1 se não sabe */
-    private static long bytesRead(Media m) {
-        try {
-            Object st = m.getClass().getMethod("getStats").invoke(m);
-            if (st == null) return -1;
-            for (String f : new String[]{"readBytes", "demuxReadBytes"}) {
-                try {
-                    long v = ((Number) st.getClass().getField(f).get(st)).longValue();
-                    if (v > 0) return v;
-                } catch (Throwable ignored) {}
-            }
-        } catch (Throwable ignored) {}
-        return -1;
-    }
-
-    private static String trackInfo(MediaPlayer mp, int wanted) {
-        try {
-            int cur = mp.getAudioTrack();
-            MediaPlayer.TrackDescription[] t = mp.getAudioTracks();
-            StringBuilder b = new StringBuilder("usou a faixa " + cur + (wanted >= 0 ? " (pedida " + wanted + ")" : " (a do arquivo)") + " de [");
-            if (t != null) for (MediaPlayer.TrackDescription d : t) if (d.id != -1) b.append(d.id).append(':').append(d.name).append("; ");
-            return b.append(']').toString();
-        } catch (Throwable e) { return "faixa ?"; }
+        ServiceConnection c;
+        synchronized (L) { c = conn; conn = null; svc = null; binding = false; }
+        for (Pending p : pending.values()) { p.out.end = "cancelado"; p.done.countDown(); }
+        pending.clear();
+        Context a = appCtx;
+        if (c != null && a != null) { try { a.unbindService(c); } catch (Throwable ignored) {} }
     }
 
     /**
-     * Bloqueia até terminar (ou cancelar). Não há mais um tempo fixo por janela: vale enquanto o arquivo de PCM CRESCE (uma busca lenta num
-     * MKV remoto ou uma rede lenta não derrubam a captura); falha só se ficar parado por muito tempo ou passar do limite total.
+     * Bloqueia até terminar (ou cancelar). Qualquer falha (processo caiu, serviço indisponível) volta como captura que não deu certo, nunca
+     * como exceção.
      * @param audioTrackId faixa de áudio a ouvir (a que está tocando no player); -1 = a que o arquivo marca como padrão
      */
     Out capture(String url, long startMs, long durMs, File out, long timeoutMs, int audioTrackId) {
+        appCtx = ctx;
         Out r = new Out();
-        if (out.exists()) out.delete();
         if (cancelled) { r.end = "cancelado"; return r; }
-        LibVLC v = instance();
-        Media media = new Media(v, Uri.parse(url));
-        media.addOption(":no-video");
-        // sem :input-fast-seek: começa no quadro-chave anterior, a janela sai 5-10 s mais longa e deslocada (recusava legenda certa)
-        media.addOption(":no-spu");
-        media.addOption(":network-caching=600");
-        media.addOption(":http-reconnect");
-        if (audioTrackId >= 0) media.addOption(":audio-track-id=" + audioTrackId);
-        media.addOption(":start-time=" + (startMs / 1000.0));
-        media.addOption(":stop-time=" + ((startMs + durMs) / 1000.0));
-        media.addOption(":sout=#transcode{acodec=s16l,channels=1,samplerate=16000}:std{access=file,mux=wav,dst=" + out.getAbsolutePath() + "}");
-        MediaPlayer mp = new MediaPlayer(v);
-        final CountDownLatch done = new CountDownLatch(1);
-        curLatch = done;
-        final String[] why = {"tempo esgotado"}, fin = {null};
-        mp.setEventListener(ev -> {
-            switch (ev.type) {
-                case MediaPlayer.Event.EndReached: why[0] = "fim"; done.countDown(); break;
-                case MediaPlayer.Event.EncounteredError: why[0] = "erro do libVLC"; done.countDown(); break;
-                case MediaPlayer.Event.Stopped: if (!"fim".equals(why[0])) why[0] = "parou"; done.countDown(); break;
-                default: break;
-            }
-        });
-        mp.setMedia(media);
+        if (crashes >= MAX_CRASHES) { r.end = "captura desligada: o processo de captura caiu " + crashes + " vezes"; return r; }
         long t0 = System.nanoTime();
         try {
-            mp.play();
-            long lastGrow = t0, lastLen = 0;
-            boolean tracked = false;
-            while (!cancelled) {
-                if (done.await(1000, TimeUnit.MILLISECONDS)) break;
+            if (out.exists()) out.delete();
+            Messenger s = connect(20_000);
+            if (s == null) { r.end = "o serviço de captura não abriu"; return r; }
+            int id = ids.incrementAndGet();
+            Pending p = new Pending();
+            pending.put(id, p);
+            Bundle b = new Bundle();
+            b.putInt("id", id);
+            b.putString("url", url);
+            b.putLong("start", startMs);
+            b.putLong("dur", durMs);
+            b.putString("out", out.getAbsolutePath());
+            b.putLong("timeout", timeoutMs);
+            b.putInt("track", audioTrackId);
+            send(AudioCapService.MSG_CAPTURE, b, reply);
+            long limit = System.nanoTime() + (timeoutMs + 90_000L) * 1_000_000L;
+            long cancelAt = 0;
+            while (true) {
+                if (p.done.await(500, TimeUnit.MILLISECONDS)) break;
                 long now = System.nanoTime();
-                long len = out.exists() ? out.length() : 0;
-                if (len > lastLen) { lastLen = len; lastGrow = now; }
-                if (!tracked && now - t0 > 3_000_000_000L) { tracked = true; r.track = trackInfo(mp, audioTrackId); }
-                // antes do primeiro dado: a busca no arquivo remoto pode demorar (60 s); depois, 30 s parado = rede ou servidor travou
-                long idleLimit = (lastLen > 44 ? 30_000L : 60_000L) * 1_000_000L;
-                if (now - lastGrow > idleLimit) { why[0] = lastLen > 44 ? "a leitura parou" : "sem dados do servidor"; break; }
-                if (now - t0 > timeoutMs * 1_000_000L) { why[0] = "tempo esgotado"; break; }
+                if (cancelled && cancelAt == 0) cancelAt = now;
+                if (cancelAt != 0 && now - cancelAt > 8_000_000_000L) { pending.remove(id); p.out.end = "cancelado"; break; }   // o serviço não respondeu ao cancelamento
+                if (now > limit) { pending.remove(id); p.out.end = "o serviço de captura não respondeu"; break; }
             }
-            fin[0] = why[0];   // o Stopped que o stop() dispara a seguir não pode trocar o motivo
-            if (!tracked) r.track = trackInfo(mp, audioTrackId);
-            r.bytes = bytesRead(media);
+            r = p.out;
+            if (cancelled) { r.ok = false; r.end = "cancelado"; }
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-        } finally {
-            r.wallS = (System.nanoTime() - t0) / 1e9;
-            r.end = cancelled ? "cancelado" : fin[0] != null ? fin[0] : why[0];
-            try { mp.stop(); } catch (Throwable ignored) {}
-            mp.setEventListener(null);
-            try { mp.release(); } catch (Throwable ignored) {}
-            try { media.release(); } catch (Throwable ignored) {}
-            curLatch = null;
+            r.end = "interrompido";
+        } catch (Throwable t) {
+            r.end = "erro: " + t;
         }
-        // o arquivo só fecha direito depois do stop
-        try { Thread.sleep(300); } catch (InterruptedException ignored) { Thread.currentThread().interrupt(); }
-        if (out.exists()) {
-            r.pcmS = Math.max(0, out.length() - 44) / 32000.0;
-            r.ok = r.pcmS > 0 && !cancelled;
-        }
+        if (r.wallS <= 0) r.wallS = (System.nanoTime() - t0) / 1e9;
         return r;
     }
 
     /** lê o WAV (mono s16 16 kHz) para short[]; pula o cabeçalho procurando o bloco "data" */
-    static short[] readWav(File f) throws IOException {
-        byte[] b = new byte[(int) f.length()];
-        try (FileInputStream in = new FileInputStream(f)) {
-            int o = 0, n;
-            while (o < b.length && (n = in.read(b, o, b.length - o)) > 0) o += n;
-        }
-        int p = 12;
-        while (p + 8 <= b.length) {
-            boolean data = b[p] == 'd' && b[p + 1] == 'a' && b[p + 2] == 't' && b[p + 3] == 'a';
-            long sz = (b[p + 4] & 0xffL) | (b[p + 5] & 0xffL) << 8 | (b[p + 6] & 0xffL) << 16 | (b[p + 7] & 0xffL) << 24;
-            p += 8;
-            if (data) {
-                int n = (int) Math.min((b.length - p) / 2, sz == 0 || sz > b.length ? Long.MAX_VALUE : sz / 2);
-                short[] s = new short[n];
-                for (int i = 0; i < n; i++) s[i] = (short) ((b[p + 2 * i] & 0xff) | (b[p + 2 * i + 1] << 8));
-                return s;
-            }
-            p += (int) sz;
-        }
-        return new short[0];
-    }
+    static short[] readWav(File f) throws IOException { return AudioCapEngine.readWav(f); }
 }

@@ -524,9 +524,11 @@ public class PlayerActivity extends Activity {
         controlsShown = false;
         setControlsVisible(true);
         // sincronização pelo áudio: o botão passa a usar o motor encadeado (referência primeiro, áudio confere) e o modo automático começa a vigiar
-        audioSync = new AudioSyncAuto(this, audioHost);
-        autoEngine = audioSync.chain(autoEngine);
-        audioSync.start();
+        try {
+            audioSync = new AudioSyncAuto(this, audioHost);
+            autoEngine = audioSync.chain(autoEngine);
+            audioSync.start();
+        } catch (Throwable t) { glog("AUDIOSYNC não iniciou: " + t); }
         // só nos testes: modo de tela, atraso da legenda e registro da posição (para medir quando cada fala aparece)
         try {
             String sc = getIntent().getStringExtra("gfScale");
