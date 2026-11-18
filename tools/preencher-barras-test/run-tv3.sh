@@ -44,7 +44,7 @@ tela_click() {
   sleep 1.2
 }
 abrir() {  # $1 = arquivo de vídeo  $2 = roteiro de teste (opcional)
-  adb shell am force-stop $PKG; sleep 1
+  adb shell am force-stop $PKG; adb shell pm clear $PKG >/dev/null 2>&1; sleep 1
   X=""; [ -n "$2" ] && X="--es gfOvScript $2"
   if [ "$P" = tel ]; then adb shell am start -n $PKG/.PlayerActivity --es url "http://10.0.2.2:8000/$1" --esa subs "http://10.0.2.2:8000/teste.srt" --es type movie --es id tt0000001 $X
   else adb shell am start -n $PKG/.tv.TvHomeActivity --es gfTestUrl "http://10.0.2.2:8000/$1" --es gfTestSubs "http://10.0.2.2:8000/teste.srt" $X; fi
@@ -62,12 +62,12 @@ for v in barra wide hd pilar emb; do
   if [ "$v" = barra ] && [ "$L" = antes ]; then adb shell dumpsys activity top | grep -E "TextureView|SurfaceView|VLCVideoLayout|FrameLayout" | head -20 > $OUT/views-antes.txt; fi
 done
 # roteiro de seek e atraso (Normal): o atraso muda a 12 s de jogo, o salto a 30 s; as fotos mostram a fala certa depois de cada mudança
-abrir barra.mkv "delay:3000@12000;seek:123@30000;seek:61@42000;delay:-2000@54000"
-sleep 11; snap sync-0-antes-do-atraso 0.2
-sleep 13; snap sync-1-depois-do-atraso 0.2
-sleep 8; snap sync-2-salto-para-frente 0.2
-sleep 13; snap sync-3-salto-para-tras 0.2
-sleep 14; snap sync-4-atraso-negativo 0.2
+abrir barra.mkv "delay:3000@12000+seek:123@30000+seek:61@42000+delay:-2000@54000"
+sleep 12; snap sync-0-antes-do-atraso 0.2
+sleep 8; snap sync-1-depois-do-atraso 0.2
+sleep 17; snap sync-2-salto-para-frente 0.2
+sleep 12; snap sync-3-salto-para-tras 0.2
+sleep 12; snap sync-4-atraso-negativo 0.2
 adb logcat -d | grep -E "GabiFlixPlayer" > $OUT/$P-log.txt
 adb logcat -d | grep -E "FATAL EXCEPTION|AndroidRuntime" | head -40 > $OUT/$P-crash.txt
 [ "$BAD" = 1 ] && { echo "ANR detectado" ; exit 1; }

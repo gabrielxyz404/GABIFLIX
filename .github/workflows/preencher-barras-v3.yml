@@ -61,7 +61,7 @@ jobs:
               a=i*10
               if i%3==2: body="{\\an8}<i>Esta é uma fala bem comprida, de verdade, que passa de uma linha só e tem de quebrar sozinha sem sair da tela nem ser cortada nas bordas (%d)</i>"%(i+1)
               else: body="Você não sabe o que ela fez para nós, mas eu também estou aqui (%d)\ne isso é uma linha de baixo que tem de ficar inteira, com você"%(i+1)
-              out.append("%d\n%s --> %s\n%s\n"%(i+1,ts(a),ts(a+10)[:-3]+"999",body))
+              out.append("%d\n%s --> %s\n%s\n"%(i+1,ts(a),ts(a+9)[:-3]+"500",body))
           open("teste.srt","w").write("\n".join(out))
           PY
           ffmpeg -loglevel error -f lavfi -i testsrc2=size=1920x804:rate=24 -f lavfi -i sine=frequency=440:sample_rate=48000 -t 300 -vf "pad=1920:1080:0:138:black" -c:v libx264 -preset veryfast -pix_fmt yuv420p -c:a aac barra.mkv
