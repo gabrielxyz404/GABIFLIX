@@ -100,6 +100,21 @@ public final class CrashReporter {
 
     // ------------------------------------------------------------ migalhas
 
+    /** memória do app e do aparelho numa linha (PSS do processo, pilha Java, livre no sistema, aviso de pouca memória) */
+    static String memLine() {
+        try {
+            Runtime r = Runtime.getRuntime();
+            String sys = "";
+            if (app != null) {
+                ActivityManager am = (ActivityManager) app.getSystemService(Context.ACTIVITY_SERVICE);
+                ActivityManager.MemoryInfo mi = new ActivityManager.MemoryInfo();
+                am.getMemoryInfo(mi);
+                sys = " livre=" + (mi.availMem >> 20) + "MB limiar=" + (mi.threshold >> 20) + "MB poucaMemoria=" + mi.lowMemory;
+            }
+            return "pss=" + (android.os.Debug.getPss() >> 10) + "MB java=" + ((r.totalMemory() - r.freeMemory()) >> 20) + "/" + (r.maxMemory() >> 20) + "MB nativo=" + (android.os.Debug.getNativeHeapAllocatedSize() >> 20) + "MB" + sys;
+        } catch (Throwable t) { return "(memória: " + t + ")"; }
+    }
+
     /** uma linha do que o app está a fazer (hora local no começo); vai para um ficheiro por processo, numa thread própria */
     static void crumb(String s) {
         try {

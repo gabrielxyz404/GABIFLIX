@@ -23,7 +23,7 @@ abrir() {  # $1 = legenda
   adb shell am force-stop $PKG; sleep 1; adb shell pm clear $PKG >/dev/null; adb logcat -c
   if [ "$P" = tel ]; then
     adb shell am start -a android.intent.action.MAIN -c android.intent.category.LAUNCHER -f 0x10200000 -n $PKG/.MainActivity; sleep 8
-    adb shell am start -n $PKG/.PlayerActivity --es url "$BASE/clip.mkv" --esa subs "$BASE/$1" --es type movie --es id tt0000002
+    adb shell am start -n $PKG/.PlayerActivity --es url "$BASE/clip.mkv" --esa subs "$BASE/$1"
   else
     adb shell am start -n $PKG/.tv.TvHomeActivity --es gfTestUrl "$BASE/clip.mkv" --es gfTestSubs "$BASE/$1"
   fi

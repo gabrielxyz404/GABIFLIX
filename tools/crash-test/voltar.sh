@@ -48,6 +48,8 @@ cen() {  # $1 nome  $2 nascimento (launcher|simples)  $3 segundos fora  $4 forma
   adb logcat -d -s GabiFlixPlayer GFCrash | grep -E "ciclo|criada|destruída|finish|GFCrash" | tail -25 >> $OUT/$L-$P-resultado.txt
   adb logcat -d | grep -E "FATAL EXCEPTION|Fatal signal" | head -5 >> $OUT/$L-$P-resultado.txt
 }
+# aquecimento: a primeira abertura do app no emulador é lenta e atrapalhava o primeiro cenário
+adb shell am start -a android.intent.action.MAIN -c android.intent.category.LAUNCHER -n $PKG/.MainActivity >/dev/null 2>&1 || true; sleep 40; adb shell am force-stop $PKG
 cen icone-logo launcher 5 icone
 cen icone-2min launcher 120 icone
 cen monkey-logo launcher 5 monkey
