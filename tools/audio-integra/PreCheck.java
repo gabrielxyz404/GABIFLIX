@@ -45,13 +45,13 @@ public class PreCheck {
             r = ses.solve();
             long ms = (System.nanoTime() - t0) / 1_000_000;
             String vn = v.name() + (v instanceof JavaSileroVad ? "-java" : v instanceof DspVad ? "" : "-ort");
-            System.out.printf(Locale.ROOT, "PRE accepted=%d raw=%.0f scale=%.5f z=%.1f wins=%d/%d inSync=%d vad=%s ms=%d janelas=%s%n", r.accepted ? 1 : 0, r.rawOffsetMs, r.scale, r.z, r.winsAgree, r.winsValid, r.inSync ? 1 : 0, vn, ms, Arrays.deepToString(plan));
-            // o resto do que o app faz: enquanto o motor pedir mais janelas (ate AudioSyncSession.MAX_ROUNDS rodadas), analisa e resolve de novo
+            System.out.printf(Locale.ROOT, "PRE accepted=%d raw=%.0f scale=%.5f z=%.1f wins=%d/%d inSync=%d vad=%s ms=%d margem=%.2f ncc=%.2f f1=%.2f blocos=%d/%d desvioMax=%.0f motivo=%s janelas=%s%n", r.accepted ? 1 : 0, r.rawOffsetMs, r.scale, r.z, r.winsAgree, r.winsValid, r.inSync ? 1 : 0, vn, ms, r.margin, r.nccMean, r.f1, r.blocksAgree, r.blocksValid, r.winMaxDev, r.reason.replace(' ', '_'), Arrays.deepToString(plan));
+            // hipotese (o AudioSyncCore de hoje resolve uma vez so, com as 3 janelas): se o motor pedisse mais janelas (ate MAX_ROUNDS rodadas), analisa e resolve de novo
             while (r.more != null && r.more.length > 0) {
                 for (long[] w : r.more) ses.addWindow(analisa(v, pcm, w));
                 r = ses.solve();
             }
-            System.out.printf(Locale.ROOT, "FULL accepted=%d raw=%.0f scale=%.5f z=%.1f wins=%d/%d inSync=%d rodadas=%d janelas=%d vad=%s ms=%d%n", r.accepted ? 1 : 0, r.rawOffsetMs, r.scale, r.z, r.winsAgree, r.winsValid, r.inSync ? 1 : 0, ses.rounds(), ses.windows(), vn, (System.nanoTime() - t0) / 1_000_000);
+            System.out.printf(Locale.ROOT, "FULL accepted=%d raw=%.0f scale=%.5f z=%.1f wins=%d/%d inSync=%d rodadas=%d janelas=%d vad=%s ms=%d margem=%.2f ncc=%.2f f1=%.2f blocos=%d/%d desvioMax=%.0f motivo=%s%n", r.accepted ? 1 : 0, r.rawOffsetMs, r.scale, r.z, r.winsAgree, r.winsValid, r.inSync ? 1 : 0, ses.rounds(), ses.windows(), vn, (System.nanoTime() - t0) / 1_000_000, r.margin, r.nccMean, r.f1, r.blocksAgree, r.blocksValid, r.winMaxDev, r.reason.replace(' ', '_'));
         } finally {
             if (v instanceof AutoCloseable) ((AutoCloseable) v).close();
         }
