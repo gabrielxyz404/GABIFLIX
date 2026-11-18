@@ -164,8 +164,13 @@ public class PlayerActivity extends Activity {
     private static final int BAR_MIN_SAMPLES = 3, BAR_MAX_SAMPLES = 8, BAR_LUMA = 40;
     /** na TV a legenda é desenhada dentro da imagem, a ~8% da borda de baixo do quadro: o zoom pode cortar no máximo isto da borda de baixo */
     private static final float SUB_CUT = 0.055f;
-    /** na TV a legenda é desenhada no quadro e cresce junto com o zoom: o zoom só pode cortar isto de cada lado (medido na TV: a linha mais larga que o libVLC monta ocupa ~95% do quadro, e a legenda cresce junto com o zoom: limite ~4% de zoom) */
-    private static final float SUB_SAFE_X = 0.0455f;
+    /**
+     * Só na TV, só com legenda EMBUTIDA no arquivo (o libVLC a desenha dentro do quadro e ela cresce junto com o zoom): o zoom só pode cortar isto de cada
+     * lado (0,019 = limite de ~1,04x). Com o limite geral de 1,10x a linha mais larga que o libVLC monta (~91% do quadro) ficava cortada na lateral
+     * (medido no emulador de TV: 99,4% da tela, encostando na borda), então este caso fica com o limite menor. Legenda baixada (desenhada pelo app) e o
+     * celular usam ZOOM_MAX_TV/ZOOM_MAX_PHONE (1,10x).
+     */
+    private static final float SUB_SAFE_X = 0.019f;
     private final Runnable barTickRun = this::barTick;
     private PlayerUi.Btn scaleBtn;
 
