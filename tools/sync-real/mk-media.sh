@@ -11,13 +11,18 @@ vid() { # $1 = saida, $2 = bitrate, $3 = duracao (s)
   ffmpeg -nostdin -loglevel error -y -t "$3" -i clip.mkv -an -vf "scale=1280:720,format=yuv420p" -c:v libx264 -preset veryfast \
     -b:v "$2" -minrate "$2" -maxrate "$2" -bufsize "$2" -x264-params nal-hrd=cbr:force-cfr=1 -r 24 "$1"
 }
-vid v20.mkv 20M 1200
+[ -f ONLY_B ] || vid v20.mkv 20M 1200
 vid v4.mkv 4M 600
+if [ ! -f ONLY_B ]; then
 # A) 20 Mbit/s, 20 min: AC3 5.1 original (padrao) + AAC estereo "por" (dublagem)
 ffmpeg -nostdin -loglevel error -y -i v20.mkv -i clip.mkv -map 0:v -map 1:a -map 1:a -c:v copy \
   -filter:a:0 "$PAN" -c:a:0 ac3 -b:a:0 640k -c:a:1 aac -b:a:1 128k -ac:a:1 2 \
   -metadata:s:a:0 language=eng -metadata:s:a:0 title="Original 5.1" -metadata:s:a:1 language=por -metadata:s:a:1 title="Portugues" \
   -disposition:a:0 default -disposition:a:1 0 real-ac3.mkv
+fi
+# controle: o MESMO trecho de 10 min, audio estereo AAC e AC3 5.1
+ffmpeg -nostdin -loglevel error -y -t 600 -i v4.mkv -i clip.mkv -map 0:v -map 1:a -c:v copy -t 600 -c:a aac -b:a 128k -ac 2 -metadata:s:a:0 language=eng real-aac.mkv
+ffmpeg -nostdin -loglevel error -y -t 600 -i v4.mkv -i clip.mkv -map 0:v -map 1:a -c:v copy -t 600 -filter:a "$PAN" -c:a ac3 -b:a 640k -metadata:s:a:0 language=eng real-ac3b.mkv
 # B) so o codec muda (10 min, 4 Mbit/s): EAC3, DTS, TrueHD, todos 5.1
 for c in "eac3:eac3:640k:" "dts:dca:754k:-strict -2" "truehd:truehd:0:-strict -2"; do
   n=${c%%:*}; r=${c#*:}; enc=${r%%:*}; r=${r#*:}; br=${r%%:*}; ex=${r#*:}

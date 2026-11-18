@@ -106,7 +106,8 @@ jobs:
         if: steps.skip.outputs.skip != '1'
         run: |
           sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg >/dev/null
-          [ -f tools/sync-real/ONLY_C ] || bash tools/sync-real/mk-media.sh /tmp/media 2>&1 | tail -40
+          if [ -f tools/sync-real/ONLY_B ]; then touch /tmp/media/ONLY_B; fi
+          if [ ! -f tools/sync-real/ONLY_C ]; then bash tools/sync-real/mk-media.sh /tmp/media 2>&1 | tail -40; fi
           df -h /tmp | tail -1
       - name: Servidor dos videos
         if: steps.skip.outputs.skip != '1'
@@ -133,6 +134,7 @@ jobs:
       - name: Publicar
         if: always() && steps.skip.outputs.skip != '1'
         run: |
+          SUF=""; [ -f tools/sync-real/ONLY_B ] && SUF="-b"; export SUF
           cd shots || exit 0
           git init -q -b x && git add -A
           git -c user.name=ci -c user.email=ci@x commit -qm fotos
