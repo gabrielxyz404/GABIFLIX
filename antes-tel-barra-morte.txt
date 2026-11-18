@@ -1,0 +1,19 @@
+         1795025021.526   521   589 I am_proc_died: [0,945,WebViewLoader-x86_64,-700,0]
+         1795025034.209   521   571 I am_kill : [0,1087,com.google.android.apps.nexuslauncher,0,change com.google.android.apps.nexuslauncher]
+         1795025039.083   521  3288 I am_anr  : [0,1382,com.google.android.gms.persistent,-1597325755,Broadcast of Intent { act=android.intent.action.SIM_STATE_CHANGED flg=0x15000010 cmp=com.google.android.gms/.chimera.GmsIntentOperationService$PersistentTrustedReceiver (has extras) }]
+         1795025040.234   521  3288 E ActivityManager: ANR in com.google.android.gms.persistent
+         1795025040.329   521  3288 I am_kill : [0,1382,com.google.android.gms.persistent,0,bg anr]
+         1795025040.683   521   909 I am_proc_died: [0,1382,com.google.android.gms.persistent,0,4]
+         1795025043.082   521   549 I ActivityManager: Start proc 3480:io.github.gabrielxyz404.gabiflix/u0a192 for next-top-activity {io.github.gabrielxyz404.gabiflix/io.github.gabrielxyz404.gabiflix.PlayerActivity}
+         1795025045.494   831   831 E AndroidRuntime: FATAL EXCEPTION: main
+         1795025045.964   521  2466 I am_crash: [831,0,com.android.systemui,550026765,java.lang.NullPointerException,Attempt to read from field 'android.content.pm.ServiceInfo android.content.pm.ResolveInfo.serviceInfo' on a null object reference in method 'void com.android.systemui.recents.Overview
+         1795025046.282   521   589 I ActivityManager: Process com.android.systemui (pid 831) has died: pers PER 
+         1795025046.282   521   589 I am_proc_died: [0,831,com.android.systemui,-800,0]
+         1795025048.643   521   548 I am_kill : [0,1804,com.google.android.youtube,925,excessive binder traffic during cached]
+         1795025048.749   521   907 I am_proc_died: [0,1804,com.google.android.youtube,925,19]
+         1795025049.361   521   548 I am_kill : [0,2268,com.google.android.apps.wallpaper,999,excessive binder traffic during cached]
+         1795025049.378   521  2453 I am_proc_died: [0,2268,com.google.android.apps.wallpaper,999,19]
+         1795025049.830   521   571 I am_kill : [0,3866,com.android.intentresolver,0,change com.android.intentresolver]
+         1795025050.099   521   571 I am_kill : [0,2632,com.google.android.gm,0,change com.google.android.gm]
+         1795025050.207   521   571 I am_kill : [0,3918,com.android.nfc,0,change com.android.nfc]
+         1795025051.357   521   571 I am_kill : [0,4185,com.google.android.settings.intelligence,0,change com.google.android.settings.intelligence]
