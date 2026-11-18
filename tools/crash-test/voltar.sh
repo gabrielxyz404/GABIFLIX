@@ -40,6 +40,9 @@ cen() {  # $1 nome  $2 nascimento (launcher|simples)  $3 segundos fora  $4 forma
   abrir $2; snap $n-0-tocando 0.3
   echo "$n antes de sair: $(topact)" >> $OUT/$L-$P-resultado.txt; pilha >> $OUT/$L-$P-resultado.txt
   adb shell input keyevent 3; sleep $3
+  # morte em segundo plano como a do sistema com pouca memória: am kill só mata processos em segundo plano; kill9 mata o pid
+  if [ "$5" = amkill ]; then adb shell am kill $PKG; sleep 2; echo "$n: processo depois do am kill: '$(adb shell pidof $PKG | tr -d '\r')'" >> $OUT/$L-$P-resultado.txt; fi
+  if [ "$5" = kill9 ]; then adb shell "kill -9 $(adb shell pidof $PKG | tr -d '\r' | awk '{print $1}')"; sleep 2; echo "$n: processo depois do kill -9: '$(adb shell pidof $PKG | tr -d '\r')'" >> $OUT/$L-$P-resultado.txt; fi
   echo "$n fora: $(topact)" >> $OUT/$L-$P-resultado.txt
   if [ "$4" = monkey ]; then volta_monkey; else volta_icone; fi
   sleep 4; snap $n-1-voltou 0.5
@@ -54,4 +57,6 @@ cen icone-logo launcher 5 icone
 cen icone-2min launcher 120 icone
 cen monkey-logo launcher 5 monkey
 cen simples-icone simples 5 icone
+cen morto-amkill launcher 5 icone amkill
+cen morto-kill9 launcher 5 icone kill9
 exit 0
