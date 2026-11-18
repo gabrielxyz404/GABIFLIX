@@ -104,7 +104,7 @@ final class AudioSyncCore {
     }
 
     private void resetCaps() {
-        resetCaps();
+        if (cap != null) cap.reset();
         for (AudioCap e : extraCaps) if (e != null) e.reset();
     }
 
