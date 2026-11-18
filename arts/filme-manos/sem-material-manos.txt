@@ -1,0 +1,5 @@
++ ffmpeg -nostdin -loglevel error -y -i media/clip.mkv -vn -ac 1 -ar 16000 -c:a pcm_s16le media/_work/audio16k.wav
+clip: 1200.0 s, 45917275 bytes
++ curl -fL -sS --retry 6 --retry-delay 4 --retry-all-errors -C - -o media/_work/alass https://github.com/kaegi/alass/releases/download/v2.0.0/alass-linux64
+candidatas PT: 4
+sem legenda alinhavel

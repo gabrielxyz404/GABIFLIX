@@ -1,0 +1,16 @@
+stft.forward_basis_buffer          (258, 1, 256) IGUAL
+encoder.0.reparam_conv.weight      (128, 129, 3) IGUAL
+encoder.0.reparam_conv.bias        (128,) IGUAL
+encoder.1.reparam_conv.weight      (64, 128, 3) IGUAL
+encoder.1.reparam_conv.bias        (64,) IGUAL
+encoder.2.reparam_conv.weight      (64, 64, 3) IGUAL
+encoder.2.reparam_conv.bias        (64,) IGUAL
+encoder.3.reparam_conv.weight      (128, 64, 3) IGUAL
+encoder.3.reparam_conv.bias        (128,) IGUAL
+decoder.rnn.weight_ih              (512, 128) IGUAL
+decoder.rnn.weight_hh              (512, 128) IGUAL
+decoder.rnn.bias_ih                (512,) IGUAL
+decoder.rnn.bias_hh                (512,) IGUAL
+decoder.decoder.2.weight           (1, 128, 1) IGUAL
+decoder.decoder.2.bias             (1,) IGUAL
+silero_v5_16k.bin do repositorio == exportacao atual: SIM

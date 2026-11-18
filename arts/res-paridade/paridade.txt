@@ -1,0 +1,35 @@
+PARIDADE sint300 bloco(32ms) 1 fio(s): n=9375 max=2.265e-06 media=7.289e-08 p99=6.557e-07 cruzam0.5=0 limite=1e-03 -> OK
+PARIDADE sint300 100Hz 1 fio(s): n=30000 max=2.176e-06 media=6.942e-08 p99=6.557e-07 cruzam0.5=0 limite=1e-03 -> OK
+PARIDADE sint300 bloco(32ms) 3 fio(s): n=9375 max=2.265e-06 media=7.289e-08 p99=6.557e-07 cruzam0.5=0 limite=1e-03 -> OK
+PARIDADE sint300 100Hz 3 fio(s): n=30000 max=2.176e-06 media=6.942e-08 p99=6.557e-07 cruzam0.5=0 limite=1e-03 -> OK
+sint300: 1 fio == 3 fios (identico bit a bit)
+PARIDADE sint90 bloco(32ms) 1 fio(s): n=2812 max=2.265e-06 media=9.534e-08 p99=9.802e-07 cruzam0.5=0 limite=1e-03 -> OK
+PARIDADE sint90 100Hz 1 fio(s): n=9000 max=2.176e-06 media=9.199e-08 p99=9.537e-07 cruzam0.5=0 limite=1e-03 -> OK
+PARIDADE sint90 bloco(32ms) 3 fio(s): n=2812 max=2.265e-06 media=9.534e-08 p99=9.802e-07 cruzam0.5=0 limite=1e-03 -> OK
+PARIDADE sint90 100Hz 3 fio(s): n=9000 max=2.176e-06 media=9.199e-08 p99=9.537e-07 cruzam0.5=0 limite=1e-03 -> OK
+sint90: 1 fio == 3 fios (identico bit a bit)
+PARIDADE borda512 bloco(32ms) 1 fio(s): n=1 max=1.676e-08 media=1.676e-08 p99=1.676e-08 cruzam0.5=0 limite=1e-03 -> OK
+PARIDADE borda512 100Hz 1 fio(s): n=3 max=1.676e-08 media=1.676e-08 p99=1.676e-08 cruzam0.5=0 limite=1e-03 -> OK
+PARIDADE borda512 bloco(32ms) 3 fio(s): n=1 max=1.676e-08 media=1.676e-08 p99=1.676e-08 cruzam0.5=0 limite=1e-03 -> OK
+PARIDADE borda512 100Hz 3 fio(s): n=3 max=1.676e-08 media=1.676e-08 p99=1.676e-08 cruzam0.5=0 limite=1e-03 -> OK
+borda512: 1 fio == 3 fios (identico bit a bit)
+PARIDADE borda513 bloco(32ms) 1 fio(s): n=1 max=1.676e-08 media=1.676e-08 p99=1.676e-08 cruzam0.5=0 limite=1e-03 -> OK
+PARIDADE borda513 100Hz 1 fio(s): n=3 max=1.676e-08 media=1.676e-08 p99=1.676e-08 cruzam0.5=0 limite=1e-03 -> OK
+PARIDADE borda513 bloco(32ms) 3 fio(s): n=1 max=1.676e-08 media=1.676e-08 p99=1.676e-08 cruzam0.5=0 limite=1e-03 -> OK
+PARIDADE borda513 100Hz 3 fio(s): n=3 max=1.676e-08 media=1.676e-08 p99=1.676e-08 cruzam0.5=0 limite=1e-03 -> OK
+borda513: 1 fio == 3 fios (identico bit a bit)
+PARIDADE borda48007 bloco(32ms) 1 fio(s): n=93 max=2.980e-07 media=3.724e-08 p99=2.432e-07 cruzam0.5=0 limite=1e-03 -> OK
+PARIDADE borda48007 100Hz 1 fio(s): n=300 max=2.980e-07 media=3.464e-08 p99=2.384e-07 cruzam0.5=0 limite=1e-03 -> OK
+PARIDADE borda48007 bloco(32ms) 3 fio(s): n=93 max=2.980e-07 media=3.724e-08 p99=2.432e-07 cruzam0.5=0 limite=1e-03 -> OK
+PARIDADE borda48007 100Hz 3 fio(s): n=300 max=2.980e-07 media=3.464e-08 p99=2.384e-07 cruzam0.5=0 limite=1e-03 -> OK
+borda48007: 1 fio == 3 fios (identico bit a bit)
+PARIDADE borda272123 bloco(32ms) 1 fio(s): n=531 max=8.047e-07 media=8.021e-08 p99=6.065e-07 cruzam0.5=0 limite=1e-03 -> OK
+PARIDADE borda272123 100Hz 1 fio(s): n=1700 max=8.047e-07 media=7.630e-08 p99=5.960e-07 cruzam0.5=0 limite=1e-03 -> OK
+PARIDADE borda272123 bloco(32ms) 3 fio(s): n=531 max=8.047e-07 media=8.021e-08 p99=6.065e-07 cruzam0.5=0 limite=1e-03 -> OK
+PARIDADE borda272123 100Hz 3 fio(s): n=1700 max=8.047e-07 media=7.630e-08 p99=5.960e-07 cruzam0.5=0 limite=1e-03 -> OK
+borda272123: 1 fio == 3 fios (identico bit a bit)
+PARIDADE velho300 bloco(32ms) 1 fio(s): n=9375 max=5.066e-06 media=1.850e-07 p99=2.064e-06 cruzam0.5=0 limite=1e-03 -> OK
+PARIDADE velho300 100Hz 1 fio(s): n=30000 max=5.007e-06 media=1.822e-07 p99=2.086e-06 cruzam0.5=0 limite=1e-03 -> OK
+PARIDADE velho300 bloco(32ms) 3 fio(s): n=9375 max=5.066e-06 media=1.850e-07 p99=2.064e-06 cruzam0.5=0 limite=1e-03 -> OK
+PARIDADE velho300 100Hz 3 fio(s): n=30000 max=5.007e-06 media=1.822e-07 p99=2.086e-06 cruzam0.5=0 limite=1e-03 -> OK
+velho300: 1 fio == 3 fios (identico bit a bit)

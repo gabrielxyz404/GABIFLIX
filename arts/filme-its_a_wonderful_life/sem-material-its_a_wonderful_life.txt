@@ -1,0 +1,5 @@
+    src, info = C.acquire_video(f, work)
+                ~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/home/runner/work/GABIFLIX/GABIFLIX/tools/audio-integra/corpus/corpus.py", line 272, in acquire_video
+    raise RuntimeError("sem filme para %s: %s" % (f["slug"], log[-1:]))
+RuntimeError: sem filme para its_a_wonderful_life: []

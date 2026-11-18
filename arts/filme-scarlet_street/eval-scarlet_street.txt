@@ -1,0 +1,24 @@
+certa java PRE accepted=1 raw=-30 scale=1.00000 z=12.1 wins=3/3 inSync=1 vad=silero-java ms=2100 margem=0.24 ncc=0.56 f1=0.75 blocos=9/9 desvioMax=29 motivo=
+certa java FULL accepted=1 raw=-47 scale=1.00000 z=12.8 wins=4/4 inSync=1 rodadas=1 janelas=4 vad=silero-java ms=2448 margem=0.25 ncc=0.63 f1=0.77 blocos=10/10 desvioMax=44 motivo=
+certa ort PRE accepted=1 raw=-30 scale=1.00000 z=12.1 wins=3/3 inSync=1 vad=silero-ort ms=1455 margem=0.24 ncc=0.56 f1=0.75 blocos=9/9 desvioMax=29 motivo=
+certa ort FULL accepted=1 raw=-47 scale=1.00000 z=12.8 wins=4/4 inSync=1 rodadas=1 janelas=4 vad=silero-ort ms=1731 margem=0.25 ncc=0.63 f1=0.77 blocos=10/10 desvioMax=44 motivo=
+certa dsp PRE accepted=0 raw=-79 scale=1.00000 z=8.9 wins=3/3 inSync=0 vad=dsp(reserva) ms=1135 margem=0.31 ncc=0.36 f1=0.68 blocos=9/9 desvioMax=77 motivo=z_abaixo_do_limiar_de_aceitação_(9.0);
+certa dsp FULL accepted=0 raw=-140 scale=1.00000 z=12.2 wins=6/8 inSync=0 rodadas=3 janelas=8 vad=dsp(reserva) ms=2661 margem=0.45 ncc=0.40 f1=0.67 blocos=18/19 desvioMax=225 motivo=janelas_discordam;_
+mais3 java PRE accepted=1 raw=-3047 scale=1.00000 z=11.7 wins=3/3 inSync=0 vad=silero-java ms=2099 margem=0.26 ncc=0.59 f1=0.76 blocos=9/9 desvioMax=26 motivo=
+mais3 java FULL accepted=1 raw=-3047 scale=1.00000 z=12.8 wins=4/4 inSync=0 rodadas=1 janelas=4 vad=silero-java ms=2442 margem=0.27 ncc=0.65 f1=0.78 blocos=10/10 desvioMax=25 motivo=
+mais3 ort PRE accepted=1 raw=-3047 scale=1.00000 z=11.7 wins=3/3 inSync=0 vad=silero-ort ms=1521 margem=0.26 ncc=0.59 f1=0.76 blocos=9/9 desvioMax=26 motivo=
+mais3 ort FULL accepted=1 raw=-3047 scale=1.00000 z=12.8 wins=4/4 inSync=0 rodadas=1 janelas=4 vad=silero-ort ms=1799 margem=0.27 ncc=0.65 f1=0.78 blocos=10/10 desvioMax=25 motivo=
+mais3 dsp PRE accepted=1 raw=-3089 scale=1.00000 z=9.0 wins=3/3 inSync=0 vad=dsp(reserva) ms=1233 margem=0.31 ncc=0.36 f1=0.68 blocos=9/9 desvioMax=73 motivo=
+mais3 dsp FULL accepted=1 raw=-3089 scale=1.00000 z=9.0 wins=3/3 inSync=0 rodadas=0 janelas=3 vad=dsp(reserva) ms=1245 margem=0.31 ncc=0.36 f1=0.68 blocos=9/9 desvioMax=73 motivo=
+menos2 java PRE accepted=1 raw=1970 scale=1.00000 z=11.7 wins=3/3 inSync=0 vad=silero-java ms=2125 margem=0.24 ncc=0.56 f1=0.75 blocos=9/9 desvioMax=29 motivo=
+menos2 java FULL accepted=1 raw=1953 scale=1.00000 z=12.3 wins=4/4 inSync=0 rodadas=1 janelas=4 vad=silero-java ms=2465 margem=0.25 ncc=0.63 f1=0.77 blocos=10/10 desvioMax=44 motivo=
+menos2 ort PRE accepted=1 raw=1970 scale=1.00000 z=11.7 wins=3/3 inSync=0 vad=silero-ort ms=1496 margem=0.24 ncc=0.56 f1=0.75 blocos=9/9 desvioMax=29 motivo=
+menos2 ort FULL accepted=1 raw=1953 scale=1.00000 z=12.3 wins=4/4 inSync=0 rodadas=1 janelas=4 vad=silero-ort ms=1771 margem=0.25 ncc=0.63 f1=0.77 blocos=10/10 desvioMax=44 motivo=
+menos2 dsp PRE accepted=0 raw=1921 scale=1.00000 z=8.8 wins=3/3 inSync=0 vad=dsp(reserva) ms=1201 margem=0.31 ncc=0.36 f1=0.68 blocos=9/9 desvioMax=77 motivo=z_abaixo_do_limiar_de_aceitação_(9.0);
+menos2 dsp FULL accepted=0 raw=1860 scale=1.00000 z=11.8 wins=6/8 inSync=0 rodadas=3 janelas=8 vad=dsp(reserva) ms=2680 margem=0.45 ncc=0.40 f1=0.67 blocos=18/19 desvioMax=225 motivo=janelas_discordam;_
+outro java PRE accepted=0 raw=-90865 scale=1.01090 z=5.2 wins=2/3 inSync=0 vad=silero-java ms=2114 margem=0.02 ncc=0.24 f1=0.55 blocos=5/8 desvioMax=1500 motivo=z_baixo;_pico_ambíguo;_escala_fora_das_razões_de_fps;_janelas_discordam;_
+outro java FULL accepted=0 raw=154212 scale=1.10008 z=4.4 wins=1/7 inSync=0 rodadas=2 janelas=7 vad=silero-java ms=4078 margem=0.00 ncc=0.14 f1=0.53 blocos=12/16 desvioMax=1500 motivo=z_baixo;_pico_ambíguo;_escala_fora_das_razões_de_fps;_janelas_discordam;_
+outro ort PRE accepted=0 raw=-90865 scale=1.01090 z=5.2 wins=2/3 inSync=0 vad=silero-ort ms=1492 margem=0.02 ncc=0.24 f1=0.55 blocos=5/8 desvioMax=1500 motivo=z_baixo;_pico_ambíguo;_escala_fora_das_razões_de_fps;_janelas_discordam;_
+outro ort FULL accepted=0 raw=154212 scale=1.10008 z=4.4 wins=1/7 inSync=0 rodadas=2 janelas=7 vad=silero-ort ms=2882 margem=0.00 ncc=0.14 f1=0.53 blocos=12/16 desvioMax=1500 motivo=z_baixo;_pico_ambíguo;_escala_fora_das_razões_de_fps;_janelas_discordam;_
+outro dsp PRE accepted=0 raw=-463285 scale=1.07848 z=5.8 wins=0/3 inSync=0 vad=dsp(reserva) ms=1198 margem=0.12 ncc=0.21 f1=0.68 blocos=6/9 desvioMax=1284 motivo=z_baixo;_pico_ambíguo;_escala_fora_das_razões_de_fps;_janelas_discordam;_
+outro dsp FULL accepted=0 raw=-461683 scale=1.07795 z=4.5 wins=1/7 inSync=0 rodadas=2 janelas=7 vad=dsp(reserva) ms=2276 margem=0.05 ncc=0.08 f1=0.65 blocos=11/17 desvioMax=1500 motivo=z_baixo;_correlação_fraca;_pico_ambíguo;_escala_fora_das_razões_de_fps;_janelas_discordam;_
