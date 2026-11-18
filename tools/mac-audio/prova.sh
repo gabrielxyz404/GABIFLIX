@@ -62,15 +62,23 @@ bytes_mark 1b
 cmd "state"; cmd "audiohealth"; cmd "audiostate"; save 1-mais3
 finish
 
-# ---- 1b) +3 s com reverificacao curta (45 s): depois de acertada a reverificacao nao pode mexer
-launch 1b-mais3-recheck mais3.srt $BASE FP_AUDIO_START_SEC=10 FP_AUDIO_RECHECK_SEC=45
+# ---- 1b) +3 s, resultado CONFIANTE: nada de nova analise por tempo nem por salto sozinho; ajuste manual + salto grande = UMA nova analise
+# TIMERS ENCURTADOS NO TESTE: FP_AUDIO_START_SEC=10 e FP_AUDIO_RETRY_SEC=60 (a segunda tentativa depois de "sem confianca" seria 20 min)
+launch 1b-mais3-confiante mais3.srt $BASE FP_AUDIO_START_SEC=10 FP_AUDIO_RETRY_SEC=60
 waitlog "AUDIOSYNC aplicado" 240 && shot 1b-aviso 0.3
-waitlog "AUDIOSYNC reverificação:" 200; sleep 2
-cmd "state"; cmd "audiostate"; shot 1b-depois-da-reverificacao 0.3; save 1b-mais3-recheck; finish
+sleep ${MAC_SOAK:-660}                                  # tocando 11 min sem mexer em nada (o monitor antigo reverificava a cada 10 min)
+cmd "state"; cmd "audiostate"; save 1b-soak
+cmd "seek 60000"; sleep 45                              # salto grande (de ~12 min para 1 min) SEM mexer no atraso: nao pode analisar
+cmd "audiostate"; save 1b-salto-sem-ajuste; finish
 
-# ---- 1c) reabrir: a marca guardada evita nova captura e o atraso volta sozinho (KEEP_DEFAULTS=1 mantem as preferencias do cenario 1b)
-KEEP_DEFAULTS=1 launch 1c-reabrir mais3.srt $BASE FP_AUDIO_START_SEC=10 FP_AUDIO_RECHECK_SEC=600
-sleep 30; cmd "state"; cmd "audiostate"; save 1c-reabrir; finish
+# ---- 1c) reabrir o mesmo filme (KEEP_DEFAULTS=1 mantem as preferencias): a marca guardada evita nova captura e o atraso volta sozinho
+KEEP_DEFAULTS=1 launch 1c-reabrir mais3.srt $BASE FP_AUDIO_START_SEC=10 FP_AUDIO_RETRY_SEC=60
+sleep 60; cmd "state"; cmd "audiostate"; save 1c-reabrir
+
+# ---- 1d) ainda nessa sessao: ajuste manual E salto de ~14 min => UMA nova analise (regra do pedido)
+cmd "delay 1500"; sleep 4; cmd "seek 900000"
+waitlog "AUDIOSYNC resultado:" 240 || true
+sleep 60; cmd "audiostate"; shot 1d-depois-ajuste-e-salto 0.3; save 1d-ajuste-e-salto; finish
 
 # ---- 2) -2 s, item do menu "Sincronizar automaticamente" (automatico desligado)
 launch 2-menos2 menos2.srt $BASE FP_AUDIO_AUTO=false
@@ -79,11 +87,11 @@ cmd "menuclick Sincronizar automaticamente" 1; shot 2-sincronizando 0.5
 waitlog "sincronização automática: status=" 240; shot 2-aviso-final 0.4
 cmd "state"; save 2-menos2; finish
 
-# ---- 3) certa: automatico + reverificacao; nada pode mudar
-launch 3-certa certa.srt $BASE FP_AUDIO_START_SEC=10 FP_AUDIO_RECHECK_SEC=45
+# ---- 3) certa: automatico; resultado confiante "ja estava certa": nada muda, silencioso, e nao reverifica
+launch 3-certa certa.srt $BASE FP_AUDIO_START_SEC=10 FP_AUDIO_RETRY_SEC=60
 waitlog "AUDIOSYNC resultado:" 240; sleep 2; shot 3-certa-depois-da-analise 0.3
-waitlog "AUDIOSYNC reverificação:" 200; sleep 2
-cmd "state"; cmd "audiostate"; shot 3-certa-depois-da-reverificacao 0.3; save 3-certa; finish
+sleep 150
+cmd "state"; cmd "audiostate"; shot 3-certa-150s-depois 0.3; save 3-certa; finish
 
 # ---- 3b) certa pelo item do menu: "Ja estava certa"
 launch 3b-certa-menu certa.srt $BASE FP_AUDIO_AUTO=false
@@ -93,8 +101,10 @@ waitlog "sincronização automática: status=" 240; shot 3b-aviso-ja-estava-cert
 cmd "state"; save 3b-certa-menu; finish
 
 # ---- 4) outro filme: tem de recusar
-launch 4-outro outro.srt $BASE FP_AUDIO_START_SEC=10
+launch 4-outro outro.srt $BASE FP_AUDIO_START_SEC=10 FP_AUDIO_RETRY_SEC=60
 waitlog "AUDIOSYNC resultado:" 240; sleep 2; shot 4-outro-filme 0.3
+for i in $(seq 1 150); do [ "$(grep -c 'AUDIOSYNC resultado:' "$LOG" 2>/dev/null)" -ge 2 ] && break; sleep 2; done   # a segunda (e ultima) tentativa, 60 s depois
+sleep 240                                                # 4 min depois dela: nao pode haver terceira
 cmd "state"; save 4-outro; finish
 
 # ---- 5) VAD de reserva (DSP) com a +3 s: so informativo
@@ -127,4 +137,13 @@ sleep 6; cmd "closeplayer" 1; sleep 10
 save 9-trocar-e-fechar; finish
 cp /tmp/server-bytes.log "$OUT/server-bytes-rapida.log" 2>/dev/null
 cp /tmp/server-bytes-lenta.log "$OUT/" 2>/dev/null
+{
+  for f in "$OUT"/log-*.txt; do
+    echo "=== $(basename "$f")"
+    echo "  analises iniciadas (GATILHO decisao=analise) = $(grep -c 'AUDIOSYNC GATILHO .*decisão=análise' "$f")"
+    echo "  resultados (AUDIOSYNC resultado:) = $(grep -c 'AUDIOSYNC resultado:' "$f")"
+    echo "  avisos na tela = $(grep -c 'AVISO na tela' "$f")"
+    grep -E 'AUDIOSYNC (GATILHO|salto)|AVISO na tela' "$f" | cut -c1-300
+  done
+} > "$OUT/G-resumo-mac.txt"
 echo ok > "$OUT/fim.txt"

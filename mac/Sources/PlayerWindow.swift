@@ -1069,6 +1069,7 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
     }
 
     private func notice(_ s: String, seconds: Double = 3) {
+        log("AVISO na tela: " + s)
         noticeLabel.stringValue = "  " + s + "  "
         noticeLabel.isHidden = false
         noticeUntil = Date().addingTimeInterval(seconds)
