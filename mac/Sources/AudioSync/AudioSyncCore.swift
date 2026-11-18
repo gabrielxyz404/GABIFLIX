@@ -262,7 +262,7 @@ final class AudioSyncCore {
             guard let w = self.captureWindow(url, st, ln, o) else { failedAt = i + 1; return nil }
             o.st.windows += 1
             return w
-        }, P, spread: true, used: &used)
+        }, P, spread: true, dense: AudioSyncCore.nWin, used: &used)
         guard let r = res else {
             if cap.isCancelled { o.kind = .cancelled; o.note = "cancelado"; return o }
             o.kind = .error

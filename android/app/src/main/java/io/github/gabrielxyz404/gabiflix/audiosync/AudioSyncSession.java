@@ -124,6 +124,21 @@ public final class AudioSyncSession {
         return w;
     }
 
+    /**
+     * união dos dois planos: as janelas densas (as de mais fala: dão o deslocamento com precisão, como no motor de antes) primeiro e, depois, as espalhadas
+     * (que mostram a deriva) que não se sobrepõem a uma já escolhida.
+     */
+    public static long[][] planUnion(long[][] dense, long[][] spread, long lenMs) {
+        ArrayList<long[]> out = new ArrayList<>();
+        for (long[] d : dense) out.add(d);
+        for (long[] s : spread) {
+            boolean clash = false;
+            for (long[] o : out) if (Math.abs(s[0] - o[0]) < lenMs) clash = true;
+            if (!clash) out.add(s);
+        }
+        return out.toArray(new long[0][]);
+    }
+
     /** de onde vem o áudio de cada janela: o app captura (libVLC) e passa o VAD; os testes leem de um arquivo. null = falhou/cancelado */
     public interface Source {
         Window capture(long startMs, long lenMs, int index, int total) throws Exception;
@@ -134,8 +149,9 @@ public final class AudioSyncSession {
      * ainda não fecha, captura as janelas extras que o alinhador propõe (até maxDriftWindows janelas no total) e resolve de novo. Devolve null se uma captura falhou.
      * As janelas usadas ficam em usedOut[0] (se não for null).
      */
-    public static Result analyze(Cue[] cues, long durMs, int nWin, long lenMs, Source src, AudioAligner.Params P, boolean spread, Window[][] usedOut) throws Exception {
+    public static Result analyze(Cue[] cues, long durMs, int nWin, long lenMs, Source src, AudioAligner.Params P, boolean spread, int dense, Window[][] usedOut) throws Exception {
         long[][] plan = spread ? planSpread(cues, durMs, nWin, lenMs) : planDense(cues, durMs, nWin, lenMs);
+        if (dense > 0) plan = planUnion(planDense(cues, durMs, dense, lenMs), plan, lenMs);
         AudioSyncSession ses = new AudioSyncSession(cues, durMs, P);
         int total = plan.length, idx = 0;
         for (long[] p : plan) {

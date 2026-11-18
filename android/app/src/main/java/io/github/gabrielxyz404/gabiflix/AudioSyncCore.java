@@ -351,7 +351,7 @@ final class AudioSyncCore {
                     if (w == null) { failedAt[0] = i + 1; return null; }
                     o.st.windows++;
                     return w;
-                }, P, true, used);
+                }, P, true, N_WIN, used);
                 if (r == null) { return captureFailed(o, failedAt[0]); }
                 o.st.captureWallMs = (System.nanoTime() - cw0) / 1_000_000;
                 if (estThread != null) { estThread.join(1500); }

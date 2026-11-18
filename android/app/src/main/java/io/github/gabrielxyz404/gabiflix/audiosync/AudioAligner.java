@@ -67,8 +67,10 @@ public final class AudioAligner {
         public double driftMinSpanFrac = 0.25;
         public long driftMinSpanMs = 240_000;
         public double driftMaxResMs = 250;
+        /** a reta de deriva só é aplicada se o resíduo máximo não passa disto (ms); entre isto e driftMaxResMs o ajuste é "inseguro": pede janelas extras e, se não fecha, recusa (melhor recusar que pôr a legenda 0,5 s fora) */
+        public double driftSafeResMs = 180;
         /** com a deriva provada, o desvio de cada janela para o modelo final pode chegar a isto (ms) sem derrubar a aceitação (o ruído de uma janela de 90 s é de ~100-200 ms) */
-        public double driftGateDevMs = 300;
+        public double driftGateDevMs = 200;
         public double driftResFloorMs = 50;
         public double driftRatio = 3.0;
         public double driftContentMs = 800;
@@ -78,7 +80,7 @@ public final class AudioAligner {
         public double winMinZ = 5.0;
         /** acima disto (ms) a reta de escala 1,0 não explica as janelas confiáveis: suspeita de deriva => pede janelas extras (até maxDriftWindows) */
         public double driftSuspectMs = 150;
-        public int maxDriftWindows = 8;
+        public int maxDriftWindows = 10;
         /** porta (0 = desligada): todas as janelas com fala (>= 2) têm de concordar com o modelo dentro de gateWinDevMs (ms). Medida em CI: tira os falsos mexidos em legenda certa (4 -> 0 de 93) e os aceites errados (4,3% -> 0%) */
         public double gateWinDevMs = 150;
         /** porta opcional: mínimo de janelas com fala e concordantes (0 = desligada) */
@@ -681,10 +683,11 @@ public final class AudioAligner {
             double meas = Math.abs(al) * span, content = Math.abs(al) * durMs;
             boolean fits = fr[1] <= P.driftMaxResMs && 2 * fr[1] <= un[1] && meas >= 2 * Math.max(fr[1], P.driftResFloorMs);
             boolean spanOk = span >= Math.max((double) P.driftMinSpanMs, P.driftMinSpanFrac * durMs);
-            boolean ok = fits && nn >= P.driftMinWins && spanOk && meas >= P.driftRatio * Math.max(fr[1], P.driftResFloorMs) && content >= P.driftContentMs;
+            boolean safe = fr[1] <= P.driftSafeResMs;
+            boolean ok = fits && safe && nn >= P.driftMinWins && spanOk && meas >= P.driftRatio * Math.max(fr[1], P.driftResFloorMs) && content >= P.driftContentMs;
             if (fits && !ok) {
                 nearMiss = true;
-                why = (nn < P.driftMinWins ? "só " + nn + " janelas confiáveis; " : "") + (!spanOk ? "janelas cobrem pouco do filme; " : "")
+                why = (!safe ? "resíduo " + Math.round(fr[1]) + " ms acima de " + (long) P.driftSafeResMs + " ms: ajuste inseguro; " : "") + (nn < P.driftMinWins ? "só " + nn + " janelas confiáveis; " : "") + (!spanOk ? "janelas cobrem pouco do filme; " : "")
                         + (meas < P.driftRatio * Math.max(fr[1], P.driftResFloorMs) ? "deriva medida pequena frente ao resíduo; " : "")
                         + (content < P.driftContentMs ? "deriva no filme abaixo de " + (long) P.driftContentMs + " ms; " : "");
             }

@@ -131,6 +131,17 @@ final class AudioSyncSession {
         return w
     }
 
+    /** união dos dois planos: as janelas densas primeiro e, depois, as espalhadas que não se sobrepõem a uma já escolhida. Porte de planUnion. */
+    static func planUnion(_ dense: [[Int]], _ spread: [[Int]], _ lenMs: Int) -> [[Int]] {
+        var out = dense
+        for s in spread {
+            var clash = false
+            for o in out where abs(s[0] - o[0]) < lenMs { clash = true }
+            if !clash { out.append(s) }
+        }
+        return out
+    }
+
     /** de onde vem o áudio de cada janela: o app captura (VLCKit) e passa o VAD; os testes leem de um arquivo. nil = falhou/cancelado */
     typealias Source = (_ startMs: Int, _ lenMs: Int, _ index: Int, _ total: Int) -> AudioWindow?
 
@@ -139,8 +150,9 @@ final class AudioSyncSession {
      * confiáveis sugerem deriva mas a prova ainda não fecha, captura as janelas extras que o alinhador propõe (até maxDriftWindows no total) e resolve de novo.
      * Devolve nil se uma captura falhou. As janelas usadas voltam em used.
      */
-    static func analyze(_ cues: [AudioCue], _ durMs: Int, _ nWin: Int, _ lenMs: Int, _ src: Source, _ P: AudioAligner.Params, spread: Bool, used: inout [AudioWindow]) -> AudioResult? {
-        let plan = spread ? planSpread(cues, durMs, nWin, lenMs) : planDense(cues, durMs, nWin, lenMs)
+    static func analyze(_ cues: [AudioCue], _ durMs: Int, _ nWin: Int, _ lenMs: Int, _ src: Source, _ P: AudioAligner.Params, spread: Bool, dense: Int, used: inout [AudioWindow]) -> AudioResult? {
+        var plan = spread ? planSpread(cues, durMs, nWin, lenMs) : planDense(cues, durMs, nWin, lenMs)
+        if dense > 0 { plan = planUnion(planDense(cues, durMs, dense, lenMs), plan, lenMs) }
         let ses = AudioSyncSession(cues: cues, mediaDurationMs: durMs, params: P)
         var all: [AudioWindow] = []
         var idx = 0

@@ -27,8 +27,8 @@ def fam(v):
     m = re.match(r"g([\d./]+)\|", v)
     return "escala " + m.group(1) if m else v
 
-MODES = ["old", "dense", "spread", "spread6"]
-NAMES = {"old": "ANTES (origin/main: 3 janelas densas, regra 0,999/1,001)", "dense": "NOVO com janelas densas (so a prova de deriva)", "spread": "NOVO (3 janelas espalhadas + prova de deriva + janelas extras)", "spread6": "NOVO com 6 janelas de 90 s espalhadas (+ extras ate 8)"}
+MODES = ["old", "dense", "spread", "spread6", "uniao"]
+NAMES = {"old": "ANTES (origin/main: 3 janelas densas, regra 0,999/1,001)", "dense": "NOVO com janelas densas (so a prova de deriva)", "spread": "NOVO (3 janelas espalhadas + prova de deriva + janelas extras)", "uniao": "NOVO FINAL: 3 janelas densas (como antes) + 6 espalhadas + extras (ate 10)", "spread6": "NOVO com 6 janelas de 90 s espalhadas (+ extras ate 8)"}
 o = ["# Deriva de escala (1,001 e afins): legendas deformadas a partir da certa, audio REAL (Silero em Java puro, o motor do app)\n"]
 films = sorted(set(r["film"] for r in rows))
 o.append("Filmes/recortes: %d (%s)\n" % (len(films), ", ".join(films)))
@@ -70,11 +70,11 @@ for r in rows:
         o.append("| %s | %s | %s | %s | %s | %s | %s | %s | %s |" % (r["tag"], r["var"], r["modo"], r["classe"], r.get("escala"), r.get("desl"), r.get("erroMax"), r.get("z"), r.get("janelas")))
 
 # por filme (so o modo novo)
-o.append("\n## Por filme (modo novo: 6 janelas espalhadas)\n")
+o.append("\n## Por filme (modo final: uniao densas + espalhadas)\n")
 o.append("| filme | ja certas intactas | deriva 1,001/0,999 certas | 25/23,976 certas | so deslocamento certas | outro filme falsos |")
 o.append("|---|---|---|---|---|---|")
 for t in sorted(set(r["tag"] for r in rows)):
-    rs = [r for r in rows if r["tag"] == t and r.get("modo") == "spread6"]
+    rs = [r for r in rows if r["tag"] == t and r.get("modo") == "uniao"]
     if not rs:
         continue
     def cnt(pred, cls):

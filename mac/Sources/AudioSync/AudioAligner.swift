@@ -41,8 +41,10 @@ enum AudioAligner {
         var driftMinSpanFrac = 0.25
         var driftMinSpanMs = 240_000
         var driftMaxResMs = 250.0
+        /** a reta de deriva só é aplicada se o resíduo máximo não passa disto (ms); acima disso o ajuste é "inseguro": pede janelas extras e, se não fecha, recusa */
+        var driftSafeResMs = 180.0
         /** com a deriva provada, o desvio de cada janela para o modelo final pode chegar a isto (ms) sem derrubar a aceitação */
-        var driftGateDevMs = 300.0
+        var driftGateDevMs = 200.0
         var driftResFloorMs = 50.0
         var driftRatio = 3.0
         var driftContentMs = 800.0
@@ -50,7 +52,7 @@ enum AudioAligner {
         var winMinMargin = 0.08
         var winMinZ = 5.0
         var driftSuspectMs = 150.0
-        var maxDriftWindows = 8
+        var maxDriftWindows = 10
         var gateWinDevMs = 150.0
         var gateMinWinsAgree = 0
         var unitSnap = 0.0035
@@ -666,10 +668,11 @@ enum AudioAligner {
             let meas = abs(al) * span, content = abs(al) * Double(durMs)
             let fits = fr.1 <= P.driftMaxResMs && 2 * fr.1 <= un.1 && meas >= 2 * max(fr.1, P.driftResFloorMs)
             let spanOk = span >= max(Double(P.driftMinSpanMs), P.driftMinSpanFrac * Double(durMs))
-            let ok = fits && nn >= P.driftMinWins && spanOk && meas >= P.driftRatio * max(fr.1, P.driftResFloorMs) && content >= P.driftContentMs
+            let safe = fr.1 <= P.driftSafeResMs
+            let ok = fits && safe && nn >= P.driftMinWins && spanOk && meas >= P.driftRatio * max(fr.1, P.driftResFloorMs) && content >= P.driftContentMs
             if fits && !ok {
                 nearMiss = true
-                why = (nn < P.driftMinWins ? "só \(nn) janelas confiáveis; " : "") + (!spanOk ? "janelas cobrem pouco do filme; " : "")
+                why = (!safe ? "resíduo \(jround(fr.1)) ms acima de \(Int(P.driftSafeResMs)) ms: ajuste inseguro; " : "") + (nn < P.driftMinWins ? "só \(nn) janelas confiáveis; " : "") + (!spanOk ? "janelas cobrem pouco do filme; " : "")
                     + (meas < P.driftRatio * max(fr.1, P.driftResFloorMs) ? "deriva medida pequena frente ao resíduo; " : "")
                     + (content < P.driftContentMs ? "deriva no filme abaixo de \(Int(P.driftContentMs)) ms; " : "")
             }

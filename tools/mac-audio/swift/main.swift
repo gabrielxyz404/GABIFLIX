@@ -253,7 +253,7 @@ func runPre(_ wav: String, _ srtPath: String) {
             let s0 = st * 16, n = ln * 16
             let sl = Array(pcm[s0..<min(pcm.count, s0 + n)])
             return AudioWindow(startMs: st, p: vad.speechProb(sl, sl.count, 16000))
-        }, P, spread: true, used: &used)
+        }, P, spread: true, dense: 3, used: &used)
         guard let r = rr else { print("SPREAD falhou"); return }
         print(String(format: "SPREAD accepted=%d scale=%.6f raw=%.0f drift=%d confiaveis=%d janelas=%d inSync=%d z=%.1f res=%.0f unitRes=%.0f at=%@", r.accepted ? 1 : 0, r.scale, r.rawOffsetMs,
                      r.driftScale ? 1 : 0, r.driftConfident, used.count, r.inSync ? 1 : 0, r.z, r.driftResMs, r.unitResMs, used.map { "[\($0.startMs)]," }.joined()))
