@@ -232,8 +232,13 @@ final class AudioSyncCore {
         let cues = AudioCue.parseSrt(subText)
         if AudioSyncCore.countSpeech(cues) < AudioSyncCore.minSpeechCues { o.kind = .refused; o.note = "poucas falas na legenda"; o.msg = "A legenda tem poucas falas para conferir pelo áudio."; return o }
         if durMs < AudioSyncCore.minDurationMs { o.kind = .skipped; o.note = "vídeo curto ou duração desconhecida"; o.msg = "O vídeo é curto (ou a duração ainda é desconhecida) para conferir pelo áudio."; return o }
-        o.st.estBytes = AudioSyncCore.estimateBytes(url, durMs, AudioSyncCore.winMs * AudioSyncCore.nWin / 1000)
-        if o.st.estBytes < 0 { log("tamanho do arquivo desconhecido (o servidor não diz): sem estimativa de leitura") }
+        if maxBytes == AudioSyncCore.noLimit {
+            // sem limite: a primeira captura começa já; a estimativa (só para o registro) é calculada ao lado, sem esperar
+            let ob = o
+            DispatchQueue.global(qos: .utility).async { ob.st.estBytes = AudioSyncCore.estimateBytes(url, durMs, AudioSyncCore.winMs * AudioSyncCore.nWin / 1000) }
+        } else {
+            o.st.estBytes = AudioSyncCore.estimateBytes(url, durMs, AudioSyncCore.winMs * AudioSyncCore.nWin / 1000)
+        }
         if maxBytes != AudioSyncCore.noLimit && o.st.estBytes > maxBytes {
             o.kind = .skipped
             o.note = "leitura estimada de \(o.st.estBytes >> 20) MB passa do limite de \(maxBytes >> 20) MB: só pelo botão"
