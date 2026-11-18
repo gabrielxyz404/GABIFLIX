@@ -294,8 +294,9 @@ public class PlayerActivity extends Activity {
         } catch (Throwable t) { glog("escala: " + t); }
     }
 
-    // ---------- legenda desenhada pelo app (só na TV) ----------
-    // Na TV o libVLC (TextureView) desenha a legenda DENTRO da imagem do vídeo: qualquer zoom a amplia junto e a corta nas laterais.
+    // ---------- legenda desenhada pelo app (TV e celular) ----------
+    // Na TV o libVLC (TextureView) desenha a legenda DENTRO da imagem do vídeo: qualquer zoom a amplia junto e a corta nas laterais; e em
+    // qualquer tela o libVLC lê o arquivo só para a frente, então depois de mudar o atraso ou pular no filme a legenda some por um tempo.
     // Por isso, para as legendas baixadas (SRT/VTT/ASS), o libVLC recebe um arquivo "em branco" (mesma faixa, mesmo atraso, nada na tela) e as
     // falas são desenhadas aqui, numa vista à parte acima do vídeo. As legendas que vêm DENTRO do arquivo continuam no libVLC.
     private SubtitleOverlay.Text subOverlay;
@@ -428,7 +429,7 @@ public class PlayerActivity extends Activity {
         if (tv) { root.setFocusable(true); root.setFocusableInTouchMode(true); }
         videoLayout = new VLCVideoLayout(this);
         root.addView(videoLayout, match());
-        if (tv) startOverlay(root);
+        startOverlay(root);
 
         spinner = new PlayerUi.Spinner(this);
         FrameLayout.LayoutParams sp = new FrameLayout.LayoutParams(dp(60), dp(60), Gravity.CENTER);
@@ -1212,7 +1213,7 @@ public class PlayerActivity extends Activity {
         final boolean embeddedFirst = embeddedPtId != NO_TRACK;
         for (int i = 0; i < use.size() && i < 6; i++) {
             SubtitleSync.Cand c = use.get(i);
-            if (tv) { Uri b = blankSubtitle(i + 1); if (b != null) c.uri = b; }   // TV: o app desenha esta legenda; o libVLC recebe o arquivo em branco
+            { Uri b = blankSubtitle(i + 1); if (b != null) c.uri = b; }   // o app desenha esta legenda; o libVLC recebe o arquivo em branco (mesma faixa, atraso e seek sem lacuna)
             try {
                 player.addSlave(0 /* legenda */, c.uri, i == 0 && !embeddedFirst);
                 addedSubs++;
