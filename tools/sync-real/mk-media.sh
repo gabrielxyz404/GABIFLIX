@@ -20,7 +20,7 @@ def sh(m):
     return g(a) + " --> " + g(b)
 open("mais12.srt", "w", encoding="utf-8").write(re.sub(r"(\d+):(\d+):(\d+),(\d+) --> (\d+):(\d+):(\d+),(\d+)", sh, t))
 PY
-if [ -f ONLY_D ]; then ls -la; exit 0; fi
+if [ -f ONLY_D ] || [ -f ONLY_E ]; then ls -la; exit 0; fi
 PAN="pan=5.1|FL=0.45*FL|FR=0.45*FR|FC=0.7*FL+0.7*FR|LFE=0.0*FL|BL=0.2*FL|BR=0.2*FR"
 vid() { # $1 = saida, $2 = bitrate, $3 = duracao (s)
   ffmpeg -nostdin -loglevel error -y -t "$3" -i clip.mkv -an -vf "scale=1280:720,format=yuv420p" -c:v libx264 -preset veryfast \

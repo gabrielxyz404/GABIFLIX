@@ -862,7 +862,10 @@ public class PlayerActivity extends Activity {
         long t = Math.max(0, player.getTime() + ms);
         if (len > 0) t = Math.min(t, len - 1000);
         seekHoldUntil = SystemClock.uptimeMillis() + 800;
+        final long from = player.getTime();
         player.setTime(t);
+        glog("seek: " + from + " -> " + t + " ms, faixa de legenda " + player.getSpuTrack() + ", atraso " + subDelayMs + " ms");
+        ui.postDelayed(() -> { if (player != null) glog("seek: 2 s depois: posição " + player.getTime() + " ms, faixa de legenda " + player.getSpuTrack() + ", atraso " + subDelayMs + " ms, tocando=" + player.isPlaying()); }, 2000);
         if (len > 0) { seek.setProgress(t / (float) len); timeLabel.setText(format(t)); }
         if (showControls) setControlsVisible(true);
     }

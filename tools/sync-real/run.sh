@@ -62,6 +62,35 @@ P_SLOW=1
 DONE='AUDIOSYNC (aplicado|resultado:|desisti|botão:|o áudio não tem|pulado|já foi vista)'
 panel_texts() { pause_v; show_controls; open_subs; sleep 1.5; snap "$1" 0.5; texts "$1"; adb shell input keyevent KEYCODE_BACK; sleep 1; play_v; }
 
+if [ -f tools/sync-real/ONLY_E ]; then
+  # a legenda some depois de avançar/voltar na linha do tempo? video preto (so o texto da legenda e claro); Normal e Preencher;
+  # depois de uma sincronizacao automatica e de um ajuste manual
+  python3 -c "import PIL" 2>/dev/null || pip install --user -q pillow
+  CLIP=blk.mkv
+  rate() { python3 tools/sync-real/textrate.py $OUT/E-$1 >> $OUT/seek-resumo.txt; ls $OUT/E-$1/*.png 2>/dev/null | awk 'NR%5!=1' | xargs rm -f; }
+  burst() { mkdir -p $OUT/E-$1; for i in $(seq 1 ${2:-14}); do adb exec-out screencap -p > $OUT/E-$1/$(printf %03d $i).png; done; rate $1; }
+  for modo in normal preencher; do
+    for caso in plain auto manual; do
+      adb shell pm clear $PKG >/dev/null; sleep 2
+      N=$modo-$caso
+      case $caso in
+        plain) launch certa.srt --es gfAudioAuto false --es gfSeekSec 240;;
+        auto) launch mais3.srt --es gfSeekSec 240 --es gfAudioStartSec 8;;
+        manual) launch certa.srt --es gfAudioAuto false --es gfSeekSec 240;;
+      esac
+      sleep 14
+      if [ $caso = auto ]; then waitlog "AUDIOSYNC aplicado" 200; sleep 6; fi
+      if [ $caso = manual ]; then show_controls; open_subs; sleep 1.5; click "+1 s"; click "+1 s"; sleep 0.5; adb shell input keyevent KEYCODE_BACK; sleep 1; play_v; sleep 1; fi
+      if [ $modo = preencher ]; then show_controls; click "Tela:"; sleep 1; adb shell input keyevent KEYCODE_BACK 2>/dev/null; sleep 5; fi
+      sleep 5; burst $N-0-antes
+      adb shell input keyevent KEYCODE_MEDIA_FAST_FORWARD; sleep 8; burst $N-1-depois-de-avancar
+      adb shell input keyevent KEYCODE_MEDIA_REWIND; sleep 1; adb shell input keyevent KEYCODE_MEDIA_REWIND; sleep 8; burst $N-2-depois-de-voltar
+      adb exec-out screencap -p > $OUT/foto-$N-final.png
+      save E-$N
+    done
+  done
+  cat $OUT/seek-resumo.txt; exit 0
+fi
 if [ -f tools/sync-real/ONLY_D ]; then
   # a legenda some depois que o motor aplica o atraso? rajada de fotos (video preto: so o texto da legenda e claro) para cada estrategia
   python3 -c "import PIL" 2>/dev/null || pip install --user -q pillow
