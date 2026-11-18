@@ -79,7 +79,7 @@ jobs:
           OUTROS=$(ls media/outro*.srt)
           export VAD_THREADS=2
           java -Xmx3g -cp /tmp/old DerivaEval media/audio16k.wav media/certa.srt $W old ${{ matrix.slug }} $OUTROS > res/deriva-$TAG-old.txt 2> res/err-old.txt || tail -5 res/err-old.txt
-          java -Xmx3g -cp /tmp/new DerivaEval media/audio16k.wav media/certa.srt $W dense,spread ${{ matrix.slug }} $OUTROS > res/deriva-$TAG-novo.txt 2> res/err-novo.txt || tail -5 res/err-novo.txt
+          java -Xmx3g -cp /tmp/new DerivaEval media/audio16k.wav media/certa.srt $W dense,spread,spread6 ${{ matrix.slug }} $OUTROS > res/deriva-$TAG-novo.txt 2> res/err-novo.txt || tail -5 res/err-novo.txt
           cp media/info.json res/info-$TAG.json; cp media/oracle.json res/oracle-$TAG.json 2>/dev/null || true
           grep -c "^R " res/deriva-$TAG-*.txt
       - name: Sem material

@@ -45,7 +45,7 @@ public class PreCheck {
                 // o laco do app (AudioSyncSession.analyze): 3 janelas espalhadas + ate 2 extras se ha suspeita de deriva
                 final short[] pc = pcm; final Vad vv = v;
                 Window[][] used = new Window[1][];
-                r = AudioSyncSession.analyze(cues, dur, 3, 90000, (st, ln, i, total) -> analisa(vv, pc, new long[]{st, ln}), P, true, used);
+                r = AudioSyncSession.analyze(cues, dur, 6, 90000, (st, ln, i, total) -> analisa(vv, pc, new long[]{st, ln}), P, true, used);
                 StringBuilder js = new StringBuilder();
                 for (Window w : used[0]) js.append("[").append(w.startMs).append("],");
                 System.out.printf(Locale.ROOT, "SPREAD accepted=%d scale=%.6f raw=%.0f drift=%d confiaveis=%d janelas=%d inSync=%d z=%.1f res=%.0f unitRes=%.0f at=%s%n", r.accepted ? 1 : 0, r.scale, r.rawOffsetMs, r.driftScale ? 1 : 0, r.driftConfident, used[0].length, r.inSync ? 1 : 0, r.z, r.driftResMs, r.unitResMs, js);

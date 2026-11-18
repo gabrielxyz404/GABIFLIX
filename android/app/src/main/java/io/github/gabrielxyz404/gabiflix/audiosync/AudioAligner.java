@@ -78,7 +78,7 @@ public final class AudioAligner {
         public double winMinZ = 5.0;
         /** acima disto (ms) a reta de escala 1,0 não explica as janelas confiáveis: suspeita de deriva => pede janelas extras (até maxDriftWindows) */
         public double driftSuspectMs = 150;
-        public int maxDriftWindows = 5;
+        public int maxDriftWindows = 8;
         /** porta (0 = desligada): todas as janelas com fala (>= 2) têm de concordar com o modelo dentro de gateWinDevMs (ms). Medida em CI: tira os falsos mexidos em legenda certa (4 -> 0 de 93) e os aceites errados (4,3% -> 0%) */
         public double gateWinDevMs = 150;
         /** porta opcional: mínimo de janelas com fala e concordantes (0 = desligada) */

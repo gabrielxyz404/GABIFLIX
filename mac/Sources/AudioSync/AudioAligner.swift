@@ -50,7 +50,7 @@ enum AudioAligner {
         var winMinMargin = 0.08
         var winMinZ = 5.0
         var driftSuspectMs = 150.0
-        var maxDriftWindows = 5
+        var maxDriftWindows = 8
         var gateWinDevMs = 150.0
         var gateMinWinsAgree = 0
         var unitSnap = 0.0035

@@ -99,20 +99,24 @@ public final class AudioSyncSession {
         double[] pre = new double[nb + 1];
         for (int i = 0; i < nb; i++) pre[i + 1] = pre[i] + sp[i];
         int wb = (int) (lenMs / bin);
-        double spacing = 0.80 / (n - 1), hw = 0.45 * spacing + 0.02;
+        double spacing = 0.80 / (n - 1), hw = 0.45 * spacing;
         long[][] w = new long[n][2];
         for (int z = 0; z < n; z++) {
             double fc = 0.10 + spacing * z;
+            // o CENTRO da janela fica dentro de +-hw da faixa (faixas vizinhas não se misturam)
             long lo = Math.max((long) (durMs * 0.04), (long) (durMs * (fc - hw)) - lenMs / 2);
             long hi = Math.min(durMs - durMs / 25, (long) (durMs * (fc + hw)) + lenMs / 2);
             double best = -1;
             int bi = -1;
             for (int i = (int) (lo / bin); (i + wb) * (long) bin <= hi && i + wb <= nb; i++) {
+                boolean clash = false;
+                for (int k = 0; k < z; k++) if (Math.abs(i * (long) bin - w[k][0]) < lenMs + bin) clash = true;   // sem sobrepor uma janela já escolhida
+                if (clash) continue;
                 int a = Math.max(0, i - half), b = Math.min(nb, i + wb + half);
                 double d = (pre[b] - pre[a]) / (b - a);
                 if (d > best) { best = d; bi = i; }
             }
-            if (bi < 0 || best < 0.15) return planDense(cues, durMs, n, lenMs);
+            if (bi < 0 || best < 0.05) return planDense(cues, durMs, n, lenMs);
             w[z][0] = bi * (long) bin / 10 * 10;
             w[z][1] = lenMs;
         }

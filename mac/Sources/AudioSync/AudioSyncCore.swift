@@ -9,6 +9,8 @@ final class AudioSyncCore {
     static let version = "m3"
     static let winMs = 90_000
     static let nWin = 3
+    /** janelas espalhadas pelo filme na análise (sem limite de dados); até maxDriftWindows com as extras */
+    static let driftWin = 6
     /** a leitura estimada das 3 janelas: o automático só roda se couber no orçamento da rede (ver AudioSyncAuto); o botão nunca pula */
     static let noLimit = Int.max
     private static let minDurationMs = 8 * 60_000
@@ -253,7 +255,7 @@ final class AudioSyncCore {
         var failedAt = 0
         var used: [AudioWindow] = []
         let c0 = AudioSyncCore.threadCpuMs(), w0 = AudioSyncCore.nowMs()
-        let res = AudioSyncSession.analyze(cues, durMs, AudioSyncCore.nWin, AudioSyncCore.winMs, { st, ln, i, total in
+        let res = AudioSyncSession.analyze(cues, durMs, AudioSyncCore.driftWin, AudioSyncCore.winMs, { st, ln, i, total in
             if self.cap.isCancelled { return nil }
             if !first { Thread.sleep(forTimeInterval: 1.0) }   // respiro entre as capturas: o player ao lado não disputa o tempo todo
             first = false

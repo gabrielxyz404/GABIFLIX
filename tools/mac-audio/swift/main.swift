@@ -249,7 +249,7 @@ func runPre(_ wav: String, _ srtPath: String) {
     if ProcessInfo.processInfo.environment["SPREAD"] == "1" {
         // o laço do app (AudioSyncSession.analyze): 3 janelas espalhadas + até 2 extras se há suspeita de deriva
         var used: [AudioWindow] = []
-        let rr = AudioSyncSession.analyze(cues, dur, 3, 90_000, { st, ln, _, _ in
+        let rr = AudioSyncSession.analyze(cues, dur, 6, 90_000, { st, ln, _, _ in
             let s0 = st * 16, n = ln * 16
             let sl = Array(pcm[s0..<min(pcm.count, s0 + n)])
             return AudioWindow(startMs: st, p: vad.speechProb(sl, sl.count, 16000))

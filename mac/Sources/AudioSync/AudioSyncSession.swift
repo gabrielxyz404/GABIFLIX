@@ -104,7 +104,7 @@ final class AudioSyncSession {
         var pre = [Double](repeating: 0, count: nb + 1)
         for i in 0..<nb { pre[i + 1] = pre[i] + sp[i] }
         let wb = lenMs / bin
-        let spacing = 0.80 / Double(n - 1), hw = 0.45 * spacing + 0.02
+        let spacing = 0.80 / Double(n - 1), hw = 0.45 * spacing
         var w = [[Int]](repeating: [0, 0], count: n)
         for z in 0..<n {
             let fc = 0.10 + spacing * Double(z)
@@ -114,12 +114,16 @@ final class AudioSyncSession {
             var bi = -1
             var i = lo / bin
             while (i + wb) * bin <= hi && i + wb <= nb {
-                let a = max(0, i - half), b = min(nb, i + wb + half)
-                let d = (pre[b] - pre[a]) / Double(b - a)
-                if d > best { best = d; bi = i }
+                var clash = false
+                for k in 0..<z where abs(i * bin - w[k][0]) < lenMs + bin { clash = true }   // sem sobrepor uma janela já escolhida
+                if !clash {
+                    let a = max(0, i - half), b = min(nb, i + wb + half)
+                    let d = (pre[b] - pre[a]) / Double(b - a)
+                    if d > best { best = d; bi = i }
+                }
                 i += 1
             }
-            if bi < 0 || best < 0.15 { return planDense(cues, durMs, n, lenMs) }
+            if bi < 0 || best < 0.05 { return planDense(cues, durMs, n, lenMs) }
             w[z][0] = bi * bin / 10 * 10
             w[z][1] = lenMs
         }

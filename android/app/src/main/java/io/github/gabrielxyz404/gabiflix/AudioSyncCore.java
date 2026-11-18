@@ -33,6 +33,8 @@ final class AudioSyncCore {
     static final String VERSION = "a3";
     static final long WIN_MS = 90_000;
     static final int N_WIN = 3;
+    /** janelas espalhadas pelo filme na análise (sem limite de dados: a deriva só aparece com janelas em todo o filme); até maxDriftWindows com as extras */
+    static final int DRIFT_WIN = 6;
     /** a leitura estimada das 3 janelas: o automático só roda se couber no orçamento da rede (ver AudioSyncAuto); o botão nunca pula */
     static final long NO_LIMIT = Long.MAX_VALUE;
     private static final long MIN_DURATION_MS = 8 * 60_000L;
@@ -340,11 +342,11 @@ final class AudioSyncCore {
                 final boolean[] first = {true};
                 long cw0 = System.nanoTime();
                 Window[][] used = new Window[1][];
-                Result r = AudioSyncSession.analyze(cues, durMs, N_WIN, WIN_MS, (st, ln, i, total) -> {
+                Result r = AudioSyncSession.analyze(cues, durMs, DRIFT_WIN, WIN_MS, (st, ln, i, total) -> {
                     if (cap != null && cap.isCancelled()) throw new InterruptedException();
                     if (!first[0]) Thread.sleep(300);
                     first[0] = false;
-                    say(total > N_WIN && i >= N_WIN ? "A ouvir mais um trecho do filme (a legenda parece desviar)… " + (i + 1) + " de " + total : "A ouvir o filme… trecho " + (i + 1) + " de " + total);
+                    say(total > DRIFT_WIN && i >= DRIFT_WIN ? "A ouvir mais um trecho do filme (a legenda parece desviar)… " + (i + 1) + " de " + total : "A ouvir o filme… trecho " + (i + 1) + " de " + total);
                     Window w = captureWindow(url, st, ln, o);
                     if (w == null) { failedAt[0] = i + 1; return null; }
                     o.st.windows++;
