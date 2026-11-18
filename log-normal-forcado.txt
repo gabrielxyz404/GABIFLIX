@@ -1,0 +1,77 @@
+         1794981685.164  4593  4593 E VLC     : [e6b4a130/11f1] libvlc audio output: GetStaticFieldID(AudioFormat.ENCODING_PCM_32BIT) failed
+         1794981685.188  4593  4632 I GabiFlixPlayer: hash=0950be8043c9ed5e tamanho=790323086 arquivo=film.mkv
+         1794981685.188  4593  4632 I GabiFlixPlayer: Hash calculado, mas a busca de legendas falhou
+         1794981685.188  4593  4632 I GabiFlixPlayer: candidatas para baixar: 1 (do site: 1)
+         1794981685.238  4593  4632 I GabiFlixPlayer: legendas PT válidas: 0 de 1; referências baixadas: 0
+         1794981685.238  4593  4632 I GabiFlixPlayer: alinhamento com 0 referência(s):
+         1794981685.238  4593  4632 I GabiFlixPlayer:   sem referência (nem outro idioma, nem PT do hash) e menos de 2 PT para comparar: ranking antigo
+         1794981685.238  4593  4632 I GabiFlixPlayer:   alinhadas: 0
+         1794981685.642  4593  4637 E VLC     : [e6b4a130/121d] libvlc audio output: too low audio sample frequency (0)
+         1794981685.642  4593  4637 E VLC     : [ecdcca60/121d] libvlc decoder: failed to create audio output
+         1794981685.653  4593  4645 E VLC     : [e6b4a130/1225] libvlc audio output: module not functional
+         1794981685.653  4593  4645 E VLC     : [ecdcca60/1225] libvlc decoder: failed to create audio output
+         1794981685.799  4593  4656 E VLC     : [bd7c0550/1230] libvlc window: request 1 not implemented
+         1794981685.838  4593  4656 E VLC     : [bd7c0550/1230] libvlc window: request 0 not implemented
+         1794981685.838  4593  4656 E VLC     : [bd7c0550/1230] libvlc window: request 0 not implemented
+         1794981685.847  4593  4593 I GabiFlixPlayer: vistas do vídeo: TextureView(vídeo)
+         1794981685.848  4593  4593 I GabiFlixPlayer: AUDIOSYNC pronto (sem limite de dados; automático=true, começa 5 s depois de a legenda ficar ativa, reverifica a cada 600 s)
+         1794981686.136  4593  4656 E VLC     : [bd7c0550/1230] libvlc window: request 1 not implemented
+         1794981686.149  4593  4656 E VLC     : [bd7c0550/1230] libvlc window: request 1 not implemented
+         1794981686.840  4593  4656 E VLC     : [bd7c0550/1230] libvlc window: request 3 not implemented
+         1794981686.851  4593  4593 I GabiFlixPlayer: AUDIOSYNC estado: st=0 executando=false tocando=true carregando=false faixa=-1 baixadas=0 addedSubs=0 embeddedKnown=false faixas=[] cand=false
+         1794981687.178  4593  4593 I GabiFlixPlayer: legenda PT embutida: não há
+         1794981690.673  3806  3858 D StrictMode: 	at libcore.io.IoTracker.trackIo(IoTracker.java:35)
+         1794981690.673  3806  3858 D StrictMode: 	at libcore.io.IoTracker.trackIo(IoTracker.java:45)
+         1794981707.173  4593  4593 I GabiFlixPlayer: AUDIOSYNC estado: st=0 executando=false tocando=true carregando=false faixa=-1 baixadas=0 addedSubs=0 embeddedKnown=true faixas=[] cand=false
+         1794981710.036  3806  3858 W aadg    : 	at libcore.io.IoBridge.write(IoBridge.java:540)
+         1794981710.036  3806  3858 W aadg    : 	at libcore.io.Linux.writeBytes(Native Method)
+         1794981710.036  3806  3858 W aadg    : 	at libcore.io.Linux.write(Linux.java:293)
+         1794981710.036  3806  3858 W aadg    : 	at libcore.io.ForwardingOs.write(ForwardingOs.java:240)
+         1794981710.036  3806  3858 W aadg    : 	at libcore.io.BlockGuardOs.write(BlockGuardOs.java:418)
+         1794981710.036  3806  3858 W aadg    : 	at libcore.io.ForwardingOs.write(ForwardingOs.java:240)
+         1794981710.036  3806  3858 W aadg    : 	at libcore.io.IoBridge.write(IoBridge.java:535)
+         1794981710.082  3806  3858 W aadg    : 	at libcore.io.IoBridge.write(IoBridge.java:540)
+         1794981710.082  3806  3858 W aadg    : 	at libcore.io.Linux.writeBytes(Native Method)
+         1794981710.082  3806  3858 W aadg    : 	at libcore.io.Linux.write(Linux.java:293)
+         1794981710.082  3806  3858 W aadg    : 	at libcore.io.ForwardingOs.write(ForwardingOs.java:240)
+         1794981710.082  3806  3858 W aadg    : 	at libcore.io.BlockGuardOs.write(BlockGuardOs.java:418)
+         1794981710.082  3806  3858 W aadg    : 	at libcore.io.ForwardingOs.write(ForwardingOs.java:240)
+         1794981710.082  3806  3858 W aadg    : 	at libcore.io.IoBridge.write(IoBridge.java:535)
+         1794981710.647  3806  3858 W aadg    : 	at libcore.io.IoBridge.write(IoBridge.java:540)
+         1794981710.647  3806  3858 W aadg    : 	at libcore.io.Linux.writeBytes(Native Method)
+         1794981710.647  3806  3858 W aadg    : 	at libcore.io.Linux.write(Linux.java:293)
+         1794981710.647  3806  3858 W aadg    : 	at libcore.io.ForwardingOs.write(ForwardingOs.java:240)
+         1794981710.647  3806  3858 W aadg    : 	at libcore.io.BlockGuardOs.write(BlockGuardOs.java:418)
+         1794981710.647  3806  3858 W aadg    : 	at libcore.io.ForwardingOs.write(ForwardingOs.java:240)
+         1794981710.647  3806  3858 W aadg    : 	at libcore.io.IoBridge.write(IoBridge.java:535)
+         1794981710.656  3806  3858 W aadg    : 	at libcore.io.IoBridge.write(IoBridge.java:540)
+         1794981710.656  3806  3858 W aadg    : 	at libcore.io.Linux.writeBytes(Native Method)
+         1794981710.656  3806  3858 W aadg    : 	at libcore.io.Linux.write(Linux.java:293)
+         1794981710.656  3806  3858 W aadg    : 	at libcore.io.ForwardingOs.write(ForwardingOs.java:240)
+         1794981710.656  3806  3858 W aadg    : 	at libcore.io.BlockGuardOs.write(BlockGuardOs.java:418)
+         1794981710.656  3806  3858 W aadg    : 	at libcore.io.ForwardingOs.write(ForwardingOs.java:240)
+         1794981710.656  3806  3858 W aadg    : 	at libcore.io.IoBridge.write(IoBridge.java:535)
+         1794981727.371  4593  4593 I GabiFlixPlayer: AUDIOSYNC estado: st=0 executando=false tocando=true carregando=false faixa=-1 baixadas=0 addedSubs=0 embeddedKnown=true faixas=[] cand=false
+         1794981747.843  4593  4593 I GabiFlixPlayer: AUDIOSYNC estado: st=0 executando=false tocando=true carregando=false faixa=-1 baixadas=0 addedSubs=0 embeddedKnown=true faixas=[] cand=false
+         1794981750.156  2101  2352 E libc    : Access denied finding property "persist.adb.tls_server.enable"
+         1794981750.156  2101  2352 E libc    : Access denied finding property "service.adb.tls.port"
+         1794981768.090  4593  4593 I GabiFlixPlayer: AUDIOSYNC estado: st=0 executando=false tocando=true carregando=false faixa=-1 baixadas=0 addedSubs=0 embeddedKnown=true faixas=[] cand=false
+         1794981779.477  2101  4887 E libc    : Access denied finding property "persist.adb.tls_server.enable"
+         1794981779.477  2101  4887 E libc    : Access denied finding property "service.adb.tls.port"
+         1794981784.939  2101  4887 E libc    : Access denied finding property "persist.adb.tls_server.enable"
+         1794981784.939  2101  4887 E libc    : Access denied finding property "service.adb.tls.port"
+         1794981788.376  4593  4593 I GabiFlixPlayer: AUDIOSYNC estado: st=0 executando=false tocando=true carregando=false faixa=-1 baixadas=0 addedSubs=0 embeddedKnown=true faixas=[] cand=false
+         1794981808.579  4593  4593 I GabiFlixPlayer: AUDIOSYNC estado: st=0 executando=false tocando=true carregando=false faixa=-1 baixadas=0 addedSubs=0 embeddedKnown=true faixas=[] cand=false
+         1794981828.819  4593  4593 I GabiFlixPlayer: AUDIOSYNC estado: st=0 executando=false tocando=true carregando=false faixa=-1 baixadas=0 addedSubs=0 embeddedKnown=true faixas=[] cand=false
+         1794981849.302  4593  4593 I GabiFlixPlayer: AUDIOSYNC estado: st=0 executando=false tocando=true carregando=false faixa=-1 baixadas=0 addedSubs=0 embeddedKnown=true faixas=[] cand=false
+         1794981869.554  4593  4593 I GabiFlixPlayer: AUDIOSYNC estado: st=0 executando=false tocando=true carregando=false faixa=-1 baixadas=0 addedSubs=0 embeddedKnown=true faixas=[] cand=false
+         1794981889.900  4593  4593 I GabiFlixPlayer: AUDIOSYNC estado: st=0 executando=false tocando=true carregando=false faixa=-1 baixadas=0 addedSubs=0 embeddedKnown=true faixas=[] cand=false
+         1794981899.820  2101  4887 E libc    : Access denied finding property "persist.adb.tls_server.enable"
+         1794981899.820  2101  4887 E libc    : Access denied finding property "service.adb.tls.port"
+         1794981910.335  4593  4593 I GabiFlixPlayer: AUDIOSYNC estado: st=0 executando=false tocando=true carregando=false faixa=-1 baixadas=0 addedSubs=0 embeddedKnown=true faixas=[] cand=false
+         1794981930.782  4593  4593 I GabiFlixPlayer: AUDIOSYNC estado: st=0 executando=false tocando=true carregando=false faixa=-1 baixadas=0 addedSubs=0 embeddedKnown=true faixas=[] cand=false
+         1794981950.931  4593  4593 I GabiFlixPlayer: AUDIOSYNC estado: st=0 executando=false tocando=true carregando=false faixa=-1 baixadas=0 addedSubs=0 embeddedKnown=true faixas=[] cand=false
+         1794981971.184  4593  4593 I GabiFlixPlayer: AUDIOSYNC estado: st=0 executando=false tocando=true carregando=false faixa=-1 baixadas=0 addedSubs=0 embeddedKnown=true faixas=[] cand=false
+         1794981991.538  4593  4593 I GabiFlixPlayer: AUDIOSYNC estado: st=0 executando=false tocando=true carregando=false faixa=-1 baixadas=0 addedSubs=0 embeddedKnown=true faixas=[] cand=false
+         1794982011.810  4593  4593 I GabiFlixPlayer: AUDIOSYNC estado: st=0 executando=false tocando=true carregando=false faixa=-1 baixadas=0 addedSubs=0 embeddedKnown=true faixas=[] cand=false
+         1794982032.152  4593  4593 I GabiFlixPlayer: AUDIOSYNC estado: st=0 executando=false tocando=true carregando=false faixa=-1 baixadas=0 addedSubs=0 embeddedKnown=true faixas=[] cand=false
