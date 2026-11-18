@@ -2,7 +2,7 @@ import sys, glob, os
 from PIL import Image
 
 out = sys.argv[1]
-# texto branco puro (o fundo do vídeo é preto): caixa do texto = pixels com R,G,B >= 235
+# texto branco puro (o fundo do vídeo é cinza escuro, para o app medir as barras): caixa do texto = pixels com R,G,B >= 235
 print("foto | caixa do texto (x0..x1, y0..y1) | largura em % de 1920 | encosta na borda?")
 for modo in ("normal", "preencher"):
     for f in sorted(glob.glob(os.path.join(out, modo + "-*.png")), key=lambda p: int(p.rsplit("-", 1)[1].split(".")[0])):

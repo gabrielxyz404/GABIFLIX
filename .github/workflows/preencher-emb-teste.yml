@@ -51,7 +51,7 @@ jobs:
           # e duas linhas explicitas bem largas (a de baixo é a mais larga do que o libVLC monta sem quebrar)
           open("emb2.srt", "w").write("\n".join(out))
           PY
-          ffmpeg -loglevel error -f lavfi -i color=c=black:size=1920x804:rate=24 -f lavfi -i sine=frequency=440:sample_rate=48000 -i emb2.srt -t 120 -vf "pad=1920:1080:0:138:black" -map 0:v -map 1:a -map 2:s -c:v libx264 -preset veryfast -pix_fmt yuv420p -c:a aac -c:s srt -metadata:s:s:0 language=por -metadata:s:s:0 title=Portugues emb2.mkv
+          ffmpeg -loglevel error -f lavfi -i color=c=0x505050:size=1920x804:rate=24 -f lavfi -i sine=frequency=440:sample_rate=48000 -i emb2.srt -t 120 -vf "pad=1920:1080:0:138:black" -map 0:v -map 1:a -map 2:s -c:v libx264 -preset veryfast -pix_fmt yuv420p -c:a aac -c:s srt -metadata:s:s:0 language=por -metadata:s:s:0 title=Portugues emb2.mkv
           nohup npx --yes http-server -p 8000 -s /tmp/video >/dev/null 2>&1 &
           sleep 8; curl -sI http://127.0.0.1:8000/emb2.mkv | head -1
       - name: KVM
