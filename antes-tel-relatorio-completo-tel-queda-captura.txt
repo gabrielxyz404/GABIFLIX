@@ -1,0 +1,85 @@
+         1795018355.368  7842  7862 I GFCrash : corpo de CRASH_NATIVE:
+         1795018355.368  7842  7862 I GFCrash : FramePlay 1.0 | CRASH_NATIVE | processo io.github.gabrielxyz404.gabiflix:audiocap
+         1795018355.368  7842  7862 I GFCrash : Aparelho: Google sdk_gphone_x86 | Android 11 (API 30) | RAM 1981 MB, livre 1104 MB | tv=false
+         1795018355.368  7842  7862 I GFCrash : ABI: [x86, armeabi-v7a, armeabi] (64 bits: []) processo=32 bits
+         1795018355.368  7842  7862 I GFCrash : Código: 5  estado: 11  importância: 100
+         1795018355.368  7842  7862 I GFCrash : Hora da morte: 2026-11-18 16:10:34
+         1795018355.368  7842  7862 I GFCrash : Descrição: crash
+         1795018355.368  7842  7862 I GFCrash : PSS: 0 kB  RSS: 0 kB
+         1795018355.368  7842  7862 I GFCrash : 
+         1795018355.368  7842  7862 I GFCrash : Registo de queda do sistema (logcat, filtrado):
+         1795018355.368  7842  7862 I GFCrash : (nenhuma linha de queda do pid 7417 no registo do sistema; buffer crash=0 bytes, principal=28 bytes)
+         1795018355.368  7842  7862 I GFCrash : 
+         1795018355.368  7842  7862 I GFCrash : Migalhas do processo audiocap antes da morte:
+         1795018355.368  7842  7862 I GFCrash : (sem migalhas)
+         1795018355.949  7842  7862 I GFCrash : POST CRASH_NATIVE parte 1/1 (568 bytes) -> HTTP 200
+         1795018355.961  7842  7862 I GFCrash : corpo de CRASH_NATIVE:
+         1795018355.961  7842  7862 I GFCrash : FramePlay 1.0 | CRASH_NATIVE | processo io.github.gabrielxyz404.gabiflix:audiocap
+         1795018355.961  7842  7862 I GFCrash : Aparelho: Google sdk_gphone_x86 | Android 11 (API 30) | RAM 1981 MB, livre 1108 MB | tv=false
+         1795018355.961  7842  7862 I GFCrash : ABI: [x86, armeabi-v7a, armeabi] (64 bits: []) processo=32 bits
+         1795018355.961  7842  7862 I GFCrash : Código: 5  estado: 0  importância: 100
+         1795018355.961  7842  7862 I GFCrash : Hora da morte: 2026-11-18 16:07:39
+         1795018355.961  7842  7862 I GFCrash : Descrição: crash
+         1795018355.961  7842  7862 I GFCrash : PSS: 0 kB  RSS: 0 kB
+         1795018355.961  7842  7862 I GFCrash : 
+         1795018355.961  7842  7862 I GFCrash : Registo de queda do sistema (logcat, filtrado):
+         1795018355.961  7842  7862 I GFCrash : (nenhuma linha de queda do pid 6454 no registo do sistema; buffer crash=0 bytes, principal=28 bytes)
+         1795018355.961  7842  7862 I GFCrash : 
+         1795018355.961  7842  7862 I GFCrash : Migalhas do processo audiocap antes da morte:
+         1795018355.961  7842  7862 I GFCrash : (sem migalhas)
+         1795018356.518  7842  7862 I GFCrash : POST CRASH_NATIVE parte 1/1 (567 bytes) -> HTTP 200
+         1795018397.811  7842  8107 I GFCrash : corpo de CAPTURA_CAIU:
+         1795018397.811  7842  8107 I GFCrash : FramePlay 1.0 | CAPTURA_CAIU | processo audiocap
+         1795018397.811  7842  8107 I GFCrash : Aparelho: Google sdk_gphone_x86 | Android 11 (API 30) | RAM 1981 MB, livre 1100 MB | tv=false
+         1795018397.811  7842  8107 I GFCrash : ABI: [x86, armeabi-v7a, armeabi] (64 bits: []) processo=32 bits
+         1795018397.811  7842  8107 I GFCrash : Etapa em curso (processo principal): captura  captura cfg=0 (desconectou)
+         1795018397.811  7842  8107 I GFCrash : Última etapa marcada pelo processo que caiu: 16:13:14.933 pid=8065 TESTE: queda nativa forçada durante a captura (cfg=0)
+         1795018397.811  7842  8107 I GFCrash : Hora da queda: 2026-11-18 16:13:16
+         1795018397.811  7842  8107 I GFCrash : Motivo da morte (getHistoricalProcessExitReasons): CRASH_NATIVE (5)  estado: 11  pid: 8065  importância: 100
+         1795018397.811  7842  8107 I GFCrash : Descrição: crash  PSS: 0 kB  RSS: 0 kB
+         1795018397.811  7842  8107 I GFCrash : 
+         1795018397.811  7842  8107 I GFCrash : Registo de queda do sistema (logcat, filtrado, pid 8065):
+         1795018397.811  7842  8107 I GFCrash : 11-18 16:13:14.963 F/libc    ( 8065): Fatal signal 11 (SIGSEGV), code 0 (SI_USER) in tid 8065 (biflix:audiocap), pid 8065 (biflix:audiocap)
+         1795018397.811  7842  8107 I GFCrash : 11-18 16:13:15.105 F/DEBUG   ( 8093): pid: 8065, tid: 8065, name: biflix:audiocap  >>> io.github.gabrielxyz404.gabiflix:audiocap <<<
+         1795018397.811  7842  8107 I GFCrash : 11-18 16:13:15.105 F/DEBUG   ( 8093): signal 11 (SIGSEGV), code 0 (SI_USER), fault addr --------
+         1795018397.811  7842  8107 I GFCrash : 11-18 16:13:15.512 F/DEBUG   ( 8093): backtrace:
+         1795018397.811  7842  8107 I GFCrash : 11-18 16:13:15.515 F/DEBUG   ( 8093):       #00 pc 00000b89  [vdso] (__kernel_vsyscall+9)
+         1795018397.811  7842  8107 I GFCrash : 11-18 16:13:15.515 F/DEBUG   ( 8093):       #01 pc 000cf2bb  /apex/com.android.runtime/lib/bionic/libc.so (__epoll_pwait+43)
+         1795018397.811  7842  8107 I GFCrash : 11-18 16:13:15.515 F/DEBUG   ( 8093):       #02 pc 00088f8d  /apex/com.android.runtime/lib/bionic/libc.so (epoll_wait+45)
+         1795018397.811  7842  8107 I GFCrash : 11-18 16:13:15.515 F/DEBUG   ( 8093):       #03 pc 0001a003  /system/lib/libutils.so (android::Looper::pollInner(int)+259)
+         1795018397.811  7842  8107 I GFCrash : 11-18 16:13:15.515 F/DEBUG   ( 8093):       #04 pc 00019e96  /system/lib/libutils.so (android::Looper::pollOnce(int, int*, int*, void**)+118)
+         1795018397.811  7842  8107 I GFCrash : 11-18 16:13:15.515 F/DEBUG   ( 8093):       #05 pc 0010ef8b  /system/lib/libandroid_runtime.so (android::android_os_MessageQueue_nativePollOnce(_JNIEnv*, _jobject*, long long, int)+59)
+         1795018397.811  7842  8107 I GFCrash : 11-18 16:13:15.515 F/DEBUG   ( 8093):       #06 pc 0021be48  /system/framework/x86/boot-framework.oat (art_jni_trampoline+136)
+         1795018397.811  7842  8107 I GFCrash : 11-18 16:13:15.515 F/DEBUG   ( 8093):       #07 pc 00639e80  /system/framework/x86/boot-framework.oat (android.os.MessageQueue.next+224)
+         1795018397.811  7842  8107 I GFCrash : 11-18 16:13:15.515 F/DEBUG   ( 8093):       #08 pc 00636550  /system/framework/x86/boot-framework.oat (android.os.Looper.loop+592)
+         1795018397.811  7842  8107 I GFCrash : 11-18 16:13:15.515 F/DEBUG   ( 8093):       #09 pc 0040581a  /system/framework/x86/boot-framework.oat (android.app.ActivityThread.main+746)
+         1795018397.811  7842  8107 I GFCrash : 11-18 16:13:15.515 F/DEBUG   ( 8093):       #10 pc 0013bc72  /apex/com.android.art/lib/libart.so (art_quick_invoke_static_stub+418)
+         1795018397.811  7842  8107 I GFCrash : 11-18 16:13:15.515 F/DEBUG   ( 8093):       #11 pc 001d0512  /apex/com.android.art/lib/libart.so (art::ArtMethod::Invoke(art::Thread*, unsigned int*, unsigned int, art::JValue*, char const*)+258)
+         1795018397.811  7842  8107 I GFCrash : 11-18 16:13:15.515 F/DEBUG   ( 8093):       #12 pc 00631e68  /apex/com.android.art/lib/libart.so (art::InvokeMethod(art::ScopedObjectAccessAlreadyRunnable const&, _jobject*, _jobject*, _jobject*, unsigned int)+1464)
+         1795018397.811  7842  8107 I GFCrash : 11-18 16:13:15.515 F/DEBUG   ( 8093):       #13 pc 0058a500  /apex/com.android.art/lib/libart.so (art::Method_invoke(_JNIEnv*, _jobject*, _jobject*, _jobjectArray*)+80)
+         1795018397.811  7842  8107 I GFCrash : 11-18 16:13:15.515 F/DEBUG   ( 8093):       #14 pc 0008a778  /apex/com.android.art/javalib/x86/boot.oat (art_jni_trampoline+168)
+         1795018397.811  7842  8107 I GFCrash : 11-18 16:13:15.515 F/DEBUG   ( 8093):       #15 pc 0088ac49  /system/framework/x86/boot-framework.oat (com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run+137)
+         1795018397.811  7842  8107 I GFCrash : 11-18 16:13:15.515 F/DEBUG   ( 8093):       #16 pc 00893656  /system/framework/x86/boot-framework.oat (com.android.internal.os.ZygoteInit.main+2102)
+         1795018397.811  7842  8107 I GFCrash : 11-18 16:13:15.515 F/DEBUG   ( 8093):       #17 pc 0013bc72  /apex/com.android.art/lib/libart.so (art_quick_invoke_static_stub+418)
+         1795018397.811  7842  8107 I GFCrash : 11-18 16:13:15.515 F/DEBUG   ( 8093):       #18 pc 001d0512  /apex/com.android.art/lib/libart.so (art::ArtMethod::Invoke(art::Thread*, unsigned int*, unsigned int, art::JValue*, char const*)+258)
+         1795018397.811  7842  8107 I GFCrash : 11-18 16:13:15.515 F/DEBUG   ( 8093):       #19 pc 006304b3  /apex/com.android.art/lib/libart.so (art::JValue art::InvokeWithVarArgs<art::ArtMethod*>(art::ScopedObjectAccessAlreadyRunnable const&, _jobject*, art::ArtMethod*, char*)+579)
+         1795018397.811  7842  8107 I GFCrash : 11-18 16:13:15.515 F/DEBUG   ( 8093):       #20 pc 00630985  /apex/com.android.art/lib/libart.so (art::JValue art::InvokeWithVarArgs<_jmethodID*>(art::ScopedObjectAccessAlreadyRunnable const&, _jobject*, _jmethodID*, char*)+85)
+         1795018397.811  7842  8107 I GFCrash : 11-18 16:13:15.515 F/DEBUG   ( 8093):       #21 pc 004cf63f  /apex/com.android.art/lib/libart.so (art::JNI<true>::CallStaticVoidMethodV(_JNIEnv*, _jclass*, _jmethodID*, char*)+735)
+         1795018397.811  7842  8107 I GFCrash : 11-18 16:13:15.515 F/DEBUG   ( 8093):       #22 pc 0008f90e  /system/lib/libandroid_runtime.so (_JNIEnv::CallStaticVoidMethod(_jclass*, _jmethodID*, ...)+62)
+         1795018397.811  7842  8107 I GFCrash : 11-18 16:13:15.515 F/DEBUG   ( 8093):       #23 pc 00098c8e  /system/lib/libandroid_runtime.so (android::AndroidRuntime::start(char const*, android::Vector<android::String8> const&, bool)+910)
+         1795018397.811  7842  8107 I GFCrash : 11-18 16:13:15.515 F/DEBUG   ( 8093):       #24 pc 00003804  /system/bin/app_process32 (main+1588)
+         1795018397.811  7842  8107 I GFCrash : 11-18 16:13:15.515 F/DEBUG   ( 8093):       #25 pc 000522d3  /apex/com.android.runtime/lib/bionic/libc.so (__libc_init+115)
+         1795018397.811  7842  8107 I GFCrash : 
+         1795018397.811  7842  8107 I GFCrash : 
+         1795018397.811  7842  8107 I GFCrash : Etapas marcadas (últimas):
+         1795018397.811  7842  8107 I GFCrash : 16:13:14.400 pid=8065 captura cfg=0 criando o libVLC (nativo)
+         1795018397.811  7842  8107 I GFCrash : 16:13:14.479 pid=8065 captura cfg=0 tocando a janela 275 s (nativo: demux, decodificador, transcode)
+         1795018397.811  7842  8107 I GFCrash : 16:13:14.933 pid=8065 TESTE: queda nativa forçada durante a captura (cfg=0)
+         1795018397.811  7842  8107 I GFCrash : 
+         1795018397.811  7842  8107 I GFCrash : Migalhas do processo que caiu:
+         1795018397.811  7842  8107 I GFCrash : 16:13:14.382 processo audiocap iniciado, versão 1.0, pid 8065
+         1795018397.811  7842  8107 I GFCrash : 16:13:14.400 ETAPA captura cfg=0 criando o libVLC (nativo)
+         1795018397.811  7842  8107 I GFCrash : 16:13:14.479 ETAPA captura cfg=0 tocando a janela 275 s (nativo: demux, decodificador, transcode)
+         1795018397.811  7842  8107 I GFCrash : 16:13:14.932 ETAPA TESTE: queda nativa forçada durante a captura (cfg=0)
+         1795018398.078  7842  8107 I GFCrash : POST CAPTURA_CAIU parte 1/2 (3600 bytes) -> HTTP 200
+         1795018398.268  7842  8107 I GFCrash : POST CAPTURA_CAIU parte 2/2 (2093 bytes) -> HTTP 200
