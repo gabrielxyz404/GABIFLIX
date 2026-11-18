@@ -1,0 +1,434 @@
+## aparelho.txt
+ProductName:		macOS
+ProductVersion:		15.8.2
+BuildVersion:		24H232
+Apple M1 (Virtual)
+3
+7516192768
+
+## tamanho.txt
+108M	mac/build/FramePlay.app
+ 25M	mac/build/FramePlay.app/Contents/Frameworks/onnxruntime.framework
+ 79M	mac/build/FramePlay.app/Contents/Frameworks/VLCKit.framework
+2.2M	mac/build/FramePlay.app/Contents/Resources/silero_vad.onnx
+-rw-r--r--  1 runner  wheel  44958801 Nov 18 19:38 /tmp/full.zip
+-rw-r--r--  1 runner  wheel  36081128 Nov 18 19:38 /tmp/sem.zip
+zip do app com ONNX Runtime + modelo: 45.0 MB; sem os dois: 36.1 MB; aumento por eles: +8.9 MB
+gh: To use GitHub CLI in a GitHub Actions workflow, set the GH_TOKEN environment variable. Example:
+  env:
+    GH_TOKEN: ${{ github.token }}
+
+## pre-java.txt
+mais3 PRE accepted=1 raw=-3047 scale=1.00000 z=11.7 wins=3/3 inSync=0 janelas=[[275000, 90000], [710000, 90000], [1050000, 90000]]
+menos2 PRE accepted=1 raw=1970 scale=1.00000 z=11.7 wins=3/3 inSync=0 janelas=[[270000, 90000], [705000, 90000], [1045000, 90000]]
+certa PRE accepted=1 raw=-30 scale=1.00000 z=12.1 wins=3/3 inSync=1 janelas=[[270000, 90000], [705000, 90000], [1045000, 90000]]
+outro PRE accepted=0 raw=-90865 scale=1.01090 z=5.2 wins=2/3 inSync=0 janelas=[[135000, 90000], [555010, 90000], [975020, 90000]]
+
+## pre-swift.txt
+mais3 PRE accepted=1 raw=-3047 scale=1.00000 z=11.7 wins=3/3 inSync=0 vad=silero janelas=[275000, 90000], [710000, 90000], [1050000, 90000]
+menos2 PRE accepted=1 raw=1970 scale=1.00000 z=11.7 wins=3/3 inSync=0 vad=silero janelas=[270000, 90000], [705000, 90000], [1045000, 90000]
+certa PRE accepted=1 raw=-30 scale=1.00000 z=12.1 wins=3/3 inSync=1 vad=silero janelas=[270000, 90000], [705000, 90000], [1045000, 90000]
+outro PRE accepted=0 raw=-90865 scale=1.01090 z=5.2 wins=2/3 inSync=0 vad=silero janelas=[135000, 90000], [555010, 90000], [975020, 90000]
+
+
+## cenario 0-base
+  1795030726.2 AUDIOSYNC pronto (sem limite de dados; automático=false, começa 25 s depois de a legenda ficar ativa; resultado confiante vale 30 dias e não se reverifica; sem confiança: 1 nova tentativa em 1200 s; salto grande = 600 s)
+  1795030727.2 AUDIOSYNC estado: st=- executando=false faixa=-1 atraso=0 tempo=306
+  1795030728.7 atraso da legenda ativa (nenhuma): 0 ms
+  1795030729.0 atraso da legenda ativa (d3:u|h:b997db72583735f8|http://127.0.0.1:8000/certa.srt#raw): 0 ms
+  1795030729.2 AUDIOSYNC legenda ativa: db72583735f8|http://127.0.0.1:8000/certa.srt#raw (nova nesta sessão)
+  1795030729.2 AUDIOSYNC GATILHO motivo=troca-de-legenda legenda=db72583735f8|http://127.0.0.1:8000/certa.srt#raw decisão=avaliar (espera 25 s tocando; se há resultado guardado, não analisa) [análises=0 sem_confiança=0 estado=nova]
+  1795030748.3 AUDIOSYNC estado: st=nova executando=false faixa=2 atraso=0 tempo=21349
+  1795030769.3 AUDIOSYNC estado: st=nova executando=false faixa=2 atraso=0 tempo=42159
+  1795030789.3 AUDIOSYNC estado: st=nova executando=false faixa=2 atraso=0 tempo=62290
+  1795030790.3 AUDIOSYNC saúde da reprodução: amostras=63 paradas=0 razão_mínima=0.80 carregando=1 quadros_perdidos=? maior_intervalo_do_ciclo=1047 ms
+  1795030791.8 estado: faixa=2 atraso=0 vlcDelay=0 legendas=[(-1, "Disable"), (2, "Track 1")] escolhida=0
+
+## cenario 1-mais3
+  1795030804.2 AUDIOSYNC pronto (sem limite de dados; automático=true, começa 25 s depois de a legenda ficar ativa; resultado confiante vale 30 dias e não se reverifica; sem confiança: 1 nova tentativa em 1200 s; salto grande = 600 s)
+  1795030805.2 AUDIOSYNC estado: st=- executando=false faixa=-1 atraso=0 tempo=685
+  1795030806.3 atraso da legenda ativa (nenhuma): 0 ms
+  1795030806.6 atraso da legenda ativa (d3:u|h:b997db72583735f8|http://127.0.0.1:8000/mais3.srt#raw): 0 ms
+  1795030807.3 AUDIOSYNC legenda ativa: db72583735f8|http://127.0.0.1:8000/mais3.srt#raw (nova nesta sessão)
+  1795030807.3 AUDIOSYNC GATILHO motivo=troca-de-legenda legenda=db72583735f8|http://127.0.0.1:8000/mais3.srt#raw decisão=avaliar (espera 25 s tocando; se há resultado guardado, não analisa) [análises=0 sem_confiança=0 estado=nova]
+  1795030825.3 AUDIOSYNC estado: st=nova executando=false faixa=2 atraso=0 tempo=20534
+  1795030833.2 AUDIOSYNC GATILHO motivo=início legenda=db72583735f8|http://127.0.0.1:8000/mais3.srt#raw decisão=análise [análises=1 sem_confiança=0 estado=nova]
+  1795030833.2 AUDIOSYNC antes da análise: saúde da reprodução: amostras=28 paradas=0 razão_mínima=0.82 carregando=1 quadros_perdidos=? maior_intervalo_do_ciclo=1036 ms
+  1795030833.2 AUDIOSYNC começando: posição 28 s, duração 1200 s, atraso atual 0 ms, sem limite de dados
+  1795030834.4 AUDIOSYNC captura 275 s +90 s: 90.16 s de PCM em 0.28 s (fim)
+  1795030837.0 AUDIOSYNC captura 710 s +90 s: 90.08 s de PCM em 0.23 s (fim)
+  1795030839.3 AUDIOSYNC captura 1050 s +90 s: 90.08 s de PCM em 0.14 s (fim)
+  1795030839.8 AUDIOSYNC resultado: aceita z=11.4 janelas=3/3 escala=1.00000 deslocamento=-2983 ms | vad=silero janelas=3 captura=3105 ms vad=1161 ms (cpu 1023) solve=100 ms (cpu 99) cpu_thread=1171 ms total=6549 ms leitura_estimada=8 MB rss=121->183 MB
+  1795030839.8 AUDIOSYNC saúde da reprodução: amostras=6 paradas=0 razão_mínima=0.86 carregando=0 quadros_perdidos=? maior_intervalo_do_ciclo=1027 ms
+  1795030839.8 atraso da legenda: -2980 ms (d3:u|h:b997db72583735f8|http://127.0.0.1:8000/mais3.srt#raw)
+  1795030839.8 AUDIOSYNC aplicado: atraso -2980 ms, escala 1.0 (resultado confiante: não será reverificado)
+  1795030841.3 estado: faixa=2 atraso=-2980 vlcDelay=-2980000 legendas=[(-1, "Disable"), (2, "Track 1")] escolhida=0
+  1795030842.8 AUDIOSYNC saúde da reprodução: amostras=8 paradas=0 razão_mínima=0.83 carregando=0 quadros_perdidos=? maior_intervalo_do_ciclo=1027 ms
+  CPU do processo: antes 0.05 nucleos; durante a analise (7 s) 0.23 nucleos; CPU extra 1.2 s | RSS antes 138 MB, maximo 184 MB, depois 184 MB
+
+## cenario 1b-salto-sem-ajuste
+  1795030856.3 AUDIOSYNC pronto (sem limite de dados; automático=true, começa 10 s depois de a legenda ficar ativa; resultado confiante vale 30 dias e não se reverifica; sem confiança: 1 nova tentativa em 60 s; salto grande = 600 s)
+  1795030857.4 AUDIOSYNC estado: st=- executando=false faixa=-1 atraso=0 tempo=720
+  1795030858.4 atraso da legenda ativa (nenhuma): 0 ms
+  1795030858.8 atraso da legenda ativa (d3:u|h:b997db72583735f8|http://127.0.0.1:8000/mais3.srt#raw): 0 ms
+  1795030859.4 AUDIOSYNC legenda ativa: db72583735f8|http://127.0.0.1:8000/mais3.srt#raw (nova nesta sessão)
+  1795030859.4 AUDIOSYNC GATILHO motivo=troca-de-legenda legenda=db72583735f8|http://127.0.0.1:8000/mais3.srt#raw decisão=avaliar (espera 10 s tocando; se há resultado guardado, não analisa) [análises=0 sem_confiança=0 estado=nova]
+  1795030870.4 AUDIOSYNC GATILHO motivo=início legenda=db72583735f8|http://127.0.0.1:8000/mais3.srt#raw decisão=análise [análises=1 sem_confiança=0 estado=nova]
+  1795030870.4 AUDIOSYNC antes da análise: saúde da reprodução: amostras=13 paradas=0 razão_mínima=0.78 carregando=1 quadros_perdidos=? maior_intervalo_do_ciclo=1031 ms
+  1795030870.4 AUDIOSYNC começando: posição 13 s, duração 1200 s, atraso atual 0 ms, sem limite de dados
+  1795030871.3 AUDIOSYNC captura 275 s +90 s: 90.16 s de PCM em 0.17 s (fim)
+  1795030873.9 AUDIOSYNC captura 710 s +90 s: 90.08 s de PCM em 0.21 s (fim)
+  1795030876.3 AUDIOSYNC captura 1050 s +90 s: 90.08 s de PCM em 0.22 s (fim)
+  1795030876.7 AUDIOSYNC resultado: aceita z=11.4 janelas=3/3 escala=1.00000 deslocamento=-2983 ms | vad=silero janelas=3 captura=2958 ms vad=1142 ms (cpu 1091) solve=104 ms (cpu 100) cpu_thread=1227 ms total=6314 ms leitura_estimada=8 MB rss=122->186 MB
+  1795030876.7 AUDIOSYNC saúde da reprodução: amostras=6 paradas=0 razão_mínima=0.84 carregando=0 quadros_perdidos=? maior_intervalo_do_ciclo=1015 ms
+  1795030876.7 atraso da legenda: -2980 ms (d3:u|h:b997db72583735f8|http://127.0.0.1:8000/mais3.srt#raw)
+  1795030876.8 AUDIOSYNC aplicado: atraso -2980 ms, escala 1.0 (resultado confiante: não será reverificado)
+  1795030877.4 AUDIOSYNC estado: st=confiante executando=false faixa=2 atraso=-2980 tempo=17561
+  1795030898.4 AUDIOSYNC estado: st=confiante executando=false faixa=2 atraso=-2980 tempo=38764
+  1795030918.4 AUDIOSYNC estado: st=confiante executando=false faixa=2 atraso=-2980 tempo=58530
+  1795030939.4 AUDIOSYNC estado: st=confiante executando=false faixa=2 atraso=-2980 tempo=79765
+  1795030960.4 AUDIOSYNC estado: st=confiante executando=false faixa=2 atraso=-2980 tempo=100589
+  1795030980.4 AUDIOSYNC estado: st=confiante executando=false faixa=2 atraso=-2980 tempo=120752
+  1795031001.4 AUDIOSYNC estado: st=confiante executando=false faixa=2 atraso=-2980 tempo=141755
+  1795031021.4 AUDIOSYNC estado: st=confiante executando=false faixa=2 atraso=-2980 tempo=161639
+  1795031042.5 AUDIOSYNC estado: st=confiante executando=false faixa=2 atraso=-2980 tempo=182661
+  1795031063.5 AUDIOSYNC estado: st=confiante executando=false faixa=2 atraso=-2980 tempo=203762
+  1795031083.5 AUDIOSYNC estado: st=confiante executando=false faixa=2 atraso=-2980 tempo=223783
+  1795031104.5 AUDIOSYNC estado: st=confiante executando=false faixa=2 atraso=-2980 tempo=244501
+  1795031124.5 AUDIOSYNC estado: st=confiante executando=false faixa=2 atraso=-2980 tempo=264669
+  1795031144.5 AUDIOSYNC estado: st=confiante executando=false faixa=2 atraso=-2980 tempo=284775
+  1795031165.5 AUDIOSYNC estado: st=confiante executando=false faixa=2 atraso=-2980 tempo=305674
+  1795031186.5 AUDIOSYNC estado: st=confiante executando=false faixa=2 atraso=-2980 tempo=326712
+  1795031206.5 AUDIOSYNC estado: st=confiante executando=false faixa=2 atraso=-2980 tempo=346676
+  1795031227.5 AUDIOSYNC estado: st=confiante executando=false faixa=2 atraso=-2980 tempo=367762
+  1795031247.6 AUDIOSYNC estado: st=confiante executando=false faixa=2 atraso=-2980 tempo=387754
+  1795031268.5 AUDIOSYNC estado: st=confiante executando=false faixa=2 atraso=-2980 tempo=408501
+  1795031288.6 AUDIOSYNC estado: st=confiante executando=false faixa=2 atraso=-2980 tempo=428606
+  1795031308.6 AUDIOSYNC estado: st=confiante executando=false faixa=2 atraso=-2980 tempo=448618
+  1795031329.6 AUDIOSYNC estado: st=confiante executando=false faixa=2 atraso=-2980 tempo=469640
+  1795031350.6 AUDIOSYNC estado: st=confiante executando=false faixa=2 atraso=-2980 tempo=490754
+  1795031371.6 AUDIOSYNC estado: st=confiante executando=false faixa=2 atraso=-2980 tempo=511752
+  1795031392.6 AUDIOSYNC estado: st=confiante executando=false faixa=2 atraso=-2980 tempo=532765
+  1795031412.6 AUDIOSYNC estado: st=confiante executando=false faixa=2 atraso=-2980 tempo=552701
+  1795031433.6 AUDIOSYNC estado: st=confiante executando=false faixa=2 atraso=-2980 tempo=573629
+  1795031454.6 AUDIOSYNC estado: st=confiante executando=false faixa=2 atraso=-2980 tempo=594762
+  1795031474.7 AUDIOSYNC estado: st=confiante executando=false faixa=2 atraso=-2980 tempo=614752
+  1795031494.7 AUDIOSYNC estado: st=confiante executando=false faixa=2 atraso=-2980 tempo=634722
+  1795031514.7 AUDIOSYNC estado: st=confiante executando=false faixa=2 atraso=-2980 tempo=654710
+  1795031535.7 AUDIOSYNC estado: st=confiante executando=false faixa=2 atraso=-2980 tempo=675634
+  1795031538.2 estado: faixa=2 atraso=-2980 vlcDelay=-2980000 legendas=[(-1, "Disable"), (2, "Track 1")] escolhida=0
+  1795031541.7 AUDIOSYNC salto na linha do tempo de 621 s (de 680 s para 60 s): só conta se o usuário também mexer no atraso à mão; sozinho não dispara análise
+  1795031555.7 AUDIOSYNC estado: st=confiante executando=false faixa=2 atraso=-2980 tempo=74279
+  1795031576.7 AUDIOSYNC estado: st=confiante executando=false faixa=2 atraso=-2980 tempo=95343
+
+## cenario 1b-soak
+  1795030856.3 AUDIOSYNC pronto (sem limite de dados; automático=true, começa 10 s depois de a legenda ficar ativa; resultado confiante vale 30 dias e não se reverifica; sem confiança: 1 nova tentativa em 60 s; salto grande = 600 s)
+  1795030857.4 AUDIOSYNC estado: st=- executando=false faixa=-1 atraso=0 tempo=720
+  1795030858.4 atraso da legenda ativa (nenhuma): 0 ms
+  1795030858.8 atraso da legenda ativa (d3:u|h:b997db72583735f8|http://127.0.0.1:8000/mais3.srt#raw): 0 ms
+  1795030859.4 AUDIOSYNC legenda ativa: db72583735f8|http://127.0.0.1:8000/mais3.srt#raw (nova nesta sessão)
+  1795030859.4 AUDIOSYNC GATILHO motivo=troca-de-legenda legenda=db72583735f8|http://127.0.0.1:8000/mais3.srt#raw decisão=avaliar (espera 10 s tocando; se há resultado guardado, não analisa) [análises=0 sem_confiança=0 estado=nova]
+  1795030870.4 AUDIOSYNC GATILHO motivo=início legenda=db72583735f8|http://127.0.0.1:8000/mais3.srt#raw decisão=análise [análises=1 sem_confiança=0 estado=nova]
+  1795030870.4 AUDIOSYNC antes da análise: saúde da reprodução: amostras=13 paradas=0 razão_mínima=0.78 carregando=1 quadros_perdidos=? maior_intervalo_do_ciclo=1031 ms
+  1795030870.4 AUDIOSYNC começando: posição 13 s, duração 1200 s, atraso atual 0 ms, sem limite de dados
+  1795030871.3 AUDIOSYNC captura 275 s +90 s: 90.16 s de PCM em 0.17 s (fim)
+  1795030873.9 AUDIOSYNC captura 710 s +90 s: 90.08 s de PCM em 0.21 s (fim)
+  1795030876.3 AUDIOSYNC captura 1050 s +90 s: 90.08 s de PCM em 0.22 s (fim)
+  1795030876.7 AUDIOSYNC resultado: aceita z=11.4 janelas=3/3 escala=1.00000 deslocamento=-2983 ms | vad=silero janelas=3 captura=2958 ms vad=1142 ms (cpu 1091) solve=104 ms (cpu 100) cpu_thread=1227 ms total=6314 ms leitura_estimada=8 MB rss=122->186 MB
+  1795030876.7 AUDIOSYNC saúde da reprodução: amostras=6 paradas=0 razão_mínima=0.84 carregando=0 quadros_perdidos=? maior_intervalo_do_ciclo=1015 ms
+  1795030876.7 atraso da legenda: -2980 ms (d3:u|h:b997db72583735f8|http://127.0.0.1:8000/mais3.srt#raw)
+  1795030876.8 AUDIOSYNC aplicado: atraso -2980 ms, escala 1.0 (resultado confiante: não será reverificado)
+  1795030877.4 AUDIOSYNC estado: st=confiante executando=false faixa=2 atraso=-2980 tempo=17561
+  1795030898.4 AUDIOSYNC estado: st=confiante executando=false faixa=2 atraso=-2980 tempo=38764
+  1795030918.4 AUDIOSYNC estado: st=confiante executando=false faixa=2 atraso=-2980 tempo=58530
+  1795030939.4 AUDIOSYNC estado: st=confiante executando=false faixa=2 atraso=-2980 tempo=79765
+  1795030960.4 AUDIOSYNC estado: st=confiante executando=false faixa=2 atraso=-2980 tempo=100589
+  1795030980.4 AUDIOSYNC estado: st=confiante executando=false faixa=2 atraso=-2980 tempo=120752
+  1795031001.4 AUDIOSYNC estado: st=confiante executando=false faixa=2 atraso=-2980 tempo=141755
+  1795031021.4 AUDIOSYNC estado: st=confiante executando=false faixa=2 atraso=-2980 tempo=161639
+  1795031042.5 AUDIOSYNC estado: st=confiante executando=false faixa=2 atraso=-2980 tempo=182661
+  1795031063.5 AUDIOSYNC estado: st=confiante executando=false faixa=2 atraso=-2980 tempo=203762
+  1795031083.5 AUDIOSYNC estado: st=confiante executando=false faixa=2 atraso=-2980 tempo=223783
+  1795031104.5 AUDIOSYNC estado: st=confiante executando=false faixa=2 atraso=-2980 tempo=244501
+  1795031124.5 AUDIOSYNC estado: st=confiante executando=false faixa=2 atraso=-2980 tempo=264669
+  1795031144.5 AUDIOSYNC estado: st=confiante executando=false faixa=2 atraso=-2980 tempo=284775
+  1795031165.5 AUDIOSYNC estado: st=confiante executando=false faixa=2 atraso=-2980 tempo=305674
+  1795031186.5 AUDIOSYNC estado: st=confiante executando=false faixa=2 atraso=-2980 tempo=326712
+  1795031206.5 AUDIOSYNC estado: st=confiante executando=false faixa=2 atraso=-2980 tempo=346676
+  1795031227.5 AUDIOSYNC estado: st=confiante executando=false faixa=2 atraso=-2980 tempo=367762
+  1795031247.6 AUDIOSYNC estado: st=confiante executando=false faixa=2 atraso=-2980 tempo=387754
+  1795031268.5 AUDIOSYNC estado: st=confiante executando=false faixa=2 atraso=-2980 tempo=408501
+  1795031288.6 AUDIOSYNC estado: st=confiante executando=false faixa=2 atraso=-2980 tempo=428606
+  1795031308.6 AUDIOSYNC estado: st=confiante executando=false faixa=2 atraso=-2980 tempo=448618
+  1795031329.6 AUDIOSYNC estado: st=confiante executando=false faixa=2 atraso=-2980 tempo=469640
+  1795031350.6 AUDIOSYNC estado: st=confiante executando=false faixa=2 atraso=-2980 tempo=490754
+  1795031371.6 AUDIOSYNC estado: st=confiante executando=false faixa=2 atraso=-2980 tempo=511752
+  1795031392.6 AUDIOSYNC estado: st=confiante executando=false faixa=2 atraso=-2980 tempo=532765
+  1795031412.6 AUDIOSYNC estado: st=confiante executando=false faixa=2 atraso=-2980 tempo=552701
+  1795031433.6 AUDIOSYNC estado: st=confiante executando=false faixa=2 atraso=-2980 tempo=573629
+  1795031454.6 AUDIOSYNC estado: st=confiante executando=false faixa=2 atraso=-2980 tempo=594762
+  1795031474.7 AUDIOSYNC estado: st=confiante executando=false faixa=2 atraso=-2980 tempo=614752
+  1795031494.7 AUDIOSYNC estado: st=confiante executando=false faixa=2 atraso=-2980 tempo=634722
+  1795031514.7 AUDIOSYNC estado: st=confiante executando=false faixa=2 atraso=-2980 tempo=654710
+  1795031535.7 AUDIOSYNC estado: st=confiante executando=false faixa=2 atraso=-2980 tempo=675634
+  1795031538.2 estado: faixa=2 atraso=-2980 vlcDelay=-2980000 legendas=[(-1, "Disable"), (2, "Track 1")] escolhida=0
+
+## cenario 1c-reabrir
+  1795031599.8 AUDIOSYNC pronto (sem limite de dados; automático=true, começa 10 s depois de a legenda ficar ativa; resultado confiante vale 30 dias e não se reverifica; sem confiança: 1 nova tentativa em 60 s; salto grande = 600 s)
+  1795031600.8 AUDIOSYNC estado: st=- executando=false faixa=-1 atraso=0 tempo=103958
+  1795031601.8 atraso da legenda ativa (nenhuma): 0 ms
+  1795031602.2 atraso da legenda ativa (d3:u|h:b997db72583735f8|http://127.0.0.1:8000/mais3.srt#raw): -2980 ms
+  1795031602.8 AUDIOSYNC legenda ativa: db72583735f8|http://127.0.0.1:8000/mais3.srt#raw (nova nesta sessão)
+  1795031602.8 AUDIOSYNC GATILHO motivo=troca-de-legenda legenda=db72583735f8|http://127.0.0.1:8000/mais3.srt#raw decisão=avaliar (espera 10 s tocando; se há resultado guardado, não analisa) [análises=0 sem_confiança=0 estado=nova]
+  1795031612.8 AUDIOSYNC GATILHO motivo=início legenda=db72583735f8|http://127.0.0.1:8000/mais3.srt#raw decisão=ignorado: resultado confiante guardado (fix, há 0 dias): sem captura e sem reverificação [análises=0 sem_confiança=0 estado=confiante]
+  1795031620.8 AUDIOSYNC estado: st=confiante executando=false faixa=2 atraso=-2980 tempo=121101
+  1795031640.8 AUDIOSYNC estado: st=confiante executando=false faixa=2 atraso=-2980 tempo=140986
+  1795031660.8 AUDIOSYNC estado: st=confiante executando=false faixa=2 atraso=-2980 tempo=161250
+  1795031663.3 estado: faixa=2 atraso=-2980 vlcDelay=-2980000 legendas=[(-1, "Disable"), (2, "Track 1")] escolhida=0
+
+## cenario 1d-ajuste-e-salto
+  1795031599.8 AUDIOSYNC pronto (sem limite de dados; automático=true, começa 10 s depois de a legenda ficar ativa; resultado confiante vale 30 dias e não se reverifica; sem confiança: 1 nova tentativa em 60 s; salto grande = 600 s)
+  1795031600.8 AUDIOSYNC estado: st=- executando=false faixa=-1 atraso=0 tempo=103958
+  1795031601.8 atraso da legenda ativa (nenhuma): 0 ms
+  1795031602.2 atraso da legenda ativa (d3:u|h:b997db72583735f8|http://127.0.0.1:8000/mais3.srt#raw): -2980 ms
+  1795031602.8 AUDIOSYNC legenda ativa: db72583735f8|http://127.0.0.1:8000/mais3.srt#raw (nova nesta sessão)
+  1795031602.8 AUDIOSYNC GATILHO motivo=troca-de-legenda legenda=db72583735f8|http://127.0.0.1:8000/mais3.srt#raw decisão=avaliar (espera 10 s tocando; se há resultado guardado, não analisa) [análises=0 sem_confiança=0 estado=nova]
+  1795031612.8 AUDIOSYNC GATILHO motivo=início legenda=db72583735f8|http://127.0.0.1:8000/mais3.srt#raw decisão=ignorado: resultado confiante guardado (fix, há 0 dias): sem captura e sem reverificação [análises=0 sem_confiança=0 estado=confiante]
+  1795031620.8 AUDIOSYNC estado: st=confiante executando=false faixa=2 atraso=-2980 tempo=121101
+  1795031640.8 AUDIOSYNC estado: st=confiante executando=false faixa=2 atraso=-2980 tempo=140986
+  1795031660.8 AUDIOSYNC estado: st=confiante executando=false faixa=2 atraso=-2980 tempo=161250
+  1795031663.3 estado: faixa=2 atraso=-2980 vlcDelay=-2980000 legendas=[(-1, "Disable"), (2, "Track 1")] escolhida=0
+  1795031666.3 atraso da legenda: 1500 ms (d3:u|h:b997db72583735f8|http://127.0.0.1:8000/mais3.srt#raw)
+  1795031666.8 AUDIOSYNC atraso mexido à mão: não mexo no atraso; só uma nova análise se também houver um salto de mais de 600 s na linha do tempo
+  1795031672.8 AUDIOSYNC salto na linha do tempo de 724 s (de 175 s para 900 s): só conta se o usuário também mexer no atraso à mão; sozinho não dispara análise
+  1795031672.8 AUDIOSYNC GATILHO motivo=ajuste-manual+salto-grande legenda=db72583735f8|http://127.0.0.1:8000/mais3.srt#raw decisão=análise [análises=1 sem_confiança=0 estado=manual]
+  1795031672.8 AUDIOSYNC antes da análise: saúde da reprodução: amostras=69 paradas=0 razão_mínima=0.76 carregando=2 quadros_perdidos=? maior_intervalo_do_ciclo=1047 ms
+  1795031672.8 AUDIOSYNC começando: posição 900 s, duração 1200 s, atraso atual 1500 ms, sem limite de dados
+  1795031673.7 AUDIOSYNC captura 275 s +90 s: 90.16 s de PCM em 0.18 s (fim)
+  1795031676.4 AUDIOSYNC captura 710 s +90 s: 90.08 s de PCM em 0.17 s (fim)
+  1795031678.5 AUDIOSYNC captura 1050 s +90 s: 90.08 s de PCM em 0.15 s (fim)
+  1795031678.9 AUDIOSYNC resultado: aceita z=11.4 janelas=3/3 escala=1.00000 deslocamento=-2983 ms | vad=silero janelas=3 captura=2783 ms vad=1143 ms (cpu 1052) solve=92 ms (cpu 92) cpu_thread=1184 ms total=6122 ms leitura_estimada=8 MB rss=124->179 MB
+  1795031678.9 AUDIOSYNC saúde da reprodução: amostras=6 paradas=0 razão_mínima=0.84 carregando=0 quadros_perdidos=? maior_intervalo_do_ciclo=1004 ms
+  1795031678.9 atraso da legenda: -2980 ms (d3:u|h:b997db72583735f8|http://127.0.0.1:8000/mais3.srt#raw)
+  1795031678.9 AUDIOSYNC aplicado: atraso -2980 ms, escala 1.0 (resultado confiante: não será reverificado)
+  1795031681.8 AUDIOSYNC estado: st=confiante executando=false faixa=2 atraso=-2980 tempo=906828
+  1795031702.8 AUDIOSYNC estado: st=confiante executando=false faixa=2 atraso=-2980 tempo=927853
+  1795031722.8 AUDIOSYNC estado: st=confiante executando=false faixa=2 atraso=-2980 tempo=947753
+
+## cenario 2-menos2
+  1795031752.4 AUDIOSYNC pronto (sem limite de dados; automático=false, começa 25 s depois de a legenda ficar ativa; resultado confiante vale 30 dias e não se reverifica; sem confiança: 1 nova tentativa em 1200 s; salto grande = 600 s)
+  1795031753.5 AUDIOSYNC estado: st=- executando=false faixa=-1 atraso=0 tempo=683
+  1795031754.5 atraso da legenda ativa (nenhuma): 0 ms
+  1795031754.9 atraso da legenda ativa (d3:u|h:b997db72583735f8|http://127.0.0.1:8000/menos2.srt#raw): 0 ms
+  1795031755.5 AUDIOSYNC legenda ativa: b72583735f8|http://127.0.0.1:8000/menos2.srt#raw (nova nesta sessão)
+  1795031755.5 AUDIOSYNC GATILHO motivo=troca-de-legenda legenda=b72583735f8|http://127.0.0.1:8000/menos2.srt#raw decisão=avaliar (espera 25 s tocando; se há resultado guardado, não analisa) [análises=0 sem_confiança=0 estado=nova]
+  1795031773.0 clique no menu: Sincronizar automaticamente
+  1795031773.0 AUDIOSYNC GATILHO motivo=botão-sincronizar legenda=b72583735f8|http://127.0.0.1:8000/menos2.srt#raw decisão=análise [análises=1 sem_confiança=0 estado=nova]
+  1795031773.5 AUDIOSYNC estado: st=nova executando=false faixa=2 atraso=0 tempo=20691
+  1795031773.9 AUDIOSYNC captura 270 s +90 s: 90.16 s de PCM em 0.21 s (fim)
+  1795031776.6 AUDIOSYNC captura 705 s +90 s: 90.19 s de PCM em 0.24 s (fim)
+  1795031778.9 AUDIOSYNC captura 1045 s +90 s: 90.08 s de PCM em 0.17 s (fim)
+  1795031779.3 AUDIOSYNC botão: aceita z=11.4 janelas=3/3 escala=1.00000 deslocamento=2073 ms | vad=silero janelas=3 captura=2918 ms vad=1232 ms (cpu 1117) solve=99 ms (cpu 99) cpu_thread=1269 ms total=6314 ms leitura_estimada=8 MB rss=121->191 MB
+  1795031779.3 sincronização automática: status=fixed atraso=2070 ms (áudio aceita z=11.4 janelas=3/3 escala=1.00000 deslocamento=2073 ms)
+  1795031779.3 atraso da legenda: 2070 ms (d3:u|h:b997db72583735f8|http://127.0.0.1:8000/menos2.srt#raw)
+  1795031780.0 estado: faixa=2 atraso=2070 vlcDelay=2070000 legendas=[(-1, "Disable"), (2, "Track 1")] escolhida=0
+
+## cenario 3-certa
+  1795031792.2 AUDIOSYNC pronto (sem limite de dados; automático=true, começa 10 s depois de a legenda ficar ativa; resultado confiante vale 30 dias e não se reverifica; sem confiança: 1 nova tentativa em 60 s; salto grande = 600 s)
+  1795031793.3 AUDIOSYNC estado: st=- executando=false faixa=-1 atraso=0 tempo=671
+  1795031794.3 atraso da legenda ativa (nenhuma): 0 ms
+  1795031794.3 AUDIOSYNC legenda ativa: db72583735f8|http://127.0.0.1:8000/certa.srt#raw (nova nesta sessão)
+  1795031794.3 AUDIOSYNC GATILHO motivo=troca-de-legenda legenda=db72583735f8|http://127.0.0.1:8000/certa.srt#raw decisão=avaliar (espera 10 s tocando; se há resultado guardado, não analisa) [análises=0 sem_confiança=0 estado=nova]
+  1795031794.6 atraso da legenda ativa (d3:u|h:b997db72583735f8|http://127.0.0.1:8000/certa.srt#raw): 0 ms
+  1795031805.3 AUDIOSYNC GATILHO motivo=início legenda=db72583735f8|http://127.0.0.1:8000/certa.srt#raw decisão=análise [análises=1 sem_confiança=0 estado=nova]
+  1795031805.3 AUDIOSYNC antes da análise: saúde da reprodução: amostras=12 paradas=0 razão_mínima=0.83 carregando=1 quadros_perdidos=? maior_intervalo_do_ciclo=1034 ms
+  1795031805.3 AUDIOSYNC começando: posição 12 s, duração 1200 s, atraso atual 0 ms, sem limite de dados
+  1795031806.5 AUDIOSYNC captura 270 s +90 s: 90.16 s de PCM em 0.27 s (fim)
+  1795031809.0 AUDIOSYNC captura 705 s +90 s: 90.19 s de PCM em 0.25 s (fim)
+  1795031811.2 AUDIOSYNC captura 1045 s +90 s: 90.08 s de PCM em 0.19 s (fim)
+  1795031811.7 AUDIOSYNC resultado: aceita z=11.9 janelas=3/3 escala=1.00000 deslocamento=73 ms | vad=silero janelas=3 captura=3011 ms vad=1186 ms (cpu 1106) solve=93 ms (cpu 93) cpu_thread=1249 ms total=6353 ms leitura_estimada=8 MB rss=121->186 MB
+  1795031811.7 AUDIOSYNC saúde da reprodução: amostras=6 paradas=0 razão_mínima=0.85 carregando=0 quadros_perdidos=? maior_intervalo_do_ciclo=1013 ms
+  1795031811.7 AUDIOSYNC a legenda já estava certa (deslocamento medido 73 ms): não mexi (resultado confiante: não será reverificado)
+  1795031814.3 AUDIOSYNC estado: st=confiante executando=false faixa=2 atraso=0 tempo=21770
+  1795031834.3 AUDIOSYNC estado: st=confiante executando=false faixa=2 atraso=0 tempo=41779
+  1795031855.3 AUDIOSYNC estado: st=confiante executando=false faixa=2 atraso=0 tempo=62616
+  1795031876.3 AUDIOSYNC estado: st=confiante executando=false faixa=2 atraso=0 tempo=83777
+  1795031897.3 AUDIOSYNC estado: st=confiante executando=false faixa=2 atraso=0 tempo=104519
+  1795031918.3 AUDIOSYNC estado: st=confiante executando=false faixa=2 atraso=0 tempo=125683
+  1795031938.3 AUDIOSYNC estado: st=confiante executando=false faixa=2 atraso=0 tempo=145792
+  1795031959.3 AUDIOSYNC estado: st=confiante executando=false faixa=2 atraso=0 tempo=166818
+  1795031964.9 estado: faixa=2 atraso=0 vlcDelay=0 legendas=[(-1, "Disable"), (2, "Track 1")] escolhida=0
+  CPU do processo: antes 0.03 nucleos; durante a analise (6 s) 0.31 nucleos; CPU extra 1.8 s | RSS antes 122 MB, maximo 187 MB, depois 187 MB
+
+## cenario 3b-certa-menu
+  1795031979.3 AUDIOSYNC pronto (sem limite de dados; automático=false, começa 25 s depois de a legenda ficar ativa; resultado confiante vale 30 dias e não se reverifica; sem confiança: 1 nova tentativa em 1200 s; salto grande = 600 s)
+  1795031980.4 AUDIOSYNC estado: st=- executando=false faixa=-1 atraso=0 tempo=745
+  1795031981.4 atraso da legenda ativa (nenhuma): 0 ms
+  1795031981.8 atraso da legenda ativa (d3:u|h:b997db72583735f8|http://127.0.0.1:8000/certa.srt#raw): 0 ms
+  1795031982.4 AUDIOSYNC legenda ativa: db72583735f8|http://127.0.0.1:8000/certa.srt#raw (nova nesta sessão)
+  1795031982.4 AUDIOSYNC GATILHO motivo=troca-de-legenda legenda=db72583735f8|http://127.0.0.1:8000/certa.srt#raw decisão=avaliar (espera 25 s tocando; se há resultado guardado, não analisa) [análises=0 sem_confiança=0 estado=nova]
+  1795031997.9 clique no menu: Sincronizar automaticamente
+  1795031997.9 AUDIOSYNC GATILHO motivo=botão-sincronizar legenda=db72583735f8|http://127.0.0.1:8000/certa.srt#raw decisão=análise [análises=1 sem_confiança=0 estado=nova]
+  1795031998.8 AUDIOSYNC captura 270 s +90 s: 90.16 s de PCM em 0.12 s (fim)
+  1795032000.4 AUDIOSYNC estado: st=nova executando=false faixa=2 atraso=0 tempo=20820
+  1795032001.1 AUDIOSYNC captura 705 s +90 s: 90.19 s de PCM em 0.23 s (fim)
+  1795032003.3 AUDIOSYNC captura 1045 s +90 s: 90.08 s de PCM em 0.15 s (fim)
+  1795032003.8 AUDIOSYNC botão: aceita z=11.9 janelas=3/3 escala=1.00000 deslocamento=73 ms | vad=silero janelas=3 captura=2753 ms vad=982 ms (cpu 970) solve=94 ms (cpu 93) cpu_thread=1113 ms total=5878 ms leitura_estimada=8 MB rss=121->184 MB
+  1795032003.8 sincronização automática: status=ok atraso=0 ms (já estava certa (o áudio confirma))
+  1795032004.9 estado: faixa=2 atraso=0 vlcDelay=0 legendas=[(-1, "Disable"), (2, "Track 1")] escolhida=0
+
+## cenario 4-outro
+  1795032016.6 AUDIOSYNC pronto (sem limite de dados; automático=true, começa 10 s depois de a legenda ficar ativa; resultado confiante vale 30 dias e não se reverifica; sem confiança: 1 nova tentativa em 60 s; salto grande = 600 s)
+  1795032017.6 AUDIOSYNC estado: st=- executando=false faixa=-1 atraso=0 tempo=829
+  1795032018.7 atraso da legenda ativa (nenhuma): 0 ms
+  1795032019.1 atraso da legenda ativa (d3:u|h:b997db72583735f8|http://127.0.0.1:8000/outro.srt#raw): 0 ms
+  1795032019.7 AUDIOSYNC legenda ativa: db72583735f8|http://127.0.0.1:8000/outro.srt#raw (nova nesta sessão)
+  1795032019.7 AUDIOSYNC GATILHO motivo=troca-de-legenda legenda=db72583735f8|http://127.0.0.1:8000/outro.srt#raw decisão=avaliar (espera 10 s tocando; se há resultado guardado, não analisa) [análises=0 sem_confiança=0 estado=nova]
+  1795032030.7 AUDIOSYNC GATILHO motivo=início legenda=db72583735f8|http://127.0.0.1:8000/outro.srt#raw decisão=análise [análises=1 sem_confiança=0 estado=nova]
+  1795032030.7 AUDIOSYNC antes da análise: saúde da reprodução: amostras=13 paradas=0 razão_mínima=0.81 carregando=1 quadros_perdidos=? maior_intervalo_do_ciclo=1056 ms
+  1795032030.7 AUDIOSYNC começando: posição 13 s, duração 1200 s, atraso atual 0 ms, sem limite de dados
+  1795032031.7 AUDIOSYNC captura 135 s +90 s: 90.08 s de PCM em 0.19 s (fim)
+  1795032034.0 AUDIOSYNC captura 555 s +90 s: 90.08 s de PCM em 0.18 s (fim)
+  1795032036.4 AUDIOSYNC captura 975 s +90 s: 90.08 s de PCM em 0.23 s (fim)
+  1795032036.8 AUDIOSYNC resultado: recusada z=5.1 janelas=1/3 (z baixo; pico ambíguo; escala fora das razões de fps; janelas discordam;) | vad=silero janelas=3 captura=2980 ms vad=992 ms (cpu 980) solve=87 ms (cpu 85) cpu_thread=1109 ms total=6170 ms leitura_estimada=8 MB rss=121->183 MB
+  1795032036.8 AUDIOSYNC saúde da reprodução: amostras=6 paradas=0 razão_mínima=0.85 carregando=0 quadros_perdidos=? maior_intervalo_do_ciclo=1018 ms
+  1795032036.8 AUDIOSYNC o áudio não tem certeza: legenda deixada como estava
+  1795032036.8 AUDIOSYNC GATILHO motivo=sem-confiança legenda=db72583735f8|http://127.0.0.1:8000/outro.srt#raw decisão=agendar UMA segunda tentativa em 60 s: o áudio não tem certeza [análises=1 sem_confiança=1 estado=nova]
+  1795032037.7 AUDIOSYNC estado: st=nova executando=false faixa=2 atraso=0 tempo=20744
+  1795032057.7 AUDIOSYNC estado: st=nova executando=false faixa=2 atraso=0 tempo=40795
+  1795032077.7 AUDIOSYNC estado: st=nova executando=false faixa=2 atraso=0 tempo=60703
+  1795032097.7 AUDIOSYNC GATILHO motivo=segunda-tentativa legenda=db72583735f8|http://127.0.0.1:8000/outro.srt#raw decisão=análise [análises=2 sem_confiança=1 estado=nova]
+  1795032097.7 AUDIOSYNC antes da análise: saúde da reprodução: amostras=67 paradas=0 razão_mínima=0.76 carregando=0 quadros_perdidos=? maior_intervalo_do_ciclo=1045 ms
+  1795032097.7 AUDIOSYNC começando: posição 80 s, duração 1200 s, atraso atual 0 ms, sem limite de dados
+  1795032098.7 AUDIOSYNC estado: st=nova executando=true faixa=2 atraso=0 tempo=81701
+  1795032098.7 AUDIOSYNC captura 135 s +90 s: 90.08 s de PCM em 0.18 s (fim)
+  1795032101.0 AUDIOSYNC captura 555 s +90 s: 90.08 s de PCM em 0.20 s (fim)
+  1795032103.3 AUDIOSYNC captura 975 s +90 s: 90.08 s de PCM em 0.15 s (fim)
+  1795032103.7 AUDIOSYNC resultado: recusada z=5.1 janelas=1/3 (z baixo; pico ambíguo; escala fora das razões de fps; janelas discordam;) | vad=silero janelas=3 captura=2846 ms vad=922 ms (cpu 913) solve=86 ms (cpu 86) cpu_thread=1029 ms total=5993 ms leitura_estimada=8 MB rss=184->190 MB
+  1795032103.7 AUDIOSYNC saúde da reprodução: amostras=6 paradas=0 razão_mínima=0.80 carregando=0 quadros_perdidos=? maior_intervalo_do_ciclo=1026 ms
+  1795032103.7 AUDIOSYNC o áudio não tem certeza: legenda deixada como estava
+  1795032103.7 AUDIOSYNC GATILHO motivo=sem-confiança legenda=db72583735f8|http://127.0.0.1:8000/outro.srt#raw decisão=parar: o áudio não tem certeza (2 tentativas feitas) [análises=2 sem_confiança=2 estado=parada]
+  1795032119.7 AUDIOSYNC estado: st=parada executando=false faixa=2 atraso=0 tempo=102830
+  1795032139.7 AUDIOSYNC estado: st=parada executando=false faixa=2 atraso=0 tempo=122741
+  1795032159.7 AUDIOSYNC estado: st=parada executando=false faixa=2 atraso=0 tempo=142819
+  1795032179.7 AUDIOSYNC estado: st=parada executando=false faixa=2 atraso=0 tempo=162600
+  1795032199.7 AUDIOSYNC estado: st=parada executando=false faixa=2 atraso=0 tempo=182742
+  1795032220.6 AUDIOSYNC estado: st=parada executando=false faixa=2 atraso=0 tempo=203522
+  1795032240.7 AUDIOSYNC estado: st=parada executando=false faixa=2 atraso=0 tempo=223645
+  1795032260.7 AUDIOSYNC estado: st=parada executando=false faixa=2 atraso=0 tempo=243693
+  1795032280.7 AUDIOSYNC estado: st=parada executando=false faixa=2 atraso=0 tempo=263847
+  1795032301.6 AUDIOSYNC estado: st=parada executando=false faixa=2 atraso=0 tempo=284833
+  1795032321.7 AUDIOSYNC estado: st=parada executando=false faixa=2 atraso=0 tempo=304590
+  1795032342.7 AUDIOSYNC estado: st=parada executando=false faixa=2 atraso=0 tempo=325700
+  1795032345.7 estado: faixa=2 atraso=0 vlcDelay=0 legendas=[(-1, "Disable"), (2, "Track 1")] escolhida=0
+  CPU do processo: antes 0.03 nucleos; durante a analise (6 s) 0.28 nucleos; CPU extra 1.5 s | RSS antes 122 MB, maximo 184 MB, depois 184 MB
+
+## cenario 5-dsp
+  1795032358.2 AUDIOSYNC pronto (sem limite de dados; automático=true, começa 10 s depois de a legenda ficar ativa; resultado confiante vale 30 dias e não se reverifica; sem confiança: 1 nova tentativa em 1200 s; salto grande = 600 s)
+  1795032359.2 AUDIOSYNC estado: st=- executando=false faixa=-1 atraso=0 tempo=692
+  1795032360.2 atraso da legenda ativa (nenhuma): 0 ms
+  1795032360.6 atraso da legenda ativa (d3:u|h:b997db72583735f8|http://127.0.0.1:8000/mais3.srt#raw): 0 ms
+  1795032361.2 AUDIOSYNC legenda ativa: db72583735f8|http://127.0.0.1:8000/mais3.srt#raw (nova nesta sessão)
+  1795032361.2 AUDIOSYNC GATILHO motivo=troca-de-legenda legenda=db72583735f8|http://127.0.0.1:8000/mais3.srt#raw decisão=avaliar (espera 10 s tocando; se há resultado guardado, não analisa) [análises=0 sem_confiança=0 estado=nova]
+  1795032372.2 AUDIOSYNC GATILHO motivo=início legenda=db72583735f8|http://127.0.0.1:8000/mais3.srt#raw decisão=análise [análises=1 sem_confiança=0 estado=nova]
+  1795032372.2 AUDIOSYNC antes da análise: saúde da reprodução: amostras=13 paradas=0 razão_mínima=0.84 carregando=1 quadros_perdidos=? maior_intervalo_do_ciclo=1046 ms
+  1795032372.2 AUDIOSYNC começando: posição 13 s, duração 1200 s, atraso atual 0 ms, sem limite de dados
+  1795032373.3 AUDIOSYNC captura 275 s +90 s: 90.16 s de PCM em 0.19 s (fim)
+  1795032375.6 AUDIOSYNC captura 710 s +90 s: 90.08 s de PCM em 0.21 s (fim)
+  1795032377.7 AUDIOSYNC captura 1050 s +90 s: 90.08 s de PCM em 0.17 s (fim)
+  1795032378.0 AUDIOSYNC resultado: recusada z=9.0 janelas=2/3 (janelas discordam;) | vad=dsp(reserva) janelas=3 captura=2936 ms vad=621 ms (cpu 617) solve=92 ms (cpu 91) cpu_thread=760 ms total=5776 ms leitura_estimada=8 MB rss=121->163 MB
+  1795032378.0 AUDIOSYNC saúde da reprodução: amostras=5 paradas=0 razão_mínima=0.86 carregando=0 quadros_perdidos=? maior_intervalo_do_ciclo=1036 ms
+  1795032378.0 AUDIOSYNC o áudio não tem certeza: legenda deixada como estava
+  1795032378.0 AUDIOSYNC GATILHO motivo=sem-confiança legenda=db72583735f8|http://127.0.0.1:8000/mais3.srt#raw decisão=agendar UMA segunda tentativa em 1200 s: o áudio não tem certeza [análises=1 sem_confiança=1 estado=nova]
+  1795032380.2 AUDIOSYNC estado: st=nova executando=false faixa=2 atraso=0 tempo=21631
+  1795032381.2 estado: faixa=2 atraso=0 vlcDelay=0 legendas=[(-1, "Disable"), (2, "Track 1")] escolhida=0
+  CPU do processo: antes 0.05 nucleos; durante a analise (6 s) 0.20 nucleos; CPU extra 0.9 s | RSS antes 139 MB, maximo 164 MB, depois 164 MB
+
+## cenario 6-manual-antes
+  1795032393.6 AUDIOSYNC pronto (sem limite de dados; automático=true, começa 15 s depois de a legenda ficar ativa; resultado confiante vale 30 dias e não se reverifica; sem confiança: 1 nova tentativa em 1200 s; salto grande = 600 s)
+  1795032394.6 AUDIOSYNC estado: st=- executando=false faixa=-1 atraso=0 tempo=736
+  1795032395.7 atraso da legenda ativa (nenhuma): 0 ms
+  1795032395.7 AUDIOSYNC legenda ativa: db72583735f8|http://127.0.0.1:8000/mais3.srt#raw (nova nesta sessão)
+  1795032395.7 AUDIOSYNC GATILHO motivo=troca-de-legenda legenda=db72583735f8|http://127.0.0.1:8000/mais3.srt#raw decisão=avaliar (espera 15 s tocando; se há resultado guardado, não analisa) [análises=0 sem_confiança=0 estado=nova]
+  1795032396.0 atraso da legenda ativa (d3:u|h:b997db72583735f8|http://127.0.0.1:8000/mais3.srt#raw): 0 ms
+  1795032400.1 atraso da legenda: 1500 ms (d3:u|h:b997db72583735f8|http://127.0.0.1:8000/mais3.srt#raw)
+  1795032411.6 AUDIOSYNC GATILHO motivo=início legenda=db72583735f8|http://127.0.0.1:8000/mais3.srt#raw decisão=ignorado: atraso manual guardado (1500 ms) [análises=0 sem_confiança=0 estado=parada]
+  1795032415.6 AUDIOSYNC estado: st=parada executando=false faixa=2 atraso=1500 tempo=21558
+  1795032431.6 estado: faixa=2 atraso=1500 vlcDelay=1500000 legendas=[(-1, "Disable"), (2, "Track 1")] escolhida=0
+
+## cenario 7-rede-lenta
+  1795032447.1 AUDIOSYNC pronto (sem limite de dados; automático=true, começa 20 s depois de a legenda ficar ativa; resultado confiante vale 30 dias e não se reverifica; sem confiança: 1 nova tentativa em 1200 s; salto grande = 600 s)
+  1795032448.1 AUDIOSYNC estado: st=- executando=false faixa=-1 atraso=0 tempo=147
+  1795032449.9 atraso da legenda ativa (nenhuma): 0 ms
+  1795032450.1 AUDIOSYNC legenda ativa: db72583735f8|http://127.0.0.1:8001/mais3.srt#raw (nova nesta sessão)
+  1795032450.1 AUDIOSYNC GATILHO motivo=troca-de-legenda legenda=db72583735f8|http://127.0.0.1:8001/mais3.srt#raw decisão=avaliar (espera 20 s tocando; se há resultado guardado, não analisa) [análises=0 sem_confiança=0 estado=nova]
+  1795032450.3 atraso da legenda ativa (d3:u|h:b997db72583735f8|http://127.0.0.1:8001/mais3.srt#raw): 0 ms
+  1795032469.1 AUDIOSYNC estado: st=nova executando=false faixa=2 atraso=0 tempo=21246
+  1795032470.1 AUDIOSYNC GATILHO motivo=início legenda=db72583735f8|http://127.0.0.1:8001/mais3.srt#raw decisão=análise [análises=1 sem_confiança=0 estado=nova]
+  1795032470.1 AUDIOSYNC antes da análise: saúde da reprodução: amostras=21 paradas=0 razão_mínima=0.81 carregando=1 quadros_perdidos=? maior_intervalo_do_ciclo=1048 ms
+  1795032470.1 AUDIOSYNC começando: posição 22 s, duração 1200 s, atraso atual 0 ms, sem limite de dados
+  1795032476.0 AUDIOSYNC captura 275 s +90 s: 89.83 s de PCM em 5.01 s (fim)
+  1795032482.9 AUDIOSYNC captura 710 s +90 s: 89.94 s de PCM em 4.54 s (fim)
+  1795032489.0 AUDIOSYNC captura 1050 s +90 s: 89.40 s de PCM em 4.04 s (fim)
+  1795032489.5 AUDIOSYNC resultado: aceita z=11.4 janelas=3/3 escala=1.00000 deslocamento=-2983 ms | vad=silero janelas=3 captura=16015 ms vad=1106 ms (cpu 1015) solve=106 ms (cpu 102) cpu_thread=1226 ms total=19361 ms leitura_estimada=8 MB rss=121->172 MB
+  1795032489.5 AUDIOSYNC saúde da reprodução: amostras=19 paradas=0 razão_mínima=0.79 carregando=0 quadros_perdidos=? maior_intervalo_do_ciclo=1017 ms
+  1795032489.5 atraso da legenda: -2980 ms (d3:u|h:b997db72583735f8|http://127.0.0.1:8001/mais3.srt#raw)
+  1795032489.5 AUDIOSYNC aplicado: atraso -2980 ms, escala 1.0 (resultado confiante: não será reverificado)
+  1795032490.1 AUDIOSYNC estado: st=confiante executando=false faixa=2 atraso=-2980 tempo=39222
+  1795032492.1 estado: faixa=2 atraso=-2980 vlcDelay=-2980000 legendas=[(-1, "Disable"), (2, "Track 1")] escolhida=0
+  1795032494.1 AUDIOSYNC saúde da reprodução: amostras=23 paradas=0 razão_mínima=0.79 carregando=0 quadros_perdidos=? maior_intervalo_do_ciclo=1030 ms
+  CPU do processo: antes 0.03 nucleos; durante a analise (19 s) 0.15 nucleos; CPU extra 2.2 s | RSS antes 122 MB, maximo 172 MB, depois 172 MB
+
+## cenario 8-manual-durante
+  1795032506.4 AUDIOSYNC pronto (sem limite de dados; automático=true, começa 10 s depois de a legenda ficar ativa; resultado confiante vale 30 dias e não se reverifica; sem confiança: 1 nova tentativa em 1200 s; salto grande = 600 s)
+  1795032507.4 AUDIOSYNC estado: st=- executando=false faixa=-1 atraso=0 tempo=149
+  1795032508.9 atraso da legenda ativa (nenhuma): 0 ms
+  1795032509.2 atraso da legenda ativa (d3:u|h:b997db72583735f8|http://127.0.0.1:8001/mais3.srt#raw): 0 ms
+  1795032509.4 AUDIOSYNC legenda ativa: db72583735f8|http://127.0.0.1:8001/mais3.srt#raw (nova nesta sessão)
+  1795032509.4 AUDIOSYNC GATILHO motivo=troca-de-legenda legenda=db72583735f8|http://127.0.0.1:8001/mais3.srt#raw decisão=avaliar (espera 10 s tocando; se há resultado guardado, não analisa) [análises=0 sem_confiança=0 estado=nova]
+  1795032520.4 AUDIOSYNC GATILHO motivo=início legenda=db72583735f8|http://127.0.0.1:8001/mais3.srt#raw decisão=análise [análises=1 sem_confiança=0 estado=nova]
+  1795032520.4 AUDIOSYNC antes da análise: saúde da reprodução: amostras=13 paradas=0 razão_mínima=0.80 carregando=1 quadros_perdidos=? maior_intervalo_do_ciclo=1035 ms
+  1795032520.4 AUDIOSYNC começando: posição 13 s, duração 1200 s, atraso atual 0 ms, sem limite de dados
+  1795032527.4 AUDIOSYNC estado: st=nova executando=true faixa=2 atraso=0 tempo=20143
+  1795032529.7 AUDIOSYNC captura 275 s +90 s: 88.68 s de PCM em 8.41 s (fim)
+  1795032532.9 atraso da legenda: 700 ms (d3:u|h:b997db72583735f8|http://127.0.0.1:8001/mais3.srt#raw)
+  1795032536.8 AUDIOSYNC captura 710 s +90 s: 90.08 s de PCM em 4.87 s (fim)
+  1795032543.3 AUDIOSYNC captura 1050 s +90 s: 89.40 s de PCM em 4.30 s (fim)
+  1795032543.7 AUDIOSYNC resultado: aceita z=11.4 janelas=3/3 escala=1.00000 deslocamento=-2986 ms | vad=silero janelas=3 captura=20049 ms vad=989 ms (cpu 968) solve=95 ms (cpu 94) cpu_thread=1179 ms total=23258 ms leitura_estimada=8 MB rss=117->181 MB
+  1795032543.7 AUDIOSYNC saúde da reprodução: amostras=23 paradas=0 razão_mínima=0.81 carregando=0 quadros_perdidos=? maior_intervalo_do_ciclo=1036 ms
+  1795032543.7 AUDIOSYNC o usuário mexeu no atraso durante a análise: descartado
+  1795032547.4 estado: faixa=2 atraso=700 vlcDelay=700000 legendas=[(-1, "Disable"), (2, "Track 1")] escolhida=0
+  1795032548.4 AUDIOSYNC estado: st=parada executando=false faixa=2 atraso=700 tempo=41115
+  CPU do processo: antes 0.03 nucleos; durante a analise (23 s) 0.13 nucleos; CPU extra 2.4 s | RSS antes 118 MB, maximo 182 MB, depois 182 MB
+
+## cenario 9-trocar-e-fechar
+  1795032559.8 AUDIOSYNC pronto (sem limite de dados; automático=true, começa 10 s depois de a legenda ficar ativa; resultado confiante vale 30 dias e não se reverifica; sem confiança: 1 nova tentativa em 1200 s; salto grande = 600 s)
+  1795032560.8 AUDIOSYNC estado: st=- executando=false faixa=-1 atraso=0 tempo=108
+  1795032562.2 atraso da legenda ativa (nenhuma): 0 ms
+  1795032562.6 atraso da legenda ativa (d3:u|h:b997db72583735f8|http://127.0.0.1:8001/mais3.srt#raw): 0 ms
+  1795032562.8 AUDIOSYNC legenda ativa: db72583735f8|http://127.0.0.1:8001/mais3.srt#raw (nova nesta sessão)
+  1795032562.8 AUDIOSYNC GATILHO motivo=troca-de-legenda legenda=db72583735f8|http://127.0.0.1:8001/mais3.srt#raw decisão=avaliar (espera 10 s tocando; se há resultado guardado, não analisa) [análises=0 sem_confiança=0 estado=nova]
+  1795032573.8 AUDIOSYNC GATILHO motivo=início legenda=db72583735f8|http://127.0.0.1:8001/mais3.srt#raw decisão=análise [análises=1 sem_confiança=0 estado=nova]
+  1795032573.8 AUDIOSYNC antes da análise: saúde da reprodução: amostras=13 paradas=0 razão_mínima=0.84 carregando=1 quadros_perdidos=? maior_intervalo_do_ciclo=1046 ms
+  1795032573.8 AUDIOSYNC começando: posição 13 s, duração 1200 s, atraso atual 0 ms, sem limite de dados
+  1795032581.8 AUDIOSYNC estado: st=nova executando=true faixa=2 atraso=0 tempo=21323
+  1795032583.2 AUDIOSYNC captura 275 s +90 s: 88.68 s de PCM em 8.55 s (fim)
+  1795032584.3 atraso da legenda ativa (nenhuma): 0 ms
+  1795032590.4 AUDIOSYNC captura 710 s +90 s: 89.94 s de PCM em 4.94 s (fim)
+  1795032591.3 estado: faixa=-1 atraso=0 vlcDelay=0 legendas=[(-1, "Disable"), (2, "Track 1")] escolhida=-1
+  1795032594.3 clique no menu: Português 1
+  1795032594.3 atraso da legenda ativa (d3:u|h:b997db72583735f8|http://127.0.0.1:8001/mais3.srt#raw): 0 ms
+  1795032594.8 AUDIOSYNC legenda ativa: db72583735f8|http://127.0.0.1:8001/mais3.srt#raw (já vista nesta sessão: nova, análises=1)
+  1795032596.7 AUDIOSYNC captura 1050 s +90 s: 90.08 s de PCM em 4.19 s (fim)
+  1795032597.2 AUDIOSYNC resultado: aceita z=11.4 janelas=3/3 escala=1.00000 deslocamento=-2986 ms | vad=silero janelas=3 captura=20134 ms vad=1026 ms (cpu 1001) solve=110 ms (cpu 108) cpu_thread=1251 ms total=23396 ms leitura_estimada=8 MB rss=117->176 MB
+  1795032597.2 AUDIOSYNC saúde da reprodução: amostras=23 paradas=0 razão_mínima=0.82 carregando=0 quadros_perdidos=? maior_intervalo_do_ciclo=1046 ms
+  1795032597.2 atraso da legenda: -2990 ms (d3:u|h:b997db72583735f8|http://127.0.0.1:8001/mais3.srt#raw)
+  1795032597.2 AUDIOSYNC aplicado: atraso -2990 ms, escala 1.0 (resultado confiante: não será reverificado)
+  1795032601.8 AUDIOSYNC estado: st=confiante executando=false faixa=2 atraso=-2990 tempo=38188
+  1795032621.8 AUDIOSYNC estado: st=confiante executando=false faixa=2 atraso=-2990 tempo=58270
+  1795032642.8 AUDIOSYNC estado: st=confiante executando=false faixa=2 atraso=-2990 tempo=79272
+  1795032663.8 AUDIOSYNC estado: st=confiante executando=false faixa=2 atraso=-2990 tempo=100337
+  1795032683.8 AUDIOSYNC estado: st=confiante executando=false faixa=2 atraso=-2990 tempo=120104
+  1795032703.8 AUDIOSYNC estado: st=confiante executando=false faixa=2 atraso=-2990 tempo=140189
+  1795032724.8 AUDIOSYNC estado: st=confiante executando=false faixa=2 atraso=-2990 tempo=161038
+  CPU do processo: antes 0.03 nucleos; durante a analise (23 s) 0.14 nucleos; CPU extra 2.7 s | RSS antes 117 MB, maximo 176 MB, depois 176 MB

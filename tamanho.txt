@@ -1,0 +1,10 @@
+108M	mac/build/FramePlay.app
+ 25M	mac/build/FramePlay.app/Contents/Frameworks/onnxruntime.framework
+ 79M	mac/build/FramePlay.app/Contents/Frameworks/VLCKit.framework
+2.2M	mac/build/FramePlay.app/Contents/Resources/silero_vad.onnx
+-rw-r--r--  1 runner  wheel  44958801 Nov 18 19:38 /tmp/full.zip
+-rw-r--r--  1 runner  wheel  36081128 Nov 18 19:38 /tmp/sem.zip
+zip do app com ONNX Runtime + modelo: 45.0 MB; sem os dois: 36.1 MB; aumento por eles: +8.9 MB
+gh: To use GitHub CLI in a GitHub Actions workflow, set the GH_TOKEN environment variable. Example:
+  env:
+    GH_TOKEN: ${{ github.token }}

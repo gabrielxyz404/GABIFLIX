@@ -1,0 +1,109 @@
+=== log-0-base.txt
+  analises iniciadas (GATILHO decisao=analise) = 0
+  resultados (AUDIOSYNC resultado:) = 0
+  avisos na tela = 0
+1795030729.2478209 AUDIOSYNC GATILHO motivo=troca-de-legenda legenda=db72583735f8|http://127.0.0.1:8000/certa.srt#raw decisão=avaliar (espera 25 s tocando; se há resultado guardado, não analisa) [análises=0 sem_confiança=0 estado=nova]
+=== log-1-mais3.txt
+  analises iniciadas (GATILHO decisao=analise) = 1
+  resultados (AUDIOSYNC resultado:) = 1
+  avisos na tela = 1
+1795030807.250565 AUDIOSYNC GATILHO motivo=troca-de-legenda legenda=db72583735f8|http://127.0.0.1:8000/mais3.srt#raw decisão=avaliar (espera 25 s tocando; se há resultado guardado, não analisa) [análises=0 sem_confiança=0 estado=nova]
+1795030833.244673 AUDIOSYNC GATILHO motivo=início legenda=db72583735f8|http://127.0.0.1:8000/mais3.srt#raw decisão=análise [análises=1 sem_confiança=0 estado=nova]
+1795030839.798674 AVISO na tela: Legenda acertada pelo áudio (−3,0 s)
+=== log-1b-salto-sem-ajuste.txt
+  analises iniciadas (GATILHO decisao=analise) = 1
+  resultados (AUDIOSYNC resultado:) = 1
+  avisos na tela = 1
+1795030859.3684201 AUDIOSYNC GATILHO motivo=troca-de-legenda legenda=db72583735f8|http://127.0.0.1:8000/mais3.srt#raw decisão=avaliar (espera 10 s tocando; se há resultado guardado, não analisa) [análises=0 sem_confiança=0 estado=nova]
+1795030870.3731852 AUDIOSYNC GATILHO motivo=início legenda=db72583735f8|http://127.0.0.1:8000/mais3.srt#raw decisão=análise [análises=1 sem_confiança=0 estado=nova]
+1795030876.759821 AVISO na tela: Legenda acertada pelo áudio (−3,0 s)
+1795031541.675832 AUDIOSYNC salto na linha do tempo de 621 s (de 680 s para 60 s): só conta se o usuário também mexer no atraso à mão; sozinho não dispara análise
+=== log-1b-soak.txt
+  analises iniciadas (GATILHO decisao=analise) = 1
+  resultados (AUDIOSYNC resultado:) = 1
+  avisos na tela = 1
+1795030859.3684201 AUDIOSYNC GATILHO motivo=troca-de-legenda legenda=db72583735f8|http://127.0.0.1:8000/mais3.srt#raw decisão=avaliar (espera 10 s tocando; se há resultado guardado, não analisa) [análises=0 sem_confiança=0 estado=nova]
+1795030870.3731852 AUDIOSYNC GATILHO motivo=início legenda=db72583735f8|http://127.0.0.1:8000/mais3.srt#raw decisão=análise [análises=1 sem_confiança=0 estado=nova]
+1795030876.759821 AVISO na tela: Legenda acertada pelo áudio (−3,0 s)
+=== log-1c-reabrir.txt
+  analises iniciadas (GATILHO decisao=analise) = 0
+  resultados (AUDIOSYNC resultado:) = 0
+  avisos na tela = 1
+1795031602.210627 AVISO na tela: Legenda: atraso guardado −3,0 s
+1795031602.818874 AUDIOSYNC GATILHO motivo=troca-de-legenda legenda=db72583735f8|http://127.0.0.1:8000/mais3.srt#raw decisão=avaliar (espera 10 s tocando; se há resultado guardado, não analisa) [análises=0 sem_confiança=0 estado=nova]
+1795031612.818299 AUDIOSYNC GATILHO motivo=início legenda=db72583735f8|http://127.0.0.1:8000/mais3.srt#raw decisão=ignorado: resultado confiante guardado (fix, há 0 dias): sem captura e sem reverificação [análises=0 sem_confiança=0 estado=confiante]
+=== log-1d-ajuste-e-salto.txt
+  analises iniciadas (GATILHO decisao=analise) = 1
+  resultados (AUDIOSYNC resultado:) = 1
+  avisos na tela = 2
+1795031602.210627 AVISO na tela: Legenda: atraso guardado −3,0 s
+1795031602.818874 AUDIOSYNC GATILHO motivo=troca-de-legenda legenda=db72583735f8|http://127.0.0.1:8000/mais3.srt#raw decisão=avaliar (espera 10 s tocando; se há resultado guardado, não analisa) [análises=0 sem_confiança=0 estado=nova]
+1795031612.818299 AUDIOSYNC GATILHO motivo=início legenda=db72583735f8|http://127.0.0.1:8000/mais3.srt#raw decisão=ignorado: resultado confiante guardado (fix, há 0 dias): sem captura e sem reverificação [análises=0 sem_confiança=0 estado=confiante]
+1795031672.817807 AUDIOSYNC salto na linha do tempo de 724 s (de 175 s para 900 s): só conta se o usuário também mexer no atraso à mão; sozinho não dispara análise
+1795031672.818005 AUDIOSYNC GATILHO motivo=ajuste-manual+salto-grande legenda=db72583735f8|http://127.0.0.1:8000/mais3.srt#raw decisão=análise [análises=1 sem_confiança=0 estado=manual]
+1795031678.94143 AVISO na tela: Legenda acertada pelo áudio (−3,0 s)
+=== log-2-menos2.txt
+  analises iniciadas (GATILHO decisao=analise) = 1
+  resultados (AUDIOSYNC resultado:) = 0
+  avisos na tela = 2
+1795031755.48048 AUDIOSYNC GATILHO motivo=troca-de-legenda legenda=b72583735f8|http://127.0.0.1:8000/menos2.srt#raw decisão=avaliar (espera 25 s tocando; se há resultado guardado, não analisa) [análises=0 sem_confiança=0 estado=nova]
+1795031772.983978 AVISO na tela: A sincronizar…
+1795031772.986228 AUDIOSYNC GATILHO motivo=botão-sincronizar legenda=b72583735f8|http://127.0.0.1:8000/menos2.srt#raw decisão=análise [análises=1 sem_confiança=0 estado=nova]
+1795031779.301024 AVISO na tela: Legenda acertada pelo áudio (+2,1 s)
+=== log-3-certa.txt
+  analises iniciadas (GATILHO decisao=analise) = 1
+  resultados (AUDIOSYNC resultado:) = 1
+  avisos na tela = 1
+1795031794.315942 AUDIOSYNC GATILHO motivo=troca-de-legenda legenda=db72583735f8|http://127.0.0.1:8000/certa.srt#raw decisão=avaliar (espera 10 s tocando; se há resultado guardado, não analisa) [análises=0 sem_confiança=0 estado=nova]
+1795031805.267774 AUDIOSYNC GATILHO motivo=início legenda=db72583735f8|http://127.0.0.1:8000/certa.srt#raw decisão=análise [análises=1 sem_confiança=0 estado=nova]
+1795031811.652097 AVISO na tela: Legenda confirmada pelo áudio
+=== log-3b-certa-menu.txt
+  analises iniciadas (GATILHO decisao=analise) = 1
+  resultados (AUDIOSYNC resultado:) = 0
+  avisos na tela = 2
+1795031982.3873858 AUDIOSYNC GATILHO motivo=troca-de-legenda legenda=db72583735f8|http://127.0.0.1:8000/certa.srt#raw decisão=avaliar (espera 25 s tocando; se há resultado guardado, não analisa) [análises=0 sem_confiança=0 estado=nova]
+1795031997.880024 AVISO na tela: A sincronizar…
+1795031997.882578 AUDIOSYNC GATILHO motivo=botão-sincronizar legenda=db72583735f8|http://127.0.0.1:8000/certa.srt#raw decisão=análise [análises=1 sem_confiança=0 estado=nova]
+1795032003.7615352 AVISO na tela: Já estava certa
+=== log-4-outro.txt
+  analises iniciadas (GATILHO decisao=analise) = 2
+  resultados (AUDIOSYNC resultado:) = 2
+  avisos na tela = 0
+1795032019.679119 AUDIOSYNC GATILHO motivo=troca-de-legenda legenda=db72583735f8|http://127.0.0.1:8000/outro.srt#raw decisão=avaliar (espera 10 s tocando; se há resultado guardado, não analisa) [análises=0 sem_confiança=0 estado=nova]
+1795032030.662245 AUDIOSYNC GATILHO motivo=início legenda=db72583735f8|http://127.0.0.1:8000/outro.srt#raw decisão=análise [análises=1 sem_confiança=0 estado=nova]
+1795032036.834295 AUDIOSYNC GATILHO motivo=sem-confiança legenda=db72583735f8|http://127.0.0.1:8000/outro.srt#raw decisão=agendar UMA segunda tentativa em 60 s: o áudio não tem certeza [análises=1 sem_confiança=1 estado=nova]
+1795032097.66292 AUDIOSYNC GATILHO motivo=segunda-tentativa legenda=db72583735f8|http://127.0.0.1:8000/outro.srt#raw decisão=análise [análises=2 sem_confiança=1 estado=nova]
+1795032103.6574311 AUDIOSYNC GATILHO motivo=sem-confiança legenda=db72583735f8|http://127.0.0.1:8000/outro.srt#raw decisão=parar: o áudio não tem certeza (2 tentativas feitas) [análises=2 sem_confiança=2 estado=parada]
+=== log-5-dsp.txt
+  analises iniciadas (GATILHO decisao=analise) = 1
+  resultados (AUDIOSYNC resultado:) = 1
+  avisos na tela = 0
+1795032361.222918 AUDIOSYNC GATILHO motivo=troca-de-legenda legenda=db72583735f8|http://127.0.0.1:8000/mais3.srt#raw decisão=avaliar (espera 10 s tocando; se há resultado guardado, não analisa) [análises=0 sem_confiança=0 estado=nova]
+1795032372.215994 AUDIOSYNC GATILHO motivo=início legenda=db72583735f8|http://127.0.0.1:8000/mais3.srt#raw decisão=análise [análises=1 sem_confiança=0 estado=nova]
+1795032378.0106668 AUDIOSYNC GATILHO motivo=sem-confiança legenda=db72583735f8|http://127.0.0.1:8000/mais3.srt#raw decisão=agendar UMA segunda tentativa em 1200 s: o áudio não tem certeza [análises=1 sem_confiança=1 estado=nova]
+=== log-6-manual-antes.txt
+  analises iniciadas (GATILHO decisao=analise) = 0
+  resultados (AUDIOSYNC resultado:) = 0
+  avisos na tela = 0
+1795032395.676111 AUDIOSYNC GATILHO motivo=troca-de-legenda legenda=db72583735f8|http://127.0.0.1:8000/mais3.srt#raw decisão=avaliar (espera 15 s tocando; se há resultado guardado, não analisa) [análises=0 sem_confiança=0 estado=nova]
+1795032411.648162 AUDIOSYNC GATILHO motivo=início legenda=db72583735f8|http://127.0.0.1:8000/mais3.srt#raw decisão=ignorado: atraso manual guardado (1500 ms) [análises=0 sem_confiança=0 estado=parada]
+=== log-7-rede-lenta.txt
+  analises iniciadas (GATILHO decisao=analise) = 1
+  resultados (AUDIOSYNC resultado:) = 1
+  avisos na tela = 1
+1795032450.109149 AUDIOSYNC GATILHO motivo=troca-de-legenda legenda=db72583735f8|http://127.0.0.1:8001/mais3.srt#raw decisão=avaliar (espera 20 s tocando; se há resultado guardado, não analisa) [análises=0 sem_confiança=0 estado=nova]
+1795032470.116399 AUDIOSYNC GATILHO motivo=início legenda=db72583735f8|http://127.0.0.1:8001/mais3.srt#raw decisão=análise [análises=1 sem_confiança=0 estado=nova]
+1795032489.480351 AVISO na tela: Legenda acertada pelo áudio (−3,0 s)
+=== log-8-manual-durante.txt
+  analises iniciadas (GATILHO decisao=analise) = 1
+  resultados (AUDIOSYNC resultado:) = 1
+  avisos na tela = 0
+1795032509.431314 AUDIOSYNC GATILHO motivo=troca-de-legenda legenda=db72583735f8|http://127.0.0.1:8001/mais3.srt#raw decisão=avaliar (espera 10 s tocando; se há resultado guardado, não analisa) [análises=0 sem_confiança=0 estado=nova]
+1795032520.429871 AUDIOSYNC GATILHO motivo=início legenda=db72583735f8|http://127.0.0.1:8001/mais3.srt#raw decisão=análise [análises=1 sem_confiança=0 estado=nova]
+=== log-9-trocar-e-fechar.txt
+  analises iniciadas (GATILHO decisao=analise) = 1
+  resultados (AUDIOSYNC resultado:) = 1
+  avisos na tela = 1
+1795032562.823173 AUDIOSYNC GATILHO motivo=troca-de-legenda legenda=db72583735f8|http://127.0.0.1:8001/mais3.srt#raw decisão=avaliar (espera 10 s tocando; se há resultado guardado, não analisa) [análises=0 sem_confiança=0 estado=nova]
+1795032573.826779 AUDIOSYNC GATILHO motivo=início legenda=db72583735f8|http://127.0.0.1:8001/mais3.srt#raw decisão=análise [análises=1 sem_confiança=0 estado=nova]
+1795032597.2263498 AVISO na tela: Legenda acertada pelo áudio (−3,0 s)
