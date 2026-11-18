@@ -1,0 +1,78 @@
+name: Teste ARM do Silero
+
+# Dois testes que o emulador x86 não faz: (1) quais bibliotecas nativas (libonnxruntime) vão no APK de cada ABI (armeabi-v7a e arm64-v8a);
+# (2) o Silero rodando num emulador ARM64 de verdade (Android 11, CPU ARM emulada por software: lento). Nunca publica o app.
+# Resultados nos branches audiocap-arm-out-abi e audiocap-arm-out-arm64.
+on:
+  push:
+    branches: [audiocap-arm-run]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  abi:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 17
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+      - name: APK com os ABIs de produção
+        run: gradle -p android assembleRelease --no-daemon -q
+      - name: Listar as bibliotecas nativas
+        run: |
+          mkdir -p shots
+          unzip -l android/app/build/outputs/apk/release/app-release.apk | grep -E "lib/.*\.so" | awk '{print $1, $4}' > shots/abi-bibliotecas.txt
+          cat shots/abi-bibliotecas.txt | head -60
+      - name: Publicar
+        if: always()
+        run: |
+          cd shots || exit 0
+          git init -q -b x && git add -A
+          git -c user.name=ci -c user.email=ci@x commit -qm resultado
+          git push -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" x:audiocap-arm-out-abi
+
+  arm64:
+    runs-on: ubuntu-latest
+    timeout-minutes: 150
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 17
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+      - name: APK arm64-v8a
+        env:
+          GABIFLIX_ABIS: arm64-v8a
+        run: |
+          gradle -p android assembleRelease --no-daemon -q
+          cp android/app/build/outputs/apk/release/app-release.apk /tmp/teste-arm64.apk
+      - name: Emulador ARM64 (Android 11)
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 30
+          target: google_apis
+          arch: arm64-v8a
+          profile: pixel_4
+          ram-size: 2048M
+          disable-animations: false
+          emulator-boot-timeout: 5400
+          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim -no-accel
+          script: timeout 6000 bash tools/crash-test/arm.sh /tmp/teste-arm64.apk
+      - name: Publicar
+        if: always()
+        run: |
+          cd shots || exit 0
+          git init -q -b x && git add -A
+          git -c user.name=ci -c user.email=ci@x commit -qm resultado
+          git push -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" x:audiocap-arm-out-arm64
