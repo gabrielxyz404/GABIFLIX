@@ -69,10 +69,6 @@ final class AudioSyncAuto {
     // configuração (os extras só existem nos testes)
     private final boolean autoOn;
     private long startAfterMs = 25_000, recheckMs = 600_000;
-    /** orçamento de leitura da rede (as 3 janelas) para o modo automático: o botão não tem limite */
-    private long budgetOverrideMb = -1;
-    private static final long BUDGET_WIFI = 2048L << 20, BUDGET_METERED = 250L << 20;
-    private static final long RECHECK_WIFI = 450L << 20, RECHECK_METERED = 80L << 20;
 
     // estado da legenda ativa
     private String key;
@@ -113,8 +109,6 @@ final class AudioSyncAuto {
         v = extra(in, "gfAudioRecheckSec");
         if (v != null) try { recheckMs = Integer.parseInt(v) * 1000L; } catch (NumberFormatException ignored) {}
         if ("true".equals(extra(in, "gfAudioDsp"))) core.forceDsp = true;
-        v = extra(in, "gfAudioBudgetMb");
-        if (v != null) try { budgetOverrideMb = Integer.parseInt(v); } catch (NumberFormatException ignored) {}
         core.progress = s2 -> ui.post(() -> { if (!stopped) h.status(s2, TONE_NEUTRAL); });
     }
 
@@ -127,16 +121,10 @@ final class AudioSyncAuto {
 
     private static void log(String s) { SubtitleSync.log("AUDIOSYNC " + s); }
 
-    private boolean metered() {
-        try {
-            android.net.ConnectivityManager cm = (android.net.ConnectivityManager) act.getSystemService(android.content.Context.CONNECTIVITY_SERVICE);
-            return cm == null || cm.isActiveNetworkMetered();
-        } catch (Throwable t) { return true; }
-    }
+    /** sem limite de dados: a sincronização automática roda sempre, qualquer que seja o tamanho do arquivo e o tipo de rede (decisão do usuário) */
+    private long autoBudget() { return AudioSyncCore.NO_LIMIT; }
 
-    private long autoBudget() { return budgetOverrideMb >= 0 ? budgetOverrideMb << 20 : metered() ? BUDGET_METERED : BUDGET_WIFI; }
-
-    private long recheckBudget() { return budgetOverrideMb >= 0 ? budgetOverrideMb << 18 : metered() ? RECHECK_METERED : RECHECK_WIFI; }
+    private long recheckBudget() { return AudioSyncCore.NO_LIMIT; }
 
     private String noticedKey = "";
 
@@ -153,7 +141,7 @@ final class AudioSyncAuto {
     void start() {
         if (started || stopped) return;
         started = true;
-        log("pronto (rede " + (metered() ? "com limite de dados" : "sem limite de dados") + ", orçamento do automático " + (autoBudget() >> 20) + " MB, automático=" + autoOn + ", começa " + startAfterMs / 1000 + " s depois de a legenda ficar ativa, reverifica a cada " + recheckMs / 1000 + " s)");
+        log("pronto (sem limite de dados; automático=" + autoOn + ", começa " + startAfterMs / 1000 + " s depois de a legenda ficar ativa, reverifica a cada " + recheckMs / 1000 + " s)");
         ui.postDelayed(tick, TICK_MS);
     }
 
@@ -381,7 +369,7 @@ final class AudioSyncAuto {
         runStartedAt = SystemClock.uptimeMillis();
         final long budget = autoBudget();
         final int trackId = h.audioTrackId();
-        log("começando: posição " + pos / 1000 + " s, duração " + dur / 1000 + " s, atraso atual " + d0 + " ms, faixa de áudio " + trackId + ", orçamento " + (budget >> 20) + " MB");
+        log("começando: posição " + pos / 1000 + " s, duração " + dur / 1000 + " s, atraso atual " + d0 + " ms, faixa de áudio " + trackId + "");
         status("A verificar a legenda pelo áudio…", TONE_NEUTRAL);
         noticeOnce(k, "verificando", "Legenda: a verificar pelo áudio…");
         ex.execute(() -> {
