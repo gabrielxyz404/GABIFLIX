@@ -65,6 +65,8 @@ final class GlassButton: NSButton {
         wantsLayer = true
         layer?.borderWidth = 1
         imageScaling = .scaleNone
+        imageHugsTitle = true
+        alignment = .center
         refusesFirstResponder = true
         setContentHuggingPriority(.required, for: .horizontal)
         setContentCompressionResistancePriority(.required, for: .horizontal)
@@ -90,6 +92,7 @@ final class GlassButton: NSButton {
         return circle ? s : NSSize(width: s.width + fontPt * 1.8, height: s.height)
     }
     override func layout() { super.layout(); layer?.cornerRadius = bounds.height / 2 }
+    override var alignmentRectInsets: NSEdgeInsets { NSEdgeInsetsZero }   // sem margens do botão do sistema: a altura pedida é a altura desenhada (círculo de verdade)
     override func updateTrackingAreas() {
         super.updateTrackingAreas()
         if let a = area { removeTrackingArea(a) }
@@ -150,7 +153,6 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
     private let slider: NSSlider = { let s = NSSlider(); s.cell = RedSliderCell(); return s }()
     private let titleLabel = NSTextField(labelWithString: "")
     private let centerBox = NSStackView()
-    private let seekRow = NSStackView()
     private let optsRow = NSStackView()
     private var backBtn = GlassButton(), rwBtn = GlassButton(), ffBtn = GlassButton()
     private var optBtns: [GlassButton] = []
@@ -379,13 +381,9 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
         slider.isContinuous = false
         slider.translatesAutoresizingMaskIntoConstraints = false
         slider.setContentHuggingPriority(.defaultLow, for: .horizontal)
-        seekRow.orientation = .horizontal
-        seekRow.alignment = .centerY
-        seekRow.translatesAutoresizingMaskIntoConstraints = false
-        seekRow.addArrangedSubview(timeLabel)
-        seekRow.addArrangedSubview(slider)
-        seekRow.addArrangedSubview(lengthLabel)
-        controls.addSubview(seekRow)
+        controls.addSubview(timeLabel)
+        controls.addSubview(slider)
+        controls.addSubview(lengthLabel)
 
         let subs = glass("captions.bubble", "Legendas", false, #selector(chooseSubtitles))
         let audio = glass("speaker.wave.2.fill", "Áudio", false, #selector(chooseAudio))
@@ -440,10 +438,16 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
             controls.trailingAnchor.constraint(equalTo: root.trailingAnchor),
             controls.bottomAnchor.constraint(equalTo: root.bottomAnchor),
             c("ctlH", controls.heightAnchor.constraint(equalToConstant: 150)),
-            c("seekLead", seekRow.leadingAnchor.constraint(equalTo: controls.leadingAnchor, constant: 28)),
-            c("seekTrail", seekRow.trailingAnchor.constraint(equalTo: controls.trailingAnchor, constant: -28)),
-            c("seekH", seekRow.heightAnchor.constraint(equalToConstant: 30)),
-            c("seekGap", seekRow.bottomAnchor.constraint(equalTo: optsRow.topAnchor, constant: -6)),
+            c("seekLead", timeLabel.leadingAnchor.constraint(equalTo: controls.leadingAnchor, constant: 28)),
+            c("seekTrail", lengthLabel.trailingAnchor.constraint(equalTo: controls.trailingAnchor, constant: -28)),
+            c("timeW", timeLabel.widthAnchor.constraint(equalToConstant: 48)),
+            c("lenW", lengthLabel.widthAnchor.constraint(equalToConstant: 48)),
+            c("seekSp1", slider.leadingAnchor.constraint(equalTo: timeLabel.trailingAnchor, constant: 14)),
+            c("seekSp2", lengthLabel.leadingAnchor.constraint(equalTo: slider.trailingAnchor, constant: 14)),
+            c("seekH", slider.heightAnchor.constraint(equalToConstant: 30)),
+            c("seekGap", slider.bottomAnchor.constraint(equalTo: optsRow.topAnchor, constant: -6)),
+            timeLabel.centerYAnchor.constraint(equalTo: slider.centerYAnchor),
+            lengthLabel.centerYAnchor.constraint(equalTo: slider.centerYAnchor),
             c("optsTrail", optsRow.trailingAnchor.constraint(equalTo: controls.trailingAnchor, constant: -28)),
             c("optsBottom", optsRow.bottomAnchor.constraint(equalTo: controls.bottomAnchor, constant: -22)),
             c("optsH", optsRow.heightAnchor.constraint(equalToConstant: 42)),
@@ -469,17 +473,20 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
         func set(_ key: String, _ v: CGFloat) { uiC[key]?.constant = (v * k).rounded() }
         set("topH", 120); set("backLead", 28); set("backTop", 18); set("backW", 46); set("backH", 46); set("titleLead", 16)
         set("rwW", 60); set("rwH", 60); set("ffW", 60); set("ffH", 60); set("playW", 84); set("playH", 84)
-        set("ctlH", 150); set("seekLead", 28); set("seekTrail", 28); set("seekH", 30); set("seekGap", 6); set("optsH", 42)
+        set("ctlH", 150); set("seekLead", 28); set("seekH", 30); set("seekGap", 6); set("optsH", 42)
+        set("timeW", 48); set("lenW", 48); set("seekSp1", 14); set("seekSp2", 14)
+        uiC["seekTrail"]?.constant = -(28 * k).rounded()
         uiC["titleTrail"]?.constant = -(28 * k).rounded()
         uiC["optsTrail"]?.constant = -(28 * k).rounded()
         uiC["optsBottom"]?.constant = -(22 * k).rounded()
         centerBox.spacing = (28 * k).rounded()
         optsRow.spacing = (12 * k).rounded()
-        seekRow.spacing = (14 * k).rounded()
         for g in [backBtn, rwBtn, ffBtn, playButton] { g.iconPt = ((g === playButton ? 34 : (g === backBtn ? 20 : 26)) * k).rounded(); g.refresh() }
         for g in optBtns { g.iconPt = (17 * k).rounded(); g.fontPt = (15 * k).rounded(); g.refresh() }
         titleLabel.font = .systemFont(ofSize: (21 * k).rounded(), weight: .semibold)
         for l in [timeLabel, lengthLabel] { l.font = .monospacedDigitSystemFont(ofSize: (14 * k).rounded(), weight: .medium) }
+        timeLabel.alignment = .left
+        lengthLabel.alignment = .right
         timeLabel.textColor = .white
         lengthLabel.textColor = NSColor(white: 1, alpha: 0.85)
         root.needsLayout = true

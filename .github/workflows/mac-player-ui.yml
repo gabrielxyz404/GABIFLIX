@@ -54,7 +54,11 @@ jobs:
           defaults delete FramePlay 2>/dev/null || true
           rm -f /tmp/frameplay-player.log
           $APP --gf-test-play http://127.0.0.1:8765/teste.mp4 - > /tmp/telas/app.log 2>&1 &
-          sleep 30
+          for k in 1 2 3 4 5 6; do
+            osascript -e 'tell application "System Events" to tell process "UserNotificationCenter" to click button "Allow" of window 1' >> /tmp/telas/allow.log 2>&1 && break
+            sleep 3
+          done
+          sleep 20
           cmd "state"
           cmd "resize 1470 956"; cmd "showforce" 2; shot ecra-1470x956
           cmd "chrome 1470 956 /tmp/telas/${{ matrix.versao }}-controles-1470x956.png" 3
