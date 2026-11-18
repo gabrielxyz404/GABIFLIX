@@ -447,6 +447,8 @@ public class PlayerActivity extends Activity {
                 scheduleHide();
                 break;
             case MediaPlayer.Event.Vout:
+                glog("ciclo: evento Vout, saídas=" + event.getVoutCount());
+                if (refreshFrame && event.getVoutCount() > 0) ui.postDelayed(this::refreshFrameNow, 400);
                 if (loading && playing) ui.post(this::endLoading);
                 if (scaleIndex != 0) ui.post(this::applyScale);
                 if (controlsShown) ui.post(() -> raiseSubs(true));
@@ -2052,9 +2054,76 @@ public class PlayerActivity extends Activity {
     // ---------- ciclo de vida ----------
     private boolean resumeOnReturn = false;
 
+    /** diagnóstico do ciclo de vida: estado do player e das vistas de vídeo (aparece no log GabiFlixPlayer) */
+    private void lifeLog(String w) {
+        try {
+            View v = videoLayout == null ? null : findVideoView(videoLayout);
+            glog(String.format(Locale.ROOT, "ciclo: %s, tocando=%s, tempo=%d, escala=%d, atraso=%d, vista=%s %dx%d, vout=%s", w,
+                    player != null && player.isPlaying(), player == null ? -1 : player.getTime(), scaleIndex, subDelayMs,
+                    v == null ? "nenhuma" : v.getClass().getSimpleName(), v == null ? 0 : v.getWidth(), v == null ? 0 : v.getHeight(),
+                    player != null && player.getVLCVout().areViewsAttached()));
+        } catch (Throwable t) { glog("ciclo: " + w + " (erro " + t + ")"); }
+    }
+
+    /**
+     * Sair do app (HOME, seletor de apps, tela apagada) destrói a superfície do vídeo. O libVLC fecha a saída de vídeo e, ao voltar,
+     * a superfície nova não recebia imagem (tela toda preta; o som seguia). Por isso, ao parar, as vistas são soltas do player
+     * (como faz o VLC para Android) e, ao começar de novo, são ligadas outra vez, o que abre uma saída de vídeo nova; se o filme
+     * estava em pausa, um "seek" para o mesmo instante faz aparecer o quadro. O modo Preencher e o atraso da legenda são reaplicados.
+     */
+    private boolean viewsDetached = false, refreshFrame = false;
+    private long returnTime = -1;
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        if (player != null && viewsDetached) reattachViews();
+        lifeLog("onStart");
+    }
+
+    @Override
+    protected void onStop() {
+        lifeLog("onStop");
+        if (player != null && !viewsDetached && !isFinishing()) {
+            try {
+                returnTime = player.getTime();
+                player.detachViews();
+                viewsDetached = true;
+            } catch (Throwable t) { glog("ciclo: não soltou as vistas: " + t); }
+        }
+        super.onStop();
+    }
+
+    private void reattachViews() {
+        try {
+            lastScaleW = -1; lastScaleH = -1;
+            player.attachViews(videoLayout, null, true, tv);
+            viewsDetached = false;
+            refreshFrame = true;
+            applySubDelay();
+            if (scaleIndex != 0) ui.post(this::applyScale);
+            // se o evento de saída de vídeo não vier, força o quadro mesmo assim
+            ui.postDelayed(this::refreshFrameNow, 2500);
+        } catch (Throwable t) { glog("ciclo: não ligou as vistas: " + t); }
+    }
+
+    /** filme em pausa depois de voltar: um seek para o mesmo ponto faz a saída de vídeo nova desenhar o quadro */
+    private void refreshFrameNow() {
+        if (!refreshFrame || player == null || isFinishing()) return;
+        refreshFrame = false;
+        try {
+            if (!player.isPlaying() && !resumeOnReturn) {
+                long t = returnTime > 0 ? returnTime : player.getTime();
+                if (t > 0) player.setTime(t);
+            }
+            glog("ciclo: quadro reposto, tempo=" + player.getTime());
+        } catch (Throwable t) { glog("ciclo: quadro: " + t); }
+    }
+
     @Override
     protected void onPause() {
         super.onPause();
+        lifeLog("onPause");
         if (audioSync != null) audioSync.onPause();
         if (player != null) { resumeOnReturn = player.isPlaying(); savePosition(true); player.pause(); }
     }
@@ -2062,7 +2131,9 @@ public class PlayerActivity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
+        lifeLog("onResume");
         if (player != null && resumeOnReturn) { resumeOnReturn = false; player.play(); }
+        if (returnTime >= 0) { returnTime = -1; ui.post(() -> setControlsVisible(true)); } // volta com os controles à mostra
     }
 
     @Override
@@ -2073,7 +2144,7 @@ public class PlayerActivity extends Activity {
         if (player != null) {
             savePosition(true);
             player.stop();
-            player.detachViews();
+            try { player.detachViews(); } catch (Throwable ignored) {}
             player.release();
             player = null;
         }
