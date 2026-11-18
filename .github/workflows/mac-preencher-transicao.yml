@@ -1,0 +1,65 @@
+name: Mac transição do Preencher (sem publicar)
+
+# Compila o FramePlay.app do Mac deste commit e testa o Preencher com 4 vídeos sintéticos (2,39:1 com barras gravadas, 2,39:1 de verdade,
+# 16:9, 4:3 com barras laterais) e legenda PT de 3 linhas, com a janela em 16:10. O GitHub não tem placa gráfica (o VLC não tem saída de
+# vídeo): as fotografias do VLC são simuladas com o ffmpeg e as imagens finais são compostas com o recorte que o app calculou.
+# NÃO publica o app. Os resultados vão para o branch mac-trans-out-${{ matrix.versao }}.
+on:
+  workflow_dispatch:
+  push:
+    branches: [mac-trans-run]
+
+permissions:
+  contents: write
+
+jobs:
+  teste:
+    runs-on: macos-15-intel
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      matrix:
+        versao: [antes, depois]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ matrix.versao == 'antes' && 'preencher-antes-gancho' || github.sha }}
+          path: appsrc
+      - name: Montar o app
+        env:
+          FRAMEPLAY_VERSION: 0.0.${{ github.run_number }}
+          FRAMEPLAY_BUILD: ${{ github.run_number }}
+          FRAMEPLAY_ARCH: x86_64
+        run: |
+          set -o pipefail
+          cd appsrc && ./mac/build.sh 2>&1 | tee ../build.log
+          mkdir -p /tmp/apps && cp -R mac/build/FramePlay.app /tmp/apps/app.app
+      - name: Mostrar o erro (se houver)
+        if: failure()
+        run: |
+          grep -n -E "error:|fatal|No such|cannot find" build.log | sort -u | head -60 | while IFS= read -r line; do
+            echo "::error::$(echo "$line" | cut -c1-900)"
+          done
+      - name: Vídeos de teste
+        run: |
+          brew install ffmpeg > /dev/null 2>&1 || brew install ffmpeg
+          python3 -m pip install --quiet --break-system-packages pillow || python3 -m pip install --quiet pillow
+          bash tools/mac-preencher-test/videos.sh /tmp/srv
+          nohup python3 tools/mac-preencher-test/serve.py /tmp/srv > /tmp/srv.log 2>&1 &
+          sleep 2; curl -sI http://127.0.0.1:8765/barra.mkv | head -1
+      - name: Testar o app (fotografias simuladas)
+        run: bash tools/mac-preencher-test/run2.sh /tmp/apps/app.app /tmp/telas/logs
+      - name: Compor as imagens
+        run: python3 tools/mac-preencher-test/compose.py /tmp/telas/logs /tmp/srv /tmp/telas/imagens
+      - name: Guardar no branch mac-trans-out-${{ matrix.versao }}
+        if: always()
+        env:
+          TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p /tmp/telas && cp build.log /tmp/telas/ 2>/dev/null || true
+          cd /tmp/telas
+          git init -q && git checkout -q -b mac-trans-out-${{ matrix.versao }}
+          git config user.name "FramePlay CI"; git config user.email "ci@frameplay.local"
+          git add -A && git commit -qm "teste Preencher do Mac" || true
+          git push -q -f "https://x-access-token:${TOKEN}@github.com/${{ github.repository }}.git" mac-trans-out-${{ matrix.versao }} || echo "::warning::não guardou"
