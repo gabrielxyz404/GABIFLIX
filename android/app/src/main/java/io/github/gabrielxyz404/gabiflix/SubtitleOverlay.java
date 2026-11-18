@@ -144,12 +144,17 @@ final class SubtitleOverlay {
             canvas.save();
             canvas.translate(getCompoundPaddingLeft(), getExtendedPaddingTop());
             TextPaint p = getPaint();
-            p.setColor(0xFF000000);
-            p.setStyle(Paint.Style.STROKE);
-            p.setStrokeWidth(stroke);
-            p.setStrokeJoin(Paint.Join.ROUND);
-            l.draw(canvas);
             p.setStyle(Paint.Style.FILL);
+            // contorno: o mesmo texto em preto, deslocado em círculo (mais confiável que Paint.Style.STROKE através do Layout)
+            p.setColor(0xFF000000);
+            float r = stroke / 2f;
+            for (int k = 0; k < 16; k++) {
+                double a = k * Math.PI / 8;
+                canvas.save();
+                canvas.translate((float) (Math.cos(a) * r), (float) (Math.sin(a) * r));
+                l.draw(canvas);
+                canvas.restore();
+            }
             p.setColor(0xFFFFFFFF);
             l.draw(canvas);
             canvas.restore();

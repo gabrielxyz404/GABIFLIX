@@ -321,8 +321,8 @@ public class PlayerActivity extends Activity {
         float px = Math.min(sh, sw) * 0.055f;   // igual à legenda do libVLC com sub-text-scale 90 numa tela de 1080 (linhas de ~70 px)
         subOverlay = new SubtitleOverlay.Text(this, px * 0.11f);
         subOverlay.setTextSize(TypedValue.COMPLEX_UNIT_PX, px);
-        subOverlay.setTypeface(PlayerUi.font(this, 400));
-        int side = Math.round(Math.max(sw, sh) * 0.04f), bottom = Math.round(Math.min(sh, sw) * 0.045f);
+        subOverlay.setTypeface(android.graphics.Typeface.create("sans-serif", android.graphics.Typeface.NORMAL));   // Roboto, como a legenda do libVLC
+        int side = Math.round(Math.max(sw, sh) * 0.03f), bottom = Math.round(Math.min(sh, sw) * 0.045f);
         subOverlay.setPadding(side, 0, side, bottom);
         subOverlay.setVisibility(View.GONE);
         FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.BOTTOM);
@@ -343,11 +343,11 @@ public class PlayerActivity extends Activity {
         } catch (Exception e) { return null; }
     }
 
-    /** só nos testes (am start --es gfOvScript "delay:3000@12000;seek:100@30000"): muda o atraso / pula no filme N ms depois de começar */
+    /** só nos testes (am start --es gfOvScript "delay:3000@12000+seek:100@30000"): muda o atraso / pula no filme N ms depois de começar */
     private void ovTestScript() {
         String sc = getIntent().getStringExtra("gfOvScript");
         if (sc == null) return;
-        for (String tok : sc.split(";")) {
+        for (String tok : sc.split("\\+")) {
             try {
                 String[] a = tok.trim().split("[:@]");
                 final String kind = a[0];
