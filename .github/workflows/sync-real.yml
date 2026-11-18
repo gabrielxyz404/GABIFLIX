@@ -10,6 +10,9 @@ on:
       which:
         description: base, fix ou ambos
         default: fix
+      base:
+        description: commit da versao "antes"
+        default: 30c5650
 
 permissions:
   contents: write
@@ -78,7 +81,7 @@ jobs:
       - uses: actions/checkout@v4
         if: steps.skip.outputs.skip != '1' && matrix.apk == 'base'
         with:
-          ref: ${{ vars.BASE_SHA || 'main' }}
+          ref: ${{ github.event.inputs.base || vars.BASE_SHA || 'main' }}
           path: basesrc
       - uses: actions/setup-java@v5
         if: steps.skip.outputs.skip != '1'
