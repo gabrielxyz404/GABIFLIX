@@ -51,7 +51,7 @@ jobs:
                    "https://test-videos.co.uk/vids/bigbuckbunny/mkv/360/Big_Buck_Bunny_360_10s_1MB.mkv tt0111161" \
                    "https://download.blender.org/peach/bigbuckbunny_movies/BigBuckBunny_320x180.mp4 tt1254207"; do
             u=${c% *}; i=${c#* }
-            code=$(curl -s -o /dev/null -w '%{http_code}' -r 0-100 -m 15 "$u")
+            code=$(curl -s -o /dev/null -w '%{http_code}' -r 0-100 -m 15 "$u" || true)
             echo "::notice::teste $u -> $code"
             if [ "$code" = "200" ] || [ "$code" = "206" ]; then V=$u; ID=$i; break; fi
           done
