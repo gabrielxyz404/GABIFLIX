@@ -34,6 +34,25 @@ public final class Result {
     /** rodadas de janelas extras já usadas (preenchido pela sessão) */
     public int rounds;
 
+    // ---- deriva (escala de fps: 1,001 e afins). Cada janela mede o atraso SEM escala; a escala só vale se a reta atraso(t) = a + b*t explica todas as janelas
+    /** medida de cada janela (tempo do vídeo no centro, atraso local sem escala, NCC e z do pico, se é confiável sozinha) */
+    public static final class Win {
+        public long startMs;
+        public double centerMs, delayMs, ncc, z, second;
+        public boolean speech, confident;
+    }
+    public Win[] wins = new Win[0];
+    /** a escala (1,001 ou outra razão de fps) foi aceita pela evidência das janelas (não por chute) */
+    public boolean driftScale;
+    /** inclinação ajustada livremente (ms de atraso por ms de filme), resíduos máximos (ms) com a escala escolhida e com escala 1,0, deriva medida nas janelas e no filme todo (ms) */
+    public double driftSlope, driftResMs, unitResMs, driftMeasMs, driftContentMs;
+    public int driftConfident;
+    /** as janelas confiáveis discordam de uma reta de escala 1,0 (ou sugerem deriva sem prova ainda): vale pedir mais janelas, espalhadas pelo filme */
+    public boolean driftSuspect;
+    public long[][] driftMore;
+    /** frase curta (diagnóstico): por que a deriva foi aceita ou não */
+    public String driftNote = "";
+
     /** aplica o mapeamento global a um tempo da legenda */
     public double apply(double subMs) { return scale * subMs + offsetMs; }
 

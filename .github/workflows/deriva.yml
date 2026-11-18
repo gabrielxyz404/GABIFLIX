@@ -1,0 +1,115 @@
+name: Deriva de escala
+
+# Prova da correcao de DERIVA da legenda (escala de fps: 1,001, 25/23,976...) com audio REAL de filmes de dominio publico, filme INTEIRO:
+# a legenda certa (alinhada ao audio pelo alass) e deformada com escalas e deslocamentos; o MESMO AudioAligner do app (Silero em Java puro) decide;
+# compara com o motor ANTES (origin/main). Mede aceites certos, ERRADOS, falsos em legendas de outros filmes e legendas ja certas mexidas.
+# Resultados no branch deriva-out. Nunca publica o app.
+on:
+  push:
+    branches: [run-deriva]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  filmes:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - {slug: his_girl_friday}
+          - {slug: charade}
+          - {slug: night_of_the_living_dead}
+          - {slug: doa}
+          - {slug: detour}
+          - {slug: little_shop}
+          - {slug: plan9}
+          - {slug: meet_john_doe}
+          - {slug: carnival_of_souls}
+          - {slug: the_stranger}
+          - {slug: my_man_godfrey}
+          - {slug: brain_that_wouldnt_die}
+          - {slug: hitch_hiker}
+          - {slug: suddenly}
+          - {slug: dementia_13}
+          - {slug: house_on_haunted_hill}
+          - {slug: scarlet_street}
+          - {slug: sherlock_secret_weapon}
+          - {slug: freaks}
+          - {slug: white_zombie}
+          - {slug: santa_claus_martians}
+          - {slug: last_man_on_earth}
+          - {slug: hitch_hiker, clip: '1200'}
+          - {slug: house_on_haunted_hill, clip: '1200'}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          path: base
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 17
+      - name: Compilar o motor novo e o de antes (origin/main)
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg >/dev/null
+          mkdir -p /tmp/new /tmp/old res
+          D=android/app/src/main/java/io/github/gabrielxyz404/gabiflix/audiosync
+          javac -nowarn -d /tmp/new $D/*.java tools/deriva/DerivaEval.java tools/deriva/FlowNew.java
+          javac -nowarn -d /tmp/old base/$D/*.java tools/deriva/DerivaEval.java tools/deriva/FlowOld.java
+          echo "novo: $(git rev-parse --short HEAD)  antes: $(git -C base rev-parse --short HEAD)" | tee res/versoes.txt
+      - name: Filme inteiro, legenda certa e legendas de outros filmes
+        id: prep
+        continue-on-error: true
+        env:
+          CLIP_S: ${{ matrix.clip }}
+        run: |
+          OTHERS=$(echo suddenly,manos,meet_john_doe,detour,freaks,his_girl_friday | tr , '\n' | grep -v -x ${{ matrix.slug }} | paste -sd,)
+          python3 tools/deriva/prep_full.py ${{ matrix.slug }} $OTHERS media 2>&1 | tee prep.log | tail -30
+          test -f media/info.json
+      - name: Avaliar (antes x novo denso x novo espalhado)
+        if: steps.prep.outcome == 'success'
+        run: |
+          TAG=${{ matrix.slug }}${{ matrix.clip && '-clip' || '' }}
+          W=android/app/src/main/assets/silero_v5_16k.bin
+          OUTROS=$(ls media/outro*.srt)
+          export VAD_THREADS=2
+          java -Xmx3g -cp /tmp/old DerivaEval media/audio16k.wav media/certa.srt $W old ${{ matrix.slug }} $OUTROS > res/deriva-$TAG-old.txt 2> res/err-old.txt || tail -5 res/err-old.txt
+          java -Xmx3g -cp /tmp/new DerivaEval media/audio16k.wav media/certa.srt $W dense,spread ${{ matrix.slug }} $OUTROS > res/deriva-$TAG-novo.txt 2> res/err-novo.txt || tail -5 res/err-novo.txt
+          cp media/info.json res/info-$TAG.json; cp media/oracle.json res/oracle-$TAG.json 2>/dev/null || true
+          grep -c "^R " res/deriva-$TAG-*.txt
+      - name: Sem material
+        if: steps.prep.outcome != 'success'
+        run: tail -8 prep.log > res/sem-material-${{ matrix.slug }}${{ matrix.clip && '-clip' || '' }}.txt 2>/dev/null || echo "sem log" > res/sem-material.txt
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: filme-${{ matrix.slug }}${{ matrix.clip && '-clip' || '' }}
+          path: res
+          retention-days: 7
+
+  resumo:
+    needs: [filmes]
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          path: arts
+      - name: Resumo
+        run: |
+          mkdir -p out
+          cp -r arts out/arts
+          python3 tools/deriva/summary.py out/arts out/resumo-deriva.md || true
+          cat out/resumo-deriva.md >> $GITHUB_STEP_SUMMARY || true
+      - name: Publicar
+        if: always()
+        run: |
+          cd out && git init -q -b x && git add -A
+          git -c user.name=ci -c user.email=ci@x commit -qm "deriva run ${{ github.run_number }}"
+          git push -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" x:deriva-out

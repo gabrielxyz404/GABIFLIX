@@ -80,6 +80,85 @@ public final class AudioSyncSession {
         return w;
     }
 
+    /**
+     * plano espalhado pelo filme (para ver a deriva da escala): n janelas de lenMs, uma em cada faixa de ~1/n do filme (centros em 10%, 50%, 90% para n = 3;
+     * 10%, 30%, 50%, 70%, 90% para n = 5), cada uma no trecho de MAIOR densidade de falas da sua faixa (mesma densidade suavizada do planDense).
+     * Faixas dos extremos vão até 4% e 96% do filme. Sem fala suficiente numa faixa cai no planDense inteiro.
+     */
+    public static long[][] planSpread(Cue[] cues, long durMs, int n, long lenMs) {
+        if (n < 2 || durMs < lenMs * n) return planDense(cues, durMs, n, lenMs);
+        final int bin = 5000;
+        int nb = (int) (durMs / bin) + 1;
+        double[] sp = new double[nb];
+        for (Cue c : cues) {
+            if (!c.speech) continue;
+            long e = c.speechEnd(true);
+            for (long t = c.startMs; t < e && t < durMs; t += bin) sp[(int) (t / bin)] += Math.min(bin, e - t) / (double) bin;
+        }
+        int half = 24;
+        double[] pre = new double[nb + 1];
+        for (int i = 0; i < nb; i++) pre[i + 1] = pre[i] + sp[i];
+        int wb = (int) (lenMs / bin);
+        double spacing = 0.80 / (n - 1), hw = 0.45 * spacing + 0.02;
+        long[][] w = new long[n][2];
+        for (int z = 0; z < n; z++) {
+            double fc = 0.10 + spacing * z;
+            long lo = Math.max((long) (durMs * 0.04), (long) (durMs * (fc - hw)) - lenMs / 2);
+            long hi = Math.min(durMs - durMs / 25, (long) (durMs * (fc + hw)) + lenMs / 2);
+            double best = -1;
+            int bi = -1;
+            for (int i = (int) (lo / bin); (i + wb) * (long) bin <= hi && i + wb <= nb; i++) {
+                int a = Math.max(0, i - half), b = Math.min(nb, i + wb + half);
+                double d = (pre[b] - pre[a]) / (b - a);
+                if (d > best) { best = d; bi = i; }
+            }
+            if (bi < 0 || best < 0.15) return planDense(cues, durMs, n, lenMs);
+            w[z][0] = bi * (long) bin / 10 * 10;
+            w[z][1] = lenMs;
+        }
+        Arrays.sort(w, (x, y) -> Long.compare(x[0], y[0]));
+        return w;
+    }
+
+    /** de onde vem o áudio de cada janela: o app captura (libVLC) e passa o VAD; os testes leem de um arquivo. null = falhou/cancelado */
+    public interface Source {
+        Window capture(long startMs, long lenMs, int index, int total) throws Exception;
+    }
+
+    /**
+     * O laço completo do app: 3 janelas espalhadas pelo filme (planSpread; planDense se spread = false), resolve; se as janelas confiáveis sugerem deriva mas a prova
+     * ainda não fecha, captura as janelas extras que o alinhador propõe (até maxDriftWindows janelas no total) e resolve de novo. Devolve null se uma captura falhou.
+     * As janelas usadas ficam em usedOut[0] (se não for null).
+     */
+    public static Result analyze(Cue[] cues, long durMs, int nWin, long lenMs, Source src, AudioAligner.Params P, boolean spread, Window[][] usedOut) throws Exception {
+        long[][] plan = spread ? planSpread(cues, durMs, nWin, lenMs) : planDense(cues, durMs, nWin, lenMs);
+        AudioSyncSession ses = new AudioSyncSession(cues, durMs, P);
+        int total = plan.length, idx = 0;
+        for (long[] p : plan) {
+            Window w = src.capture(p[0], p[1], idx++, total);
+            if (w == null) return null;
+            ses.addWindow(w);
+        }
+        Result r = ses.solve();
+        int extra = 0;
+        while (r.driftMore != null && r.driftMore.length > 0 && extra < 2 && ses.windows() < P.maxDriftWindows) {
+            extra++;
+            total = ses.windows() + r.driftMore.length;
+            for (long[] p : r.driftMore) {
+                if (ses.windows() >= P.maxDriftWindows) break;
+                Window w = src.capture(p[0], p[1], ses.windows(), total);
+                if (w == null) return null;
+                ses.addWindow(w);
+            }
+            r = ses.solve();
+        }
+        r.windows = ses.windows();
+        if (usedOut != null && usedOut.length > 0) usedOut[0] = ses.all();
+        return r;
+    }
+
+    public Window[] all() { return windows.toArray(new Window[0]); }
+
     public void addWindow(Window w) { windows.add(w); }
 
     public int windows() { return windows.size(); }

@@ -59,9 +59,24 @@ public final class AudioAligner {
         public double unitAlpha = 6e-4;
         /** correção de escala 1,0 com |offset| menor que isto => a legenda já está sincronizada: não mexe (Result.inSync) */
         public double deadbandMs = 1100;
-        /** escalas 0,999 e 1,001001 (24 x 23,976 fps) são recusadas: a diferença é pequena demais para ser distinguida do ruído com poucas janelas e custa legendas já certas */
-        public boolean rejectNearUnitScale = true;
+        /** a "família 1,001" (0,999 e 1,001001: 24 x 23,976 fps, 30 x 29,97 fps) só vale com PROVA nas janelas (ver driftCheck), nunca por si só */
         public double nearUnitEps = 0.0015;
+        /** prova de deriva: janelas confiáveis (mínimo), cobertura do filme pelas janelas (fração e mínimo em ms), resíduo máximo da reta (ms), piso do resíduo
+         *  na razão, deriva medida / resíduo (mínimo), deriva total no filme (mínimo, ms) e a janela só é confiável com NCC e z do pico acima disto */
+        public int driftMinWins = 3;
+        public double driftMinSpanFrac = 0.25;
+        public long driftMinSpanMs = 240_000;
+        public double driftMaxResMs = 150;
+        public double driftResFloorMs = 50;
+        public double driftRatio = 3.0;
+        public double driftContentMs = 800;
+        public double winMinNcc = 0.15;
+        /** o pico da janela se destaca do melhor pico a mais de 500 ms dele por pelo menos isto (NCC), ou tem z >= winMinZ */
+        public double winMinMargin = 0.08;
+        public double winMinZ = 5.0;
+        /** acima disto (ms) a reta de escala 1,0 não explica as janelas confiáveis: suspeita de deriva => pede janelas extras (até maxDriftWindows) */
+        public double driftSuspectMs = 150;
+        public int maxDriftWindows = 5;
         /** porta (0 = desligada): todas as janelas com fala (>= 2) têm de concordar com o modelo dentro de gateWinDevMs (ms). Medida em CI: tira os falsos mexidos em legenda certa (4 -> 0 de 93) e os aceites errados (4,3% -> 0%) */
         public double gateWinDevMs = 150;
         /** porta opcional: mínimo de janelas com fala e concordantes (0 = desligada) */
@@ -309,6 +324,7 @@ public final class AudioAligner {
         double ncc;            // NCC no melhor deslocamento
         double ncc0;           // NCC em deslocamento 0
         double nccSecond;      // melhor NCC a mais de 500 ms do melhor
+        double z;              // quanto o pico se destaca das demais defasagens (desvios-padrão), fora de +-500 ms do pico
         double speechFrac;
     }
 
@@ -363,6 +379,14 @@ public final class AudioAligner {
         double sec = -1;
         for (int i = 0; i < ncc.length; i++) if (Math.abs(i - bi) > 50 && ncc[i] > sec) sec = ncc[i];
         out.nccSecond = sec;
+        double mu = 0, s2 = 0;
+        int cn = 0;
+        for (int i = 0; i < ncc.length; i++) if (Math.abs(i - bi) > 50) { mu += ncc[i]; s2 += ncc[i] * ncc[i]; cn++; }
+        if (cn > 10) {
+            mu /= cn;
+            double sd = Math.sqrt(Math.max(1e-12, s2 / cn - mu * mu));
+            out.z = (ncc[bi] - mu) / sd;
+        }
         return out;
     }
 
@@ -536,6 +560,7 @@ public final class AudioAligner {
         }
         R.scale = a0;
         R.offsetMs = b0;
+        driftCheck(R, cues, windows, ps, fine, mediaDurationMs, P);
         finalEvidence(windows, ps, fine, R, P);
         decide(R, P);
         try {
@@ -562,6 +587,142 @@ public final class AudioAligner {
         }
         if (!R.accepted) suggestMore(R, windows, P, mediaDurationMs);
         return R;
+    }
+
+    // ------------------------------------------------------------------ deriva (escala de fps, p.ex. 1,001)
+    /** ajuste de atraso(t) = beta + alpha*t com alpha FIXO (mínimos quadrados ponderados): {beta, resíduo máximo em ms} */
+    private static double[] fitFixedAlpha(double[] x, double[] y, double[] w, int n, double alpha) {
+        double sw = 0, sy = 0;
+        for (int i = 0; i < n; i++) { sw += w[i]; sy += w[i] * (y[i] - alpha * x[i]); }
+        double beta = sw > 0 ? sy / sw : 0;
+        double res = 0;
+        for (int i = 0; i < n; i++) res = Math.max(res, Math.abs(y[i] - (beta + alpha * x[i])));
+        return new double[]{beta, res};
+    }
+
+    /**
+     * Prova de deriva. Cada janela mede, sozinha, o atraso local da legenda SEM escala (NCC fina numa faixa de +-3 s em volta do modelo atual).
+     * Com as janelas confiáveis (NCC e z do pico próprios) ajusta atraso(t) = a + b*t. A família 1,001 (0,999 / 1,001001) só vale se TODAS estas coisas valem:
+     *  - pelo menos driftMinWins janelas confiáveis, cobrindo pelo menos driftMinSpanFrac do filme (e driftMinSpanMs);
+     *  - a reta com a inclinação da razão de fps deixa resíduo máximo <= driftMaxResMs;
+     *  - a deriva medida nas janelas (|b| * cobertura) passa de driftRatio vezes o resíduo (com piso driftResFloorMs): a inclinação não é ruído;
+     *  - a deriva no filme todo (|b| * duração) passa de driftContentMs, e a reta com escala 1,0 deixa o dobro do resíduo ou mais.
+     * Sem isso a escala volta a 1,0 (se a reta sem escala explica as janelas) ou fica recusada (nearUnit em decide). Legenda certa (inclinação 0) nunca ganha escala.
+     * Se as janelas confiáveis discordam de escala 1,0 mas a prova ainda não fecha, marca driftSuspect e propõe janelas extras espalhadas (driftMore).
+     */
+    private static void driftCheck(Result R, Cue[] cues, Window[] ws, float[][] ps, float[] fine, long durMs, Params P) {
+        int W = ws.length;
+        Result.Win[] info = new Result.Win[W];
+        double[] x = new double[W], y = new double[W], wt = new double[W];
+        int n = 0;
+        for (int w = 0; w < W; w++) {
+            Result.Win wi = new Result.Win();
+            double uc = ws[w].startMs + ws[w].p.length * 5.0;
+            double sc = (uc - R.offsetMs) / R.scale;
+            double d0 = uc - sc;
+            Fine f = fineWindow(ps[w], ws[w].startMs, fine, 1.0, d0, 300);
+            wi.startMs = ws[w].startMs;
+            wi.centerMs = uc;
+            wi.delayMs = d0 + f.bestDelta;
+            wi.ncc = f.ncc;
+            wi.z = f.z;
+            wi.speech = f.speechFrac >= P.minSpeechFrac;
+            wi.second = f.nccSecond;
+            wi.confident = wi.speech && f.ncc >= P.winMinNcc && (f.ncc - f.nccSecond >= P.winMinMargin || f.z >= P.winMinZ);
+            if (wi.confident) { x[n] = uc; y[n] = wi.delayMs; wt[n] = Math.max(0.01, f.ncc); n++; }
+            info[w] = wi;
+        }
+        R.wins = info;
+        R.driftConfident = n;
+        if (n < 2) { R.driftNote = "menos de 2 janelas confiáveis (" + n + " de " + W + ")"; return; }
+        double xmin = x[0], xmax = x[0];
+        for (int i = 1; i < n; i++) { xmin = Math.min(xmin, x[i]); xmax = Math.max(xmax, x[i]); }
+        double span = xmax - xmin;
+        double[] unit = fitFixedAlpha(x, y, wt, n, 0.0);
+        R.unitResMs = unit[1];
+        R.driftResMs = unit[1];
+        // inclinação livre (só diagnóstico)
+        {
+            double sw = 0, sx = 0, sy = 0, sxx = 0, sxy = 0;
+            for (int i = 0; i < n; i++) { sw += wt[i]; sx += wt[i] * x[i]; sy += wt[i] * y[i]; sxx += wt[i] * x[i] * x[i]; sxy += wt[i] * x[i] * y[i]; }
+            double den = sw * sxx - sx * sx;
+            if (den > 1e-6 * sw * sw) R.driftSlope = (sw * sxy - sx * sy) / den;
+        }
+        if (Math.abs(R.scale - 1.0) >= 0.0035) { R.driftNote = "escala grande (" + R.scale + "): a prova de deriva vale só para a família 1,001"; return; }
+
+        final double[] ks = {24.0 / 23.976, 23.976 / 24.0};
+        int best = -1;
+        double bestRes = Double.MAX_VALUE;
+        boolean nearMiss = false;
+        String why = "";
+        for (int c = 0; c < 2; c++) {
+            double al = alphaOf(ks[c]);
+            double[] fr = fitFixedAlpha(x, y, wt, n, al);
+            double meas = Math.abs(al) * span, content = Math.abs(al) * durMs;
+            boolean fits = fr[1] <= P.driftMaxResMs && 2 * fr[1] <= unit[1] && meas >= 2 * Math.max(fr[1], P.driftResFloorMs);
+            boolean spanOk = span >= Math.max((double) P.driftMinSpanMs, P.driftMinSpanFrac * durMs);
+            boolean ok = fits && n >= P.driftMinWins && spanOk && meas >= P.driftRatio * Math.max(fr[1], P.driftResFloorMs) && content >= P.driftContentMs;
+            if (fits && !ok) {
+                nearMiss = true;
+                why = (n < P.driftMinWins ? "só " + n + " janelas confiáveis; " : "") + (!spanOk ? "janelas cobrem pouco do filme; " : "")
+                        + (meas < P.driftRatio * Math.max(fr[1], P.driftResFloorMs) ? "deriva medida pequena frente ao resíduo; " : "")
+                        + (content < P.driftContentMs ? "deriva no filme abaixo de " + (long) P.driftContentMs + " ms; " : "");
+            }
+            if (ok && fr[1] < bestRes) { best = c; bestRes = fr[1]; }
+        }
+        if (best >= 0) {
+            double al = alphaOf(ks[best]);
+            double[] fr = fitFixedAlpha(x, y, wt, n, al);
+            R.scale = ks[best];
+            R.offsetMs = fr[0] * R.scale;
+            R.scaleKnown = true;
+            R.driftScale = true;
+            R.driftResMs = fr[1];
+            R.driftMeasMs = Math.abs(al) * span;
+            R.driftContentMs = Math.abs(al) * durMs;
+            R.driftNote = String.format(java.util.Locale.ROOT, "deriva provada: escala %.6f, resíduo %.0f ms (reta sem escala deixaria %.0f ms), deriva medida %.0f ms nas janelas e %.0f ms no filme, %d janelas confiáveis",
+                    R.scale, fr[1], unit[1], R.driftMeasMs, R.driftContentMs, n);
+            return;
+        }
+        if (Math.abs(R.scale - 1.0) > 1e-9) {
+            // a escala 1,001 que o ajuste fino encaixou não tem prova: se a reta sem escala explica as janelas, é 1,0 (o encaixe era ruído)
+            if (unit[1] <= P.driftMaxResMs) {
+                R.scale = 1.0;
+                R.offsetMs = unit[0];
+                R.scaleKnown = true;
+                R.driftNote = "escala 1,001 sem prova: a reta sem escala explica as janelas (resíduo " + Math.round(unit[1]) + " ms): fica 1,0";
+                return;
+            }
+        }
+        R.driftNote = "sem prova de deriva: resíduo da reta sem escala " + Math.round(unit[1]) + " ms" + (nearMiss ? " (" + why.trim() + ")" : "");
+        if (unit[1] > P.driftSuspectMs || nearMiss) {
+            R.driftSuspect = true;
+            if (W < P.maxDriftWindows) R.driftMore = moreSpread(cues, ws, durMs, P);
+        }
+    }
+
+    /** janelas extras espalhadas: das posições do plano de maxDriftWindows janelas, as mais afastadas das que já existem */
+    private static long[][] moreSpread(Cue[] cues, Window[] ws, long durMs, Params P) {
+        long len = ws.length > 0 ? ws[0].durationMs() : 90_000;
+        long[][] plan = AudioSyncSession.planSpread(cues, durMs, P.maxDriftWindows, len);
+        int want = P.maxDriftWindows - ws.length;
+        ArrayList<long[]> pick = new ArrayList<>();
+        boolean[] used = new boolean[plan.length];
+        for (int k = 0; k < want; k++) {
+            int bi = -1;
+            long bd = -1;
+            for (int i = 0; i < plan.length; i++) {
+                if (used[i]) continue;
+                long d = Long.MAX_VALUE;
+                for (Window w : ws) d = Math.min(d, Math.abs(plan[i][0] - w.startMs));
+                for (long[] q : pick) d = Math.min(d, Math.abs(plan[i][0] - q[0]));
+                if (d > bd) { bd = d; bi = i; }
+            }
+            if (bi < 0 || bd < len + 10_000) break;
+            used[bi] = true;
+            pick.add(plan[bi]);
+        }
+        return pick.isEmpty() ? null : pick.toArray(new long[0][]);
     }
 
     /** refina (scale, offset) com a NCC fina por janela; encaixa a escala em valores conhecidos quando os resíduos permitem */
@@ -669,7 +830,8 @@ public final class AudioAligner {
         double agreeFrac = R.blocksValid > 0 ? R.blocksAgree / (double) R.blocksValid : 0;
         boolean ok = R.z >= P.minZ && agreeFrac >= P.minAgreeFrac && R.nccMean >= P.minNcc && R.margin >= P.minMargin && R.f1 >= P.minF1;
         if (!R.scaleKnown && (!P.allowFreeScale || R.z < P.minZFree || R.nccMean < P.minNccFree)) ok = false;
-        boolean nearUnit = P.rejectNearUnitScale && Math.abs(R.scale - 1.0) > 1e-9 && Math.abs(R.scale - 1.0) < P.nearUnitEps;
+        // família 1,001: só com a prova de deriva (driftCheck); um valor assim sem prova é ruído de ajuste
+        boolean nearUnit = !R.driftScale && Math.abs(R.scale - 1.0) > 1e-9 && Math.abs(R.scale - 1.0) < P.nearUnitEps;
         if (nearUnit) ok = false;
         boolean gateDev = P.gateWinDevMs > 0 && R.winsValid >= 2 && R.winMaxDev > P.gateWinDevMs;
         boolean gateWin = P.gateMinWinsAgree > 0 && R.winsAgree < P.gateMinWinsAgree;
@@ -686,7 +848,8 @@ public final class AudioAligner {
             if (R.margin < P.minMargin) sb.append("pico ambíguo; ");
             if (R.f1 < P.minF1) sb.append("cobertura baixa; ");
             if (!R.scaleKnown && (R.z < P.minZFree || R.nccMean < P.minNccFree)) sb.append("escala fora das razões de fps; ");
-            if (nearUnit) sb.append("escala 0,999/1,001 recusada; ");
+            if (nearUnit) sb.append("escala 0,999/1,001 sem prova de deriva; ");
+            if (R.driftSuspect) sb.append("possível deriva: janelas discordam entre si; ");
             if (gateDev || gateWin) sb.append("janelas discordam; ");
             R.reason = sb.toString();
         }
