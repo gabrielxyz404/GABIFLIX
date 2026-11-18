@@ -1,0 +1,157 @@
+         1795020259.232   471   753 I ActivityManager: Force stopping io.github.gabrielxyz404.gabiflix appid=10076 user=0: from pid 7206
+         1795020259.241   471   753 I ActivityManager: Killing 6819:io.github.gabrielxyz404.gabiflix/u0a76 (adj 0): stop io.github.gabrielxyz404.gabiflix due to from pid 7206
+         1795020259.242   471   753 W ActivityTaskManager: Force removing ActivityRecord{b0b522d u0 io.github.gabrielxyz404.gabiflix/.PlayerActivity t9 f}}: app died, no saved state
+         1795020259.247   471   753 W ActivityTaskManager: Force removing ActivityRecord{c5da0e4 u0 io.github.gabrielxyz404.gabiflix/.tv.TvHomeActivity t9 f}}: app died, no saved state
+         1795020259.311   471   502 W ActivityManager: setHasOverlayUi called on unknown pid: 6819
+         1795020259.320   471   509 W ActivityManager: Slow operation: 61ms so far, now at startProcess: returned from zygote!
+         1795020259.320   471   509 W ActivityManager: Slow operation: 61ms so far, now at startProcess: done updating battery stats
+         1795020259.320   471   509 W ActivityManager: Slow operation: 61ms so far, now at startProcess: building log message
+         1795020259.320   471   509 I ActivityManager: Start proc 7210:com.android.vending/u0a56 for service {com.android.vending/com.google.android.finsky.scheduler.process.mainimpl.PhoneskyJobServiceMain}
+         1795020259.320   471   509 W ActivityManager: Slow operation: 61ms so far, now at startProcess: starting to update pids map
+         1795020259.320   471   509 W ActivityManager: Slow operation: 61ms so far, now at startProcess: done updating pids map
+         1795020260.385   471  3740 I ActivityManager: Force stopping io.github.gabrielxyz404.gabiflix appid=10076 user=0: clear data
+         1795020260.397   471   508 I ActivityManager: Force stopping io.github.gabrielxyz404.gabiflix appid=10076 user=-1: clearApplicationUserData
+         1795020260.825   471  3740 I ActivityTaskManager: START u0 {flg=0x10000000 cmp=io.github.gabrielxyz404.gabiflix/.tv.TvHomeActivity (has extras)} from uid 2000
+         1795020260.840   471   509 I ActivityManager: Start proc 7313:io.github.gabrielxyz404.gabiflix/u0a76 for pre-top-activity {io.github.gabrielxyz404.gabiflix/io.github.gabrielxyz404.gabiflix.tv.TvHomeActivity}
+         1795020261.093   471  3623 I ActivityTaskManager: START u0 {cmp=io.github.gabrielxyz404.gabiflix/.PlayerActivity (has extras)} from uid 10076
+         1795020261.119   471   750 W ActivityTaskManager: Tried to set launchTime (0) < mLastActivityLaunchTime (985341)
+         1795020262.676  7313  7313 I GabiFlixPlayer: ciclo: onStart, tocando=false, tempo=-1, escala=0, atraso=0, vista=TextureView 0x0, vout=true
+         1795020262.676  7313  7313 I GabiFlixPlayer: ciclo: onResume, tocando=false, tempo=-1, escala=0, atraso=0, vista=TextureView 0x0, vout=true
+         1795020262.721  7313  7356 I GabiFlixPlayer: hash=7ca135ceed9da48f tamanho=39670384 arquivo=clip.mkv
+         1795020262.721  7313  7356 I GabiFlixPlayer: Hash calculado, mas a busca de legendas falhou
+         1795020262.721  7313  7356 I GabiFlixPlayer: candidatas para baixar: 1 (do site: 1)
+         1795020262.788  7313  7356 I GabiFlixPlayer: legendas PT válidas: 1 de 1; referências baixadas: 0
+         1795020262.882  7313  7356 I GabiFlixPlayer: alinhamento com 0 referência(s):
+         1795020262.882  7313  7356 I GabiFlixPlayer:   sem referência (nem outro idioma, nem PT do hash) e menos de 2 PT para comparar: ranking antigo
+         1795020262.882  7313  7356 I GabiFlixPlayer:   alinhadas: 0
+         1795020263.232   471   507 I ActivityTaskManager: Displayed io.github.gabrielxyz404.gabiflix/.PlayerActivity: +2s395ms
+         1795020263.544  7313  7313 I GabiFlixPlayer: ciclo: evento Vout, saídas=1
+         1795020263.547  7313  7313 I GabiFlixPlayer: vistas do vídeo: TextureView(vídeo)
+         1795020263.547  7313  7313 I GabiFlixPlayer: AUDIOSYNC pronto (sem limite de dados; automático=true, começa 25 s depois de a legenda ficar ativa, reverifica a cada 600 s)
+         1795020264.621  7313  7313 I GabiFlixPlayer: AUDIOSYNC estado: st=0 executando=false tocando=true carregando=false faixa=-1 baixadas=0 addedSubs=0 embeddedKnown=false faixas=[] cand=false | pss=109MB java=8/512MB nativo=60MB livre=1112MB limiar=144MB poucaMemoria=false
+         1795020264.907  7313  7313 I GabiFlixPlayer: legenda PT embutida: não há
+         1795020264.907  7313  7313 I GabiFlixPlayer: ranking das legendas:
+         1795020264.907  7313  7313 I GabiFlixPlayer:   referência de fim=0ms (sem referência), duração=1200023ms
+         1795020264.907  7313  7313 I GabiFlixPlayer:   #0 fim=6111228ms hash=false corrigida=false nota=0.3000
+         1795020264.912  7313  7313 I GabiFlixPlayer: escolhida: candidata #0; melhor baixada: #0 alinhada=false nota=0.00 deslocamento=0ms hash=false corrigida=false; 1 no menu
+         1795020264.912  7313  7313 I GabiFlixPlayer: atraso da legenda ativa (nenhuma): 0 ms
+         1795020265.585  7313  7331 I GFCrash : corpo de CRASH_NATIVE:
+         1795020265.585  7313  7331 I GFCrash : FramePlay 1.0 | CRASH_NATIVE | processo io.github.gabrielxyz404.gabiflix:audiocap
+         1795020265.585  7313  7331 I GFCrash : Aparelho: Google AOSP TV on x86 | Android 11 (API 30) | RAM 1981 MB, livre 1112 MB | tv=true
+         1795020265.585  7313  7331 I GFCrash : ABI: [x86] (64 bits: []) processo=32 bits
+         1795020265.585  7313  7331 I GFCrash : Código: 5  estado: 11  importância: 100
+         1795020265.585  7313  7331 I GFCrash : Hora da morte: 2026-11-18 16:42:42
+         1795020265.585  7313  7331 I GFCrash : Descrição: crash
+         1795020265.585  7313  7331 I GFCrash : PSS: 0 kB  RSS: 0 kB
+         1795020265.585  7313  7331 I GFCrash : 
+         1795020265.585  7313  7331 I GFCrash : Registo de queda do sistema (logcat, filtrado):
+         1795020265.585  7313  7331 I GFCrash : (nenhuma linha de queda do pid 7004 no registo do sistema; buffer crash=0 bytes, principal=28 bytes)
+         1795020265.585  7313  7331 I GFCrash : 
+         1795020265.585  7313  7331 I GFCrash : Migalhas do processo audiocap antes da morte:
+         1795020265.585  7313  7331 I GFCrash : (sem migalhas)
+         1795020265.594  7313  7313 I GabiFlixPlayer: legenda do app: 1458 falas da faixa ativa
+         1795020265.595  7313  7313 I GabiFlixPlayer: legenda do app: ligada
+         1795020265.622  7313  7313 I GabiFlixPlayer: AUDIOSYNC legenda ativa: d3:u|h:7ca135ceed9da48f|http://10.0.2.2:8000/mais3.srt#raw
+         1795020265.815  7313  7331 I GFCrash : POST CRASH_NATIVE parte 1/1 (545 bytes) -> HTTP 200
+         1795020265.903  7313  7331 I GFCrash : corpo de CRASH_NATIVE:
+         1795020265.903  7313  7331 I GFCrash : FramePlay 1.0 | CRASH_NATIVE | processo io.github.gabrielxyz404.gabiflix:audiocap
+         1795020265.903  7313  7331 I GFCrash : Aparelho: Google AOSP TV on x86 | Android 11 (API 30) | RAM 1981 MB, livre 1114 MB | tv=true
+         1795020265.903  7313  7331 I GFCrash : ABI: [x86] (64 bits: []) processo=32 bits
+         1795020265.903  7313  7331 I GFCrash : Código: 5  estado: 11  importância: 100
+         1795020265.903  7313  7331 I GFCrash : Hora da morte: 2026-11-18 16:42:39
+         1795020265.903  7313  7331 I GFCrash : Descrição: crash
+         1795020265.903  7313  7331 I GFCrash : PSS: 0 kB  RSS: 0 kB
+         1795020265.903  7313  7331 I GFCrash : 
+         1795020265.903  7313  7331 I GFCrash : Registo de queda do sistema (logcat, filtrado):
+         1795020265.903  7313  7331 I GFCrash : (nenhuma linha de queda do pid 6960 no registo do sistema; buffer crash=0 bytes, principal=28 bytes)
+         1795020265.903  7313  7331 I GFCrash : 
+         1795020265.903  7313  7331 I GFCrash : Migalhas do processo audiocap antes da morte:
+         1795020265.903  7313  7331 I GFCrash : (sem migalhas)
+         1795020266.360  7313  7331 I GFCrash : POST CRASH_NATIVE parte 1/1 (545 bytes) -> HTTP 200
+         1795020266.454  7313  7313 I GabiFlixPlayer: atraso da legenda ativa (d3:u|h:7ca135ceed9da48f|http://10.0.2.2:8000/mais3.srt#raw): 0 ms
+         1795020266.491  7313  7331 I GFCrash : corpo de CRASH_NATIVE:
+         1795020266.491  7313  7331 I GFCrash : FramePlay 1.0 | CRASH_NATIVE | processo io.github.gabrielxyz404.gabiflix:audiocap
+         1795020266.491  7313  7331 I GFCrash : Aparelho: Google AOSP TV on x86 | Android 11 (API 30) | RAM 1981 MB, livre 1114 MB | tv=true
+         1795020266.491  7313  7331 I GFCrash : ABI: [x86] (64 bits: []) processo=32 bits
+         1795020266.491  7313  7331 I GFCrash : Código: 5  estado: 11  importância: 100
+         1795020266.491  7313  7331 I GFCrash : Hora da morte: 2026-11-18 16:39:57
+         1795020266.491  7313  7331 I GFCrash : Descrição: crash
+         1795020266.491  7313  7331 I GFCrash : PSS: 0 kB  RSS: 0 kB
+         1795020266.491  7313  7331 I GFCrash : 
+         1795020266.491  7313  7331 I GFCrash : Registo de queda do sistema (logcat, filtrado):
+         1795020266.491  7313  7331 I GFCrash : (nenhuma linha de queda do pid 6524 no registo do sistema; buffer crash=0 bytes, principal=28 bytes)
+         1795020266.491  7313  7331 I GFCrash : 
+         1795020266.491  7313  7331 I GFCrash : Migalhas do processo audiocap antes da morte:
+         1795020266.491  7313  7331 I GFCrash : (sem migalhas)
+         1795020266.730  7313  7331 I GFCrash : POST CRASH_NATIVE parte 1/1 (545 bytes) -> HTTP 200
+         1795020266.822  7313  7331 I GFCrash : corpo de CRASH_NATIVE:
+         1795020266.822  7313  7331 I GFCrash : FramePlay 1.0 | CRASH_NATIVE | processo io.github.gabrielxyz404.gabiflix:audiocap
+         1795020266.822  7313  7331 I GFCrash : Aparelho: Google AOSP TV on x86 | Android 11 (API 30) | RAM 1981 MB, livre 1114 MB | tv=true
+         1795020266.822  7313  7331 I GFCrash : ABI: [x86] (64 bits: []) processo=32 bits
+         1795020266.822  7313  7331 I GFCrash : Código: 5  estado: 11  importância: 100
+         1795020266.822  7313  7331 I GFCrash : Hora da morte: 2026-11-18 16:37:25
+         1795020266.822  7313  7331 I GFCrash : Descrição: crash
+         1795020266.822  7313  7331 I GFCrash : PSS: 0 kB  RSS: 0 kB
+         1795020266.822  7313  7331 I GFCrash : 
+         1795020266.822  7313  7331 I GFCrash : Registo de queda do sistema (logcat, filtrado):
+         1795020266.822  7313  7331 I GFCrash : (nenhuma linha de queda do pid 5727 no registo do sistema; buffer crash=0 bytes, principal=28 bytes)
+         1795020266.822  7313  7331 I GFCrash : 
+         1795020266.822  7313  7331 I GFCrash : Migalhas do processo audiocap antes da morte:
+         1795020266.822  7313  7331 I GFCrash : (sem migalhas)
+         1795020267.024  7313  7331 I GFCrash : POST CRASH_NATIVE parte 1/1 (545 bytes) -> HTTP 200
+         1795020267.089  7313  7331 I GFCrash : corpo de CRASH_NATIVE:
+         1795020267.089  7313  7331 I GFCrash : FramePlay 1.0 | CRASH_NATIVE | processo io.github.gabrielxyz404.gabiflix:audiocap
+         1795020267.089  7313  7331 I GFCrash : Aparelho: Google AOSP TV on x86 | Android 11 (API 30) | RAM 1981 MB, livre 1115 MB | tv=true
+         1795020267.089  7313  7331 I GFCrash : ABI: [x86] (64 bits: []) processo=32 bits
+         1795020267.089  7313  7331 I GFCrash : Código: 5  estado: 11  importância: 100
+         1795020267.089  7313  7331 I GFCrash : Hora da morte: 2026-11-18 16:37:21
+         1795020267.089  7313  7331 I GFCrash : Descrição: crash
+         1795020267.089  7313  7331 I GFCrash : PSS: 0 kB  RSS: 0 kB
+         1795020267.089  7313  7331 I GFCrash : 
+         1795020267.089  7313  7331 I GFCrash : Registo de queda do sistema (logcat, filtrado):
+         1795020267.089  7313  7331 I GFCrash : (nenhuma linha de queda do pid 5678 no registo do sistema; buffer crash=0 bytes, principal=28 bytes)
+         1795020267.089  7313  7331 I GFCrash : 
+         1795020267.089  7313  7331 I GFCrash : Migalhas do processo audiocap antes da morte:
+         1795020267.089  7313  7331 I GFCrash : (sem migalhas)
+         1795020267.352  7313  7331 I GFCrash : POST CRASH_NATIVE parte 1/1 (545 bytes) -> HTTP 200
+         1795020284.967  7313  7313 I GabiFlixPlayer: AUDIOSYNC estado: st=0 executando=false tocando=true carregando=false faixa=2 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 2:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=109MB java=10/512MB nativo=77MB livre=1113MB limiar=144MB poucaMemoria=false
+         1795020295.047  7313  7313 I GabiFlixPlayer: AUDIOSYNC antes da análise: saúde da reprodução: amostras=30 paradas=0 razão_mínima=0.71 carregando=0 quadros_perdidos=161
+         1795020295.047  7313  7313 I GabiFlixPlayer: AUDIOSYNC começando: posição 31 s, duração 1200 s, atraso atual 0 ms, faixa de áudio 1
+         1795020295.559   471   509 I ActivityManager: Start proc 7475:io.github.gabrielxyz404.gabiflix:audiocap/u0a76 for service {io.github.gabrielxyz404.gabiflix/io.github.gabrielxyz404.gabiflix.AudioCapService}
+         1795020297.053  7313  7471 I GabiFlixPlayer: AUDIOSYNC captura 275 s +90 s: 90.06 s de PCM em 1.53 s (fim) leitura=2 MB | usou a faixa -1 (pedida 1) de []
+         1795020305.213  7313  7313 I GabiFlixPlayer: AUDIOSYNC estado: st=0 executando=true tocando=true carregando=false faixa=2 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 2:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=102MB java=9/512MB nativo=76MB livre=1077MB limiar=144MB poucaMemoria=false
+         1795020306.176  7313  7471 I GabiFlixPlayer: AUDIOSYNC captura 710 s +90 s: 89.97 s de PCM em 2.23 s (fim) leitura=3 MB | usou a faixa -1 (pedida 1) de []
+         1795020311.724  7313  7471 I GabiFlixPlayer: AUDIOSYNC captura 1050 s +90 s: 89.99 s de PCM em 2.25 s (fim) leitura=3 MB | usou a faixa 1 (pedida 1) de [1:Scarlet Street 1945 HD; ]
+         1795020313.532  7313  7313 I GabiFlixPlayer: legenda do app: tempo 49914 ms, atraso 0 ms -> "ALMAS PERVERSAS (1945)"
+         1795020316.962  7313  7313 I GabiFlixPlayer: AUDIOSYNC resultado: aceita z=11.7 janelas=3/3 escala=1.00000 deslocamento=-3032 ms | vad=silero janelas=3 captura=19425 ms vad=12471 ms (cpu 22) solve=1968 ms (cpu 362) cpu_thread=499 ms total=21849 ms leitura_estimada=8 MB leitura_real=8 MB pss=110->105 MB java=11->11 MB
+         1795020316.962  7313  7313 I GabiFlixPlayer: AUDIOSYNC saúde da reprodução: amostras=21 paradas=0 razão_mínima=0.76 carregando=0 quadros_perdidos=118
+         1795020316.962  7313  7313 I GabiFlixPlayer: atraso da legenda: -3030 ms (d3:u|h:7ca135ceed9da48f|http://10.0.2.2:8000/mais3.srt#raw)
+         1795020316.962  7313  7313 I GabiFlixPlayer: AUDIOSYNC legenda: atraso 0 -> -3030 ms, estratégia plain, faixa 2, posição 53417 ms
+         1795020316.963  7313  7313 I GabiFlixPlayer: AUDIOSYNC aplicado: atraso -3030 ms, escala 1.0
+         1795020317.055  7313  7313 I GabiFlixPlayer: legenda do app: tempo 53417 ms, atraso -3030 ms -> (nada)
+         1795020319.038  7475  7475 I AndroidRuntime: VM exiting with result code 0, cleanup skipped.
+         1795020319.050   471  1388 I ActivityManager: Process io.github.gabrielxyz404.gabiflix:audiocap (pid 7475) has died: cch+5 CEM 
+         1795020325.415  7313  7313 I GabiFlixPlayer: AUDIOSYNC estado: st=2 executando=false tocando=true carregando=false faixa=2 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 2:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=113MB java=11/512MB nativo=77MB livre=1109MB limiar=144MB poucaMemoria=false
+         1795020345.733  7313  7313 I GabiFlixPlayer: AUDIOSYNC estado: st=2 executando=false tocando=true carregando=false faixa=2 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 2:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=115MB java=12/512MB nativo=78MB livre=1105MB limiar=144MB poucaMemoria=false
+         1795020366.039  7313  7313 I GabiFlixPlayer: AUDIOSYNC estado: st=2 executando=false tocando=true carregando=false faixa=2 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 2:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=110MB java=13/512MB nativo=80MB livre=1116MB limiar=144MB poucaMemoria=false
+         1795020386.270  7313  7313 I GabiFlixPlayer: AUDIOSYNC estado: st=2 executando=false tocando=true carregando=false faixa=2 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 2:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=112MB java=13/512MB nativo=81MB livre=1114MB limiar=144MB poucaMemoria=false
+         1795020406.733  7313  7313 I GabiFlixPlayer: AUDIOSYNC estado: st=2 executando=false tocando=true carregando=false faixa=2 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 2:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=113MB java=14/512MB nativo=82MB livre=1109MB limiar=144MB poucaMemoria=false
+         1795020422.054  7313  7313 I GabiFlixPlayer: legenda do app: tempo 158484 ms, atraso -3030 ms -> "Bom, rapazes, detesto/interromper uma grande festa..."
+         1795020423.941  7313  7313 I GabiFlixPlayer: legenda do app: tempo 160298 ms, atraso -3030 ms -> "Bom, rapazes, detesto/interromper uma grande festa.../mas não é prudente/fazer uma mulher esperar."
+         1795020424.064  7313  7313 I GabiFlixPlayer: legenda do app: tempo 160298 ms, atraso -3030 ms -> "mas não é prudente/fazer uma mulher esperar."
+         1795020426.607  7313  7313 I GabiFlixPlayer: legenda do app: tempo 162876 ms, atraso -3030 ms -> "mas não é prudente/fazer uma mulher esperar./- Vocês sabem como elas são./- Com certeza, Sr. Hogarth."
+         1795020426.709  7313  7313 I GabiFlixPlayer: legenda do app: tempo 163131 ms, atraso -3030 ms -> "- Vocês sabem como elas são./- Com certeza, Sr. Hogarth."
+         1795020427.173  7313  7313 I GabiFlixPlayer: AUDIOSYNC estado: st=2 executando=false tocando=true carregando=false faixa=2 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 2:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=115MB java=15/512MB nativo=84MB livre=1106MB limiar=144MB poucaMemoria=false
+         1795020428.854  7313  7313 I GabiFlixPlayer: legenda do app: tempo 165198 ms, atraso -3030 ms -> "- Vocês sabem como elas são./- Com certeza, Sr. Hogarth./- Claro que sabemos./- São todas iguais."
+         1795020428.996  7313  7313 I GabiFlixPlayer: legenda do app: tempo 165454 ms, atraso -3030 ms -> "- Claro que sabemos./- São todas iguais."
+         1795020431.251  7313  7313 I GabiFlixPlayer: legenda do app: tempo 167543 ms, atraso -3030 ms -> (nada)
+         1795020432.071  7313  7313 I GabiFlixPlayer: legenda do app: tempo 168299 ms, atraso -3030 ms -> "Vejo que todos me compreendem."
+         1795020434.153  7313  7313 I GabiFlixPlayer: legenda do app: tempo 170385 ms, atraso -3030 ms -> (nada)
+         1795020436.066  7313  7313 I GabiFlixPlayer: legenda do app: tempo 172495 ms, atraso -3030 ms -> "Francamente, rapazes, me diverti/como nunca nessas últimas horas."
+         1795020439.692  7313  7313 I GabiFlixPlayer: legenda do app: tempo 176132 ms, atraso -3030 ms -> (nada)
+         1795020440.423  7313  7313 I GabiFlixPlayer: legenda do app: tempo 176636 ms, atraso -3030 ms -> "E, por falar em horas..."
+         1795020443.433  7313  7313 I GabiFlixPlayer: legenda do app: tempo 179756 ms, atraso -3030 ms -> "E, por falar em horas.../tenho aqui um relógio/de ouro com 17 rubis..."
+         1795020443.601  7313  7313 I GabiFlixPlayer: legenda do app: tempo 180036 ms, atraso -3030 ms -> "tenho aqui um relógio/de ouro com 17 rubis..."
+         1795020446.710  7313  7313 I GabiFlixPlayer: legenda do app: tempo 182917 ms, atraso -3030 ms -> (nada)
+         1795020447.291  7313  7313 I GabiFlixPlayer: legenda do app: tempo 183705 ms, atraso -3030 ms -> "um presente adequado porque..."
+         1795020447.402  7313  7313 I GabiFlixPlayer: AUDIOSYNC estado: st=2 executando=false tocando=true carregando=false faixa=2 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 2:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=117MB java=16/512MB nativo=85MB livre=1095MB limiar=144MB poucaMemoria=false
