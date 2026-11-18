@@ -1532,10 +1532,22 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
             lastCropSet = crop
             cropRect = rect
             cropGen += 1   // as amostras de barras recomeçam: eram de outro enquadramento
-            if let c = crop { c.withCString { player.videoCropGeometry = UnsafeMutablePointer(mutating: $0) } }
+            if let c = crop { vlcCropString(c).withCString { player.videoCropGeometry = UnsafeMutablePointer(mutating: $0) } }
             else { player.videoCropGeometry = nil }
         }
-        log("tela: \(PlayerWindowController.scaleNames[scaleMode]) \(w):\(h) recorte=\(crop ?? "nenhum") barras=\(barsKey())")
+        log("tela: \(PlayerWindowController.scaleNames[scaleMode]) \(w):\(h) recorte=\(crop ?? "nenhum") barras=\(barsKey()) vlc=\(crop.map { vlcCropString($0) } ?? "nenhum")")
+    }
+
+    /** O libvlc 3.0.x (o do VLCKit 3.7.3, medido) lê "LxA+X+Y" como X até L e Y até A (L e A viram a borda de direita/baixo), não como largura e altura.
+        O formato por bordas "esq+topo+dir+baixo" (pixels tirados de cada lado) é sem ambiguidade (medido com o libvlc 3.0.23, mesmo commit 79128878):
+        é o que se manda ao VLC. O texto "LxA+X+Y" continua sendo o formato interno (log, testes). Só a proporção ("960:600") passa como está. */
+    private func vlcCropString(_ c: String) -> String {
+        let parts = c.split(separator: "+").map(String.init)
+        guard parts.count == 3, let wh = parts.first?.split(separator: "x").map(String.init), wh.count == 2,
+              let w = Int(wh[0]), let h = Int(wh[1]), let x = Int(parts[1]), let y = Int(parts[2]) else { return c }
+        let fw = Int(srcSize.width), fh = Int(srcSize.height)
+        guard fw > 0, fh > 0 else { return c }
+        return "\(x)+\(y)+\(max(0, fw - x - w))+\(max(0, fh - y - h))"
     }
 
     @objc private func toggleScale(_ sender: NSButton) {
