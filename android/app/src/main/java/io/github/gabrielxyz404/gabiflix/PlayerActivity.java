@@ -426,7 +426,7 @@ public class PlayerActivity extends Activity {
             if (sd != null) ui.postDelayed(() -> { subDelayMs = Integer.parseInt(sd); applySubDelay(); glog("teste: atraso da legenda posto em " + subDelayMs + " ms"); }, 4000);
             if (getIntent().getStringExtra("gfTrace") != null) ui.post(new Runnable() { @Override public void run() {
                 if (player == null) return;
-                glog("pos " + player.getTime() + " spu=" + player.getSpuTrack() + " atraso=" + subDelayMs + " buf=" + buffering());
+                glog("pos " + player.getTime() + " spu=" + player.getSpuTrack() + " atraso=" + subDelayMs);
                 ui.postDelayed(this, 400);
             } });
         } catch (Throwable ignored) {}
