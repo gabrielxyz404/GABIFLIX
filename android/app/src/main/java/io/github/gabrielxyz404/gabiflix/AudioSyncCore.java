@@ -73,8 +73,6 @@ final class AudioSyncCore {
     private final AudioCap[] extraCaps = new AudioCap[2];
     private final Object vadLock = new Object();
     private volatile boolean peerCancel;
-    /** quantas janelas capturar ao mesmo tempo: 1 = em fila (como antes); o botão usa 3, o automático 2 (para não competir com o filme) */
-    volatile int parallel = 1;
     private Vad vad;
     private String vadName = "?";
     private volatile boolean busy;
@@ -220,7 +218,7 @@ final class AudioSyncCore {
             long t0 = System.nanoTime();
             co = c.capture(url, startMs, lenMs, wav, 420_000, audioTrackId);
             synchronized (o.st) {
-                if (parallel <= 1) o.st.captureWallMs += (System.nanoTime() - t0) / 1_000_000;
+                o.st.captureWallMs += (System.nanoTime() - t0) / 1_000_000;
                 if (co.bytes > 0) o.st.realBytes += co.bytes;
             }
             if (co.ok || c.isCancelled()) break;
@@ -316,55 +314,18 @@ final class AudioSyncCore {
                 long[][] plan = AudioSyncSession.planDense(cues, durMs, N_WIN, WIN_MS);
                 AudioSyncSession ses = new AudioSyncSession(cues, durMs, P);
                 Window[] ws = new Window[plan.length];
-                final int par = Math.max(1, Math.min(parallel, plan.length));
-                peerCancel = false;
+                // capturas em fila, uma janela por vez: capturar as 3 ao mesmo tempo (testado no emulador) fez o corte do libVLC perder a exatidão
+                // (janelas de 92-98 s em vez de 90 s) e a análise recusou uma legenda que a captura em fila aceita; por isso não se faz em paralelo
+                final int par = 1;
                 long cw0 = System.nanoTime();
-                if (par == 1) {
-                    for (int i = 0; i < plan.length; i++) {
-                        if (cap != null && cap.isCancelled()) { o.kind = Outcome.CANCELLED; o.note = "cancelado"; return o; }
-                        say("A ouvir o filme… trecho " + (i + 1) + " de " + plan.length);
-                        Window w = captureWindow(url, plan[i][0], plan[i][1], o);
-                        if (w == null) { return captureFailed(o, i + 1); }
-                        ws[i] = w;
-                        o.st.windows++;
-                        if (i + 1 < plan.length) Thread.sleep(1000);
-                    }
-                } else {
-                    // as janelas são independentes: capturadas ao mesmo tempo, cada uma na sua própria mídia do libVLC (o mesmo libVLC)
-                    java.util.concurrent.BlockingQueue<AudioCap> free = new java.util.concurrent.LinkedBlockingQueue<>();
-                    for (int i = 0; i < par; i++) free.add(capAt(i));
-                    java.util.concurrent.ExecutorService pool = java.util.concurrent.Executors.newFixedThreadPool(par, r -> {
-                        Thread t = new Thread(() -> { Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND); r.run(); }, "gf-audiosync-cap");
-                        t.setPriority(Thread.MIN_PRIORITY);
-                        return t;
-                    });
-                    final java.util.concurrent.atomic.AtomicInteger ready = new java.util.concurrent.atomic.AtomicInteger();
-                    java.util.List<java.util.concurrent.Future<Window>> fs = new java.util.ArrayList<>();
-                    say("A ouvir o filme… " + plan.length + " trechos ao mesmo tempo");
-                    for (final long[] pw : plan) {
-                        fs.add(pool.submit(() -> {
-                            AudioCap c = free.take();
-                            try {
-                                Window w = captureWindow(url, pw[0], pw[1], o, c);
-                                if (w == null) { peerCancel = true; cancel(); }   // uma falhou: as outras param (sem desperdiçar rede)
-                                else say("A ouvir o filme… " + ready.incrementAndGet() + " de " + plan.length + " trechos prontos");
-                                return w;
-                            } finally { free.add(c); }
-                        }));
-                    }
-                    int failed = -1;
-                    for (int i = 0; i < fs.size(); i++) {
-                        Window w = null;
-                        try { w = fs.get(i).get(); } catch (java.util.concurrent.ExecutionException ee) { log("captura em paralelo: " + ee.getCause()); }
-                        if (w == null) { if (failed < 0) failed = i + 1; } else { ws[i] = w; o.st.windows++; }
-                    }
-                    pool.shutdown();
-                    o.st.captureWallMs = (System.nanoTime() - cw0) / 1_000_000;
-                    if (failed > 0) {
-                        boolean wasCancelled = !peerCancel && cap != null && cap.isCancelled();
-                        resetCaps();
-                        return wasCancelled ? cancelledOut(o) : captureFailed(o, failed);
-                    }
+                for (int i = 0; i < plan.length; i++) {
+                    if (cap != null && cap.isCancelled()) { o.kind = Outcome.CANCELLED; o.note = "cancelado"; return o; }
+                    say("A ouvir o filme… trecho " + (i + 1) + " de " + plan.length);
+                    Window w = captureWindow(url, plan[i][0], plan[i][1], o);
+                    if (w == null) { return captureFailed(o, i + 1); }
+                    ws[i] = w;
+                    o.st.windows++;
+                    if (i + 1 < plan.length) Thread.sleep(300);
                 }
                 if (par == 1) o.st.captureWallMs = (System.nanoTime() - cw0) / 1_000_000;
                 for (Window w : ws) ses.addWindow(w);
