@@ -17,7 +17,7 @@ adb shell pm disable-user --user 0 com.google.android.apps.nexuslauncher >/dev/n
 nmark() { adb logcat -d | grep -c "tela: modo"; }
 abrir() {
   adb shell am force-stop $PKG; adb shell pm clear $PKG >/dev/null 2>&1; sleep 1
-  X="--es gfOvScript tela:1@9000+tela:0@21000+tela:1@33000"
+  X="--es gfOvScript tela:1@16000+tela:0@28000+tela:1@40000"
   if [ "$P" = tel ]; then adb shell am start -n $PKG/.PlayerActivity --es url "http://10.0.2.2:8000/$1" --esa subs "http://10.0.2.2:8000/vazia.srt" --es type movie --es id tt0000001 $X
   else adb shell am start -n $PKG/.tv.TvHomeActivity --es gfTestUrl "http://10.0.2.2:8000/$1" --es gfTestSubs "http://10.0.2.2:8000/vazia.srt" $X; fi
 }
@@ -29,9 +29,9 @@ for v in barra circ circwide; do
   adb logcat -c
   abrir $v.mkv
   esperar "ciclo: evento Vout" 120 || echo "FALHA: video $v nao tocou" >> $OUT/passos.txt
-  sleep 2
+  sleep 6
   foto $v-0-normal
-  # grava a tela durante as 3 trocas (a primeira é 9 s depois do início da reprodução)
+  # grava a tela durante as 3 trocas (a primeira é 16 s depois do início da reprodução)
   adb shell date +%s.%N | tr -d '\r' > $OUT/$L-$P-$v.inicio
   ( adb shell screenrecord --size $SZ --bit-rate 1500000 --time-limit 46 /sdcard/rec.mp4 ) &
   RP=$!
