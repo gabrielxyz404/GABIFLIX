@@ -54,8 +54,9 @@ for v in barra wide hd pilar; do
   abrir $v.mkv
   sleep 22
   snap $v-normal 0.4
+  adb shell input keyevent KEYCODE_MEDIA_PAUSE; sleep 1.5
   showc; tela_click; hidec
-  sleep 14
+  adb shell input keyevent KEYCODE_MEDIA_PLAY; sleep 14
   adb shell input keyevent KEYCODE_MEDIA_PAUSE; sleep 1.5
   snap $v-preencher 0.4
 done
