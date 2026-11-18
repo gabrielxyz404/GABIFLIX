@@ -32,7 +32,9 @@ final class AudioCap {
     }
 
     private final Context ctx;
-    private LibVLC vlc;
+    /** UM libVLC para todas as capturas (cada captura é uma mídia/player próprio nele) */
+    private static LibVLC vlc;
+    private static int users;
     private volatile CountDownLatch curLatch;
     private volatile boolean cancelled;
 
@@ -49,20 +51,24 @@ final class AudioCap {
 
     boolean isCancelled() { return cancelled; }
 
-    private synchronized LibVLC instance() {
-        if (vlc == null) {
-            ArrayList<String> o = new ArrayList<>();
-            o.add("--no-lua");
-            o.add("--no-osd");
-            o.add("--no-spu");
-            o.add("--no-sub-autodetect-file");
-            vlc = new LibVLC(ctx, o);
+    private LibVLC instance() {
+        synchronized (AudioCap.class) {
+            if (vlc == null) {
+                ArrayList<String> o = new ArrayList<>();
+                o.add("--no-lua");
+                o.add("--no-osd");
+                o.add("--no-spu");
+                o.add("--no-sub-autodetect-file");
+                vlc = new LibVLC(ctx, o);
+            }
+            return vlc;
         }
-        return vlc;
     }
 
-    synchronized void close() {
-        if (vlc != null) { try { vlc.release(); } catch (Throwable ignored) {} vlc = null; }
+    static void close() {
+        synchronized (AudioCap.class) {
+            if (vlc != null) { try { vlc.release(); } catch (Throwable ignored) {} vlc = null; }
+        }
     }
 
     private static void log(String m) { SubtitleSync.log("AUDIOSYNC " + m); }
@@ -104,6 +110,7 @@ final class AudioCap {
         LibVLC v = instance();
         Media media = new Media(v, Uri.parse(url));
         media.addOption(":no-video");
+        media.addOption(":input-fast-seek");
         media.addOption(":no-spu");
         media.addOption(":network-caching=600");
         media.addOption(":http-reconnect");

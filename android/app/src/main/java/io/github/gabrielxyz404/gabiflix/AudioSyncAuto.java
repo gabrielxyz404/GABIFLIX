@@ -71,6 +71,8 @@ final class AudioSyncAuto {
     private long startAfterMs = 25_000, recheckMs = 600_000;
     /** orçamento de leitura da rede (as 3 janelas) para o modo automático: o botão não tem limite */
     private long budgetOverrideMb = -1;
+    /** janelas capturadas ao mesmo tempo: botão 3, automático 2 (extra gfAudioPar só nos testes) */
+    private int parOverride = -1;
     private static final long BUDGET_WIFI = 2048L << 20, BUDGET_METERED = 250L << 20;
     private static final long RECHECK_WIFI = 450L << 20, RECHECK_METERED = 80L << 20;
 
@@ -113,6 +115,8 @@ final class AudioSyncAuto {
         v = extra(in, "gfAudioRecheckSec");
         if (v != null) try { recheckMs = Integer.parseInt(v) * 1000L; } catch (NumberFormatException ignored) {}
         if ("true".equals(extra(in, "gfAudioDsp"))) core.forceDsp = true;
+        v = extra(in, "gfAudioPar");
+        if (v != null) try { parOverride = Integer.parseInt(v); } catch (NumberFormatException ignored) {}
         v = extra(in, "gfAudioBudgetMb");
         if (v != null) try { budgetOverrideMb = Integer.parseInt(v); } catch (NumberFormatException ignored) {}
         core.progress = s2 -> ui.post(() -> { if (!stopped) h.status(s2, TONE_NEUTRAL); });
@@ -190,6 +194,7 @@ final class AudioSyncAuto {
             token.incrementAndGet();   // a execução automática em andamento (se houver) é descartada
             core.cancel();
             core.audioTrackId = h.audioTrackId();
+            core.parallel = parOverride > 0 ? parOverride : 3;
             AudioSyncCore.Outcome o = core.run(h.url(), active.text, h.durationMs(), videoTimeMs, d1, AudioSyncCore.NO_LIMIT);
             log("botão: " + o.note + " | " + o.st.summary());
             String k = keyNow;
@@ -386,6 +391,7 @@ final class AudioSyncAuto {
         noticeOnce(k, "verificando", "Legenda: a verificar pelo áudio…");
         ex.execute(() -> {
             core.audioTrackId = trackId;
+            core.parallel = parOverride > 0 ? parOverride : 2;
             AudioSyncCore.Outcome o = core.run(url, text, dur, pos, d0, budget);
             ui.post(() -> finishRun(tok, k, d0, o));
         });
