@@ -66,13 +66,13 @@ if [ -f tools/sync-real/ONLY_D ]; then
   # a legenda some depois que o motor aplica o atraso? rajada de fotos (video preto: so o texto da legenda e claro) para cada estrategia
   python3 -c "import PIL" 2>/dev/null || pip install --user -q pillow
   CLIP=blk.mkv
-  for st in ${STRATS:-plain reselect toggle}; do
+  for st in ${STRATS:-plain ramp readd}; do
     for sc in mais3 menos2 mais12; do
       adb shell pm clear $PKG >/dev/null; sleep 2
-      launch $sc.srt --el start 250000 --es gfAudioStartSec 8 --es gfDelayStrategy $st
+      launch $sc.srt --es gfSeekSec 250 --es gfAudioStartSec 8 --es gfDelayStrategy $st
       waitlog "AUDIOSYNC legenda: atraso" 200
       D=$OUT/D-$st-$sc; mkdir -p $D
-      for i in $(seq 1 90); do
+      for i in $(seq 1 100); do
         a=$(date +%s.%N); adb exec-out screencap -p > $D/$(printf %03d $i).png; b=$(date +%s.%N)
         echo "$(printf %03d $i) $a $b" >> $D/times.txt
       done
