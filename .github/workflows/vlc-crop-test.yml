@@ -54,6 +54,13 @@ jobs:
           y0|circ.mkv|1920x900+0+0
           y90|circ.mkv|1920x900+0+90
           y180|circ.mkv|1920x900+0+180
+          geo-x46-corrigido|circ.mkv|1875x1080+46+0
+          geo-x91-corrigido|circ.mkv|1920x1080+91+0
+          geo-y90-corrigido|circ.mkv|1920x990+0+90
+          borda-x46|circ.mkv|46+0+45+0
+          borda-x91|circ.mkv|91+0+0+0
+          borda-y90|circ.mkv|0+90+0+90
+          borda-y180topo|circ.mkv|0+180+0+0
           EOF
           python3 - <<'PY' | tee shots/medidas.txt
           import numpy as np, glob
