@@ -418,6 +418,18 @@ public class PlayerActivity extends Activity {
         audioSync = new AudioSyncAuto(this, audioHost);
         autoEngine = audioSync.chain(autoEngine);
         audioSync.start();
+        // só nos testes: modo de tela, atraso da legenda e registro da posição (para medir quando cada fala aparece)
+        try {
+            String sc = getIntent().getStringExtra("gfScale");
+            if (sc != null) { scaleIndex = Integer.parseInt(sc); applyScale(); }
+            String sd = getIntent().getStringExtra("gfSubDelay");
+            if (sd != null) ui.postDelayed(() -> { subDelayMs = Integer.parseInt(sd); applySubDelay(); glog("teste: atraso da legenda posto em " + subDelayMs + " ms"); }, 4000);
+            if (getIntent().getStringExtra("gfTrace") != null) ui.post(new Runnable() { @Override public void run() {
+                if (player == null) return;
+                glog("pos " + player.getTime());
+                ui.postDelayed(this, 400);
+            } });
+        } catch (Throwable ignored) {}
     }
 
     // ---------- eventos do VLC ----------
