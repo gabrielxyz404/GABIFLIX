@@ -329,7 +329,7 @@ public class PlayerActivity extends Activity {
                 float ax0 = fx0 + dw * bL, ax1 = fx0 + dw * (1f - bR), ay0 = fy0 + dh * bT, ay1 = fy0 + dh * (1f - bB);
                 float aw = ax1 - ax0, ah = ay1 - ay0;
                 // TV com legenda desenhada pelo app (vista à parte): o zoom não mexe nela, então vale a mesma regra do celular
-                boolean subsInside = tex instanceof android.view.TextureView && !appSubs;
+                boolean subsInside = tex instanceof android.view.TextureView && !appSubs && embSubActive;
                 // fim da janela visível (em baixo): sem barra de baixo, o fim da imagem; com ela, na TV, ainda um pedaço da barra para a legenda
                 float kb = ay1;
                 if (subsInside && bB > 0f) kb = Math.max(ay1, fy0 + dh * (1f - SUB_CUT));
@@ -375,7 +375,7 @@ public class PlayerActivity extends Activity {
     private SubtitleOverlay ovCues;
     private final java.util.IdentityHashMap<SubtitleSync.Cand, SubtitleOverlay> ovCache = new java.util.IdentityHashMap<>();
     /** a legenda ativa está sendo desenhada pelo app (então o zoom do Preencher não precisa guardar folga para a legenda) */
-    private volatile boolean appSubs = false;
+    private volatile boolean appSubs = false, embSubActive = false;
     private int ovTicks = 0;
     private long ovLastGet = Long.MIN_VALUE, ovLastWall = 0, ovLastEst = 0;
     private String ovShown = null;
@@ -451,6 +451,9 @@ public class PlayerActivity extends Activity {
             boolean on = ovCues != null && c != null && c.uri != null && c.uri.getLastPathSegment() != null && c.uri.getLastPathSegment().startsWith("app-");
             if (!on) ovCues = null;
             if (on != appSubs) { appSubs = on; glog("legenda do app: " + (on ? "ligada" : "desligada (faixa embutida ou nenhuma: o libVLC desenha)")); zoomVideo(); if (!on) applySubDelay(); }
+            // legenda do libVLC de verdade na tela (faixa embutida ativa): só então o zoom da TV respeita a margem lateral dela; sem legenda nenhuma vale o limite geral
+            boolean emb = !on && player.getSpuTrack() != -1;
+            if (emb != embSubActive) { embSubActive = emb; glog("legenda embutida (libVLC) ativa: " + emb); zoomVideo(); }
         }
         String want = null;
         if (ovCues != null) {
