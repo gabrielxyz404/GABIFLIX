@@ -62,6 +62,20 @@ P_SLOW=1
 DONE='AUDIOSYNC (aplicado|resultado:|desisti|botão:|o áudio não tem|pulado|já foi vista)'
 panel_texts() { pause_v; show_controls; open_subs; sleep 1.5; snap "$1" 0.5; texts "$1"; adb shell input keyevent KEYCODE_BACK; sleep 1; play_v; }
 
+if [ -f tools/sync-real/ONLY_B ]; then
+  for c in aac ac3b eac3 dts truehd; do
+    CLIP=real-$c.mkv
+    adb shell pm clear $PKG >/dev/null; sleep 2
+    for sc in "mais3:mais3.srt" "certa:certa.srt" "outro:outro.srt"; do
+      n=${sc%%:*}; f=${sc#*:}
+      launch $f --es gfAudioStartSec 10
+      waitlog "$DONE" 300; sleep 2
+      save B-$c-$n
+      adb shell pm clear $PKG >/dev/null; sleep 2
+    done
+  done
+  adb logcat -d | grep -E "FATAL EXCEPTION" | head -20 > $OUT/crash.txt; cat $OUT/passos.txt; exit 0
+fi
 # ---- C) fechar o painel logo depois de apertar "Sincronizar automaticamente": a analise segue e o resultado aparece como aviso sobre o filme
 CLIP=clip.mkv
 for sc in "C1:menos2.srt" "C2:certa.srt"; do
