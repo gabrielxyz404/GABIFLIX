@@ -419,7 +419,7 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
                 playingSince = Date()
                 startOverlay()
                 scaleForce = 6
-                DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) { [weak self] in self?.selectEmbeddedPortuguese() }
+                DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) { [weak self] in self?.selectEmbeddedPortuguese() }
             }
             if !resumeDone && len > 0 {
                 resumeDone = true
