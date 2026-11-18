@@ -4,8 +4,8 @@ Uso: mk-media.py PASTA"""
 import os, subprocess, sys, wave
 out = sys.argv[1]; os.makedirs(out, exist_ok=True)
 tmp = os.path.join(out, '_w'); os.makedirs(tmp, exist_ok=True)
-phrases = ["I told you not to go there tonight.", "We have to leave before the morning comes.", "You never listen to anything I say to you.",
-           "Please give me one more chance to explain.", "The train leaves at six, so we must hurry now.", "I do not believe a word of this story."]
+phrases = ["Eu disse que não devias ir lá esta noite.", "Temos de sair daqui antes que a manhã chegue.", "Tu nunca ouves nada do que eu te digo.",
+           "Por favor, dá-me mais uma oportunidade para explicar.", "O comboio parte às seis, por isso temos de nos despachar.", "Eu não acredito numa única palavra desta história."]
 DUR = 720
 cues = []
 t = 18.0
@@ -16,7 +16,7 @@ pcm = {}
 SR = None
 for k, ph in enumerate(phrases):
     f = os.path.join(tmp, 'p%d.wav' % k)
-    subprocess.run(['espeak-ng', '-s', '150', '-w', f, ph], check=True)
+    subprocess.run(['espeak-ng', '-v', 'pt', '-s', '150', '-w', f, ph], check=True)
     w = wave.open(f); SR = w.getframerate(); pcm[ph] = w.readframes(w.getnframes()); w.close()
 buf = bytearray(b'\0\0' * SR * DUR)
 for (t, ph) in cues:
