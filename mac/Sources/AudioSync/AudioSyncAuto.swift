@@ -6,6 +6,7 @@
 // Regras: o atraso manual do usuário sempre vence (atraso guardado que não foi posto por aqui, ou mexido depois, nunca é alterado); na dúvida não
 // mexe; nada disto toca o player de reprodução nem a vista do vídeo (só o atraso da legenda, pelo mesmo caminho do ajuste manual).
 import Foundation
+import Network
 
 /** o que a janela do player empresta a este controlador (tudo chamado na thread principal) */
 struct AudioSyncHost {
@@ -57,6 +58,13 @@ final class AudioSyncAuto {
     private let autoOn: Bool
     private var startAfterMs = 25_000
     private var recheckMs = 600_000
+    /** orçamento de leitura da rede (as 3 janelas) para o modo automático: o botão não tem limite (rede com limite de dados: 250 MB; normal: 2 GB) */
+    private var budgetOverrideMb = -1
+    private static let budgetNormal = 2048 << 20, budgetExpensive = 250 << 20
+    private static let recheckNormal = 450 << 20, recheckExpensive = 80 << 20
+    private let netMon = NWPathMonitor()
+    private let expensive = AudioBox<Bool>(false)
+    private var noticedKey = ""
 
     // estado da legenda ativa
     private var key: String?
@@ -89,8 +97,23 @@ final class AudioSyncAuto {
         if let v = env["FP_AUDIO_START_SEC"], let n = Int(v) { startAfterMs = n * 1000 }
         if let v = env["FP_AUDIO_RECHECK_SEC"], let n = Int(v) { recheckMs = n * 1000 }
         if env["FP_AUDIO_DSP"] == "true" { core.forceDsp = true }
+        if let v = env["FP_AUDIO_BUDGET_MB"], let n = Int(v) { budgetOverrideMb = n }
+        let ex = expensive
+        netMon.pathUpdateHandler = { ex.value = $0.isExpensive || $0.isConstrained }
+        netMon.start(queue: DispatchQueue(label: "frameplay.audiosync.net", qos: .utility))
         let hh = host
         core.logger = { hh.log($0) }
+    }
+
+    private func autoBudget() -> Int { return budgetOverrideMb >= 0 ? budgetOverrideMb << 20 : (expensive.value ? AudioSyncAuto.budgetExpensive : AudioSyncAuto.budgetNormal) }
+    private func recheckBudget() -> Int { return budgetOverrideMb >= 0 ? budgetOverrideMb << 18 : (expensive.value ? AudioSyncAuto.recheckExpensive : AudioSyncAuto.recheckNormal) }
+
+    /** um aviso discreto por situação e por legenda (não repete a cada tentativa) */
+    private func noticeOnce(_ k: String, _ what: String, _ text: String) {
+        let id = k + "#" + what
+        if id == noticedKey { return }
+        noticedKey = id
+        h.notice(text)
     }
 
     private static func now() -> Int { return Int(DispatchTime.now().uptimeNanoseconds / 1_000_000) }
@@ -111,6 +134,7 @@ final class AudioSyncAuto {
         token.value += 1
         timer?.invalidate()
         timer = nil
+        netMon.cancel()
         core.close()
     }
 
@@ -138,7 +162,7 @@ final class AudioSyncAuto {
         let d1 = r1.status == .fixed ? r1.delayMs : currentDelayMs
         token.value += 1   // a execução automática em andamento (se houver) é descartada
         core.cancel()
-        let o = core.run(url: url, subText: active.text, durMs: durationMs, nowMs: Int(videoTimeMs), currentDelay: d1, force: true)
+        let o = core.run(url: url, subText: active.text, durMs: durationMs, nowMs: Int(videoTimeMs), currentDelay: d1, maxBytes: AudioSyncCore.noLimit)
         log("botão: \(o.note) | \(o.st.summary())")
         let k = keyNow.value
         switch o.kind {
@@ -152,22 +176,27 @@ final class AudioSyncAuto {
             return r1.status == .fixed ? r1 : AutoSyncResult.ok("já estava certa (o áudio confirma)")
         case .refused:
             if let k = k { mark(k, "no", 1.0, 0, 0) }
+            return r1.status == .failed ? AutoSyncResult.failedMsg(r1.note, o.msg) : r1
+        case .cancelled:
             return r1
-        default:
-            return r1
+        default: // erro de captura, pulado: diz o motivo em vez de um "não consegui" genérico (se a referência já acertou, vale a referência)
+            return r1.status == .failed ? AutoSyncResult.failedMsg(r1.note, o.msg.isEmpty ? "Não consegui ouvir o áudio do filme." : o.msg) : r1
         }
     }
 
     // ------------------------------------------------------------ marcas guardadas (cache por legenda)
 
     private func mark(_ k: String, _ kind: String, _ scale: Double, _ off: Double, _ delay: Int) {
-        UserDefaults.standard.set("\(AudioSyncCore.version)|\(kind)|\(scale)|\(off)|\(delay)", forKey: AudioSyncAuto.prefs + k)
+        UserDefaults.standard.set("\(AudioSyncCore.version)|\(kind)|\(scale)|\(off)|\(delay)|\(Int(Date().timeIntervalSince1970 * 1000))", forKey: AudioSyncAuto.prefs + k)
     }
 
     private func readMark(_ k: String) -> [String]? {
         guard let v = UserDefaults.standard.string(forKey: AudioSyncAuto.prefs + k) else { return nil }
         let a = v.components(separatedBy: "|")
-        return a.count == 5 && a[0] == AudioSyncCore.version ? a : nil
+        if a.count != 6 || a[0] != AudioSyncCore.version { return nil }
+        // "sem confiança" vale por 3 dias: depois tenta de novo (a causa pode ter sido passageira)
+        if a[1] == "no", Int(Date().timeIntervalSince1970 * 1000) - (Int(a[5]) ?? 0) > 3 * 86_400_000 { return nil }
+        return a
     }
 
     // ------------------------------------------------------------ o ciclo (1 vez por segundo, na thread principal)
@@ -250,7 +279,7 @@ final class AudioSyncAuto {
     private func decideStart(_ cand: SubtitleSync.Cand, _ k: String) {
         let saved = h.savedDelay(k)
         if let m = readMark(k) {
-            if m[1] == "no" { st = .off; log("esta legenda já foi vista pelo áudio e recusada: não tento de novo"); return }
+            if m[1] == "no" { st = .off; log("esta legenda já foi vista pelo áudio e recusada: não tento de novo (por 3 dias)"); return }
             let markDelay = Int(m[4]) ?? Int.min
             if saved != markDelay { st = .off; log("atraso guardado (\(saved) ms) não é o do áudio (\(markDelay) ms): é manual, não mexo"); return }
             mScale = Double(m[2]) ?? 1.0
@@ -278,10 +307,12 @@ final class AudioSyncAuto {
         log("antes da análise: " + healthLine())
         resetHealth()
         maxTickGapMs = 0
-        log("começando: posição \(pos / 1000) s, duração \(dur / 1000) s, atraso atual \(d0) ms")
+        let budget = autoBudget()
+        log("começando: posição \(pos / 1000) s, duração \(dur / 1000) s, atraso atual \(d0) ms, orçamento \(budget >> 20) MB (rede \(expensive.value ? "com limite de dados" : "normal"))")
+        noticeOnce(k, "verificando", "Legenda: a verificar pelo áudio…")
         queue.async { [weak self] in
             guard let self = self else { return }
-            let o = self.core.run(url: url, subText: text, durMs: dur, nowMs: pos, currentDelay: d0, force: false)
+            let o = self.core.run(url: url, subText: text, durMs: dur, nowMs: pos, currentDelay: d0, maxBytes: budget)
             DispatchQueue.main.async { self.finishRun(tok, k, d0, o) }
         }
     }
@@ -305,6 +336,7 @@ final class AudioSyncAuto {
             nextRecheckAt = AudioSyncAuto.now() + recheckMs
             nextFollowAt = AudioSyncAuto.now() + 15_000
             h.notice(persist ? "Legenda acertada pelo áudio (" + AudioSyncAuto.secs(o.targetDelay) + ")" : "Legenda acertada pelo áudio (velocidade e atraso)")
+            noticedKey = k + "#fim"
             log("aplicado: atraso \(o.targetDelay) ms, escala \(o.scale)")
         case .ok:
             mScale = 1.0
@@ -314,12 +346,19 @@ final class AudioSyncAuto {
             st = .done
             nextRecheckAt = AudioSyncAuto.now() + recheckMs
             log("a legenda já estava certa (deslocamento medido \(jround(o.offsetMs)) ms): não mexi")
+            noticeOnce(k, "fim", "Legenda confirmada pelo áudio")
         case .refused:
             mark(k, "no", 1.0, 0, 0)
             st = .off
             log("o áudio não tem certeza: legenda deixada como estava")
+            noticeOnce(k, "fim", "Legenda: não consegui confirmar pelo áudio — usa Sincronizar no menu")
         default: // erro, cancelado, pulado: tenta de novo mais tarde (no máximo 2 vezes)
-            if o.kind == .skipped || retries >= 2 { st = .off; log("desisti (\(o.note))") }
+            if o.kind == .cancelled { st = .new; retryPending = true; retryAt = AudioSyncAuto.now() + 30_000; log("análise cancelada (\(o.note)): tento de novo em 30 s") }
+            else if o.kind == .skipped || retries >= 2 {
+                st = .off
+                log("desisti (\(o.note))")
+                noticeOnce(k, "fim", o.kind == .skipped ? "Legenda: ficheiro pesado para analisar sozinho — usa Sincronizar no menu" : "Legenda: não consegui ouvir o áudio — usa Sincronizar no menu")
+            }
             else { retries += 1; retryPending = true; retryAt = AudioSyncAuto.now() + 120_000 * retries; log("tento de novo em \(120 * retries) s (\(o.note))") }
         }
     }
@@ -355,9 +394,10 @@ final class AudioSyncAuto {
         let prev = prevOut
         let fl = failing
         log("reverificando na posição \(pos / 1000) s")
+        let budget = recheckBudget()
         queue.async { [weak self] in
             guard let self = self else { return }
-            let ck = self.core.recheck(url: url, subText: text, durMs: dur, posMs: pos, scale: a, offsetMs: b, prev: prev, failing: fl)
+            let ck = self.core.recheck(url: url, subText: text, durMs: dur, posMs: pos, scale: a, offsetMs: b, prev: prev, failing: fl, maxBytes: budget)
             DispatchQueue.main.async { self.finishRecheck(tok, k, ck, pos, a, b) }
         }
     }
@@ -367,6 +407,7 @@ final class AudioSyncAuto {
         running = false
         nextRecheckAt = AudioSyncAuto.now() + recheckMs
         log("reverificação: \(ck.note) | \(healthLine())")
+        if ck.kind == .skipped && ck.note.contains("não reverifico") { nextRecheckAt = AudioSyncAuto.now() + 3_600_000 }
         guard k == key, let out = ck.out else { return }
         if h.delayMs() != lastWritten { st = .off; return }
         switch out.verdict {

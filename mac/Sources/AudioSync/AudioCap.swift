@@ -67,9 +67,15 @@ final class AudioCap {
         var why = "tempo esgotado"
         let need = Int(durS * 32000 * 0.985)
         let deadline = t0.addingTimeInterval(timeoutS)
+        var lastGrow = t0, lastSz = 0
         while Date() < deadline {
             if isCancelled { why = "cancelado"; break }
-            if let at = try? FileManager.default.attributesOfItem(atPath: out.path), let sz = at[.size] as? Int, sz >= need { why = "fim"; break }
+            if let at = try? FileManager.default.attributesOfItem(atPath: out.path), let sz = at[.size] as? Int {
+                if sz >= need { why = "fim"; break }
+                if sz > lastSz { lastSz = sz; lastGrow = Date() }
+            }
+            // antes do primeiro dado a busca no arquivo remoto pode demorar (60 s); depois, 30 s parado = rede ou servidor travou
+            if Date().timeIntervalSince(lastGrow) > (lastSz > 44 ? 30.0 : 60.0) { why = lastSz > 44 ? "a leitura parou" : "sem dados do servidor"; break }
             let st = pl.state
             if Date().timeIntervalSince(t0) > 1.5 {
                 if st == .error { why = "erro"; break }

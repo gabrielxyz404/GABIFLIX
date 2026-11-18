@@ -953,7 +953,7 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
             setSubDelay(res.delayMs)
             notice((res.note.hasPrefix("áudio") ? "Legenda acertada pelo áudio (" : "Legenda acertada (") + SubtitleSync.signedSecs(Int64(res.delayMs)) + ")", seconds: 4)
         case .ok: notice("Já estava certa", seconds: 4)
-        case .failed: notice("Não consegui acertar \u{2014} usa o ajuste manual", seconds: 5)
+        case .failed: notice(res.userMsg.map { $0 + " Usa o ajuste manual." } ?? "Não consegui acertar \u{2014} usa o ajuste manual", seconds: 6)
         }
     }
 

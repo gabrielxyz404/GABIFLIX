@@ -10,6 +10,9 @@ struct AutoSyncResult {
     /** atraso final da legenda (ms; positivo = aparece mais tarde); só vale com .fixed */
     let delayMs: Int
     let note: String
+    /** frase pronta para o usuário (português simples) com o motivo exato; nil = usa o texto padrão */
+    var userMsg: String? = nil
+    static func failedMsg(_ note: String, _ msg: String) -> AutoSyncResult { AutoSyncResult(status: .failed, delayMs: 0, note: note, userMsg: msg) }
     static func fixed(_ ms: Int, _ note: String) -> AutoSyncResult { AutoSyncResult(status: .fixed, delayMs: ms, note: note) }
     static func ok(_ note: String) -> AutoSyncResult { AutoSyncResult(status: .ok, delayMs: 0, note: note) }
     static func failed(_ note: String) -> AutoSyncResult { AutoSyncResult(status: .failed, delayMs: 0, note: note) }

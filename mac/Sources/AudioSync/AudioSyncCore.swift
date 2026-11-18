@@ -6,11 +6,11 @@ import Foundation
 
 final class AudioSyncCore {
     /** versão do motor + política: muda o que está guardado (cache) sobre cada legenda */
-    static let version = "m1"
+    static let version = "m2"
     static let winMs = 90_000
     static let nWin = 3
-    /** a execução automática pula filmes cuja leitura estimada das 3 janelas passa disto (o botão não pula) */
-    static let autoMaxBytes = 600 * 1024 * 1024
+    /** a leitura estimada das 3 janelas: o automático só roda se couber no orçamento da rede (ver AudioSyncAuto); o botão nunca pula */
+    static let noLimit = Int.max
     private static let minDurationMs = 8 * 60_000
     private static let minSpeechCues = 40
 
@@ -37,6 +37,8 @@ final class AudioSyncCore {
         /** atraso (ms) que a legenda deve ter AGORA para ficar certa (igual a offsetMs com escala 1) */
         var targetDelay = 0
         var cuts = false
+        /** frase pronta, em português simples, para mostrar ao usuário quando nada foi mudado ("" = não há) */
+        var msg = ""
         var result: AudioResult?
         var windows: [AudioWindow] = []
         var st = Stats()
@@ -102,22 +104,44 @@ final class AudioSyncCore {
         return vad!
     }
 
-    /** o tamanho do arquivo (bytes) pelo servidor, ou -1 */
+    /**
+     * O tamanho do arquivo (bytes) pelo servidor, ou -1. Muitos servidores de links diretos recusam o HEAD (403/405): então pede só o
+     * primeiro byte (Range: bytes=0-0) e lê o total em Content-Range.
+     */
     static func contentLength(_ url: URL) -> Int {
         guard let sc = url.scheme, sc.hasPrefix("http") else { return -1 }
+        let n = probe(url, head: true)
+        return n > 0 ? n : probe(url, head: false)
+    }
+
+    private static func probe(_ url: URL, head: Bool) -> Int {
         var req = URLRequest(url: url)
-        req.httpMethod = "HEAD"
-        req.timeoutInterval = 5
-        req.setValue("FramePlay", forHTTPHeaderField: "User-Agent")
+        req.httpMethod = head ? "HEAD" : "GET"
+        req.timeoutInterval = 8
+        req.setValue("Mozilla/5.0 (Macintosh) FramePlay", forHTTPHeaderField: "User-Agent")
+        if !head { req.setValue("bytes=0-0", forHTTPHeaderField: "Range") }
         let sem = DispatchSemaphore(value: 0)
         var len = -1
         let task = URLSession.shared.dataTask(with: req) { _, resp, _ in
-            if let h = resp as? HTTPURLResponse, h.statusCode < 400, h.expectedContentLength > 0 { len = Int(h.expectedContentLength) }
+            if let h = resp as? HTTPURLResponse, h.statusCode < 400 {
+                if let cr = h.value(forHTTPHeaderField: "Content-Range"), let slash = cr.lastIndex(of: "/"), let t = Int(cr[cr.index(after: slash)...].trimmingCharacters(in: .whitespaces)) { len = t }
+                else if h.statusCode == 200, h.expectedContentLength > 0 { len = Int(h.expectedContentLength) }
+            }
             sem.signal()
         }
         task.resume()
-        if sem.wait(timeout: .now() + 6) == .timedOut { task.cancel(); return -1 }
+        if sem.wait(timeout: .now() + 9) == .timedOut { task.cancel(); return -1 }
         return len
+    }
+
+    /** leitura estimada (bytes) para `seconds` s de filme: o tamanho do arquivo repartido pela duração; -1 se não deu para saber */
+    static func estimateBytes(_ url: URL, _ durMs: Int, _ seconds: Int) -> Int {
+        let len = contentLength(url)
+        return len > 0 && durMs > 0 ? Int(Double(len) / Double(durMs) * 1000.0 * Double(seconds)) : -1
+    }
+
+    static func mb(_ bytes: Int) -> String {
+        return bytes >= 1 << 30 ? String(format: "%.1f GB", Double(bytes) / 1073741824.0).replacingOccurrences(of: ".", with: ",") : "\(bytes >> 20) MB"
     }
 
     private static func countSpeech(_ cues: [AudioCue]) -> Int {
@@ -145,13 +169,21 @@ final class AudioSyncCore {
         return kr == KERN_SUCCESS ? Int(info.resident_size) / 1024 : 0
     }
 
+    /** por que a última captura falhou (frase curta, para o registro e para o aviso) */
+    private var lastCapFail = ""
+
     private func captureWindow(_ url: URL, _ startMs: Int, _ lenMs: Int, _ o: Outcome) -> AudioWindow? {
         let wav = dir.appendingPathComponent("w\(startMs).wav")
         let t0 = AudioSyncCore.nowMs()
-        let co = cap.capture(url: url, startMs: startMs, durMs: lenMs, out: wav, timeoutS: Double(min(240_000, lenMs * 3)) / 1000.0)
+        var co = cap.capture(url: url, startMs: startMs, durMs: lenMs, out: wav, timeoutS: 420)
+        if !co.ok && !cap.isCancelled {
+            log("captura falhou em \(startMs / 1000) s (tentativa 1): \(co.end)")
+            Thread.sleep(forTimeInterval: 2.0)
+            co = cap.capture(url: url, startMs: startMs, durMs: lenMs, out: wav, timeoutS: 420)
+        }
         o.st.captureWallMs += AudioSyncCore.nowMs() - t0
         defer { try? FileManager.default.removeItem(at: wav) }
-        if !co.ok { log("captura falhou em \(startMs / 1000) s: \(co.end)"); return nil }
+        if !co.ok { lastCapFail = co.end; log("captura falhou em \(startMs / 1000) s: \(co.end)"); return nil }
         log(String(format: "captura %d s +%d s: %.2f s de PCM em %.2f s (%@)", startMs / 1000, lenMs / 1000, co.pcmS, co.wallS, co.end))
         let pcm = AudioCap.readWav(wav)
         if pcm.count < 16000 * (lenMs / 1000) / 3 { return nil }
@@ -185,9 +217,9 @@ final class AudioSyncCore {
     /**
      * Sincronização completa (3 janelas de 90 s no plano por densidade de falas).
      * nowMs: posição do vídeo agora; currentDelay: atraso aplicado agora (a decisão de mexer compara com ele);
-     * force: true = botão do usuário (não pula por tamanho de leitura)
+     * maxBytes: pula (.skipped) se a leitura estimada das 3 janelas passar disto; noLimit = botão do usuário (nunca pula)
      */
-    func run(url: URL, subText: String?, durMs: Int, nowMs: Int, currentDelay: Int, force: Bool) -> Outcome {
+    func run(url: URL, subText: String?, durMs: Int, nowMs: Int, currentDelay: Int, maxBytes: Int) -> Outcome {
         runLock.lock()
         defer { runLock.unlock() }
         setBusy(true)
@@ -198,14 +230,15 @@ final class AudioSyncCore {
         cap.reset()
         begin(o)
         let cues = AudioCue.parseSrt(subText)
-        if AudioSyncCore.countSpeech(cues) < AudioSyncCore.minSpeechCues { o.kind = .refused; o.note = "poucas falas na legenda"; return o }
-        if durMs < AudioSyncCore.minDurationMs { o.kind = .skipped; o.note = "vídeo curto ou duração desconhecida"; return o }
-        let len = AudioSyncCore.contentLength(url)
-        if len > 0 {
-            o.st.estBytes = Int(Double(len) / Double(durMs) * Double(AudioSyncCore.winMs * AudioSyncCore.nWin))
-            if !force && o.st.estBytes > AudioSyncCore.autoMaxBytes {
-                o.kind = .skipped; o.note = "leitura estimada de \(o.st.estBytes >> 20) MB: só pelo botão"; return o
-            }
+        if AudioSyncCore.countSpeech(cues) < AudioSyncCore.minSpeechCues { o.kind = .refused; o.note = "poucas falas na legenda"; o.msg = "A legenda tem poucas falas para conferir pelo áudio."; return o }
+        if durMs < AudioSyncCore.minDurationMs { o.kind = .skipped; o.note = "vídeo curto ou duração desconhecida"; o.msg = "O vídeo é curto (ou a duração ainda é desconhecida) para conferir pelo áudio."; return o }
+        o.st.estBytes = AudioSyncCore.estimateBytes(url, durMs, AudioSyncCore.winMs * AudioSyncCore.nWin / 1000)
+        if o.st.estBytes < 0 { log("tamanho do arquivo desconhecido (o servidor não diz): sem estimativa de leitura") }
+        if maxBytes != AudioSyncCore.noLimit && o.st.estBytes > maxBytes {
+            o.kind = .skipped
+            o.note = "leitura estimada de \(o.st.estBytes >> 20) MB passa do limite de \(maxBytes >> 20) MB: só pelo botão"
+            o.msg = "Ficheiro muito pesado para analisar sozinho (≈ \(AudioSyncCore.mb(o.st.estBytes)) a ler). Usa Sincronizar automaticamente para analisar."
+            return o
         }
         let P = AudioAligner.Params()
         let plan = AudioSyncSession.planDense(cues, durMs, AudioSyncCore.nWin, AudioSyncCore.winMs)
@@ -215,7 +248,8 @@ final class AudioSyncCore {
             if cap.isCancelled { o.kind = .cancelled; o.note = "cancelado"; return o }
             guard let w = captureWindow(url, plan[i][0], plan[i][1], o) else {
                 o.kind = cap.isCancelled ? .cancelled : .error
-                o.note = "captura da janela \(i + 1) falhou"
+                o.note = "captura da janela \(i + 1) falhou: \(lastCapFail)"
+                o.msg = "Não consegui ouvir o áudio do filme (\(lastCapFail))."
                 return o
             }
             ws.append(w)
@@ -238,8 +272,8 @@ final class AudioSyncCore {
     static func fill(_ o: Outcome, _ r: AudioResult, _ nowMs: Int, _ currentDelay: Int, _ P: AudioAligner.Params) {
         o.note = String(format: "%@ z=%.1f janelas=%d/%d%@", r.accepted ? "aceita" : "recusada", r.z, r.winsAgree, r.winsValid,
                         r.accepted ? "" : " (" + r.reason.trimmingCharacters(in: .whitespaces) + ")")
-        if !r.accepted { o.kind = .refused; return }
-        if let sg = r.segments, sg.count > 1 { o.kind = .refused; o.note += " por partes: não aplico"; return }
+        if !r.accepted { o.kind = .refused; o.msg = "Sem confiança: o áudio não confirma esta legenda (pode ser de outra versão do filme)."; return }
+        if let sg = r.segments, sg.count > 1 { o.kind = .refused; o.note += " por partes: não aplico"; o.msg = "A legenda parece ter cortes em relação ao filme: não mexi. Usa o ajuste manual."; return }
         let a = r.scale, off = r.rawOffsetMs
         o.scale = a
         o.offsetMs = off
@@ -258,7 +292,7 @@ final class AudioSyncCore {
      * Reverificação (monitor): captura 90 s a partir da posição atual e chama o Recheck. Nunca muda nada sozinha; devolve o veredito.
      * model = (scale, offsetMs) em uso; failing = janelas recentes que o modelo não explicava (até 2)
      */
-    func recheck(url: URL, subText: String?, durMs: Int, posMs: Int, scale: Double, offsetMs: Double, prev: AudioRecheck.Out?, failing: [AudioWindow]) -> Check {
+    func recheck(url: URL, subText: String?, durMs: Int, posMs: Int, scale: Double, offsetMs: Double, prev: AudioRecheck.Out?, failing: [AudioWindow], maxBytes: Int) -> Check {
         runLock.lock()
         defer { runLock.unlock() }
         setBusy(true)
@@ -277,8 +311,14 @@ final class AudioSyncCore {
         begin(tmp)
         let cues = AudioCue.parseSrt(subText)
         if AudioSyncCore.countSpeech(cues) < AudioSyncCore.minSpeechCues || durMs < AudioSyncCore.minDurationMs { ck.kind = .skipped; ck.note = "sem condições"; return ck }
+        let est = AudioSyncCore.estimateBytes(url, durMs, AudioSyncCore.winMs / 1000)
+        if maxBytes != AudioSyncCore.noLimit && est > maxBytes {
+            ck.kind = .skipped
+            ck.note = "cada janela leria ≈ \(AudioSyncCore.mb(est)), acima do limite de \(AudioSyncCore.mb(maxBytes)): não reverifico"
+            return ck
+        }
         let st = max(0, min(posMs, durMs - AudioSyncCore.winMs)) / 10 * 10
-        guard let w = captureWindow(url, st, AudioSyncCore.winMs, tmp) else { ck.kind = .error; ck.note = "captura falhou"; return ck }
+        guard let w = captureWindow(url, st, AudioSyncCore.winMs, tmp) else { ck.kind = .error; ck.note = "captura falhou: \(lastCapFail)"; return ck }
         ck.window = w
         let cur = AudioResult()
         cur.accepted = true
