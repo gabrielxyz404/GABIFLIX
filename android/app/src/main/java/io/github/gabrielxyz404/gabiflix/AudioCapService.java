@@ -29,6 +29,8 @@ public final class AudioCapService extends Service {
     private ExecutorService worker;
     /** o Silero (ONNX Runtime, código nativo) também vive AQUI: uma queda ou falta de memória dele nunca fecha o player */
     private io.github.gabrielxyz404.gabiflix.audiosync.SileroVad vad;
+    /** modo com que {@link #vad} foi criado (0 = normal, 1 = seguro) */
+    private int vadMode;
 
     @Override public void onCreate() {
         super.onCreate();
@@ -100,8 +102,10 @@ public final class AudioCapService extends Service {
                 try (java.io.FileInputStream fi = new java.io.FileInputStream(in)) { int o = 0, n; while (o < raw.length && (n = fi.read(raw, o, raw.length - o)) > 0) o += n; }
                 short[] pcm = new short[raw.length / 2];
                 java.nio.ByteBuffer.wrap(raw).order(java.nio.ByteOrder.LITTLE_ENDIAN).asShortBuffer().get(pcm);
+                final int vmode = b.getInt("vmode", 0);
+                if (vad != null && vadMode != vmode) { try { vad.close(); } catch (Throwable ignored) {} vad = null; }
                 if (vad == null) {
-                    CrashReporter.stage("vad lendo o modelo silero_vad.onnx");
+                    CrashReporter.stage("vad modo " + vmode + " lendo o modelo silero_vad.onnx");
                     byte[] model;
                     try (java.io.InputStream is = getAssets().open("silero_vad.onnx")) {
                         java.io.ByteArrayOutputStream bo = new java.io.ByteArrayOutputStream(2_400_000);
@@ -110,12 +114,14 @@ public final class AudioCapService extends Service {
                         while ((n = is.read(buf)) > 0) bo.write(buf, 0, n);
                         model = bo.toByteArray();
                     }
-                    CrashReporter.stage("vad criando a sessão do ONNX Runtime (carrega as bibliotecas nativas)");
-                    vad = new io.github.gabrielxyz404.gabiflix.audiosync.SileroVad(model);
+                    CrashReporter.stage("vad modo " + vmode + " criando a sessão do ONNX Runtime (carrega as bibliotecas nativas)");
+                    vad = new io.github.gabrielxyz404.gabiflix.audiosync.SileroVad(model, vmode == 1);
+                    vadMode = vmode;
                 }
-                CrashReporter.stage("vad ONNX Runtime inferência (nativo), " + pcm.length / 16000 + " s de áudio");
-                if ("vad".equals(b.getString("hook"))) {   // só nos testes
-                    CrashReporter.stage("TESTE: queda nativa forçada no VAD");
+                CrashReporter.stage("vad modo " + vmode + " ONNX Runtime inferência (nativo), " + pcm.length / 16000 + " s de áudio");
+                String vhook = b.getString("hook");
+                if ("vad-all".equals(vhook) || ("vad".equals(vhook) && vmode == 0)) {   // só nos testes
+                    CrashReporter.stage("TESTE: queda nativa forçada no VAD (modo " + vmode + ")");
                     android.os.Process.sendSignal(android.os.Process.myPid(), 11);
                     Thread.sleep(10_000);
                 }

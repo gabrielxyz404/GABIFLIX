@@ -85,13 +85,13 @@ caso_home() {  # $1 nome  $2 legenda  $3 segundos até o HOME  $4 segundos fora
   fim $n
 }
 # queda nativa de propósito no processo :audiocap (ganchos de teste gfAudioCrash): a análise tem de se recuperar, o filme não pára, e o relatório sai na hora
-queda() {  # $1 nome  $2 gancho (vad|capture|capture-all)  $3 legenda  $4 segundos de vigia depois do resultado
+queda() {  # $1 nome  $2 gancho (vad|vad-all|capture|capture-all)  $3 legenda  $4 segundos de vigia depois do resultado
   local n=$1
   EXTRA="--es gfAudioCrash $2" caso_fg $n $3 $4
   # o filme com a legenda na tela, várias capturas seguidas (uma delas pega uma fala)
   for k in 1 2 3 4 5 6 7 8; do snap $n-4-filme-$k; sleep 3; done
   rep "$n: ===== PROVA (gancho $2) ====="
-  glog | grep -E 'AUDIOSYNC (o processo de captura caiu|a captura derrubou|o Silero derrubou|captura recuperada|Silero indisponível|Silero desligado|captura falhou|aplicado|resultado:)' | cut -c1-330 >> $OUT/$L-$P-resultado.txt
+  glog | grep -E 'AUDIOSYNC (o processo de captura caiu|a captura derrubou|o Silero derrubou|Silero recuperado|captura recuperada|Silero indisponível|Silero desligado|captura falhou|aplicado|resultado:)' | cut -c1-330 >> $OUT/$L-$P-resultado.txt
   rep "$n: relatórios CAPTURA_CAIU enviados: $(glog | grep -c 'POST CAPTURA_CAIU parte') | respostas: $(glog | grep 'POST CAPTURA_CAIU parte' | grep -o 'HTTP [0-9]*' | sort | uniq -c | tr '\n' ' ')"
   glog | grep 'GFCrash' | grep -E 'corpo de CAPTURA_CAIU|CAPTURA_CAIU \| processo|Etapa em curso|Última etapa|Motivo da morte|Fatal signal|backtrace|#[0-9]+ +pc|Abort message|ABI:|Registro de queda|Registo de queda|TESTE: queda' | cut -c1-300 > $OUT/$L-$P-relatorio-$n.txt
   glog | grep 'GFCrash' > $OUT/$L-$P-relatorio-completo-$n.txt
@@ -102,6 +102,7 @@ case "$P" in
   tv)
     queda tv-queda-vad vad mais3.srt 40
     queda tv-queda-vad-certa vad certa.srt 40
+    queda tv-queda-vad-todos vad-all mais3.srt 40
     queda tv-queda-captura capture mais3.srt 40
     queda tv-queda-todas capture-all mais3.srt 40
     caso_fg tv-fixed mais3.srt 120
@@ -109,7 +110,7 @@ case "$P" in
     ;;
   tel)
     queda tel-queda-vad vad mais3.srt 40
-    queda tel-queda-vad-certa vad certa.srt 40
+    queda tel-queda-vad-todos vad-all mais3.srt 40
     queda tel-queda-captura capture mais3.srt 40
     caso_fg tel-fixed mais3.srt 90
     caso_home tel-home-analise menos2.srt 50 150

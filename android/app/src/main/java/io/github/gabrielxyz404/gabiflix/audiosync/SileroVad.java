@@ -28,11 +28,23 @@ public final class SileroVad implements Vad, AutoCloseable {
         session = env.createSession(modelPath, so);
     }
 
-    public SileroVad(byte[] model) throws OrtException {
+    public SileroVad(byte[] model) throws OrtException { this(model, false); }
+
+    /**
+     * @param safe modo seguro (só para aparelhos em que o modo normal derrubou o processo): sem otimização do grafo, sem arena de memória, sem
+     *             padrão de memória e execução sequencial; mais lento, mas passa por menos código nativo "esperto" do ONNX Runtime
+     */
+    public SileroVad(byte[] model, boolean safe) throws OrtException {
         env = OrtEnvironment.getEnvironment();
         OrtSession.SessionOptions so = new OrtSession.SessionOptions();
         so.setIntraOpNumThreads(1);
         so.setInterOpNumThreads(1);
+        if (safe) {
+            so.setOptimizationLevel(OrtSession.SessionOptions.OptLevel.NO_OPT);
+            so.setCPUArenaAllocator(false);
+            so.setMemoryPatternOptimization(false);
+            so.setExecutionMode(OrtSession.SessionOptions.ExecutionMode.SEQUENTIAL);
+        }
         session = env.createSession(model, so);
     }
 

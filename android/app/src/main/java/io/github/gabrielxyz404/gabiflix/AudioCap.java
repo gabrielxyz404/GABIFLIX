@@ -36,10 +36,12 @@ final class AudioCap {
         boolean crashed;
     }
 
-    /** só nos testes (extra gfAudioCrash): "vad", "capture" (cai com a configuração 0) ou "capture-all" */
+    /** só nos testes (extra gfAudioCrash): "vad" (cai no modo normal do Silero), "vad-all" (cai em todos), "capture" (cai com a configuração 0) ou "capture-all" */
     static volatile String testHook;
 
     private static final String FB_PREFS = "audiocap-fallback";
+    /** quantos modos do Silero existem: 0 = normal; 1 = seguro (sem otimização do grafo, sem arena de memória, execução sequencial) */
+    static final int NVAD = 2;
 
     private static final Object L = new Object();
     private static Messenger svc;
@@ -50,7 +52,11 @@ final class AudioCap {
     private static volatile int capBad;
     /** todas as configurações caíram: a captura fica desligada até o app reabrir */
     private static volatile boolean capDisabled;
-    /** o Silero (ONNX Runtime) derrubou o processo neste aparelho+versão: nunca mais é usado */
+    /** modos do Silero em que o processo já caiu (bit i = modo i; 0 = normal, 1 = seguro: sem otimização do grafo, sem arena de memória), por aparelho+versão */
+    private static volatile int sileroBad;
+    /** o Silero não carregou por erro Java (biblioteca ausente etc.): não adianta repetir até o app reabrir */
+    private static volatile boolean sileroUnavail;
+    /** todos os modos do Silero derrubaram o processo neste aparelho+versão: nunca mais é usado (gravado) */
     private static volatile boolean sileroBroken;
     private static volatile boolean prefsLoaded;
     private static final AtomicInteger ids = new AtomicInteger();
@@ -101,19 +107,34 @@ final class AudioCap {
             android.content.SharedPreferences sp = c.getSharedPreferences(FB_PREFS, Context.MODE_PRIVATE);
             String k = devKey(c);
             sileroBroken = k.equals(sp.getString("silero_broken", ""));
+            String sb = sp.getString("silero_bad", "");
+            int j = sb.lastIndexOf('#');
+            if (j > 0 && sb.substring(0, j).equals(k)) sileroBad = Integer.parseInt(sb.substring(j + 1));
             String cb = sp.getString("cap_bad", "");
             int i = cb.lastIndexOf('#');
             if (i > 0 && cb.substring(0, i).equals(k)) {
                 capBad = Integer.parseInt(cb.substring(i + 1));
                 if (capBad >= (1 << AudioCapEngine.NCFG) - 1) capBad = 0;   // todas desligadas numa vez anterior: tenta de novo (pode ter sido falta de memória)
             }
-            if (sileroBroken) log("Silero desligado neste aparelho (derrubou o processo antes): VAD por DSP");
+            if (sileroBroken) log("Silero desligado neste aparelho (derrubou o processo antes em todos os modos): VAD por DSP");
+            else if (sileroBad != 0) log("modos do Silero que já derrubaram o processo neste aparelho: máscara " + sileroBad);
             if (capBad != 0) log("configurações de captura que já derrubaram o processo neste aparelho: máscara " + capBad);
         } catch (Throwable ignored) {}
     }
 
     private static void saveSileroBroken(Context c) {
         try { c.getSharedPreferences(FB_PREFS, Context.MODE_PRIVATE).edit().putString("silero_broken", devKey(c)).apply(); } catch (Throwable ignored) {}
+    }
+
+    private static void saveSileroBad(Context c) {
+        try { c.getSharedPreferences(FB_PREFS, Context.MODE_PRIVATE).edit().putString("silero_bad", devKey(c) + "#" + sileroBad).apply(); } catch (Throwable ignored) {}
+    }
+
+    /** o primeiro modo do Silero que ainda não derrubou o processo (0 = normal, 1 = seguro), ou -1 se nenhum */
+    private static int nextVadMode() {
+        if (sileroBroken || sileroUnavail) return -1;
+        for (int i = 0; i < NVAD; i++) if ((sileroBad & (1 << i)) == 0) return i;
+        return -1;
     }
 
     private static void saveCapBad(Context c) {
@@ -127,13 +148,13 @@ final class AudioCap {
      */
     static boolean sileroAllowed(Context c) {
         loadPrefs(c.getApplicationContext());
-        return !sileroBroken;
+        return nextVadMode() >= 0;
     }
 
     /** por que o Silero não será usado (para o registo) */
     static String sileroWhyNot(Context c) {
         loadPrefs(c.getApplicationContext());
-        return sileroBroken ? "ele derrubou o processo de captura neste aparelho" : "";
+        return sileroUnavail ? "o ONNX Runtime não carregou" : sileroBroken || sileroBad != 0 ? "ele derrubou o processo de captura neste aparelho" : "";
     }
 
     private static int nextCfg() {
@@ -313,42 +334,64 @@ final class AudioCap {
     /**
      * Roda o Silero no processo de captura: lê o PCM (s16le) de `in` e grava as probabilidades (floats little-endian, 100 por segundo) em `out`.
      * false = não deu (serviço caiu, indisponível, cancelado, sem ONNX): quem chama usa o VAD por DSP, que não tem código nativo.
-     * Se o Silero DERRUBAR o processo, fica gravado (por aparelho + versão) que ele não é mais usado.
+     * Se o Silero DERRUBAR o processo, tenta na hora o modo seguro (ONNX Runtime sem otimizações do grafo nem arena de memória); se esse também derrubar,
+     * fica gravado (por aparelho + versão) que o Silero não é mais usado e o VAD por DSP assume.
      */
     boolean vad(File in, File out) {
         appCtx = ctx;
-        if (cancelled || !sileroAllowed(ctx)) return false;
+        loadPrefs(ctx);
+        while (true) {
+            if (cancelled) return false;
+            int mode = nextVadMode();
+            if (mode < 0) return false;
+            Out r = vadOnce(mode, in, out);
+            if (r == null) return false;
+            if (!r.crashed) {
+                if (!r.ok) {
+                    if (r.end.startsWith("silero indisponível")) sileroUnavail = true;   // erro Java (biblioteca não carregou): não adianta repetir nesta execução
+                    log("VAD no processo de captura não deu: " + r.end);
+                } else if (sileroBad != 0) log("Silero recuperado no modo " + mode + " (" + (mode == 0 ? "normal" : "seguro") + ") depois de queda(s) do processo");
+                return r.ok && out.exists();
+            }
+            sileroBad |= 1 << mode;
+            saveSileroBad(ctx);
+            if (nextVadMode() < 0) {
+                sileroBroken = true;
+                saveSileroBroken(ctx);
+                log("o Silero derrubou o processo no modo " + (mode == 0 ? "normal" : "seguro") + " e não há mais modos: desligado neste aparelho (versão atual); o VAD por DSP segue a análise");
+                return false;
+            }
+            log("o Silero derrubou o processo no modo " + (mode == 0 ? "normal" : "seguro") + "; tento o modo " + nextVadMode() + " (seguro) na hora");
+            try { Thread.sleep(1500); } catch (InterruptedException e) { Thread.currentThread().interrupt(); return false; }
+        }
+    }
+
+    /** uma tentativa do Silero no modo `mode`; null = não foi possível pedir (serviço fora, cancelado, tempo) */
+    private Out vadOnce(int mode, File in, File out) {
         try {
             if (out.exists()) out.delete();
             Messenger s = connect(20_000);
-            if (s == null) return false;
+            if (s == null) return null;
             int id = ids.incrementAndGet();
-            Pending p = new Pending("vad", 0);
+            Pending p = new Pending("vad", mode);
             pending.put(id, p);
             Bundle b = new Bundle();
             b.putInt("id", id);
             b.putString("in", in.getAbsolutePath());
             b.putString("out", out.getAbsolutePath());
+            b.putInt("vmode", mode);
             if (testHook != null) b.putString("hook", testHook);
-            if (!send(AudioCapService.MSG_VAD, b, reply)) { pending.remove(id); return false; }
+            if (!send(AudioCapService.MSG_VAD, b, reply)) { pending.remove(id); return null; }
             long limit = System.nanoTime() + 240_000_000_000L;
             while (!p.done.await(500, TimeUnit.MILLISECONDS)) {
-                if (cancelled || System.nanoTime() > limit) { pending.remove(id); return false; }
+                if (cancelled || System.nanoTime() > limit) { pending.remove(id); return null; }
             }
-            if (p.out.crashed) {
-                sileroBroken = true;
-                saveSileroBroken(ctx);
-                log("o Silero derrubou o processo de captura: desligado neste aparelho (versão atual); o VAD por DSP segue a análise");
-            } else if (!p.out.ok) {
-                if (p.out.end.startsWith("silero indisponível")) sileroBroken = true;   // erro Java (biblioteca não carregou): não adianta repetir nesta execução
-                log("VAD no processo de captura não deu: " + p.out.end);
-            }
-            return p.out.ok && out.exists();
+            return p.out;
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            return false;
+            return null;
         } catch (Throwable t) {
-            return false;
+            return null;
         }
     }
 
