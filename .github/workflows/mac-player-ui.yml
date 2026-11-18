@@ -61,13 +61,13 @@ jobs:
           sleep 20
           cmd "state"
           cmd "resize 1470 956"; cmd "showforce" 2; shot ecra-1470x956
+          cmd "resize 1470 956"; cmd "key 49" 2; cmd "show" 1; shot pausado
+          cmd "fs"; sleep 4; cmd "show" 1; shot tela-cheia
+          cmd "layout"
           cmd "chrome 1470 956 /tmp/telas/${{ matrix.versao }}-controles-1470x956.png" 3
           cmd "chrome 2560 1600 /tmp/telas/${{ matrix.versao }}-controles-2560x1600.png" 3
           cmd "chrome 1000 650 /tmp/telas/${{ matrix.versao }}-controles-1000x650.png" 3
           cmd "chrome 820 460 /tmp/telas/${{ matrix.versao }}-controles-820x460.png" 3
-          cmd "resize 1470 956"; cmd "key 49" 2; cmd "show" 1; shot pausado
-          cmd "fs"; sleep 4; cmd "show" 1; shot tela-cheia
-          cmd "layout"
           pkill -x FramePlay || true
           sleep 2
           cp /tmp/frameplay-player.log /tmp/telas/player.log 2>/dev/null || true

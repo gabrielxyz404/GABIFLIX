@@ -1644,7 +1644,8 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
             // no tamanho pedido, mesmo maior do que o ecrã do computador: "chrome 2560 1600 /tmp/x.png"
             let n2 = w.count > 2 ? Int(w[2]) ?? 0 : 0
             guard n > 0, n2 > 0, w.count > 3, let win = window else { break }
-            win.setFrame(NSRect(x: 0, y: 0, width: n, height: n2 + 28), display: true)
+            win.styleMask = [.borderless, .resizable]   // sem barra de título o AppKit não limita a janela ao tamanho do ecrã
+            win.setFrame(NSRect(x: 0, y: 0, width: n, height: n2), display: true)
             testCommand("showforce")
             root.layoutSubtreeIfNeeded()
             if let rep = root.bitmapImageRepForCachingDisplay(in: root.bounds) {
