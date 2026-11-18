@@ -38,6 +38,7 @@ public class MainActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        if (duplicateLauncher(this)) { CrashReporter.crumb("MainActivity: ícone tocado com o app já aberto: não abre outra página inicial"); finish(); return; }
         CrashReporter.testHook(this);
         // na TV abre o app nativo da TV (o celular não muda nada)
         if (isTv(this)) {
@@ -166,6 +167,16 @@ public class MainActivity extends Activity {
             d.setSystemUiVisibility(View.SYSTEM_UI_FLAG_VISIBLE);
             getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         }
+    }
+
+    /**
+     * O ícone do app foi tocado e já existe uma tarefa do app (com o filme aberto, por exemplo), mas o sistema criou uma tela inicial nova POR CIMA dela
+     * (acontece quando a tarefa nasceu de outra intent, como o "Abrir" do instalador). Esta cópia some e a tela de baixo (o filme) volta a aparecer.
+     */
+    static boolean duplicateLauncher(Activity a) {
+        Intent i = a.getIntent();
+        return !a.isTaskRoot() && i != null && Intent.ACTION_MAIN.equals(i.getAction())
+                && (i.hasCategory(Intent.CATEGORY_LAUNCHER) || i.hasCategory("android.intent.category.LEANBACK_LAUNCHER"));
     }
 
     /** TV: Fire TV, Android TV ou qualquer aparelho em modo televisão */
