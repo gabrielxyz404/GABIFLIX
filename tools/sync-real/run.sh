@@ -62,6 +62,93 @@ P_SLOW=1
 DONE='AUDIOSYNC (aplicado|resultado:|desisti|botão:|o áudio não tem|pulado|já foi vista)'
 panel_texts() { pause_v; show_controls; open_subs; sleep 1.5; snap "$1" 0.5; texts "$1"; adb shell input keyevent KEYCODE_BACK; sleep 1; play_v; }
 
+if [ -f tools/sync-real/ONLY_G ]; then
+  # (G) QUANTAS VEZES O MOTOR ANALISA A LEGENDA (pedido: "o motor fica a verificar várias vezes as legendas"). Material real: o trecho de 20 min de filme
+  # com as legendas certa/+3/-2/outro. Contagem pelo registro: linhas "AUDIOSYNC GATILHO ... decisão=análise" (cada início de análise, com o motivo) e,
+  # para comparar com a versão antiga (que não tem GATILHO), "AUDIOSYNC começando" + "AUDIOSYNC reverificando".
+  # TIMERS ENCURTADOS NO TESTE (ganchos): gfAudioRetrySec=60 (a segunda tentativa depois de "sem confiança" seria 20 min) e gfAudioStartSec=10.
+  # O soak do caso confiante usa o tempo REAL (11 min tocando depois do resultado, mais que os 10 min do monitor antigo) com os tempos de fábrica.
+  CLIP=clip.mkv
+  adb logcat -G 16M >/dev/null 2>&1
+  SOAK=${G_SOAK:-660}
+  RES_G=$OUT/G-resumo-$P.txt; : > $RES_G
+  RX() { adb shell am broadcast -a io.github.gabrielxyz404.gabiflix.TEST -p $PKG --es cmd "$1" --es val "$2" >/dev/null 2>&1; sleep 1; }
+  resumed() { adb shell dumpsys activity activities | grep -m1 -E "topResumedActivity|mResumedActivity" | tr -s ' ' | tr -d '\r'; }
+  volta() {  # HOME e volta pelo ícone do lançador
+    adb shell input keyevent KEYCODE_HOME; sleep 6
+    if [ "$P" = tel ]; then adb shell am start -a android.intent.action.MAIN -c android.intent.category.LAUNCHER -f 0x10200000 -n $PKG/.MainActivity >/dev/null 2>&1
+    else adb shell am start -a android.intent.action.MAIN -c android.intent.category.LEANBACK_LAUNCHER -f 0x10200000 -n $PKG/.tv.TvHomeActivity >/dev/null 2>&1; fi
+    sleep 6
+    resumed | grep -q PlayerActivity || { adb shell am start -n $PKG/.PlayerActivity -f 0x20000 >/dev/null 2>&1; sleep 6; }
+    echo "volta: $(resumed)" >> $RES_G
+  }
+  conta() {
+    echo "  análises iniciadas (GATILHO decisão=análise) = $(grep -c 'AUDIOSYNC GATILHO .*decisão=análise' $1)"
+    echo "  resultados terminados (AUDIOSYNC resultado:) = $(grep -c 'AUDIOSYNC resultado:' $1)"
+    echo "  [versão antiga e nova] começando=$(grep -c 'AUDIOSYNC começando' $1) reverificando=$(grep -c 'AUDIOSYNC reverificando' $1)"
+    echo "  avisos na tela = $(grep -c 'AVISO na tela' $1) (só os de legenda: $(grep 'AVISO na tela' $1 | grep -c -i 'legenda'))"
+    echo "  voltou ao app (onResume) = $(grep -c 'ciclo: onResume' $1)"
+  }
+  fase() {  # $1 = nome da fase
+    save G-$1
+    { echo "=== $1 ($P) $(date -u +%H:%M:%S) ==="; conta $OUT/log-$P-G-$1.txt
+      grep -E 'AUDIOSYNC (GATILHO|salto|legenda ativa|pausa da tela|resultado:|aplicado|pronto|captura falhou|a captura derrubou|captura recuperada|tentativa)|AVISO na tela|teste: ação' $OUT/log-$P-G-$1.txt | sed -E 's/^[0-9.]+ +[0-9]+ +[0-9]+ [A-Z] [A-Za-z]+ *: //' | cut -c1-330
+    } >> $RES_G
+  }
+  espera_n() {  # $1 = padrão, $2 = quantas vezes, $3 = segundos no máximo
+    for i in $(seq 1 $(( $3 / 4 ))); do [ "$(glog | grep -c "$1")" -ge "$2" ] && return 0; sleep 4; done
+    echo "TEMPO ESGOTADO esperando $2x: $1" >> $RES_G; return 1
+  }
+  EXTRAS="--es gfAudioStartSec 10 --es gfAudioRetrySec 60 --es gfRx 1"
+
+  # G1) resultado CONFIANTE (+3 s => aplicado): nada de nova análise por tempo, por voltar ao app, por saltar, nem por reabrir o filme
+  adb shell pm clear $PKG >/dev/null; sleep 2
+  launch mais3.srt $EXTRAS
+  waitlog "AUDIOSYNC (aplicado|resultado:)" 420; sleep 6
+  snap G1-resultado 0.3
+  fase G1a-resultado
+  volta; sleep 20; volta; sleep 20                       # duas idas à tela inicial e voltas
+  fase G1b-home-e-volta
+  sleep $SOAK                                            # tocando, sem mexer em nada
+  fase G1c-soak
+  RX seek 60; sleep 45                                   # salto grande SEM mexer no atraso: não pode analisar
+  fase G1d-salto-sem-ajuste
+  launch mais3.srt $EXTRAS; sleep 100                    # reabrir o mesmo filme (dados mantidos): não pode analisar
+  snap G1-reaberto 0.3
+  fase G1e-reabrir
+  RX delay 1500; sleep 4; RX seek 900                    # ajuste manual E salto de ~14 min: UMA nova análise (regra do pedido)
+  waitlog "AUDIOSYNC (aplicado|resultado:)" 420; sleep 60
+  fase G1f-ajuste-manual-e-salto
+
+  # G1b) resultado confiante "já estava certa" (legenda certa): silencioso (aviso só na primeira conferência do filme)
+  adb shell pm clear $PKG >/dev/null; sleep 2
+  launch certa.srt $EXTRAS
+  waitlog "AUDIOSYNC (aplicado|resultado:)" 420; sleep 90
+  snap G1-certa 0.3
+  fase G1g-certa
+  launch certa.srt $EXTRAS; sleep 90                     # reabrir: nenhuma análise e nenhum aviso
+  fase G1h-certa-reabrir
+
+  # G2) resultado SEM confiança (legenda de outro filme): no máximo UMA nova tentativa (aqui 60 s depois, em vez de 20 min) e para
+  adb shell pm clear $PKG >/dev/null; sleep 2
+  launch outro.srt $EXTRAS
+  espera_n "AUDIOSYNC resultado:" 2 600; sleep 240        # depois da segunda: 4 min sem terceira
+  fase G2-sem-confianca
+
+  # G3) a captura cai (processo :audiocap morre): recupera na hora e conta como UMA tentativa
+  adb shell pm clear $PKG >/dev/null; sleep 2
+  launch mais3.srt $EXTRAS --es gfAudioCrash capture
+  waitlog "AUDIOSYNC (aplicado|resultado:)" 420; sleep 120
+  fase G3a-queda-recuperada
+  # G3b) cai em todas as configurações: erro => no máximo uma segunda tentativa
+  adb shell pm clear $PKG >/dev/null; sleep 2
+  launch mais3.srt $EXTRAS --es gfAudioCrash capture-all
+  espera_n "AUDIOSYNC resultado:" 2 600; sleep 200
+  fase G3b-queda-total
+
+  adb logcat -d | grep -E "FATAL EXCEPTION" | head -20 > $OUT/crash.txt
+  cat $RES_G; cat $OUT/passos.txt 2>/dev/null; exit 0
+fi
 if [ -f tools/sync-real/ONLY_F ]; then
   # condicoes reais: video por HTTP lento (rede limitada), legenda por URL (addSlave), sincronizacao automatica ja aplicada E uma nova analise
   # (re-checagem) capturando audio durante os seeks; seeks arrastando a linha do tempo, varios seguidos e rapidos, inclusive durante o carregamento

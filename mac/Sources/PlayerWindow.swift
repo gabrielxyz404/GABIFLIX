@@ -1512,8 +1512,8 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
     // Normal = como vem (com barras pretas se for preciso). Preencher = recorte (videoCropGeometry): a imagem REAL (sem as barras pretas
     // gravadas dentro do ficheiro de vídeo) cobre a janela, centrada e sem esticar. Só se usam propriedades do leitor: nada na hierarquia de vistas.
     private static let scaleNames = ["Normal", "Preencher"]
-    /** Preencher: zoom máximo sobre o modo Normal (igual em X e em Y). 1,05x corta no máximo 2,4% de cada lado: um 1,85:1 num quadro 16:9 (pede 1,04x) fica sem barras, um 2,39:1 só fica com barras um pouco mais finas */
-    private static let zoomMax = 1.05
+    /** Preencher: zoom máximo sobre o modo Normal (igual em X e em Y). Escolhido pelo usuário: 1,10x (corta no máximo 4,5% de cada lado): um 1,85:1 num quadro 16:9 (pede 1,04x) fica sem barras, um 2,39:1 fica com barras bem mais finas do que com 1,05x. UMA constante, fácil de mudar */
+    private static let zoomMax = 1.10
 
     private func applyScale(force: Bool = false) {
         let w = Int(videoView.bounds.width.rounded()), h = Int(videoView.bounds.height.rounded())

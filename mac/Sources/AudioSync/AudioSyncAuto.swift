@@ -1,7 +1,15 @@
 // Sincronização da legenda pelo áudio, totalmente automática (porte de AudioSyncAuto.java do Android/TV): quando o vídeo está tocando e há uma
 // legenda baixada ativa, ouve o filme (3 janelas de 90 s numa segunda instância do VLCKit, fila de qualidade de serviço baixa) e, se o alinhador
-// tem certeza, acerta o atraso da legenda; a cada ~10 min confere de novo (monitor). O mesmo motor atende o item "Sincronizar automaticamente"
-// do menu de legendas (chain).
+// tem certeza, acerta o atraso da legenda. O mesmo motor atende o item "Sincronizar automaticamente" do menu de legendas (chain).
+//
+// Quantas vezes se analisa (igual ao Android/TV; pedido do usuário: o motor verificava a legenda vezes demais):
+//  - depois de um resultado CONFIANTE (acertou ou "já estava certa") a legenda NÃO é analisada de novo nesta sessão e o resultado fica guardado
+//    por filme+legenda durante 30 dias (reabrir o mesmo filme não analisa de novo). Só volta a analisar quando o usuário troca de faixa de legenda
+//    (outra legenda), quando há um salto de mais de 10 min na linha do tempo JUNTO com um ajuste manual do atraso, ou quando toca em
+//    "Sincronizar automaticamente";
+//  - depois de um resultado SEM CONFIANÇA tenta mais UMA vez, 20 min depois, e para;
+//  - só aparece aviso na tela quando o atraso muda de verdade; confirmação silenciosa só na primeira conferência de um filme.
+// Toda decisão de iniciar (ou não) uma análise sai no registro: "AUDIOSYNC GATILHO motivo=… decisão=…".
 //
 // Regras: o atraso manual do usuário sempre vence (atraso guardado que não foi posto por aqui, ou mexido depois, nunca é alterado); na dúvida não
 // mexe; nada disto toca o player de reprodução nem a vista do vídeo (só o atraso da legenda, pelo mesmo caminho do ajuste manual).
@@ -43,8 +51,28 @@ final class AudioBox<T> {
 
 final class AudioSyncAuto {
     private static let prefs = "audio-sync-1:"
-    private enum St { case new, done, off }
     private static let tickS = 1.0
+    /** NEW = ainda não analisada; DONE = resultado confiante (não se analisa de novo); HOLD = DONE mas o usuário mexeu no atraso à mão; OFF = parou */
+    private enum St { case new, done, hold, off }
+    /** quanto vale um resultado confiante guardado (fix/ok) e um "sem confiança" */
+    private static let confidentTtlMs = 30 * 86_400_000
+    private static let noTtlMs = 3 * 86_400_000
+
+    /** estado de UMA legenda (por filme+fonte+legenda) nesta sessão do player; fica guardado se a faixa for trocada e voltar */
+    private final class Sub {
+        var st = St.new
+        /** análises começadas para esta legenda nesta sessão (para o registro/provas) */
+        var analyses = 0
+        /** análises que terminaram sem confiança (recusada, erro): no máximo 2 */
+        var attempts = 0
+        var retryPending = false, retryFromRefusal = false
+        var retryAt = 0, keySince = 0
+        var mScale = 1.0, mOffset = 0.0
+        var lastWritten = 0
+        var nextFollowAt = 0
+        /** gatilho "ajuste manual + salto grande": os dois têm de acontecer depois do resultado confiante */
+        var manualEdited = false, farSeek = false
+    }
 
     private let h: AudioSyncHost
     private let core = AudioSyncCore()
@@ -56,23 +84,19 @@ final class AudioSyncAuto {
     // configuração (as variáveis de ambiente só existem nos testes)
     private let autoOn: Bool
     private var startAfterMs = 25_000
-    private var recheckMs = 600_000
-    private var noticedKey = ""
+    /** depois de um resultado sem confiança: uma segunda e última tentativa daqui a tanto (teste: FP_AUDIO_RETRY_SEC encurta) */
+    private var retryMs = 20 * 60_000
+    /** salto na linha do tempo que conta como "salto grande" (teste: FP_AUDIO_FARSEEK_SEC) */
+    private var farSeekMs = 600_000
 
-    // estado da legenda ativa
+    private var subs: [String: Sub] = [:]
+    private var cur: Sub?
     private var key: String?
-    private var keySince = 0
-    private var st = St.new
-    private var running = false, retryPending = false
-    private var retries = 0
-    private var retryAt = 0
-    private var mScale = 1.0, mOffset = 0.0
-    private var lastWritten = 0
-    private var nextRecheckAt = 0, nextFollowAt = 0
-    private var prevOut: AudioRecheck.Out?
-    private var failing: [AudioWindow] = []
+    private var running = false
+    private var lastStartAt = 0
     private let rescanAt = AudioBox<Int>(0)
     private let keyNow = AudioBox<String?>(nil)
+    private var lastPosMs = -1, lastPosWall = 0
 
     // saúde da reprodução (para medir que a análise não trava o filme)
     private var lastWall = 0, lastT = 0, hN = 0, hStalls = 0, hBuf = 0, lostAtStart = 0, lastStallAt = 0
@@ -88,7 +112,8 @@ final class AudioSyncAuto {
         let env = ProcessInfo.processInfo.environment
         autoOn = env["FP_AUDIO_AUTO"] != "false"
         if let v = env["FP_AUDIO_START_SEC"], let n = Int(v) { startAfterMs = n * 1000 }
-        if let v = env["FP_AUDIO_RECHECK_SEC"], let n = Int(v) { recheckMs = n * 1000 }
+        if let v = env["FP_AUDIO_RETRY_SEC"], let n = Int(v) { retryMs = n * 1000 }
+        if let v = env["FP_AUDIO_FARSEEK_SEC"], let n = Int(v) { farSeekMs = n * 1000 }
         if env["FP_AUDIO_DSP"] == "true" { core.forceDsp = true }
         let hh = host
         core.logger = { hh.log($0) }
@@ -96,23 +121,31 @@ final class AudioSyncAuto {
 
     /** sem limite de dados: a sincronização automática roda sempre, qualquer que seja o tamanho do arquivo e o tipo de rede (decisão do usuário) */
     private func autoBudget() -> Int { return AudioSyncCore.noLimit }
-    private func recheckBudget() -> Int { return AudioSyncCore.noLimit }
-
-    /** um aviso discreto por situação e por legenda (não repete a cada tentativa) */
-    private func noticeOnce(_ k: String, _ what: String, _ text: String) {
-        let id = k + "#" + what
-        if id == noticedKey { return }
-        noticedKey = id
-        h.notice(text)
-    }
 
     private static func now() -> Int { return Int(DispatchTime.now().uptimeNanoseconds / 1_000_000) }
     private func log(_ s: String) { h.log("AUDIOSYNC " + s) }
+    private static func shortKey(_ k: String?) -> String { return k == nil ? "-" : String(k!.suffix(48)) }
+    private static func stName(_ st: St) -> String {
+        switch st {
+        case .new: return "nova"
+        case .done: return "confiante"
+        case .hold: return "manual"
+        case .off: return "parada"
+        }
+    }
+
+    /** o registro de cada gatilho (iniciar ou não uma análise) e a razão: o log do CI conta as linhas "decisão=análise" */
+    private func trigger(_ why: String, _ k: String?, _ decision: String) {
+        var extra = ""
+        if let kk = k, let s = subs[kk] { extra = " [análises=\(s.analyses) sem_confiança=\(s.attempts) estado=\(AudioSyncAuto.stName(s.st))]" }
+        log("GATILHO motivo=\(why) legenda=\(AudioSyncAuto.shortKey(k)) decisão=\(decision)\(extra)")
+    }
 
     func start() {
         if started || stopped { return }
         started = true
-        log("pronto (automático=\(autoOn), começa \(startAfterMs / 1000) s depois de a legenda ficar ativa, reverifica a cada \(recheckMs / 1000) s)")
+        purgeOldMarks()
+        log("pronto (sem limite de dados; automático=\(autoOn), começa \(startAfterMs / 1000) s depois de a legenda ficar ativa; resultado confiante vale \(AudioSyncAuto.confidentTtlMs / 86_400_000) dias e não se reverifica; sem confiança: 1 nova tentativa em \(retryMs / 1000) s; salto grande = \(farSeekMs / 1000) s)")
         let t = Timer(timeInterval: AudioSyncAuto.tickS, repeats: true) { [weak self] _ in self?.tick() }
         RunLoop.main.add(t, forMode: .common)
         timer = t
@@ -132,7 +165,8 @@ final class AudioSyncAuto {
 
     /** texto de diagnóstico do estado, para os testes */
     func stateText() -> String {
-        return "st=\(st) executando=\(running) mScale=\(mScale) mOffset=\(Int(mOffset)) escrito=\(lastWritten) maiorIntervaloDoCiclo=\(maxTickGapMs) ms"
+        let name = cur == nil ? "-" : AudioSyncAuto.stName(cur!.st)
+        return "st=\(name) executando=\(running) análises=\(cur?.analyses ?? 0) sem_confiança=\(cur?.attempts ?? 0) mScale=\(cur?.mScale ?? 1.0) mOffset=\(Int(cur?.mOffset ?? 0)) escrito=\(cur?.lastWritten ?? 0) maiorIntervaloDoCiclo=\(maxTickGapMs) ms"
     }
 
     // ------------------------------------------------------------ item do menu (o painel de legendas)
@@ -151,9 +185,14 @@ final class AudioSyncAuto {
         let d1 = r1.status == .fixed ? r1.delayMs : currentDelayMs
         token.value += 1   // a execução automática em andamento (se houver) é descartada
         core.cancel()
+        let k = keyNow.value
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            if let kk = k, let s = self.subs[kk] { s.analyses += 1 }
+            self.trigger("botão-sincronizar", k, "análise")
+        }
         let o = core.run(url: url, subText: active.text, durMs: durationMs, nowMs: Int(videoTimeMs), currentDelay: d1, maxBytes: AudioSyncCore.noLimit)
         log("botão: \(o.note) | \(o.st.summary())")
-        let k = keyNow.value
         switch o.kind {
         case .fix:
             if let k = k { mark(k, "fix", o.scale, o.offsetMs, o.targetDelay) }   // o painel guarda este atraso como qualquer outro
@@ -165,6 +204,7 @@ final class AudioSyncAuto {
             return r1.status == .fixed ? r1 : AutoSyncResult.ok("já estava certa (o áudio confirma)")
         case .refused:
             if let k = k { mark(k, "no", 1.0, 0, 0) }
+            rescanAt.value = AudioSyncAuto.now() + 6000
             return r1.status == .failed ? AutoSyncResult.failedMsg(r1.note, o.msg) : r1
         case .cancelled:
             return r1
@@ -173,19 +213,45 @@ final class AudioSyncAuto {
         }
     }
 
-    // ------------------------------------------------------------ marcas guardadas (cache por legenda)
+    // ------------------------------------------------------------ marcas guardadas (cache por filme+legenda)
 
     private func mark(_ k: String, _ kind: String, _ scale: Double, _ off: Double, _ delay: Int) {
         UserDefaults.standard.set("\(AudioSyncCore.version)|\(kind)|\(scale)|\(off)|\(delay)|\(Int(Date().timeIntervalSince1970 * 1000))", forKey: AudioSyncAuto.prefs + k)
+    }
+
+    private static func expired(_ a: [String]) -> Bool {
+        let age = Int(Date().timeIntervalSince1970 * 1000) - (Int(a[5]) ?? 0)
+        // "sem confiança" vale por 3 dias (a causa pode ter sido passageira); o confiante por 30 dias
+        return age > (a[1] == "no" ? noTtlMs : confidentTtlMs)
     }
 
     private func readMark(_ k: String) -> [String]? {
         guard let v = UserDefaults.standard.string(forKey: AudioSyncAuto.prefs + k) else { return nil }
         let a = v.components(separatedBy: "|")
         if a.count != 6 || a[0] != AudioSyncCore.version { return nil }
-        // "sem confiança" vale por 3 dias: depois tenta de novo (a causa pode ter sido passageira)
-        if a[1] == "no", Int(Date().timeIntervalSince1970 * 1000) - (Int(a[5]) ?? 0) > 3 * 86_400_000 { return nil }
+        if AudioSyncAuto.expired(a) { return nil }
         return a
+    }
+
+    /** apaga as marcas vencidas (30 dias; "sem confiança" 3 dias) e as de versões antigas do motor */
+    private func purgeOldMarks() {
+        let d = UserDefaults.standard
+        var n = 0
+        for (name, val) in d.dictionaryRepresentation() where name.hasPrefix(AudioSyncAuto.prefs) && !name.hasPrefix(AudioSyncAuto.prefs + "filme:") {
+            guard let v = val as? String else { continue }
+            let a = v.components(separatedBy: "|")
+            if a.count != 6 || a[0] != AudioSyncCore.version || AudioSyncAuto.expired(a) { d.removeObject(forKey: name); n += 1 }
+        }
+        if n > 0 { log("marcas vencidas apagadas: \(n)") }
+    }
+
+    /** a primeira conferência deste filme (nenhuma outra marca dele guardada antes): só nela a confirmação silenciosa mostra um aviso */
+    private func firstCheckOfFilm(_ k: String) -> Bool {
+        let film = AudioSyncAuto.prefs + "filme:" + (k.components(separatedBy: "|").first ?? k)
+        let nowMs = Int(Date().timeIntervalSince1970 * 1000)
+        if let v = UserDefaults.standard.string(forKey: film), let t = Int(v), nowMs - t < AudioSyncAuto.confidentTtlMs { return false }
+        UserDefaults.standard.set(String(nowMs), forKey: film)
+        return true
     }
 
     // ------------------------------------------------------------ o ciclo (1 vez por segundo, na thread principal)
@@ -218,21 +284,44 @@ final class AudioSyncAuto {
         lastWall = now; lastT = t; lastPl = pl; lastBuf = buf
     }
 
-    private func newSub(_ k: String?) {
-        token.value += 1
-        if running { core.cancel(); log("legenda trocada: análise em andamento cancelada") }
-        running = false
+    /** salto na linha do tempo (para frente ou para trás) maior que o limite: guarda para o gatilho "ajuste manual + salto grande" */
+    private func watchSeek(_ now: Int, _ pl: Bool) {
+        let t = h.timeMs()
+        if lastPosMs >= 0 && t > 0 {
+            let expected = lastPosMs + (pl ? now - lastPosWall : 0)
+            let jump = abs(t - expected)
+            if jump > farSeekMs, let s = cur {
+                log("salto na linha do tempo de \(jump / 1000) s (de \(lastPosMs / 1000) s para \(t / 1000) s): só conta se o usuário também mexer no atraso à mão; sozinho não dispara análise")
+                s.farSeek = true
+            }
+        }
+        if t > 0 { lastPosMs = t; lastPosWall = now }
+    }
+
+    /** a legenda ativa mudou: o estado de cada legenda fica guardado (voltar a ela não recomeça do zero) */
+    private func switchSub(_ k: String?, _ now: Int) {
+        if running, let kk = k, let old = key, kk != old {
+            token.value += 1
+            core.cancel()
+            running = false
+            log("legenda trocada: análise em andamento cancelada")
+        }
         key = k
         keyNow.value = k
-        keySince = AudioSyncAuto.now()
-        st = .new
-        retries = 0
-        retryPending = false
-        prevOut = nil
-        failing.removeAll()
-        mScale = 1.0
-        mOffset = 0
-        if let k = k { log("legenda ativa: " + String(k.suffix(60))) }
+        guard let kk = k else { cur = nil; return }
+        var fresh = false
+        var found = subs[kk]
+        if found == nil {
+            let n = Sub()
+            n.keySince = now
+            subs[kk] = n
+            found = n
+            fresh = true
+        }
+        cur = found
+        let seen = found.map { "já vista nesta sessão: \(AudioSyncAuto.stName($0.st)), análises=\($0.analyses)" } ?? ""
+        log("legenda ativa: " + AudioSyncAuto.shortKey(kk) + (fresh ? " (nova nesta sessão)" : " (" + seen + ")"))
+        if fresh { trigger("troca-de-legenda", kk, "avaliar (espera \(startAfterMs / 1000) s tocando; se há resultado guardado, não analisa)") }
     }
 
     private func tick() {
@@ -240,55 +329,92 @@ final class AudioSyncAuto {
         let now = AudioSyncAuto.now()
         if lastTickAt > 0 { maxTickGapMs = max(maxTickGapMs, now - lastTickAt) }
         lastTickAt = now
-        if now - lastDiag >= 20_000 { lastDiag = now; log("estado: st=\(st) executando=\(running) " + h.debug()) }
+        if now - lastDiag >= 20_000 { lastDiag = now; log("estado: st=\(cur == nil ? "-" : AudioSyncAuto.stName(cur!.st)) executando=\(running) " + h.debug()) }
         let pl = h.playing()
         sampleHealth(now, pl)
+        watchSeek(now, pl)
         let cand = h.activeCand()
         let k: String? = (cand == nil || cand?.text == nil) ? nil : h.delayKey()
-        if k != key { newSub(k) }
-        guard let kk = k, let cd = cand, autoOn else { return }
+        if k != key { switchSub(k, now) }
+        guard let kk = k, let cd = cand, let s = cur, autoOn else { return }
+        if running && hBuf >= 2 && now - lastStartAt > 5000 { abortForStall(s, kk) }
         let ra = rescanAt.value
-        if ra > 0 && now >= ra && !running { rescanAt.value = 0; st = .new; keySince = 0; retries = 0 }
-        switch st {
+        if ra > 0 && now >= ra && !running {
+            // o item de menu acabou de terminar: adota o resultado que ele guardou (sem nova captura)
+            rescanAt.value = 0
+            s.st = .new; s.keySince = 0; s.attempts = 0; s.retryPending = false; s.retryFromRefusal = false
+            trigger("botão-adotar-resultado", kk, "sem análise (só lê a marca que o botão guardou)")
+        }
+        switch s.st {
         case .new:
-            if running || !pl || now - keySince < startAfterMs || (retryPending && now < retryAt) { return }
+            if running || !pl || now - s.keySince < startAfterMs || (s.retryPending && now < s.retryAt) { return }
             if lastStallAt > 0 && now - lastStallAt < 20_000 { return }
-            decideStart(cd, kk)
+            decideStart(s, cd, kk)
         case .done:
-            if h.delayMs() != lastWritten { st = .off; log("atraso mexido à mão: não mexo mais nesta legenda"); return }
+            if h.delayMs() != s.lastWritten {
+                s.st = .hold
+                s.manualEdited = true
+                log("atraso mexido à mão: não mexo no atraso; só uma nova análise se também houver um salto de mais de \(farSeekMs / 1000) s na linha do tempo")
+                return
+            }
             if running || core.busy { return }
-            if abs(mScale - 1.0) > 1e-9 && now >= nextFollowAt && pl { follow(now) }
-            if pl && now >= nextRecheckAt && now - lastStallAt > 20_000 { startRecheck(cd, kk) }
+            if abs(s.mScale - 1.0) > 1e-9 && now >= s.nextFollowAt && pl { follow(s, now) }
+        case .hold:
+            if running || core.busy || !pl { return }
+            if s.manualEdited && s.farSeek {
+                s.manualEdited = false
+                s.farSeek = false
+                startRun(s, cd, kk, "ajuste-manual+salto-grande")
+            }
         case .off:
             break
         }
     }
 
     /** a legenda tem de ser uma que o motor ainda não viu; atraso manual guardado vence */
-    private func decideStart(_ cand: SubtitleSync.Cand, _ k: String) {
+    private func decideStart(_ s: Sub, _ cand: SubtitleSync.Cand, _ k: String) {
         let saved = h.savedDelay(k)
-        if let m = readMark(k) {
-            if m[1] == "no" { st = .off; log("esta legenda já foi vista pelo áudio e recusada: não tento de novo (por 3 dias)"); return }
+        let second = s.retryFromRefusal
+        if !second, let m = readMark(k) {
+            if m[1] == "no" {
+                s.st = .off
+                trigger("início", k, "ignorado: já vista pelo áudio e recusada (vale 3 dias)")
+                return
+            }
             let markDelay = Int(m[4]) ?? Int.min
-            if saved != markDelay { st = .off; log("atraso guardado (\(saved) ms) não é o do áudio (\(markDelay) ms): é manual, não mexo"); return }
-            mScale = Double(m[2]) ?? 1.0
-            mOffset = Double(m[3]) ?? 0.0
-            if m[1] == "ok" { mOffset = Double(h.delayMs()) }
-            lastWritten = h.delayMs()
-            st = .done
-            nextRecheckAt = AudioSyncAuto.now() + recheckMs
-            nextFollowAt = 0
-            log("legenda já sincronizada pelo áudio antes (\(m[1])): sem nova captura, reverifica em \(recheckMs / 1000) s")
+            if saved != markDelay {
+                s.st = .off
+                trigger("início", k, "ignorado: atraso guardado (\(saved) ms) não é o do áudio (\(markDelay) ms): é manual")
+                return
+            }
+            s.mScale = Double(m[2]) ?? 1.0
+            s.mOffset = Double(m[3]) ?? 0.0
+            if m[1] == "ok" { s.mOffset = Double(h.delayMs()) }
+            s.lastWritten = h.delayMs()
+            s.st = .done
+            s.nextFollowAt = 0
+            let dias = (Int(Date().timeIntervalSince1970 * 1000) - (Int(m[5]) ?? 0)) / 86_400_000
+            trigger("início", k, "ignorado: resultado confiante guardado (\(m[1]), há \(dias) dias): sem captura e sem reverificação")
             return
         }
-        if saved != 0 || h.delayMs() != 0 { st = .off; log("atraso manual guardado (\(saved) ms): não mexo"); return }
-        startRun(cand, k)
+        if saved != 0 || h.delayMs() != 0 {
+            s.st = .off
+            trigger(second ? "segunda-tentativa" : "início", k, "ignorado: atraso manual guardado (\(saved != 0 ? saved : h.delayMs()) ms)")
+            return
+        }
+        startRun(s, cand, k, second ? "segunda-tentativa" : "início")
     }
 
-    private func startRun(_ cand: SubtitleSync.Cand, _ k: String) {
+    private func startRun(_ s: Sub, _ cand: SubtitleSync.Cand, _ k: String, _ why: String) {
+        if running || core.busy { trigger(why, k, "ignorado: já há uma análise em andamento (nunca duas ao mesmo tempo)"); return }
         token.value += 1
         let tok = token.value
         running = true
+        s.analyses += 1
+        s.retryPending = false
+        s.retryFromRefusal = false
+        trigger(why, k, "análise")
+        lastStartAt = AudioSyncAuto.now()
         let d0 = h.delayMs()
         let pos = h.timeMs(), dur = h.durationMs()
         let url = h.url()
@@ -298,11 +424,35 @@ final class AudioSyncAuto {
         maxTickGapMs = 0
         let budget = autoBudget()
         log("começando: posição \(pos / 1000) s, duração \(dur / 1000) s, atraso atual \(d0) ms, sem limite de dados")
-        noticeOnce(k, "verificando", "Legenda: a verificar pelo áudio…")
         queue.async { [weak self] in
             guard let self = self else { return }
             let o = self.core.run(url: url, subText: text, durMs: dur, nowMs: pos, currentDelay: d0, maxBytes: budget)
             DispatchQueue.main.async { self.finishRun(tok, k, d0, o) }
+        }
+    }
+
+    /** a reprodução engasgou duas vezes durante a análise: cancela e conta como resultado sem confiança */
+    private func abortForStall(_ s: Sub, _ k: String) {
+        log("a reprodução engasgou \(hBuf) vezes durante a análise: cancelo para não atrapalhar o filme")
+        token.value += 1
+        core.cancel()
+        running = false
+        inconclusive(s, k, "reprodução engasgou")
+    }
+
+    /** resultado sem confiança (recusada, erro de captura, engasgo): uma segunda tentativa, 20 min depois, e para */
+    private func inconclusive(_ s: Sub, _ k: String, _ why: String) {
+        s.attempts += 1
+        if s.attempts >= 2 {
+            s.st = .off
+            s.retryPending = false
+            trigger("sem-confiança", k, "parar: \(why) (2 tentativas feitas)")
+        } else {
+            s.st = .new
+            s.retryPending = true
+            s.retryFromRefusal = true
+            s.retryAt = AudioSyncAuto.now() + retryMs
+            trigger("sem-confiança", k, "agendar UMA segunda tentativa em \(retryMs / 1000) s: \(why)")
         }
     }
 
@@ -311,48 +461,53 @@ final class AudioSyncAuto {
         running = false
         log("resultado: " + o.note + (o.cuts ? " [aviso: a legenda parece ter cortes]" : "") + " | " + o.st.summary())
         log(healthLine())
-        if k != key { return }
-        if h.delayMs() != d0 { st = .off; log("o usuário mexeu no atraso durante a análise: descartado"); return }
+        guard let s = subs[k] else { return }
+        if let kk = key, k != kk { return }
+        if h.delayMs() != d0 { s.st = .off; log("o usuário mexeu no atraso durante a análise: descartado"); return }
         switch o.kind {
         case .fix:
             let persist = o.scale == 1.0
-            h.applyDelay(o.targetDelay, persist)
-            mScale = o.scale
-            mOffset = o.offsetMs
-            lastWritten = o.targetDelay
+            let changed = o.targetDelay != d0 || !persist
+            if changed { h.applyDelay(o.targetDelay, persist) }
+            s.mScale = o.scale
+            s.mOffset = o.offsetMs
+            s.lastWritten = changed ? o.targetDelay : d0
             mark(k, "fix", o.scale, o.offsetMs, persist ? o.targetDelay : 0)
-            st = .done
-            nextRecheckAt = AudioSyncAuto.now() + recheckMs
-            nextFollowAt = AudioSyncAuto.now() + 15_000
-            h.notice(persist ? "Legenda acertada pelo áudio (" + AudioSyncAuto.secs(o.targetDelay) + ")" : "Legenda acertada pelo áudio (velocidade e atraso)")
-            noticedKey = k + "#fim"
-            log("aplicado: atraso \(o.targetDelay) ms, escala \(o.scale)")
+            s.st = .done
+            s.attempts = 0
+            s.manualEdited = false
+            s.farSeek = false
+            s.nextFollowAt = AudioSyncAuto.now() + 15_000
+            // o atraso mudou de verdade: único caso com aviso (além da primeira confirmação do filme)
+            if changed { h.notice(persist ? "Legenda acertada pelo áudio (" + AudioSyncAuto.secs(o.targetDelay) + ")" : "Legenda acertada pelo áudio (velocidade e atraso)") }
+            log("aplicado: atraso \(o.targetDelay) ms, escala \(o.scale) (resultado confiante: não será reverificado)")
         case .ok:
-            mScale = 1.0
-            mOffset = Double(h.delayMs())
-            lastWritten = h.delayMs()
+            s.mScale = 1.0
+            s.mOffset = Double(h.delayMs())
+            s.lastWritten = h.delayMs()
             mark(k, "ok", 1.0, o.offsetMs, h.delayMs())
-            st = .done
-            nextRecheckAt = AudioSyncAuto.now() + recheckMs
-            log("a legenda já estava certa (deslocamento medido \(jround(o.offsetMs)) ms): não mexi")
-            noticeOnce(k, "fim", "Legenda confirmada pelo áudio")
+            s.st = .done
+            s.attempts = 0
+            s.manualEdited = false
+            s.farSeek = false
+            log("a legenda já estava certa (deslocamento medido \(jround(o.offsetMs)) ms): não mexi (resultado confiante: não será reverificado)")
+            if firstCheckOfFilm(k) { h.notice("Legenda confirmada pelo áudio") }   // confirmação silenciosa: só na primeira conferência do filme
         case .refused:
             mark(k, "no", 1.0, 0, 0)
-            st = .off
             log("o áudio não tem certeza: legenda deixada como estava")
-            noticeOnce(k, "fim", "Legenda: não consegui confirmar pelo áudio — usa Sincronizar no menu")
-        default: // erro, cancelado, pulado: tenta de novo mais tarde (no máximo 2 vezes)
-            if o.kind == .cancelled { st = .new; retryPending = true; retryAt = AudioSyncAuto.now() + 30_000; log("análise cancelada (\(o.note)): tento de novo em 30 s") }
-            else if o.kind == .skipped || retries >= 2 {
-                st = .off
-                log("desisti (\(o.note))")
-                noticeOnce(k, "fim", o.kind == .skipped ? "Legenda: ficheiro pesado para analisar sozinho — usa Sincronizar no menu" : "Legenda: não consegui ouvir o áudio — usa Sincronizar no menu")
-            }
-            else { retries += 1; retryPending = true; retryAt = AudioSyncAuto.now() + 120_000 * retries; log("tento de novo em \(120 * retries) s (\(o.note))") }
+            inconclusive(s, k, "o áudio não tem certeza")
+        default: // erro, cancelado, pulado
+            if o.kind == .cancelled {
+                s.st = .new; s.retryPending = true; s.retryAt = AudioSyncAuto.now() + 30_000
+                log("análise cancelada (\(o.note)): recomeça em 30 s (não conta como tentativa)")
+            } else if o.kind == .skipped {
+                s.st = .off
+                trigger("pulado", k, "parar: \(o.note)")
+            } else { inconclusive(s, k, "erro: \(o.note)") }
         }
     }
 
-    // ------------------------------------------------------------ escala diferente de 1: o atraso acompanha o modelo
+    // ------------------------------------------------------------ escala diferente de 1: o atraso acompanha o modelo (sem nova análise)
 
     private static func delayAt(_ a: Double, _ off: Double, _ t: Int) -> Int {
         let cue = (Double(t) - off) / a
@@ -360,111 +515,12 @@ final class AudioSyncAuto {
         return max(-600_000, min(600_000, v))
     }
 
-    private func follow(_ now: Int) {
-        nextFollowAt = now + 15_000
-        let d = AudioSyncAuto.delayAt(mScale, mOffset, h.timeMs())
+    private func follow(_ s: Sub, _ now: Int) {
+        s.nextFollowAt = now + 15_000
+        let d = AudioSyncAuto.delayAt(s.mScale, s.mOffset, h.timeMs())
         if abs(d - h.delayMs()) < 250 { return }
         h.applyDelay(d, false)
-        lastWritten = d
-    }
-
-    // ------------------------------------------------------------ reverificação a cada ~10 min
-
-    private func startRecheck(_ cand: SubtitleSync.Cand, _ k: String) {
-        token.value += 1
-        let tok = token.value
-        running = true
-        resetHealth()
-        maxTickGapMs = 0
-        let pos = h.timeMs(), dur = h.durationMs()
-        let url = h.url()
-        let text = cand.text
-        let a = mScale, b = mOffset
-        let prev = prevOut
-        let fl = failing
-        log("reverificando na posição \(pos / 1000) s")
-        let budget = recheckBudget()
-        queue.async { [weak self] in
-            guard let self = self else { return }
-            let ck = self.core.recheck(url: url, subText: text, durMs: dur, posMs: pos, scale: a, offsetMs: b, prev: prev, failing: fl, maxBytes: budget)
-            DispatchQueue.main.async { self.finishRecheck(tok, k, ck, pos, a, b) }
-        }
-    }
-
-    private func finishRecheck(_ tok: Int, _ k: String, _ ck: AudioSyncCore.Check, _ pos: Int, _ a: Double, _ b: Double) {
-        if stopped || tok != token.value { return }
-        running = false
-        nextRecheckAt = AudioSyncAuto.now() + recheckMs
-        log("reverificação: \(ck.note) | \(healthLine())")
-        if ck.kind == .skipped && ck.note.contains("não reverifico") { nextRecheckAt = AudioSyncAuto.now() + 3_600_000 }
-        guard k == key, let out = ck.out else { return }
-        if h.delayMs() != lastWritten { st = .off; return }
-        switch out.verdict {
-        case .keep:
-            if ck.explained { failing.removeAll(); prevOut = nil }
-            else if let w = ck.window { addFailing(w) }
-        case .proposed:
-            prevOut = out
-            if let w = ck.window { addFailing(w) }
-            log("reverificação: proposta de novo deslocamento \(jround(out.newOffsetMs)) ms, aguardando confirmação (nada mudou)")
-        case .change:
-            confirmChange(k, ck, pos, a, b)
-        }
-    }
-
-    private func addFailing(_ w: AudioWindow) {
-        failing.append(w)
-        while failing.count > 2 { failing.removeFirst() }
-    }
-
-    /** o Recheck viu um salto: só vale se uma sessão completa em volta da posição concordar (mesmas portas do alinhamento inicial) */
-    private func confirmChange(_ k: String, _ ck: AudioSyncCore.Check, _ pos: Int, _ a: Double, _ b: Double) {
-        token.value += 1
-        let tok = token.value
-        running = true
-        guard let cand = h.activeCand(), let text = cand.text, let have = ck.window, let out = ck.out else { running = false; return }
-        let dur = h.durationMs()
-        let url = h.url()
-        let applyFromSub = out.applyFromSubMs
-        log("reverificação: salto proposto, confirmando com 3 janelas em volta de \(pos / 1000) s")
-        queue.async { [weak self] in
-            guard let self = self else { return }
-            let o = self.core.confirmChange(url: url, subText: text, durMs: dur, posMs: pos, scale: a, offsetMs: b, have: have)
-            DispatchQueue.main.async {
-                if self.stopped || tok != self.token.value { return }
-                self.running = false
-                self.log("confirmação: " + o.note)
-                if o.kind != .fix || abs(o.scale - a) > 1e-6 {
-                    self.log("o reajuste não foi confirmado: legenda mantida")
-                    self.prevOut = nil
-                    return
-                }
-                if applyFromSub == Int.max { self.log("sem pausa de falas à frente para aplicar o reajuste: legenda mantida"); return }
-                self.scheduleApply(k, tok, o, Int(a * Double(applyFromSub) + b), AudioSyncAuto.now() + 180_000)
-            }
-        }
-    }
-
-    /** o reajuste entra no intervalo entre falas: um pouco antes da fala que abre depois da pausa (nunca no meio de uma fala) */
-    private func scheduleApply(_ k: String, _ tok: Int, _ o: AudioSyncCore.Outcome, _ mediaStartMs: Int, _ deadline: Int) {
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) { [weak self] in
-            guard let self = self else { return }
-            if self.stopped || tok != self.token.value || k != self.key || self.h.delayMs() != self.lastWritten { return }
-            let t = self.h.timeMs()
-            if AudioSyncAuto.now() > deadline || t > mediaStartMs + 5000 { self.log("reajuste: a pausa passou sem aplicar; legenda mantida"); return }
-            if t < mediaStartMs - 300 { self.scheduleApply(k, tok, o, mediaStartMs, deadline); return }
-            let persist = o.scale == 1.0
-            let d = AudioSyncAuto.delayAt(o.scale, o.offsetMs, t)
-            self.h.applyDelay(d, persist)
-            self.lastWritten = d
-            self.mScale = o.scale
-            self.mOffset = o.offsetMs
-            self.prevOut = nil
-            self.failing.removeAll()
-            self.mark(k, "fix", o.scale, o.offsetMs, persist ? d : 0)
-            self.h.notice("Legenda reajustada pelo áudio (" + AudioSyncAuto.secs(d) + " a partir daqui)")
-            self.log("reajuste aplicado: atraso \(d) ms")
-        }
+        s.lastWritten = d
     }
 
     /** "+1,2 s" / "−3,0 s" (sinal de menos de verdade, vírgula decimal) */

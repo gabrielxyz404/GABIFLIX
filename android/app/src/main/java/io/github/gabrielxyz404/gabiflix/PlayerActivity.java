@@ -105,11 +105,11 @@ public class PlayerActivity extends Activity {
     /** Preencher: no máximo quantas vezes a largura da tela pode ter a imagem ampliada (filmes ultra-largos, como 2,76:1 em 16:9, ficariam com cortes demais nas laterais) */
     private static final float COVER_MAX_WIDTH = 1.45f;
     /**
-     * Preencher: zoom máximo (igual em X e em Y, nunca estica). 1,05x corta no máximo 2,4% de cada lado: não se nota perda de imagem.
-     * Um 1,85:1 num quadro 16:9 (pede 1,04x) fica sem barras; um 2,39:1 (pede 1,34x) só fica com barras um pouco mais finas.
-     * Uma constante por plataforma (celular e TV; o Mac tem a sua).
+     * Preencher: zoom máximo (igual em X e em Y, nunca estica). Escolhido pelo usuário: 1,10x (corta no máximo 4,5% de cada lado).
+     * Um 1,85:1 num quadro 16:9 (pede 1,04x) fica sem barras; um 2,39:1 (pede 1,34x) fica com as barras bem mais finas do que com 1,05x.
+     * UMA constante por plataforma, fácil de mudar (celular e TV aqui; o Mac tem a sua, zoomMax em PlayerWindow.swift).
      */
-    private static final float ZOOM_MAX_TV = 1.05f, ZOOM_MAX_PHONE = 1.05f;
+    private static final float ZOOM_MAX_TV = 1.10f, ZOOM_MAX_PHONE = 1.10f;
 
     private void applyScale() {
         if (player == null || videoLayout == null) return;
@@ -165,7 +165,7 @@ public class PlayerActivity extends Activity {
     /** na TV a legenda é desenhada dentro da imagem, a ~8% da borda de baixo do quadro: o zoom pode cortar no máximo isto da borda de baixo */
     private static final float SUB_CUT = 0.055f;
     /** na TV a legenda é desenhada no quadro e cresce junto com o zoom: o zoom só pode cortar isto de cada lado (medido na TV: a linha mais larga que o libVLC monta ocupa ~95% do quadro, e a legenda cresce junto com o zoom: limite ~4% de zoom) */
-    private static final float SUB_SAFE_X = 0.019f;
+    private static final float SUB_SAFE_X = 0.0455f;
     private final Runnable barTickRun = this::barTick;
     private PlayerUi.Btn scaleBtn;
 
@@ -600,6 +600,24 @@ public class PlayerActivity extends Activity {
         try {
             String sc = getIntent().getStringExtra("gfScale");
             if (sc != null) { scaleIndex = Integer.parseInt(sc); applyScale(); }
+            // só nos testes (gfRx): ações do usuário por "adb shell am broadcast -a ...TEST --es cmd seek|delay|track --es val N", para provar os
+            // gatilhos do motor de legendas sem depender de toques na tela (seek = segundo; delay = ajuste manual do atraso em ms; track = id da faixa)
+            if (getIntent().getStringExtra("gfRx") != null && testRx == null) {
+                testRx = new android.content.BroadcastReceiver() {
+                    @Override public void onReceive(android.content.Context c, android.content.Intent in) {
+                        try {
+                            String cmd = in.getStringExtra("cmd"), val = in.getStringExtra("val");
+                            if (player == null || cmd == null || val == null) return;
+                            glog("teste: ação do usuário " + cmd + " " + val);
+                            if (cmd.equals("seek")) player.setTime(Long.parseLong(val) * 1000L);
+                            else if (cmd.equals("delay")) setSubDelay(Integer.parseInt(val), panelValue);
+                            else if (cmd.equals("track")) { userPickedSub = true; player.setSpuTrack(Integer.parseInt(val)); syncDelayToTrack(Integer.parseInt(val)); }
+                        } catch (Throwable t) { glog("teste: ação falhou: " + t); }
+                    }
+                };
+                android.content.IntentFilter f = new android.content.IntentFilter("io.github.gabrielxyz404.gabiflix.TEST");
+                if (android.os.Build.VERSION.SDK_INT >= 33) registerReceiver(testRx, f, 2 /* RECEIVER_EXPORTED */); else registerReceiver(testRx, f);
+            }
             String sd = getIntent().getStringExtra("gfSubDelay");
             if (sd != null) ui.postDelayed(() -> { subDelayMs = Integer.parseInt(sd); applySubDelay(); glog("teste: atraso da legenda posto em " + subDelayMs + " ms"); }, 4000);
             if (getIntent().getStringExtra("gfTrace") != null) ui.post(new Runnable() { @Override public void run() {
@@ -1380,6 +1398,7 @@ public class PlayerActivity extends Activity {
 
     // ---------- sincronização pelo áudio (AudioSyncAuto): o que a tela empresta ao controlador ----------
     private AudioSyncAuto audioSync;
+    private android.content.BroadcastReceiver testRx;
     private final AudioSyncAuto.Host audioHost = new AudioSyncAuto.Host() {
         @Override public boolean buffering() { return spinner != null && spinner.getVisibility() == View.VISIBLE; }
         @Override public boolean playing() { return player != null && player.isPlaying() && !buffering(); }
@@ -1939,6 +1958,7 @@ public class PlayerActivity extends Activity {
     private void notice(String s) { notice(s, 3000); }
 
     private void notice(String s, long ms) {
+        glog("AVISO na tela: " + s);
         if (noticeLabel == null) return;
         noticeLabel.setText(s);
         noticeLabel.setVisibility(View.VISIBLE);
@@ -2286,6 +2306,7 @@ public class PlayerActivity extends Activity {
         super.onStart();
         if (player != null && viewsDetached) reattachViews();
         lifeLog("onStart");
+        if (audioSync != null) audioSync.onReturn("onStart");
     }
 
     @Override
@@ -2339,6 +2360,7 @@ public class PlayerActivity extends Activity {
     protected void onResume() {
         super.onResume();
         lifeLog("onResume");
+        if (audioSync != null) audioSync.onReturn("onResume");
         if (player != null && resumeOnReturn) { resumeOnReturn = false; player.play(); }
         if (returnTime >= 0) { returnTime = -1; ui.post(() -> setControlsVisible(true)); } // volta com os controles à mostra
     }
@@ -2348,6 +2370,7 @@ public class PlayerActivity extends Activity {
         ui.removeCallbacksAndMessages(null);
         if (barThread != null) { barThread.quit(); barThread = null; }
         if (audioSync != null) audioSync.stop();
+        if (testRx != null) { try { unregisterReceiver(testRx); } catch (Throwable ignored) {} testRx = null; }
         if (player != null) {
             savePosition(true);
             player.stop();
