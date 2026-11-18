@@ -1,0 +1,271 @@
+         1795011570.185   473   908 I ActivityManager: Force stopping io.github.gabrielxyz404.gabiflix appid=10076 user=0: from pid 3269
+         1795011570.325  2085  2100 E libc    : Access denied finding property "persist.adb.tls_server.enable"
+         1795011570.326  2085  2100 E libc    : Access denied finding property "service.adb.tls.port"
+         1795011571.253   473  2181 I ActivityManager: Force stopping io.github.gabrielxyz404.gabiflix appid=10076 user=0: clear data
+         1795011571.263   473   511 I ActivityManager: Force stopping io.github.gabrielxyz404.gabiflix appid=10076 user=-1: clearApplicationUserData
+         1795011571.341   473  2177 I ActivityTaskManager: START u0 {flg=0x10000000 cmp=io.github.gabrielxyz404.gabiflix/.tv.TvHomeActivity (has extras)} from uid 2000
+         1795011571.354   473   512 I ActivityManager: Start proc 3319:io.github.gabrielxyz404.gabiflix/u0a76 for pre-top-activity {io.github.gabrielxyz404.gabiflix/io.github.gabrielxyz404.gabiflix.tv.TvHomeActivity}
+         1795011571.597   473  2181 I ActivityTaskManager: START u0 {cmp=io.github.gabrielxyz404.gabiflix/.PlayerActivity (has extras)} from uid 10076
+         1795011571.669   473  2179 W ActivityTaskManager: Tried to set launchTime (0) < mLastActivityLaunchTime (46811)
+         1795011573.236   473   511 I ActivityManager: Waited long enough for: ServiceRecord{ae98f7f u0 com.google.android.apps.mediashell/.MediaShellCastReceiverService}
+         1795011573.331  3319  3373 I GabiFlixPlayer: hash=7ca135ceed9da48f tamanho=39670384 arquivo=clip.mkv
+         1795011573.331  3319  3373 I GabiFlixPlayer: Hash calculado, mas a busca de legendas falhou
+         1795011573.331  3319  3373 I GabiFlixPlayer: candidatas para baixar: 1 (do site: 1)
+         1795011573.394  3319  3319 I GabiFlixPlayer: ciclo: onStart, tocando=false, tempo=-1, escala=0, atraso=0, vista=TextureView 0x0, vout=true
+         1795011573.394  3319  3319 I GabiFlixPlayer: ciclo: onResume, tocando=false, tempo=-1, escala=0, atraso=0, vista=TextureView 0x0, vout=true
+         1795011573.458  3319  3373 I GabiFlixPlayer: legendas PT válidas: 1 de 1; referências baixadas: 0
+         1795011573.540  3319  3373 I GabiFlixPlayer: alinhamento com 0 referência(s):
+         1795011573.540  3319  3373 I GabiFlixPlayer:   sem referência (nem outro idioma, nem PT do hash) e menos de 2 PT para comparar: ranking antigo
+         1795011573.540  3319  3373 I GabiFlixPlayer:   alinhadas: 0
+         1795011573.964   473   510 I ActivityTaskManager: Displayed io.github.gabrielxyz404.gabiflix/.PlayerActivity: +2s536ms
+         1795011574.137  3319  3319 I GabiFlixPlayer: ciclo: evento Vout, saídas=1
+         1795011574.263  3319  3319 I GabiFlixPlayer: vistas do vídeo: TextureView(vídeo)
+         1795011574.264  3319  3319 I GabiFlixPlayer: AUDIOSYNC pronto (sem limite de dados; automático=true, começa 25 s depois de a legenda ficar ativa, reverifica a cada 600 s)
+         1795011574.497   473  2973 I ActivityManager: Killing 1367:com.android.keychain/1000 (adj 975): empty #17
+         1795011575.303  3319  3319 I GabiFlixPlayer: AUDIOSYNC estado: st=0 executando=false tocando=true carregando=false faixa=-1 baixadas=0 addedSubs=0 embeddedKnown=false faixas=[] cand=false | pss=102MB java=6/512MB nativo=58MB livre=1065MB limiar=144MB poucaMemoria=false
+         1795011575.496  3319  3319 I GabiFlixPlayer: legenda PT embutida: não há
+         1795011575.497  3319  3319 I GabiFlixPlayer: ranking das legendas:
+         1795011575.497  3319  3319 I GabiFlixPlayer:   referência de fim=0ms (sem referência), duração=1200023ms
+         1795011575.497  3319  3319 I GabiFlixPlayer:   #0 fim=6111228ms hash=false corrigida=false nota=0.3000
+         1795011575.499  3319  3319 I GabiFlixPlayer: escolhida: candidata #0; melhor baixada: #0 alinhada=false nota=0.00 deslocamento=0ms hash=false corrigida=false; 1 no menu
+         1795011575.500  3319  3319 I GabiFlixPlayer: atraso da legenda ativa (nenhuma): 0 ms
+         1795011575.782  3319  3319 I GabiFlixPlayer: legenda do app: 1458 falas da faixa ativa
+         1795011575.782  3319  3319 I GabiFlixPlayer: legenda do app: ligada
+         1795011576.306  3319  3319 I GabiFlixPlayer: AUDIOSYNC legenda ativa: d3:u|h:7ca135ceed9da48f|http://10.0.2.2:8000/mais3.srt#raw
+         1795011576.866   473   511 W ActivityManager: Ignoring remove of inactive process: ProcessRecord{dc707d6 0:com.android.tv.common/u0a51}
+         1795011577.063  3319  3319 I GabiFlixPlayer: atraso da legenda ativa (d3:u|h:7ca135ceed9da48f|http://10.0.2.2:8000/mais3.srt#raw): 0 ms
+         1795011579.707   473  2973 I ActivityManager: Killing 1687:com.android.localtransport/1000 (adj 985): empty #17
+         1795011579.708   473  2973 I ActivityManager: Killing 1242:com.android.tv.provision/u0a52 (adj 985): empty #18
+         1795011581.553   473  2181 W ActivityManager: Unable to start service Intent { cmp=com.google.android.gms/.fido.authenticator.service.AuthenticatorService } U=0: not found
+         1795011582.276   473  3464 W ActivityManager: Unable to start service Intent { act=com.google.android.gms.nearby.discovery:ACTION_INIT_MESSAGES_PATH cmp=com.google.android.gms/.nearby.discovery.service.DiscoveryService } U=0: not found
+         1795011584.497  2085  2298 E libc    : Access denied finding property "persist.adb.tls_server.enable"
+         1795011584.497  2085  2298 E libc    : Access denied finding property "service.adb.tls.port"
+         1795011585.165  2085  3452 E libc    : Access denied finding property "persist.adb.tls_server.enable"
+         1795011585.165  2085  3452 E libc    : Access denied finding property "service.adb.tls.port"
+         1795011590.412   473  2177 I ActivityManager: Killing 1666:com.android.externalstorage/u0a29 (adj 975): empty #17
+         1795011593.637   473  2180 I ActivityManager: Killing 1254:com.android.printspooler/u0a43 (adj 985): empty #17
+         1795011595.762  3319  3319 I GabiFlixPlayer: AUDIOSYNC estado: st=0 executando=false tocando=true carregando=false faixa=2 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 2:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=110MB java=9/512MB nativo=74MB livre=1086MB limiar=144MB poucaMemoria=false
+         1795011596.669   473  2180 W ActivityManager: Slow operation: 55ms so far, now at getContentProviderImpl: after updateOomAdj
+         1795011596.669   473  2180 W ActivityManager: Slow operation: 55ms so far, now at getContentProviderImpl: done!
+         1795011600.308  2085  3613 E libc    : Access denied finding property "persist.adb.tls_server.enable"
+         1795011600.308  2085  3613 E libc    : Access denied finding property "service.adb.tls.port"
+         1795011600.745  2085  2298 E libc    : Access denied finding property "persist.adb.tls_server.enable"
+         1795011600.745  2085  2298 E libc    : Access denied finding property "service.adb.tls.port"
+         1795011605.855  3319  3319 I GabiFlixPlayer: AUDIOSYNC antes da análise: saúde da reprodução: amostras=30 paradas=0 razão_mínima=0.77 carregando=0 quadros_perdidos=142
+         1795011605.855  3319  3319 I GabiFlixPlayer: AUDIOSYNC começando: posição 31 s, duração 1200 s, atraso atual 0 ms, faixa de áudio 1
+         1795011606.302   473  2178 I ActivityManager: Killing 2054:com.android.dynsystem/1000 (adj 975): empty #17
+         1795011606.398   473  1023 I ActivityManager: Killing 2105:com.android.shell/2000 (adj 975): empty #17
+         1795011607.067   473   512 I ActivityManager: Start proc 3661:io.github.gabrielxyz404.gabiflix:audiocap/u0a76 for service {io.github.gabrielxyz404.gabiflix/io.github.gabrielxyz404.gabiflix.AudioCapService}
+         1795011611.624  3319  3655 I GabiFlixPlayer: AUDIOSYNC captura 275 s +90 s: 90.06 s de PCM em 3.86 s (fim) leitura=5 MB | usou a faixa 1 (pedida 1) de [1:Scarlet Street 1945 HD; ]
+         1795011615.889   473  1317 I ActivityManager: Process com.google.android.gms (pid 2759) has died: fg  BFGS
+         1795011615.890   473  1317 W ActivityManager: Scheduling restart of crashed service com.google.android.gms/.chimera.container.ExternalFileApkService in 1784ms for start-requested
+         1795011615.890   473  1317 W ActivityManager: Scheduling restart of crashed service com.google.android.gms/.chimera.GmsIntentOperationService in 337916ms for start-requested
+         1795011615.890   473  1317 W ActivityManager: Scheduling restart of crashed service com.google.android.gms/.chimera.GmsBoundBrokerService in 11784ms for connection
+         1795011615.989  3319  3319 I GabiFlixPlayer: AUDIOSYNC estado: st=0 executando=true tocando=true carregando=false faixa=2 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 2:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=99MB java=9/512MB nativo=76MB livre=1122MB limiar=144MB poucaMemoria=false
+         1795011616.104   473  1428 I ActivityManager: Process com.google.android.gms.persistent (pid 1004) early provider death
+         1795011616.105   473  1428 I ActivityManager: Process com.google.android.gms.persistent (pid 1004) has died: fg  FGS 
+         1795011616.108   473  1428 W ActivityManager: Scheduling restart of crashed service com.google.android.gms/.common.stats.GmsCoreStatsService in 21567ms for start-requested
+         1795011616.108   473  1428 W ActivityManager: Scheduling restart of crashed service com.google.android.gms/com.google.android.location.internal.server.HardwareArProviderService in 31567ms for connection
+         1795011616.108   473  1428 W ActivityManager: Scheduling restart of crashed service com.google.android.gms/com.google.android.location.fused.FusedLocationService in 41567ms for connection
+         1795011616.108   473  1428 W ActivityManager: Scheduling restart of crashed service com.google.android.gms/.clearcut.debug.ClearcutDebugDumpService in 51567ms for start-requested
+         1795011616.108   473  1428 W ActivityManager: Scheduling restart of crashed service com.google.android.gms/.location.persistent.LocationPersistentService in 61566ms for start-requested
+         1795011616.108   473  1428 W ActivityManager: Scheduling restart of crashed service com.google.android.gms/.chimera.PersistentDirectBootAwareApiService in 71566ms for connection
+         1795011616.108   473  1428 W ActivityManager: Scheduling restart of crashed service com.google.android.gms/com.google.android.location.internal.GoogleLocationManagerService in 81566ms for start-requested
+         1795011616.108   473  1428 W ActivityManager: Scheduling restart of crashed service com.google.android.gms/.presencemanager.service.PresenceManagerPresenceReportService in 91566ms for start-requested
+         1795011616.108   473  1428 W ActivityManager: Scheduling restart of crashed service com.google.android.gms/com.google.android.location.internal.server.GoogleLocationService in 101566ms for start-requested
+         1795011616.108   473  1428 W ActivityManager: Scheduling restart of crashed service com.google.android.gms/.deviceconnection.service.DeviceConnectionWatcherService in 111566ms for start-requested
+         1795011616.108   473  1428 W ActivityManager: Scheduling restart of crashed service com.google.android.gms/.chimera.PersistentIntentOperationService in 121566ms for start-requested
+         1795011616.108   473  1428 W ActivityManager: Scheduling restart of crashed service com.google.android.gms/com.google.android.contextmanager.service.ContextManagerService in 131566ms for start-requested
+         1795011616.108   473  1428 W ActivityManager: Scheduling restart of crashed service com.google.android.gms/.chimera.PersistentBoundBrokerService in 141566ms for connection
+         1795011616.108   473  1428 W ActivityManager: Scheduling restart of crashed service com.google.android.gms/.auth.setup.devicesignals.LockScreenService in 151566ms for start-requested
+         1795011616.108   473  1428 W ActivityManager: Scheduling restart of crashed service com.google.android.gms/.location.geocode.GeocodeService in 161566ms for connection
+         1795011616.108   473  1428 W ActivityManager: Scheduling restart of crashed service com.google.android.gms/com.google.android.location.network.NetworkLocationService in 171566ms for connection
+         1795011616.108   473  1428 W ActivityManager: Scheduling restart of crashed service com.google.android.gms/.gcm.nts.SchedulerService in 181566ms for start-requested
+         1795011616.108   473  1428 W ActivityManager: Scheduling restart of crashed service com.google.android.gms/.chimera.PersistentApiService in 191566ms for connection
+         1795011616.108   473  1428 W ActivityManager: Scheduling restart of crashed service com.google.android.gms/.gcm.GcmService in 201566ms for start-requested
+         1795011616.173   473   512 W ActivityManager: Slow operation: 51ms so far, now at startProcess: asking zygote to start proc
+         1795011616.174   473  1428 W ActivityManager: Slow operation: 52ms so far, now at startProcess: done starting proc!
+         1795011616.174   473  1428 W ActivityManager: Slow operation: 52ms so far, now at getContentProviderImpl: after start process
+         1795011616.174   473  1428 W ActivityManager: Slow operation: 52ms so far, now at getContentProviderImpl: updating data structures
+         1795011616.174   473  1428 W ActivityManager: Slow operation: 52ms so far, now at getContentProviderImpl: done!
+         1795011616.183   473   512 W ActivityManager: Slow operation: 60ms so far, now at startProcess: returned from zygote!
+         1795011616.183   473   512 W ActivityManager: Slow operation: 61ms so far, now at startProcess: done updating battery stats
+         1795011616.183   473   512 W ActivityManager: Slow operation: 61ms so far, now at startProcess: building log message
+         1795011616.183   473   512 I ActivityManager: Start proc 3757:com.google.android.gms.persistent/u0a50 for content provider {com.google.android.gms/com.google.android.gms.chimera.container.GmsModuleProvider}
+         1795011616.183   473   512 W ActivityManager: Slow operation: 61ms so far, now at startProcess: starting to update pids map
+         1795011616.183   473   512 W ActivityManager: Slow operation: 61ms so far, now at startProcess: done updating pids map
+         1795011616.234   473   503 W Looper  : Slow dispatch took 119ms android.ui h=com.android.server.am.ActivityManagerService$UiHandler c=null m=53
+         1795011616.709   473   512 I ActivityManager: Start proc 3782:com.google.android.gms/u0a50 for service {com.google.android.gms/com.google.android.gms.chimera.GmsBoundBrokerService}
+         1795011624.091  3319  3319 I GabiFlixPlayer: legenda do app: tempo 49797 ms, atraso 0 ms -> "ALMAS PERVERSAS (1945)"
+         1795011625.892  1171  3750 E libc    : Access denied finding property "ro.vendor.opa.device_model_id"
+         1795011626.867  1171  3963 W chromium: "assistant.api.events.ConversationEvent" from publisher "ActivityManagerImpl"
+         1795011629.190  3319  3319 I GabiFlixPlayer: legenda do app: tempo 55050 ms, atraso 0 ms -> (nada)
+         1795011636.126   473   785 I ActivityManager: Killing 913:com.android.tv.settings/1000 (adj 975): empty #17
+         1795011636.141   473   505 W ActivityManager: setHasOverlayUi called on unknown pid: 913
+         1795011636.158  3319  3319 I GabiFlixPlayer: AUDIOSYNC estado: st=0 executando=true tocando=true carregando=false faixa=2 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 2:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=98MB java=9/512MB nativo=77MB livre=1094MB limiar=144MB poucaMemoria=false
+         1795011640.608  3319  3655 I GabiFlixPlayer: AUDIOSYNC captura 710 s +90 s: 89.97 s de PCM em 3.89 s (fim) leitura=7 MB | usou a faixa 1 (pedida 1) de [1:Scarlet Street 1945 HD; ]
+         1795011644.132   473  1491 I ActivityManager: Killing 2010:com.google.android.youtube.tv.recommendations/u0a60 (adj 985): empty #17
+         1795011645.487   473   908 I ActivityManager: Killing 3126:com.android.tv.common/u0a51 (adj 975): empty #17
+         1795011655.506  2153  2332 W xli     : 	at libcore.io.IoBridge.write(IoBridge.java:540)
+         1795011655.506  2153  2332 W xli     : 	at libcore.io.Linux.writeBytes(Native Method)
+         1795011655.506  2153  2332 W xli     : 	at libcore.io.Linux.write(Linux.java:293)
+         1795011655.506  2153  2332 W xli     : 	at libcore.io.ForwardingOs.write(ForwardingOs.java:240)
+         1795011655.506  2153  2332 W xli     : 	at libcore.io.BlockGuardOs.write(BlockGuardOs.java:418)
+         1795011655.506  2153  2332 W xli     : 	at libcore.io.ForwardingOs.write(ForwardingOs.java:240)
+         1795011655.506  2153  2332 W xli     : 	at libcore.io.IoBridge.write(IoBridge.java:535)
+         1795011656.452  3319  3319 I GabiFlixPlayer: AUDIOSYNC estado: st=0 executando=true tocando=true carregando=false faixa=2 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 2:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=105MB java=15/512MB nativo=78MB livre=1105MB limiar=144MB poucaMemoria=false
+         1795011657.059   473   511 I ActivityManager: Force stopping com.android.vending appid=10056 user=-1: installPackageLI
+         1795011657.060   473   511 I ActivityManager: Killing 2336:com.android.vending:instant_app_installer/u0a56 (adj 925): stop com.android.vending due to installPackageLI
+         1795011657.063   473   511 I ActivityManager: Killing 2153:com.android.vending/u0a56 (adj 905): stop com.android.vending due to installPackageLI
+         1795011657.065   473   511 I ActivityManager: Killing 2673:com.android.vending:background/u0a56 (adj 955): stop com.android.vending due to installPackageLI
+         1795011657.068   473   511 I ActivityManager: Killing 2917:com.android.vending:quick_launch/u0a56 (adj 955): stop com.android.vending due to installPackageLI
+         1795011657.388  3319  3655 I GabiFlixPlayer: AUDIOSYNC captura 1050 s +90 s: 89.99 s de PCM em 3.95 s (fim) leitura=5 MB | usou a faixa 1 (pedida 1) de [1:Scarlet Street 1945 HD; ]
+         1795011663.692   473   555 W ActivityManager: Unable to start service Intent { act=com.google.android.gms.drive.ApiService.RESET_AFTER_BOOT flg=0x4 cmp=com.google.android.gms/.drive.api.ApiService (has extras) } U=0: not found
+         1795011664.989  2085  2100 E libc    : Access denied finding property "persist.adb.tls_server.enable"
+         1795011664.989  2085  2100 E libc    : Access denied finding property "service.adb.tls.port"
+         1795011676.726  3319  3319 I GabiFlixPlayer: AUDIOSYNC estado: st=0 executando=true tocando=true carregando=false faixa=2 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 2:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=116MB java=24/512MB nativo=80MB livre=1075MB limiar=144MB poucaMemoria=false
+         1795011683.016  3319  3319 I GabiFlixPlayer: AUDIOSYNC resultado: aceita z=11.7 janelas=3/3 escala=1.00000 deslocamento=-3032 ms | vad=silero janelas=3 captura=67593 ms vad=53181 ms (cpu 30) solve=8340 ms (cpu 343) cpu_thread=503 ms total=77123 ms leitura_estimada=8 MB leitura_real=18 MB pss=110->120 MB java=10->27 MB
+         1795011683.016  3319  3319 I GabiFlixPlayer: AUDIOSYNC saúde da reprodução: amostras=76 paradas=0 razão_mínima=0.75 carregando=0 quadros_perdidos=261
+         1795011683.016  3319  3319 I GabiFlixPlayer: atraso da legenda: -3030 ms (d3:u|h:7ca135ceed9da48f|http://10.0.2.2:8000/mais3.srt#raw)
+         1795011683.016  3319  3319 I GabiFlixPlayer: AUDIOSYNC legenda: atraso 0 -> -3030 ms, estratégia plain, faixa 2, posição 108797 ms
+         1795011683.016  3319  3319 I GabiFlixPlayer: AUDIOSYNC aplicado: atraso -3030 ms, escala 1.0
+         1795011683.168   473  3464 E ActivityManager: Failure starting process com.android.vending
+         1795011683.168   473  3464 E ActivityManager: java.lang.SecurityException: Package com.android.vending is currently frozen!
+         1795011683.168   473  3464 E ActivityManager: 	at com.android.server.pm.PackageManagerService.checkPackageStartable(PackageManagerService.java:4499)
+         1795011683.168   473  3464 E ActivityManager: 	at com.android.server.am.ProcessList.startProcessLocked(ProcessList.java:1757)
+         1795011683.168   473  3464 E ActivityManager: 	at com.android.server.am.ProcessList.startProcessLocked(ProcessList.java:2319)
+         1795011683.168   473  3464 E ActivityManager: 	at com.android.server.am.ProcessList.startProcessLocked(ProcessList.java:2441)
+         1795011683.168   473  3464 E ActivityManager: 	at com.android.server.am.ActivityManagerService.startProcessLocked(ActivityManagerService.java:3170)
+         1795011683.168   473  3464 E ActivityManager: 	at com.android.server.am.ActivityManagerService.getContentProviderImpl(ActivityManagerService.java:7394)
+         1795011683.168   473  3464 E ActivityManager: 	at com.android.server.am.ActivityManagerService.getContentProvider(ActivityManagerService.java:7595)
+         1795011683.168   473  3464 E ActivityManager: 	at android.app.IActivityManager$Stub.onTransact(IActivityManager.java:2381)
+         1795011683.168   473  3464 E ActivityManager: 	at com.android.server.am.ActivityManagerService.onTransact(ActivityManagerService.java:2883)
+         1795011683.168   473  3464 E ActivityManager: 	at android.os.Binder.execTransactInternal(Binder.java:1154)
+         1795011683.168   473  3464 E ActivityManager: 	at android.os.Binder.execTransact(Binder.java:1123)
+         1795011683.168   473  3464 I ActivityManager: Force stopping com.android.vending appid=10056 user=0: start failure
+         1795011683.169   473  3464 W ActivityManager: Unable to launch app com.android.vending/10056 for provider com.google.android.finsky.tvaccountcontentprovider: process is bad
+         1795011683.179   473   505 I ActivityManager: Exiting empty application process 0:com.android.vending/u0a56 (null)
+         1795011683.234   473  3464 E ActivityManager: Failure starting process com.android.vending
+         1795011683.234   473  3464 E ActivityManager: java.lang.SecurityException: Package com.android.vending is currently frozen!
+         1795011683.234   473  3464 E ActivityManager: 	at com.android.server.pm.PackageManagerService.checkPackageStartable(PackageManagerService.java:4499)
+         1795011683.234   473  3464 E ActivityManager: 	at com.android.server.am.ProcessList.startProcessLocked(ProcessList.java:1757)
+         1795011683.234   473  3464 E ActivityManager: 	at com.android.server.am.ProcessList.startProcessLocked(ProcessList.java:2319)
+         1795011683.234   473  3464 E ActivityManager: 	at com.android.server.am.ProcessList.startProcessLocked(ProcessList.java:2441)
+         1795011683.234   473  3464 E ActivityManager: 	at com.android.server.am.ActivityManagerService.startProcessLocked(ActivityManagerService.java:3170)
+         1795011683.234   473  3464 E ActivityManager: 	at com.android.server.am.ActivityManagerService.getContentProviderImpl(ActivityManagerService.java:7394)
+         1795011683.234   473  3464 E ActivityManager: 	at com.android.server.am.ActivityManagerService.getContentProvider(ActivityManagerService.java:7595)
+         1795011683.234   473  3464 E ActivityManager: 	at android.app.IActivityManager$Stub.onTransact(IActivityManager.java:2381)
+         1795011683.234   473  3464 E ActivityManager: 	at com.android.server.am.ActivityManagerService.onTransact(ActivityManagerService.java:2883)
+         1795011683.234   473  3464 E ActivityManager: 	at android.os.Binder.execTransactInternal(Binder.java:1154)
+         1795011683.234   473  3464 E ActivityManager: 	at android.os.Binder.execTransact(Binder.java:1123)
+         1795011683.234   473  3464 I ActivityManager: Force stopping com.android.vending appid=10056 user=0: start failure
+         1795011683.235   473  3464 W ActivityManager: Unable to launch app com.android.vending/10056 for provider com.google.android.finsky.tvaccountcontentprovider: process is bad
+         1795011683.264   473   505 I ActivityManager: Exiting empty application process 0:com.android.vending/u0a56 (null)
+         1795011685.165  3661  3661 I AndroidRuntime: VM exiting with result code 0, cleanup skipped.
+         1795011685.681   473   500 I ActivityManager: Process io.github.gabrielxyz404.gabiflix:audiocap (pid 3661) has died: cch+5 CEM 
+         1795011696.980  3319  3319 I GabiFlixPlayer: AUDIOSYNC estado: st=2 executando=false tocando=true carregando=false faixa=2 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 2:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=128MB java=27/512MB nativo=81MB livre=1114MB limiar=144MB poucaMemoria=false
+         1795011704.967   473   527 I ActivityManager: Force stopping com.android.vending appid=10056 user=0: pkg removed
+         1795011705.290   473   512 I ActivityManager: Start proc 4282:com.android.keychain/1000 for service {com.android.keychain/com.android.keychain.KeyChainService}
+         1795011712.160   473   512 I ActivityManager: Start proc 4332:com.android.vending/u0a56 for broadcast {com.android.vending/com.google.android.finsky.packagemonitor.impl.PackageMonitorReceiverImpl$RegisteredReceiver}
+         1795011713.603  2085  2271 E libc    : Access denied finding property "persist.adb.tls_server.enable"
+         1795011713.603  2085  2271 E libc    : Access denied finding property "service.adb.tls.port"
+         1795011715.008   473   512 W ActivityManager: Slow operation: 59ms so far, now at startProcess: returned from zygote!
+         1795011715.009   473   512 W ActivityManager: Slow operation: 59ms so far, now at startProcess: done updating battery stats
+         1795011715.009   473   512 W ActivityManager: Slow operation: 59ms so far, now at startProcess: building log message
+         1795011715.009   473   512 I ActivityManager: Start proc 4409:com.android.vending:background/u0a56 for broadcast {com.android.vending/com.google.android.finsky.packagemonitor.backgroundimpl.BackgroundPackageMonitorReceiverImpl$RegisteredReceiver}
+         1795011715.009   473   512 W ActivityManager: Slow operation: 59ms so far, now at startProcess: starting to update pids map
+         1795011715.012   473   512 W ActivityManager: Slow operation: 62ms so far, now at startProcess: done updating pids map
+         1795011716.212   473   789 W ActivityManager: Unable to start service Intent { cmp=com.google.android.gms/.fido.fido2.pollux.CableAuthenticatorService } U=0: not found
+         1795011717.169  3319  3319 I GabiFlixPlayer: AUDIOSYNC estado: st=2 executando=false tocando=true carregando=false faixa=2 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 2:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=130MB java=28/512MB nativo=82MB livre=1120MB limiar=144MB poucaMemoria=false
+         1795011718.258   473   512 I ActivityManager: Start proc 4481:com.android.vending:instant_app_installer/u0a56 for broadcast {com.android.vending/com.google.android.finsky.instantapps.PackageReplacedReceiver}
+         1795011727.860   473   512 I ActivityManager: Start proc 4626:com.android.vending:quick_launch/u0a56 for service {com.android.vending/com.google.android.finsky.ipcservers.quicklaunch.QuickLaunchGrpcServerAndroidService}
+         1795011732.643  3319  3319 I GabiFlixPlayer: legenda do app: tempo 158263 ms, atraso -3030 ms -> "Bom, rapazes, detesto/interromper uma grande festa..."
+         1795011734.518  3319  3319 I GabiFlixPlayer: legenda do app: tempo 160143 ms, atraso -3030 ms -> "Bom, rapazes, detesto/interromper uma grande festa.../mas não é prudente/fazer uma mulher esperar."
+         1795011734.623  3319  3319 I GabiFlixPlayer: legenda do app: tempo 160415 ms, atraso -3030 ms -> "mas não é prudente/fazer uma mulher esperar."
+         1795011737.112  3319  3319 I GabiFlixPlayer: legenda do app: tempo 162830 ms, atraso -3030 ms -> "mas não é prudente/fazer uma mulher esperar./- Vocês sabem como elas são./- Com certeza, Sr. Hogarth."
+         1795011737.244  3319  3319 I GabiFlixPlayer: legenda do app: tempo 163085 ms, atraso -3030 ms -> "- Vocês sabem como elas são./- Com certeza, Sr. Hogarth."
+         1795011737.433  3319  3319 I GabiFlixPlayer: AUDIOSYNC estado: st=2 executando=false tocando=true carregando=false faixa=2 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 2:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=109MB java=6/512MB nativo=84MB livre=1104MB limiar=144MB poucaMemoria=false
+         1795011739.539  3319  3319 I GabiFlixPlayer: legenda do app: tempo 165187 ms, atraso -3030 ms -> "- Vocês sabem como elas são./- Com certeza, Sr. Hogarth./- Claro que sabemos./- São todas iguais."
+         1795011739.641  3319  3319 I GabiFlixPlayer: legenda do app: tempo 165453 ms, atraso -3030 ms -> "- Claro que sabemos./- São todas iguais."
+         1795011741.828  3319  3319 I GabiFlixPlayer: legenda do app: tempo 167545 ms, atraso -3030 ms -> (nada)
+         1795011742.571  3319  3319 I GabiFlixPlayer: legenda do app: tempo 168334 ms, atraso -3030 ms -> "Vejo que todos me compreendem."
+         1795011744.840  3319  3319 I GabiFlixPlayer: legenda do app: tempo 170675 ms, atraso -3030 ms -> (nada)
+         1795011746.607  3319  3319 I GabiFlixPlayer: legenda do app: tempo 172257 ms, atraso -3030 ms -> "Francamente, rapazes, me diverti/como nunca nessas últimas horas."
+         1795011750.295  3319  3319 I GabiFlixPlayer: legenda do app: tempo 176043 ms, atraso -3030 ms -> (nada)
+         1795011750.975  3319  3319 I GabiFlixPlayer: legenda do app: tempo 176831 ms, atraso -3030 ms -> "E, por falar em horas..."
+         1795011753.987  3319  3319 I GabiFlixPlayer: legenda do app: tempo 179711 ms, atraso -3030 ms -> "E, por falar em horas.../tenho aqui um relógio/de ouro com 17 rubis..."
+         1795011754.105  3319  3319 I GabiFlixPlayer: legenda do app: tempo 179975 ms, atraso -3030 ms -> "tenho aqui um relógio/de ouro com 17 rubis..."
+         1795011757.352  3319  3319 I GabiFlixPlayer: legenda do app: tempo 183126 ms, atraso -3030 ms -> (nada)
+         1795011757.673  3319  3319 I GabiFlixPlayer: AUDIOSYNC estado: st=2 executando=false tocando=true carregando=false faixa=2 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 2:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=111MB java=7/512MB nativo=85MB livre=1097MB limiar=144MB poucaMemoria=false
+         1795011757.880  3319  3319 I GabiFlixPlayer: legenda do app: tempo 183631 ms, atraso -3030 ms -> "um presente adequado porque..."
+         1795011760.871  3319  3319 I GabiFlixPlayer: legenda do app: tempo 186718 ms, atraso -3030 ms -> "é para um caixa de ouro/de 14K e 17 rubis."
+         1795011762.304   473  4745 I ActivityManager: Killing 1562:com.android.providers.calendar/u0a31 (adj 985): empty #17
+         1795011764.462  3319  3319 I GabiFlixPlayer: legenda do app: tempo 190113 ms, atraso -3030 ms -> "é para um caixa de ouro/de 14K e 17 rubis./- Muito bem./- Ele merece."
+         1795011764.588  3319  3319 I GabiFlixPlayer: legenda do app: tempo 190370 ms, atraso -3030 ms -> "- Muito bem./- Ele merece."
+         1795011766.519  3319  3319 I GabiFlixPlayer: legenda do app: tempo 192190 ms, atraso -3030 ms -> (nada)
+         1795011766.776  3319  3319 I GabiFlixPlayer: legenda do app: tempo 192463 ms, atraso -3030 ms -> "Por favor, entregue-o."
+         1795011768.346  3319  3319 I GabiFlixPlayer: legenda do app: tempo 194023 ms, atraso -3030 ms -> "Por favor, entregue-o./- Que relógio lindo./- Que maravilha!"
+         1795011768.507  3319  3319 I GabiFlixPlayer: legenda do app: tempo 194293 ms, atraso -3030 ms -> "- Que relógio lindo./- Que maravilha!"
+         1795011768.801   473  1023 I ActivityManager: Killing 2585:com.google.android.packageinstaller/u0a36 (adj 985): empty #17
+         1795011771.885  3319  3319 I GabiFlixPlayer: legenda do app: tempo 197660 ms, atraso -3030 ms -> (nada)
+         1795011774.598  3319  3319 I GabiFlixPlayer: legenda do app: tempo 200258 ms, atraso -3030 ms -> "Chris."
+         1795011775.845  3319  3319 I GabiFlixPlayer: legenda do app: tempo 201550 ms, atraso -3030 ms -> (nada)
+         1795011778.057  3319  3319 I GabiFlixPlayer: AUDIOSYNC estado: st=2 executando=false tocando=true carregando=false faixa=2 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 2:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=113MB java=8/512MB nativo=87MB livre=1102MB limiar=144MB poucaMemoria=false
+         1795011778.969   473  1317 I ActivityManager: Killing 3073:com.google.android.tv/u0a51 (adj 975): empty #17
+         1795011781.185  3319  3319 I GabiFlixPlayer: legenda do app: tempo 207009 ms, atraso -3030 ms -> "Veja o que está gravado na/parte de dentro, Chris."
+         1795011783.326  3319  3319 I GabiFlixPlayer: legenda do app: tempo 209130 ms, atraso -3030 ms -> (nada)
+         1795011784.900  4332  4367 D StrictMode: 	at libcore.io.IoTracker.trackIo(IoTracker.java:35)
+         1795011784.900  4332  4367 D StrictMode: 	at libcore.io.IoTracker.trackIo(IoTracker.java:45)
+         1795011786.674  3319  3319 I GabiFlixPlayer: legenda do app: tempo 212507 ms, atraso -3030 ms -> "Para meu amigo/Christopher Cross..."
+         1795011790.271  3319  3319 I GabiFlixPlayer: legenda do app: tempo 216140 ms, atraso -3030 ms -> (nada)
+         1795011791.227  3319  3319 I GabiFlixPlayer: legenda do app: tempo 216959 ms, atraso -3030 ms -> "em reconhecimento a 25/anos de trabalho dedicado..."
+         1795011795.528  3319  3319 I GabiFlixPlayer: legenda do app: tempo 221158 ms, atraso -3030 ms -> (nada)
+         1795011796.097  3319  3319 I GabiFlixPlayer: legenda do app: tempo 221928 ms, atraso -3030 ms -> "de J.J. Hogarth, 1909-1934."
+         1795011798.343  3319  3319 I GabiFlixPlayer: AUDIOSYNC estado: st=2 executando=false tocando=true carregando=false faixa=2 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 2:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=115MB java=8/512MB nativo=88MB livre=1128MB limiar=144MB poucaMemoria=false
+         1795011798.363  4332  4367 W aadg    : 	at libcore.io.IoBridge.write(IoBridge.java:540)
+         1795011798.363  4332  4367 W aadg    : 	at libcore.io.Linux.writeBytes(Native Method)
+         1795011798.363  4332  4367 W aadg    : 	at libcore.io.Linux.write(Linux.java:293)
+         1795011798.363  4332  4367 W aadg    : 	at libcore.io.ForwardingOs.write(ForwardingOs.java:240)
+         1795011798.363  4332  4367 W aadg    : 	at libcore.io.BlockGuardOs.write(BlockGuardOs.java:418)
+         1795011798.363  4332  4367 W aadg    : 	at libcore.io.ForwardingOs.write(ForwardingOs.java:240)
+         1795011798.363  4332  4367 W aadg    : 	at libcore.io.IoBridge.write(IoBridge.java:535)
+         1795011798.439  4332  4367 W aadg    : 	at libcore.io.IoBridge.write(IoBridge.java:540)
+         1795011798.439  4332  4367 W aadg    : 	at libcore.io.Linux.writeBytes(Native Method)
+         1795011798.439  4332  4367 W aadg    : 	at libcore.io.Linux.write(Linux.java:293)
+         1795011798.439  4332  4367 W aadg    : 	at libcore.io.ForwardingOs.write(ForwardingOs.java:240)
+         1795011798.439  4332  4367 W aadg    : 	at libcore.io.BlockGuardOs.write(BlockGuardOs.java:418)
+         1795011798.439  4332  4367 W aadg    : 	at libcore.io.ForwardingOs.write(ForwardingOs.java:240)
+         1795011798.439  4332  4367 W aadg    : 	at libcore.io.IoBridge.write(IoBridge.java:535)
+         1795011798.704  4332  4367 W aadg    : 	at libcore.io.IoBridge.write(IoBridge.java:540)
+         1795011798.704  4332  4367 W aadg    : 	at libcore.io.Linux.writeBytes(Native Method)
+         1795011798.704  4332  4367 W aadg    : 	at libcore.io.Linux.write(Linux.java:293)
+         1795011798.704  4332  4367 W aadg    : 	at libcore.io.ForwardingOs.write(ForwardingOs.java:240)
+         1795011798.704  4332  4367 W aadg    : 	at libcore.io.BlockGuardOs.write(BlockGuardOs.java:418)
+         1795011798.704  4332  4367 W aadg    : 	at libcore.io.ForwardingOs.write(ForwardingOs.java:240)
+         1795011798.704  4332  4367 W aadg    : 	at libcore.io.IoBridge.write(IoBridge.java:535)
+         1795011798.715  4332  4367 W aadg    : 	at libcore.io.IoBridge.write(IoBridge.java:540)
+         1795011798.715  4332  4367 W aadg    : 	at libcore.io.Linux.writeBytes(Native Method)
+         1795011798.715  4332  4367 W aadg    : 	at libcore.io.Linux.write(Linux.java:293)
+         1795011798.715  4332  4367 W aadg    : 	at libcore.io.ForwardingOs.write(ForwardingOs.java:240)
+         1795011798.715  4332  4367 W aadg    : 	at libcore.io.BlockGuardOs.write(BlockGuardOs.java:418)
+         1795011798.715  4332  4367 W aadg    : 	at libcore.io.ForwardingOs.write(ForwardingOs.java:240)
+         1795011798.715  4332  4367 W aadg    : 	at libcore.io.IoBridge.write(IoBridge.java:535)
+         1795011799.309   473   511 I ActivityManager: Force stopping com.android.vending appid=10056 user=-1: installPackageLI
+         1795011799.309   473   511 I ActivityManager: Killing 4481:com.android.vending:instant_app_installer/u0a56 (adj 915): stop com.android.vending due to installPackageLI
+         1795011799.316   473   511 I ActivityManager: Killing 4332:com.android.vending/u0a56 (adj 905): stop com.android.vending due to installPackageLI
+         1795011799.325   473   511 I ActivityManager: Killing 4409:com.android.vending:background/u0a56 (adj 0): stop com.android.vending due to installPackageLI
+         1795011799.326   473   511 I ActivityManager: Killing 4626:com.android.vending:quick_launch/u0a56 (adj 905): stop com.android.vending due to installPackageLI
+         1795011801.229  3319  3319 I GabiFlixPlayer: legenda do app: tempo 226917 ms, atraso -3030 ms -> (nada)
+         1795011802.863  3319  3319 I GabiFlixPlayer: legenda do app: tempo 228723 ms, atraso -3030 ms -> "Que fale, que fale."
+         1795011804.159  3319  3319 I GabiFlixPlayer: legenda do app: tempo 230007 ms, atraso -3030 ms -> (nada)
+         1795011804.303  3319  3319 I GabiFlixPlayer: legenda do app: tempo 230007 ms, atraso -3030 ms -> "- Sim, Chris, diga alguma coisa./- Vamos, Chris, diga alguma coisa."
+         1795011806.994  3319  3319 I GabiFlixPlayer: legenda do app: tempo 232629 ms, atraso -3030 ms -> (nada)
+         1795011807.556  3319  3319 I GabiFlixPlayer: legenda do app: tempo 233192 ms, atraso -3030 ms -> "Bem..."
+         1795011809.019  3319  3319 I GabiFlixPlayer: legenda do app: tempo 234812 ms, atraso -3030 ms -> (nada)
+         1795011809.695  3319  3319 I GabiFlixPlayer: legenda do app: tempo 235325 ms, atraso -3030 ms -> "Eu não sei o que dizer, J.J."
+         1795011811.686  3319  3319 I GabiFlixPlayer: legenda do app: tempo 237459 ms, atraso -3030 ms -> (nada)
+         1795011812.633  3319  3319 I GabiFlixPlayer: legenda do app: tempo 238504 ms, atraso -3030 ms -> "É... é maravilhoso!"
+         1795011816.797  3319  3319 I GabiFlixPlayer: legenda do app: tempo 242635 ms, atraso -3030 ms -> (nada)
+         1795011817.328  3319  3319 I GabiFlixPlayer: legenda do app: tempo 243171 ms, atraso -3030 ms -> "Nunca pensei em possuir/um relógio como este."
+         1795011818.739  3319  3319 I GabiFlixPlayer: AUDIOSYNC estado: st=2 executando=false tocando=true carregando=false faixa=2 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 2:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=117MB java=9/512MB nativo=89MB livre=1068MB limiar=144MB poucaMemoria=false
+         1795011819.892  3319  3319 I GabiFlixPlayer: legenda do app: tempo 245540 ms, atraso -3030 ms -> (nada)
