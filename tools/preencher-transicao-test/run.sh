@@ -40,7 +40,7 @@ for v in barra circ circwide; do
   for i in $(seq 1 60); do [ "$(nmark)" -ge 3 ] && break; sleep 1; done; sleep 6; foto $v-3-preencher
   wait $RP; sleep 2
   adb pull /sdcard/rec.mp4 "$OUT/$L-$P-$v.mp4"; adb shell rm -f /sdcard/rec.mp4
-  adb logcat -v epoch -d | grep -E "tela: modo|zoom Preencher|barras:" > $OUT/$L-$P-$v-log.txt
+  adb logcat -v epoch -d | grep -E "tela: modo|zoom Preencher|barras:|amostra:" > $OUT/$L-$P-$v-log.txt
 done
 adb logcat -d | grep -E "FATAL EXCEPTION|AndroidRuntime" | head -40 > $OUT/$P-crash.txt
 exit 0

@@ -173,6 +173,7 @@ public class PlayerActivity extends Activity {
     // está (Normal) e uma rajada rápida de amostras mede as barras; só então o zoom final é aplicado, de uma vez. Se não der para medir
     // (cena escura, vídeo sem quadro) em FILL_WAIT_MS, aplica mesmo assim, como antes, e a medida normal refina depois.
     private volatile boolean barsReady = false, fillPending = false;
+    private int diagSamples = 0;
     private boolean fillGaveUp = false;
     private static final long FILL_WAIT_MS = 2500, FILL_BURST_MS = 110;
     private final Runnable fillBurstRun = new Runnable() {
@@ -231,6 +232,7 @@ public class PlayerActivity extends Activity {
                 final android.graphics.Bitmap bmp = android.graphics.Bitmap.createBitmap(bw, bh, android.graphics.Bitmap.Config.ARGB_8888);
                 android.view.PixelCopy.request((android.view.SurfaceView) v, bmp, res -> {
                     if (res == android.view.PixelCopy.SUCCESS) analyzeBars(bmp, va, false);
+                    else glog("barras: a cópia da imagem falhou (código " + res + ")");
                 }, barHandler);
             }
         } catch (Throwable t) { glog("barras: " + t); }
@@ -259,6 +261,7 @@ public class PlayerActivity extends Activity {
                 for (int y = y0; y < y1; y++) if (luma(px[y * w + fx + x]) > BAR_LUMA) cnt++;
                 cols[x] = cnt * 100 > (y1 - y0) * 2;
             }
+            if (diagSamples++ < 60) glog(String.format(Locale.ROOT, "amostra: imagem %dx%d, proporção do vídeo %.3f, quadro %dx%d, linhas com imagem %d, preto em cima %d, embaixo %d", w, h, va, fW, fH, any, lead(rows), trail(rows)));
             // quadro quase todo preto (fade, transição): não conta
             if (any * 100 < fH * 8) return;
             float[] r;
@@ -350,7 +353,7 @@ public class PlayerActivity extends Activity {
                     px = (f * wx0 + tex.getLeft()) / (f - 1f);
                     py = (f * wy0 + tex.getTop()) / (f - 1f);
                 } else f = 1f;
-                glog(String.format(Locale.ROOT, "zoom Preencher: vista %dx%d, tela %dx%d, proporção do vídeo %.3f, barras %.3f/%.3f/%.3f/%.3f, fator %.3f", tw, th, w, h, va, bT, bB, bL, bR, f));
+                glog(String.format(Locale.ROOT, "zoom Preencher: vista %dx%d (%s em %d,%d), tela %dx%d, proporção do vídeo %.3f, barras %.3f/%.3f/%.3f/%.3f, fator %.3f", tw, th, tex.getClass().getSimpleName(), tex.getLeft(), tex.getTop(), w, h, va, bT, bB, bL, bR, f));
             }
             tex.setPivotX(px); tex.setPivotY(py);
             tex.setScaleX(f); tex.setScaleY(f);
