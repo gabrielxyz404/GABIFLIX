@@ -42,7 +42,7 @@ jobs:
             P=$!
             sleep 9
             import -window root "shots/$nome.png" || true
-            kill $P 2>/dev/null; sleep 1; pkill -x vlc 2>/dev/null; true
+            kill $P 2>/dev/null || true; sleep 1; pkill -x vlc 2>/dev/null || true; sleep 1
           done 3<<'EOF'
           sem-recorte|circ.mkv|
           mesma-proporcao|circ.mkv|1728x1080+96+0
