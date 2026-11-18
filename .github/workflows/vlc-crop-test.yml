@@ -1,0 +1,71 @@
+name: Teste do recorte do VLC (círculo redondo?)
+
+# O Preencher do Mac usa videoCropGeometry (VLCKit = libvlc 3.x). O recorte pode ter proporção diferente da janela (cada dimensão é limitada ao
+# quadro sozinha): o VLC tem de mostrar o recorte com pixels quadrados, com barras no que sobra, e nunca esticar até a janela.
+# Aqui o libvlc 3.x do Ubuntu (mesmo código do vout) desenha num Xvfb 960x600 com --crop=LxA+X+Y e a imagem de teste (círculo vermelho e quadrado
+# verde de 360 px) gravada num quadro 16:9; mede-se largura/altura do círculo e do quadrado. NÃO publica nada.
+on:
+  push:
+    branches: [vlc-crop-run]
+
+permissions:
+  contents: write
+
+jobs:
+  teste:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - name: Instalar
+        run: |
+          for i in 1 2 3; do sudo apt-get update -qq && sudo apt-get install -y -qq vlc xvfb imagemagick ffmpeg python3-pil python3-numpy && break; sleep 10; done
+          vlc --version | head -1
+      - name: Vídeo de teste
+        run: |
+          mkdir -p /tmp/v && cd /tmp/v
+          python3 "$GITHUB_WORKSPACE/tools/preencher-transicao-test/padrao.py" padrao.png
+          ffmpeg -loglevel error -loop 1 -framerate 24 -i padrao.png -t 60 -vf "pad=1920:1080:0:138:black,format=yuv420p" -c:v libx264 -preset veryfast circ.mkv
+          ffmpeg -loglevel error -loop 1 -framerate 24 -i padrao.png -t 60 -vf "format=yuv420p" -c:v libx264 -preset veryfast circwide.mkv
+      - name: Medir
+        run: |
+          mkdir -p shots
+          Xvfb :99 -screen 0 960x600x24 >/dev/null 2>&1 &
+          sleep 3
+          export DISPLAY=:99
+          # nome | vídeo | recorte
+          while IFS='|' read -r nome video crop; do
+            if [ -n "$crop" ]; then C="--crop=$crop"; else C=""; fi
+            cvlc -I dummy --no-audio --no-video-title-show --vout=xcb_x11 --width=960 --height=600 $C "/tmp/v/$video" >/tmp/vlc-$nome.log 2>&1 &
+            P=$!
+            sleep 9
+            import -window root "shots/$nome.png"
+            kill $P 2>/dev/null; sleep 1; pkill -x vlc 2>/dev/null; true
+          done <<'EOF'
+          sem-recorte|circ.mkv|
+          mesma-proporcao|circ.mkv|1728x1080+96+0
+          limite-1.05|circ.mkv|1829x1080+46+0
+          wide-sem-recorte|circwide.mkv|
+          wide-limite-1.05|circwide.mkv|1829x800+46+0
+          EOF
+          python3 - <<'PY' | tee shots/medidas.txt
+          import numpy as np, glob
+          from PIL import Image
+          for f in sorted(glob.glob("shots/*.png")):
+              a = np.asarray(Image.open(f).convert("RGB")).astype(int)
+              r = []
+              for nome, c in (("circulo", (a[..., 0] > 200) & (a[..., 1] < 60) & (a[..., 2] < 60)), ("quadrado", (a[..., 1] > 200) & (a[..., 0] < 60) & (a[..., 2] < 60))):
+                  ys, xs = np.where(c)
+                  if len(xs) < 200: r.append(nome + ": nao achado"); continue
+                  w = xs.max() - xs.min() + 1; h = ys.max() - ys.min() + 1
+                  r.append("%s %dx%d razao %.3f" % (nome, w, h, w / h))
+              print(f.split("/")[-1], a.shape[1], a.shape[0], " | ".join(r))
+          PY
+          cp /tmp/vlc-*.log shots/ 2>/dev/null || true
+      - name: Publicar
+        if: always()
+        run: |
+          cd shots || exit 0
+          git init -q -b x && git add -A
+          git -c user.name=ci -c user.email=ci@x commit -qm fotos
+          git push -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" x:vlc-crop-out
