@@ -1,0 +1,120 @@
+name: Mac deriva teste
+
+# Prova da DERIVA de escala (1,001) no FramePlay para Mac (macOS, VLCKit real): trecho de filme de dominio publico com a legenda certa deformada (24/23.976, +1,5 s).
+# Paridade Java x Swift (mesmo comando SPREAD=1), correcao automatica da escala, atraso manual presente, dois ajustes manuais, certa e outro filme (nao mudam). Nunca publica o app.
+on:
+  push:
+    branches: [run-mac-deriva]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: mac-deriva
+  cancel-in-progress: true
+
+jobs:
+  prep:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/cache@v4
+        with:
+          path: media
+          key: mac-audio-media-v1-${{ hashFiles('tools/audio-integra/prep.py') }}
+      - name: Trecho do filme e legendas
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg >/dev/null
+          mkdir -p /tmp/ort /tmp/pc
+          curl -fsSL -o /tmp/ort/ort.jar https://repo1.maven.org/maven2/com/microsoft/onnxruntime/onnxruntime/1.20.0/onnxruntime-1.20.0.jar
+          D=android/app/src/main/java/io/github/gabrielxyz404/gabiflix/audiosync
+          javac -nowarn -d /tmp/pc -cp /tmp/ort/ort.jar $D/*.java tools/audio-integra/PreCheck.java
+          export PRECHECK="java -cp /tmp/pc:/tmp/ort/ort.jar PreCheck" MODEL=$PWD/android/app/src/main/assets/silero_vad.onnx
+          if [ ! -f media/info.json ]; then
+            for s in scarlet_street his_girl_friday charade freaks the_stranger sherlock_secret_weapon; do
+              rm -rf media; python3 tools/audio-integra/prep.py $s suddenly,manos,meet_john_doe media > prep-$s.log 2>&1 && { cp prep-$s.log prep.log; break; }
+              tail -3 prep-$s.log
+            done
+            if [ ! -f media/info.json ]; then rm -rf media; FALLBACK=1 python3 tools/audio-integra/prep.py scarlet_street suddenly,manos,meet_john_doe media > prep.log 2>&1 || { tail -30 prep.log; exit 1; }; fi
+            cat prep-*.log >> prep.log 2>/dev/null; tail -15 prep.log
+          fi
+          cp media/_work/audio16k.wav media/audio16k.wav 2>/dev/null || true
+          rm -rf media/_work
+          # legendas deformadas: 24/23.976 com +1500 ms (a de 1,001) e 23.976/24 com -2000 ms (o sentido contrario)
+          python3 tools/deriva/mkdrift.py media/certa.srt media/deriva.srt 24/23.976 1500
+          python3 tools/deriva/mkdrift.py media/certa.srt media/deriva2.srt 23.976/24 -2000
+          # o MESMO motor (Java, PC, laco do app com janelas espalhadas) em cada legenda: o Swift tem de dar o mesmo
+          : > media/precheck.txt
+          for f in deriva deriva2 certa outro mais3; do
+            echo "$f $(SPREAD=1 $PRECHECK media/audio16k.wav media/$f.srt $MODEL 2>/dev/null | grep ^SPREAD)" | tee -a media/precheck.txt
+          done
+          ls -la media
+      - uses: actions/upload-artifact@v4
+        with:
+          name: media
+          path: media
+          retention-days: 3
+      - name: Publicar o oraculo (pequeno)
+        if: always()
+        continue-on-error: true
+        run: |
+          mkdir -p res; cp prep.log res/ 2>/dev/null || true; cp media/oracle.json media/info.json media/precheck.txt res/ 2>/dev/null || true; echo ok > res/ok.txt
+          cd res && git init -q -b x && git add -A && git -c user.name=ci -c user.email=ci@x commit -qm prep
+          git push -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" x:mac-deriva-out-prep
+
+  app:
+    needs: prep
+    runs-on: macos-15
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: media
+          path: /tmp/media
+      - name: Montar o FramePlay.app
+        env:
+          FRAMEPLAY_VERSION: 0.0.${{ github.run_number }}
+          FRAMEPLAY_BUILD: ${{ github.run_number }}
+        run: |
+          set -o pipefail
+          ./mac/build.sh 2>&1 | tee build.log
+      - name: Mostrar o erro (se houver)
+        if: failure()
+        run: |
+          grep -n -E "error:|fatal|No such|cannot find|VLCKit |framework:" build.log | sort -u -k2 | head -60 | while IFS= read -r line; do
+            echo "::error::$(echo "$line" | cut -c1-900)"
+          done
+      - name: Testador do motor (paridade Java x Swift com janelas espalhadas)
+        run: |
+          mkdir -p res
+          ORT_FW=$(ls -d mac/build/ortfw/onnxruntime.framework 2>/dev/null || true)
+          tools/mac-audio/build-test.sh /tmp/audiotest "$ORT_FW" 2>&1 | tail -5
+          export FP_SILERO_MODEL=$PWD/android/app/src/main/assets/silero_vad.onnx
+          B=$(find "$ORT_FW" -type f -name onnxruntime | head -1); export FP_ORT_LIB="$B"
+          : > res/pre-swift.txt
+          for f in deriva deriva2 certa outro mais3; do
+            echo "$f $(SPREAD=1 /tmp/audiotest pre /tmp/media/audio16k.wav /tmp/media/$f.srt 2>&1 | grep ^SPREAD)" | tee -a res/pre-swift.txt
+          done
+          echo "--- PC (Java)"; cat /tmp/media/precheck.txt | tee res/pre-java.txt
+      - name: Servidor dos videos
+        run: |
+          ls -la /tmp/media
+          : > /tmp/server-bytes.log
+          nohup python3 tools/audio-integra/server.py /tmp/media 8000 >/tmp/server.out 2>&1 &
+          sleep 2; curl -sI http://127.0.0.1:8000/clip.mkv | head -3
+      - name: Prova no app
+        run: |
+          xattr -cr mac/build/FramePlay.app
+          mkdir -p shots
+          tools/mac-audio/prova-deriva.sh "$PWD/mac/build/FramePlay.app" /tmp/media "$PWD/shots" 2>&1 | tail -80
+      - name: Publicar as fotos e os logs
+        if: always()
+        run: |
+          mkdir -p shots; cp res/* shots/ 2>/dev/null || true; cp build.log shots/ 2>/dev/null || true
+          cd shots || exit 0
+          git init -q -b x && git add -A
+          git -c user.name=ci -c user.email=ci@x commit -qm fotos
+          git push -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" x:mac-deriva-out
