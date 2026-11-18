@@ -9,7 +9,7 @@ stage() { # nome, comandos...
   N="$1"; shift
   echo "=========== $N"
   rm -f /tmp/frameplay-player.log /tmp/frameplay-probe-*.png
-  FP_NO_BARS=1 $APP --gf-test-play http://127.0.0.1:8765/barra.mkv - --gf-test-sub http://127.0.0.1:8765/leg.srt > "$OUT/$N-app.log" 2>&1 &
+  FP_NO_BARS=1 FP_VLC_OPTS="--vout=dummy" $APP --gf-test-play http://127.0.0.1:8765/barra.mkv - --gf-test-sub http://127.0.0.1:8765/leg.srt > "$OUT/$N-app.log" 2>&1 &
   sleep 34
   for c in "$@"; do cmd "$c" 3; done
   sleep 2
@@ -21,8 +21,7 @@ stage() { # nome, comandos...
   grep -E "snap:|tela:" "$OUT/$N-player.log" | cut -c1-300 | tail -8
   grep -i "exception" "$OUT/$N-app.log" | head -3
 }
-stage a-main-nocrop "snap main"
-stage b-bg-nocrop "snap bg"
-stage c-main-crop "scale 1" "snap main"
-stage d-bg-crop "scale 1" "snap bg"
-stage e-bg-crop-depois "scale 1" "snap bg" "snap bg" "snap bg"
+stage a-bg-nocrop "snap bg"
+stage b-bg-crop "scale 1" "snap bg"
+stage c-main-nocrop "snap main"
+stage d-main-crop "scale 1" "snap main"
