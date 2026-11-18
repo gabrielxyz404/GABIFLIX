@@ -12,7 +12,7 @@ while True:
     crop = open(req).read().strip(); os.remove(req)
     t = 10 + 2.5 * k; k += 1
     vf = []
-    if subs: vf.append("subtitles=%s:force_style='FontSize=14'" % srt)
+    if subs: vf.append("subtitles=filename=%s:force_style='FontSize=14'" % srt)
     if world == "B" and crop != "none":
         if "x" in crop and "+" in crop:
             p = crop.split("+")

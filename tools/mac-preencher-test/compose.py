@@ -10,7 +10,7 @@ SRT = vids + "/leg.srt"
 FW, FH = {"barra": (1920, 1080), "wide": (1920, 800), "hd": (1920, 1080), "pilar": (1920, 1080)}["hd"]
 frames = {"barra": (1920, 1080), "wide": (1920, 800), "hd": (1920, 1080), "pilar": (1920, 1080)}
 active = {"barra": (1920, 804), "wide": (1920, 800), "hd": (1920, 1080), "pilar": (1440, 1080)}   # imagem real, sem barras gravadas
-sub = "subtitles=%s:force_style='FontSize=14'" % SRT
+sub = "subtitles=filename=%s:force_style='FontSize=14'" % SRT
 def ff(video, vf, dst):
     r = subprocess.run(["ffmpeg", "-loglevel", "error", "-y", "-copyts", "-ss", "17", "-i", video, "-vf", vf, "-frames:v", "1", "-update", "1", dst], capture_output=True, text=True)
     if r.returncode: print("ffmpeg:", r.stderr[:400])
