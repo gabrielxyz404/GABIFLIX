@@ -7,7 +7,7 @@ P=${1:-tel}; APK=${2:-android/app/build/outputs/apk/release/app-release.apk}; L=
 OUT=shots; mkdir -p $OUT
 UI=tools/android-subs-test/ui.py
 adb install -r "$APK"
-if [ "$P" = tel ]; then adb shell wm size 1080x2400; adb shell wm density 420; fi
+if [ "$P" = tel ]; then adb shell wm size ${WMSIZE:-1080x2400}; adb shell wm density ${WMDENS:-420}; fi   # WMSIZE/WMDENS: perfis de tela dos testes (retrato; o player gira para paisagem)
 adb shell wm size > $OUT/$P-wm.txt
 adb shell settings put global hide_error_dialogs 1
 adb shell settings put secure immersive_mode_confirmations confirmed
@@ -46,12 +46,12 @@ tela_click() {
 abrir() {  # $1 = arquivo de vídeo  $2 = roteiro de teste (opcional)
   adb shell am force-stop $PKG; adb shell pm clear $PKG >/dev/null 2>&1; sleep 1
   X=""; [ -n "$2" ] && X="--es gfOvScript $2"
-  if [ "$P" = tel ]; then adb shell am start -n $PKG/.PlayerActivity --es url "http://10.0.2.2:8000/$1" --esa subs "http://10.0.2.2:8000/teste.srt" --es type movie --es id tt0000001 $X
-  else adb shell am start -n $PKG/.tv.TvHomeActivity --es gfTestUrl "http://10.0.2.2:8000/$1" --es gfTestSubs "http://10.0.2.2:8000/teste.srt" $X; fi
+  if [ "$P" = tel ]; then adb shell am start -n $PKG/.PlayerActivity --es url "http://10.0.2.2:8000/$1" --esa subs "http://10.0.2.2:8000/${SUBFILE:-teste.srt}" --es type movie --es id tt0000001 $X
+  else adb shell am start -n $PKG/.tv.TvHomeActivity --es gfTestUrl "http://10.0.2.2:8000/$1" --es gfTestSubs "http://10.0.2.2:8000/${SUBFILE:-teste.srt}" $X; fi
 }
 [ "$P" = tel ] && adb root >/dev/null && sleep 3
 adb logcat -c
-for v in barra wide hd pilar emb; do
+for v in ${VIDEOS:-barra wide hd pilar emb}; do
   abrir $v.mkv
   sleep 22
   snap $v-normal 0.4
@@ -61,6 +61,7 @@ for v in barra wide hd pilar emb; do
   snap $v-preencher 0.4
   if [ "$v" = barra ] && [ "$L" = antes ]; then adb shell dumpsys activity top | grep -E "TextureView|SurfaceView|VLCVideoLayout|FrameLayout" | head -20 > $OUT/views-antes.txt; fi
 done
+[ "${SKIPSYNC:-0}" = 1 ] && { adb logcat -d | grep -E "GabiFlixPlayer" > $OUT/$P-log.txt; exit 0; }
 # roteiro de seek e atraso (Normal): o atraso muda a 12 s de jogo, o salto a 30 s; as fotos mostram a fala certa depois de cada mudança
 abrir barra.mkv "delay:3000@12000+seek:123@30000+seek:61@42000+delay:-2000@54000"
 sleep 12; snap sync-0-antes-do-atraso 0.2

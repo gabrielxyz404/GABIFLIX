@@ -21,6 +21,11 @@ run() { # video mundo [subs]
   cmd "stats"
   cmd "resize 800 500" 12
   cmd "stats"
+  # perfis de janela (a janela do Mac nunca passa do tamanho da tela do computador: o log "tela:" diz o tamanho que valeu): MacBook 13" 16:10 e ultrawide 21:9
+  cmd "resize 1440 900" 12
+  cmd "stats"
+  cmd "resize 2520 1080" 12
+  cmd "stats"
   cmd "scale 0" 4
   cmd "scale 1" 12
   cmd "stats"
