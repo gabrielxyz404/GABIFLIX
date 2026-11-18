@@ -259,7 +259,8 @@ public class PlayerActivity extends Activity {
                 float bT = barT, bB = barB, bL = barL, bR = barR;
                 float ax0 = fx0 + dw * bL, ax1 = fx0 + dw * (1f - bR), ay0 = fy0 + dh * bT, ay1 = fy0 + dh * (1f - bB);
                 float aw = ax1 - ax0, ah = ay1 - ay0;
-                boolean subsInside = tex instanceof android.view.TextureView;
+                // TV com legenda desenhada pelo app (vista à parte): o zoom não mexe nela, então vale a mesma regra do celular
+                boolean subsInside = tex instanceof android.view.TextureView && !appSubs;
                 // fim da janela visível (em baixo): sem barra de baixo, o fim da imagem; com ela, na TV, ainda um pedaço da barra para a legenda
                 float kb = ay1;
                 if (subsInside && bB > 0f) kb = Math.max(ay1, fy0 + dh * (1f - SUB_CUT));
@@ -293,6 +294,109 @@ public class PlayerActivity extends Activity {
         } catch (Throwable t) { glog("escala: " + t); }
     }
 
+    // ---------- legenda desenhada pelo app (só na TV) ----------
+    // Na TV o libVLC (TextureView) desenha a legenda DENTRO da imagem do vídeo: qualquer zoom a amplia junto e a corta nas laterais.
+    // Por isso, para as legendas baixadas (SRT/VTT/ASS), o libVLC recebe um arquivo "em branco" (mesma faixa, mesmo atraso, nada na tela) e as
+    // falas são desenhadas aqui, numa vista à parte acima do vídeo. As legendas que vêm DENTRO do arquivo continuam no libVLC.
+    private SubtitleOverlay.Text subOverlay;
+    private SubtitleSync.Cand ovCand;
+    private SubtitleOverlay ovCues;
+    private final java.util.IdentityHashMap<SubtitleSync.Cand, SubtitleOverlay> ovCache = new java.util.IdentityHashMap<>();
+    /** a legenda ativa está sendo desenhada pelo app (então o zoom do Preencher não precisa guardar folga para a legenda) */
+    private volatile boolean appSubs = false;
+    private int ovTicks = 0;
+    private long ovLastGet = Long.MIN_VALUE, ovLastWall = 0;
+    private String ovShown = null;
+    private final Runnable ovTickRun = new Runnable() {
+        @Override public void run() {
+            if (player == null || isFinishing()) return;
+            try { overlayTick(); } catch (Throwable t) { glog("legenda do app: " + t); }
+            ui.postDelayed(this, 100);
+        }
+    };
+
+    private void startOverlay(FrameLayout root) {
+        int sh = getResources().getDisplayMetrics().heightPixels, sw = getResources().getDisplayMetrics().widthPixels;
+        float px = Math.min(sh, sw) * 0.055f;   // igual à legenda do libVLC com sub-text-scale 90 numa tela de 1080 (linhas de ~70 px)
+        subOverlay = new SubtitleOverlay.Text(this, px * 0.11f);
+        subOverlay.setTextSize(TypedValue.COMPLEX_UNIT_PX, px);
+        subOverlay.setTypeface(PlayerUi.font(this, 400));
+        int side = Math.round(Math.max(sw, sh) * 0.04f), bottom = Math.round(Math.min(sh, sw) * 0.045f);
+        subOverlay.setPadding(side, 0, side, bottom);
+        subOverlay.setVisibility(View.GONE);
+        FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.BOTTOM);
+        root.addView(subOverlay, lp);
+        ui.postDelayed(ovTickRun, 300);
+    }
+
+    /** um arquivo de legenda "em branco" para o libVLC (a faixa existe e responde a atraso/seek, mas não desenha nada) */
+    private Uri blankSubtitle(int n) {
+        try {
+            java.io.File dir = new java.io.File(getCacheDir(), "legendas");
+            if (!dir.exists()) dir.mkdirs();
+            java.io.File f = new java.io.File(dir, "app-" + n + ".srt");
+            java.io.FileOutputStream os = new java.io.FileOutputStream(f);
+            os.write("1\n00:00:00,000 --> 99:00:00,000\n\u00A0\n".getBytes(java.nio.charset.StandardCharsets.UTF_8));
+            os.close();
+            return Uri.fromFile(f);
+        } catch (Exception e) { return null; }
+    }
+
+    /** só nos testes (am start --es gfOvScript "delay:3000@12000;seek:100@30000"): muda o atraso / pula no filme N ms depois de começar */
+    private void ovTestScript() {
+        String sc = getIntent().getStringExtra("gfOvScript");
+        if (sc == null) return;
+        for (String tok : sc.split(";")) {
+            try {
+                String[] a = tok.trim().split("[:@]");
+                final String kind = a[0];
+                final long val = Long.parseLong(a[1]);
+                ui.postDelayed(() -> {
+                    if (player == null) return;
+                    glog("teste: " + kind + " " + val + " (tempo " + player.getTime() + " ms)");
+                    if ("delay".equals(kind)) changeSubDelay((int) val, false, panelValue);
+                    else if ("seek".equals(kind)) player.setTime(val * 1000);
+                }, Long.parseLong(a[2]));
+            } catch (Throwable t) { glog("teste: roteiro inválido " + tok); }
+        }
+    }
+
+    private void overlayTick() {
+        if (subOverlay == null) return;
+        if (ovTicks++ % 5 == 0) {
+            SubtitleSync.Cand c = null;
+            try { c = candForTrack(player.getSpuTrack(), player.getSpuTracks()); } catch (Throwable ignored) {}
+            if (c != ovCand) {
+                ovCand = c;
+                ovCues = null;
+                if (c != null && c.text != null) {
+                    ovCues = ovCache.get(c);
+                    if (ovCues == null) { ovCues = SubtitleOverlay.parse(c.text); ovCache.put(c, ovCues); glog("legenda do app: " + ovCues.size() + " falas da faixa ativa"); }
+                }
+                ovShown = null;
+            }
+            boolean on = ovCues != null && c != null && c.uri != null && c.uri.getLastPathSegment() != null && c.uri.getLastPathSegment().startsWith("app-");
+            if (!on) ovCues = null;
+            if (on != appSubs) { appSubs = on; glog("legenda do app: " + (on ? "ligada" : "desligada (faixa embutida ou nenhuma: o libVLC desenha)")); zoomVideo(); }
+        }
+        String want = null;
+        if (ovCues != null) {
+            long t = player.getTime(), now = SystemClock.uptimeMillis();
+            if (t >= 0) {
+                if (t != ovLastGet) { ovLastGet = t; ovLastWall = now; }
+                else if (player.isPlaying()) t += Math.min(500, now - ovLastWall);   // o relógio do libVLC anda aos saltos: entre um e outro, estima
+                // atraso positivo = a legenda aparece MAIS TARDE (mesma regra do setSpuDelay e do painel)
+                want = ovCues.at(t - subDelayMs);
+            } else want = ovShown;
+        }
+        if (want == null ? ovShown != null : !want.equals(ovShown)) {
+            ovShown = want;
+            glog("legenda do app: tempo " + player.getTime() + " ms, atraso " + subDelayMs + " ms -> " + (want == null ? "(nada)" : "\"" + want.replace('\n', '/') + "\""));
+            if (want == null) subOverlay.setVisibility(View.GONE);
+            else { subOverlay.setText(want); subOverlay.setVisibility(View.VISIBLE); }
+        }
+    }
+
     private final Handler ui = new Handler(Looper.getMainLooper());
     private final Runnable hideControls = () -> setControlsVisible(false);
 
@@ -324,6 +428,7 @@ public class PlayerActivity extends Activity {
         if (tv) { root.setFocusable(true); root.setFocusableInTouchMode(true); }
         videoLayout = new VLCVideoLayout(this);
         root.addView(videoLayout, match());
+        if (tv) startOverlay(root);
 
         spinner = new PlayerUi.Spinner(this);
         FrameLayout.LayoutParams sp = new FrameLayout.LayoutParams(dp(60), dp(60), Gravity.CENTER);
@@ -443,7 +548,7 @@ public class PlayerActivity extends Activity {
                 if (loading) ui.postDelayed(this::endLoading, 1500); // se o primeiro quadro não avisar (só áudio), libera mesmo assim
                 playButton.setIcon(PlayerUi.Icon.PAUSE);
                 if (!resumeDone) resume();
-                if (!playing) { playing = true; ui.postDelayed(this::attachReadySubs, 1500); selectEmbeddedPortugueseLater(); }
+                if (!playing) { playing = true; ui.postDelayed(this::attachReadySubs, 1500); selectEmbeddedPortugueseLater(); ovTestScript(); }
                 scheduleHide();
                 break;
             case MediaPlayer.Event.Vout:
@@ -1107,6 +1212,7 @@ public class PlayerActivity extends Activity {
         final boolean embeddedFirst = embeddedPtId != NO_TRACK;
         for (int i = 0; i < use.size() && i < 6; i++) {
             SubtitleSync.Cand c = use.get(i);
+            if (tv) { Uri b = blankSubtitle(i + 1); if (b != null) c.uri = b; }   // TV: o app desenha esta legenda; o libVLC recebe o arquivo em branco
             try {
                 player.addSlave(0 /* legenda */, c.uri, i == 0 && !embeddedFirst);
                 addedSubs++;
@@ -1975,15 +2081,21 @@ public class PlayerActivity extends Activity {
         if (!RAISE_SUBS) return;
         try {
             View sv = subsView();
-            if (sv == null) return;
+            if (sv == null && subOverlay == null) return;
             float ty = 0f;
             if (up) {
                 int h = ((View) controls).getHeight(), top = bottomBar == null ? 0 : bottomBar.getTop();
                 ty = h > 0 && top > 0 ? -(h - top - dp(72)) : -dp(96);
                 ty = Math.max(ty, -dp(160));
             }
-            sv.animate().cancel();
-            sv.animate().translationY(ty).setDuration(up ? 180 : 240).start();
+            if (sv != null) {
+                sv.animate().cancel();
+                sv.animate().translationY(ty).setDuration(up ? 180 : 240).start();
+            }
+            if (subOverlay != null) {
+                subOverlay.animate().cancel();
+                subOverlay.animate().translationY(ty).setDuration(up ? 180 : 240).start();
+            }
         } catch (Throwable t) { glog("legenda acima dos botões: " + t); }
     }
 
