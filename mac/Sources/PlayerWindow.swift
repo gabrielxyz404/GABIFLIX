@@ -43,7 +43,11 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
 
     // o tamanho das legendas só vale se for passado aqui (opção da biblioteca), ver SubStyle
     // FP_VLC_OPTS (só no teste automático, ex.: --vout=dummy no GitHub, que não tem placa gráfica)
-    private let player = VLCMediaPlayer(options: SubStyle.libraryOptions + (ProcessInfo.processInfo.environment["FP_VLC_OPTS"] ?? "").split(separator: " ").map(String.init))
+    private let player = VLCMediaPlayer(options: SubStyle.libraryOptions + PlayerWindowController.vlcQuietOptions + (ProcessInfo.processInfo.environment["FP_VLC_OPTS"] ?? "").split(separator: " ").map(String.init))
+    /** A fotografia das barras (saveVideoSnapshot) fazia o VLC desenhar sozinho, em cima do vídeo, a miniatura da fotografia (canto superior esquerdo,
+        ~25% da largura) e o texto com o caminho do ficheiro (OSD); a imagem ficava "suja" por muito tempo. O app desenha as próprias legendas e controles:
+        sem miniatura, sem OSD e sem título do vídeo, o VLC não desenha nada por conta própria. */
+    static let vlcQuietOptions = ["--no-snapshot-preview", "--no-osd", "--no-video-title-show"]
     private let videoView = VLCVideoView()
     private let root = NSView()
     private let overlay = PlayerRootView()
@@ -95,6 +99,16 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
     private var scaleMode = 0
     private var scaleButton: NSButton?
     private var lastScaleKey = ""
+    // Estabilidade do recorte (a imagem deslocada vinha de mexer no vout vivo): o recorte só muda no toque do usuário, na troca de
+    // tamanho (esperando 0,35 s sem mexer, como na animação da tela cheia), ao nascer o vout, na troca de resolução do vídeo e em UM ajuste das barras
+    private var viewW = 0, viewH = 0
+    private var sizeStamp = Date.distantPast
+    private var resizeTimer: Timer?
+    private var aspectCleared = false
+    private var voutWasUp = false
+    private var barRefineLeft = 1
+    private var trackSize = CGSize.zero
+    private var lastCropAt = Date.distantPast
     // legenda desenhada pelo app (SubOverlay.swift)
     private var overlayWin: NSWindow?
     private var overlayView: SubtitleOverlayView?
@@ -120,7 +134,7 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
     private var barSamplesGen = -1   // só mexe na barQueue
     private let barQueue = DispatchQueue(label: "frameplay.barras", qos: .utility)
     private var barSamples: [(rows: [Bool], cols: [Bool])] = []   // só mexe na barQueue
-    private var scaleForce = 0
+    private var tickN = 0
     private let noticeLabel = NSTextField(labelWithString: "")
     private var noticeUntil = Date.distantPast
     private var syncPanel: NSView?
@@ -175,6 +189,7 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
 
         videoView.translatesAutoresizingMaskIntoConstraints = false
         videoView.fillScreen = false
+        videoView.backColor = .black   // fundo do desenho do VLC sempre preto (propriedade da vista, não mexe na hierarquia)
         root.addSubview(videoView)
 
         spinner.style = .spinning
@@ -418,7 +433,6 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
                 startedPlaying = true
                 playingSince = Date()
                 startOverlay()
-                scaleForce = 6
                 DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) { [weak self] in self?.selectEmbeddedPortuguese() }
             }
             if !resumeDone && len > 0 {
@@ -446,7 +460,13 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
         // se a legenda ativa mudar por qualquer motivo, carrega o atraso guardado dela (sem efeito quando a chave é a mesma)
         if subsAttached && !finished { syncDelayToTrack(Int(player.currentVideoSubTitleIndex)) }
         reportProgress(force: false)
-        if scaleForce > 0 { scaleForce -= 1; applyScale(force: true) } else { applyScale() }
+        // o recorte é reenviado só quando o vout (re)nasce (antes: 6 reenvios seguidos ao começar); fora disso, só se algo mudou
+        let voutUp = player.hasVideoOut
+        if voutUp && !voutWasUp { voutWasUp = true; applyScale(force: true) }
+        else if !voutUp { voutWasUp = false; applyScale() }
+        else { applyScale() }
+        tickN += 1
+        if tickN % 5 == 0 { checkSourceSize() }
         if !noticeLabel.isHidden && Date() > noticeUntil { noticeLabel.isHidden = true }
 
         setTitle(playButton, player.isPlaying ? "❚❚" : "▶")
@@ -1519,24 +1539,66 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
     private func applyScale(force: Bool = false) {
         let w = Int(videoView.bounds.width.rounded()), h = Int(videoView.bounds.height.rounded())
         if w <= 0 || h <= 0 { return }
+        // tamanho da janela a mudar (tela cheia, arrastar): espera parar antes de mexer no recorte. Mexer no vout durante a animação deixava a
+        // imagem deslocada e uma cópia velha no canto até o próximo redimensionamento
+        if force { viewW = w; viewH = h }
+        else if w != viewW || h != viewH {
+            let first = lastScaleKey.isEmpty
+            viewW = w; viewH = h
+            if !first {
+                sizeStamp = Date()
+                resizeTimer?.invalidate()
+                let t = Timer(timeInterval: 0.35, repeats: false) { [weak self] _ in self?.applyScale() }
+                RunLoop.main.add(t, forMode: .common)
+                resizeTimer = t
+                return
+            }
+        } else if Date().timeIntervalSince(sizeStamp) < 0.3 { return }
         // tamanho do quadro (pixels do vídeo) lido enquanto ainda não há recorte, para não confundir com o quadro já recortado
         if lastCropSet == nil { let vs = player.videoSize; if vs.width > 0 && vs.height > 0 { srcSize = vs } }
         let key = "\(w)x\(h)/\(scaleMode)/\(barsKey())/\(fillPending)"
         if !force && lastScaleKey == key { return }
         lastScaleKey = key
-        videoView.fillScreen = false
-        player.videoAspectRatio = nil
+        if videoView.fillScreen { videoView.fillScreen = false }
+        if !aspectCleared { aspectCleared = true; player.videoAspectRatio = nil }   // nunca se muda a proporção: uma vez basta
         var crop: String? = nil
         var rect: (x0: Double, y0: Double, x1: Double, y1: Double)? = nil
         if scaleMode == 1, !fillPending, let c = cropGeometry(viewW: w, viewH: h) { crop = c.0; rect = c.1 }
-        if crop != lastCropSet || force {
+        // "force" só reenvia o recorte quando há recorte; Normal sem recorte não toca no vout (antes: 6 envios de "nenhum" ao começar)
+        if crop != lastCropSet || (force && crop != nil) {
+            let changed = crop != lastCropSet
             lastCropSet = crop
             cropRect = rect
-            cropGen += 1   // as amostras de barras recomeçam: eram de outro enquadramento
+            if changed { cropGen += 1 }   // as amostras de barras recomeçam: eram de outro enquadramento (reenvio igual não conta)
+            lastCropAt = Date()
             if let c = crop { vlcCropString(c).withCString { player.videoCropGeometry = UnsafeMutablePointer(mutating: $0) } }
             else { player.videoCropGeometry = nil }
+            log("vout: recorte enviado \(crop.map { vlcCropString($0) } ?? "nenhum") (mudou=\(changed))")
         }
         log("tela: \(PlayerWindowController.scaleNames[scaleMode]) \(w):\(h) recorte=\(crop ?? "nenhum") barras=\(barsKey()) vlc=\(crop.map { vlcCropString($0) } ?? "nenhum")")
+    }
+
+    /** o vídeo mudou de resolução no meio da reprodução (troca de variante HLS, outro episódio...): o recorte antigo era de outro quadro.
+        Lê o tamanho da FAIXA de vídeo (não muda com o recorte), recomeça a medida das barras e reenvia o recorte uma vez. */
+    private func checkSourceSize() {
+        guard startedPlaying, let infos = player.media?.tracksInformation as? [[String: Any]] else { return }
+        for d in infos {
+            guard (d[VLCMediaTracksInformationType] as? String) == VLCMediaTracksInformationTypeVideo,
+                  let tw = (d[VLCMediaTracksInformationVideoWidth] as? NSNumber)?.doubleValue,
+                  let th = (d[VLCMediaTracksInformationVideoHeight] as? NSNumber)?.doubleValue, tw >= 16, th >= 16 else { continue }
+            let ns = CGSize(width: tw, height: th)
+            if trackSize == .zero { trackSize = ns; return }
+            if abs(ns.width - trackSize.width) > 2 || abs(ns.height - trackSize.height) > 2 {
+                log("vídeo: resolução mudou \(Int(trackSize.width))x\(Int(trackSize.height)) -> \(Int(ns.width))x\(Int(ns.height)); recorte refeito uma vez")
+                trackSize = ns
+                srcSize = ns
+                bars = (0, 0, 0, 0); barsMeasured = false; snapWorld = 0; pixelAspect = 1; barRefineLeft = 1; barTicks = 0
+                cropGen += 1
+                applyScale(force: true)
+                if scaleMode == 1 { scheduleBarTick(after: 1.5) }
+            }
+            return
+        }
     }
 
     /** O libvlc 3.0.x (o do VLCKit 3.7.3, medido) lê "LxA+X+Y" como X até L e Y até A (L e A viram a borda de direita/baixo), não como largura e altura.
@@ -1562,6 +1624,8 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
         scaleButton?.attributedTitle = NSAttributedString(string: "  Tela: \(PlayerWindowController.scaleNames[scaleMode])  ", attributes: [
             .foregroundColor: NSColor.white, .font: NSFont.boldSystemFont(ofSize: 13)])
         fillGen += 1
+        barRefineLeft = 1
+        barTicks = 0
         fillPending = scaleMode == 1 && !barsMeasured && startedPlaying
         applyScale(force: true)
         if scaleMode == 1 {
@@ -1594,7 +1658,8 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
     private func scheduleBarTick(after: TimeInterval? = nil) {
         barTimer?.invalidate()
         barTimer = nil
-        guard scaleMode == 1, !finished else { return }
+        // fotografias só enquanto servem: depois de ~20 rondas (≈ 4 min) já não há o que medir (cada fotografia é uma chamada ao vout vivo)
+        guard scaleMode == 1, !finished, barTicks <= 20 else { return }
         let delay = after ?? (fillPending ? 0.12 : (barTicks < 10 ? 2.0 : 20.0))
         let t = Timer(timeInterval: delay, repeats: false) { [weak self] _ in self?.barTick() }
         RunLoop.main.add(t, forMode: .common)
@@ -1624,6 +1689,8 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
         guard scaleMode == 1, startedPlaying, !finished, player.isPlaying, !barBusy, env["FP_NO_BARS"] == nil else { return }
         // sem o tamanho do quadro ou com um recorte que não conhecemos: não se mede
         if srcSize.width < 16 || srcSize.height < 16 || (lastCropSet != nil && cropRect == nil) { return }
+        // logo depois de mexer no recorte o vout ainda está a refazer a imagem: a fotografia espera
+        if !fillPending && Date().timeIntervalSince(lastCropAt) < 1.0 { return }
         barBusy = true
         let path = NSTemporaryDirectory() + "frameplay-barras-\(ProcessInfo.processInfo.processIdentifier).png"
         let gen = cropGen, rect = cropRect, tickNo = barTicks, cropNow = lastCropSet ?? "none"
@@ -1743,11 +1810,13 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
         // barras de cima e de baixo vêm sempre em par (a legenda "suja" a de baixo): sem a de cima não se confia na de baixo
         if t == 0 { b = 0 } else if t > b { b = t }
         let ch = abs(t - bars.t) > 0.004 || abs(b - bars.b) > 0.004 || abs(l - bars.l) > 0.004 || abs(rr - bars.r) > 0.004
-        if ch {
+        if ch && (fillPending || barRefineLeft > 0) {
+            // durante o Preencher pendente a mudança entra no recorte final (um só envio, logo abaixo); depois dele há UM ajuste fino
+            if !fillPending { barRefineLeft -= 1 }
             bars = (t, b, l, rr)
             log("barras: cima \(String(format: "%.3f", t)) baixo \(String(format: "%.3f", b)) esq \(String(format: "%.3f", l)) dir \(String(format: "%.3f", rr)) (amostras \(r.samples), fotografia \(r.w)x\(r.h), mundo \(snapWorld), vídeo \(Int(fw))x\(Int(fh)))")
-            applyScale()
-        }
+            if !fillPending { applyScale() }
+        } else if ch { log("barras: mudança ignorada (o ajuste fino já foi feito; o recorte não mexe mais)") }
         if fillPending { fillPending = false; applyScale(force: true) }   // medida pronta: aplica o recorte final de uma vez
     }
 

@@ -1,0 +1,48 @@
+name: Mac vout GL (miniatura da fotografia e recorte)
+
+# Reproduz no Linux (libvlc 3.0.x, --vout=gl, Xvfb + mesa llvmpipe) a sequência do player do Mac: fotografias das barras, recortes, Normal/Preencher e
+# mudança de tamanho. "antes" = opções do app 1.0.37, "depois" = com --no-snapshot-preview --no-osd. NÃO publica o app; as fotos vão para o branch mac-vout-out.
+on:
+  workflow_dispatch:
+  push:
+    branches: [mac-vout-run]
+
+permissions:
+  contents: write
+
+jobs:
+  teste:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - name: Instalar
+        run: |
+          for i in 1 2 3; do sudo apt-get update -qq && sudo apt-get install -y -qq vlc python3-vlc xvfb openbox imagemagick ffmpeg xdotool mesa-utils libgl1-mesa-dri python3-pil python3-numpy python3-scipy && break; sleep 10; done
+          vlc --version | head -1
+          vlc --help --advanced 2>/dev/null | grep -E "snapshot-preview|--osd|video-title-show" | head
+      - name: Vídeo de teste
+        run: |
+          mkdir -p /tmp/v && cd /tmp/v
+          python3 "$GITHUB_WORKSPACE/tools/preencher-transicao-test/padrao.py" padrao.png
+          ffmpeg -loglevel error -loop 1 -framerate 24 -i padrao.png -t 120 -vf "pad=1920:1080:0:138:black,format=yuv420p" -c:v libx264 -preset veryfast circ.mkv
+      - name: Sequência
+        run: |
+          mkdir -p shots
+          Xvfb :99 -screen 0 1400x900x24 +extension GLX >/dev/null 2>&1 &
+          sleep 3
+          export DISPLAY=:99 LIBGL_ALWAYS_SOFTWARE=1
+          openbox >/dev/null 2>&1 &
+          sleep 2
+          glxinfo | grep -E "OpenGL renderer|OpenGL version" || true
+          for m in antes depois; do
+            python3 tools/mac-vout-gl/harness.py /tmp/v/circ.mkv shots $m 2>&1 | tee shots/$m-log.txt || true
+            pkill -x vlc 2>/dev/null || true; sleep 2
+          done
+      - name: Publicar
+        if: always()
+        run: |
+          cd shots || exit 0
+          git init -q -b x && git add -A
+          git -c user.name=ci -c user.email=ci@x commit -qm fotos
+          git push -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" x:mac-vout-out
