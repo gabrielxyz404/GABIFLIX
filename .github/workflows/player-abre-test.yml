@@ -1,0 +1,88 @@
+name: Player abre e continua (TV de pouca memoria)
+
+# Prova (no emulador de TV com 2 GB de RAM) que o filme abre e continua tocando, em Normal e Preencher, com a sincronizacao pelo audio rodando
+# ate o fim e com o processo de captura morto de proposito. Compara o APK base com o desta versao. Resultados nos branches player-abre-out-*.
+on:
+  push:
+    branches: [run-player-abre]
+  workflow_dispatch:
+    inputs:
+      which:
+        description: base, fix ou ambos
+        default: ambos
+
+permissions:
+  contents: write
+
+jobs:
+  teste:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      matrix:
+        apk: [base, fix]
+    steps:
+      - name: Pular?
+        id: skip
+        run: |
+          W="${{ github.event.inputs.which || 'ambos' }}"
+          if [ "$W" != ambos ] && [ "$W" != "${{ matrix.apk }}" ]; then echo "skip=1" >> $GITHUB_OUTPUT; fi
+      - uses: actions/checkout@v4
+        if: steps.skip.outputs.skip != '1'
+      - uses: actions/checkout@v4
+        if: steps.skip.outputs.skip != '1' && matrix.apk == 'base'
+        with:
+          ref: 746899223fafe0c1b1e1f63a14e33ff47dcaafef
+          path: basesrc
+      - uses: actions/setup-java@v5
+        if: steps.skip.outputs.skip != '1'
+        with:
+          distribution: temurin
+          java-version: 17
+      - uses: gradle/actions/setup-gradle@v4
+        if: steps.skip.outputs.skip != '1'
+        with:
+          gradle-version: '8.9'
+      - name: APK de teste (x86)
+        if: steps.skip.outputs.skip != '1'
+        env:
+          GABIFLIX_ABIS: x86,x86_64
+        run: |
+          if [ "${{ matrix.apk }}" = base ]; then SRC=basesrc; else SRC=.; fi
+          gradle -p $SRC/android assembleRelease --no-daemon -q
+          cp $SRC/android/app/build/outputs/apk/release/app-release.apk /tmp/teste.apk
+      - name: Filme de teste
+        if: steps.skip.outputs.skip != '1'
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg espeak-ng >/dev/null
+          python3 tools/player-abre-test/mk-media.py /tmp/media
+          ls -la /tmp/media
+          nohup python3 tools/audio-integra/server.py /tmp/media 8000 >/tmp/server.out 2>&1 &
+          sleep 2; curl -sI http://127.0.0.1:8000/film.mkv | head -3
+      - name: KVM
+        if: steps.skip.outputs.skip != '1'
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules && sudo udevadm trigger --name-match=kvm
+      - name: Emulador de TV (2 GB)
+        if: steps.skip.outputs.skip != '1'
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 30
+          target: android-tv
+          arch: x86
+          profile: tv_1080p
+          ram-size: 2048M
+          heap-size: 512M
+          disable-animations: true
+          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
+          script: timeout 3000 bash tools/player-abre-test/run.sh /tmp/teste.apk
+      - name: Publicar
+        if: always() && steps.skip.outputs.skip != '1'
+        run: |
+          cd shots || exit 0
+          cp /tmp/server.out . 2>/dev/null || true
+          git init -q -b x && git add -A
+          git -c user.name=ci -c user.email=ci@x commit -qm resultados
+          git push -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" x:player-abre-out-${{ matrix.apk }}-${GITHUB_SHA::7}
