@@ -6,7 +6,7 @@ import Foundation
 
 final class AudioSyncCore {
     /** versão do motor + política: muda o que está guardado (cache) sobre cada legenda */
-    static let version = "m2"
+    static let version = "m3"
     static let winMs = 90_000
     static let nWin = 3
     /** a leitura estimada das 3 janelas: o automático só roda se couber no orçamento da rede (ver AudioSyncAuto); o botão nunca pula */
@@ -37,6 +37,8 @@ final class AudioSyncCore {
         /** atraso (ms) que a legenda deve ter AGORA para ficar certa (igual a offsetMs com escala 1) */
         var targetDelay = 0
         var cuts = false
+        /** a escala (1,001 ou outra razão de fps) foi aceita pela prova de deriva das janelas */
+        var drift = false
         /** frase pronta, em português simples, para mostrar ao usuário quando nada foi mudado ("" = não há) */
         var msg = ""
         var result: AudioResult?
@@ -246,31 +248,50 @@ final class AudioSyncCore {
             return o
         }
         let P = AudioAligner.Params()
-        let plan = AudioSyncSession.planDense(cues, durMs, AudioSyncCore.nWin, AudioSyncCore.winMs)
-        let ses = AudioSyncSession(cues: cues, mediaDurationMs: durMs, params: P)
-        var ws: [AudioWindow] = []
-        for i in 0..<plan.count {
-            if cap.isCancelled { o.kind = .cancelled; o.note = "cancelado"; return o }
-            guard let w = captureWindow(url, plan[i][0], plan[i][1], o) else {
-                o.kind = cap.isCancelled ? .cancelled : .error
-                o.note = "captura da janela \(i + 1) falhou: \(lastCapFail)"
-                o.msg = "Não consegui ouvir o áudio do filme (\(lastCapFail))."
-                return o
-            }
-            ws.append(w)
-            ses.addWindow(w)
-            o.st.windows += 1
-            if i + 1 < plan.count { Thread.sleep(forTimeInterval: 1.0) }   // respiro entre as capturas: o player ao lado não disputa o tempo todo
-        }
-        o.windows = ws
+        // 3 janelas espalhadas pelo filme (o que mostra a deriva da escala) e, se as janelas confiáveis sugerem deriva sem prova ainda, até 2 extras
+        var first = true
+        var failedAt = 0
+        var used: [AudioWindow] = []
         let c0 = AudioSyncCore.threadCpuMs(), w0 = AudioSyncCore.nowMs()
-        let r = ses.solve()
-        o.st.solveCpuMs = AudioSyncCore.threadCpuMs() - c0
-        o.st.solveMs = AudioSyncCore.nowMs() - w0
+        let res = AudioSyncSession.analyze(cues, durMs, AudioSyncCore.nWin, AudioSyncCore.winMs, { st, ln, i, total in
+            if self.cap.isCancelled { return nil }
+            if !first { Thread.sleep(forTimeInterval: 1.0) }   // respiro entre as capturas: o player ao lado não disputa o tempo todo
+            first = false
+            guard let w = self.captureWindow(url, st, ln, o) else { failedAt = i + 1; return nil }
+            o.st.windows += 1
+            return w
+        }, P, spread: true, used: &used)
+        guard let r = res else {
+            if cap.isCancelled { o.kind = .cancelled; o.note = "cancelado"; return o }
+            o.kind = .error
+            o.note = "captura da janela \(failedAt) falhou: \(lastCapFail)"
+            o.msg = "Não consegui ouvir o áudio do filme (\(lastCapFail))."
+            return o
+        }
+        o.windows = used
+        o.st.solveCpuMs = AudioSyncCore.threadCpuMs() - c0 - o.st.vadCpuMs
+        o.st.solveMs = 0
         o.result = r
         o.cuts = r.cutsWarning
         AudioSyncCore.fill(o, r, nowMs, currentDelay, P)
         return o
+    }
+
+    /** Corpo do relatório de cada análise (no Mac vai só para o registro): só números do motor, sem título, endereço ou nome de arquivo. Porte de reportBody. */
+    static func reportBody(_ o: Outcome, _ durMs: Int, _ extra: String) -> String {
+        var b = ""
+        let r = o.result
+        b += "duracao_s=\(durMs / 1000) janelas=\(o.windows.count) rodadas=\(r?.rounds ?? 0) vad=\(o.st.vad) motor=\(version)\n"
+        if let r = r {
+            for (i, w) in r.wins.enumerated() {
+                b += String(format: "j%d inicio_s=%d centro_s=%d atraso_ms=%.0f ncc=%.2f segundo=%.2f z=%.1f confiavel=%d\n", i + 1, w.startMs / 1000, jround(w.centerMs / 1000), w.delayMs, w.ncc, w.second, w.z, w.confident ? 1 : 0)
+            }
+            b += String(format: "ajuste escala=%.6f deslocamento_ms=%.0f inclinacao=%.6f residuo_ms=%.0f residuo_sem_escala_ms=%.0f deriva_janelas_ms=%.0f deriva_filme_ms=%.0f confiaveis=%d deriva_provada=%d\n",
+                        r.scale, r.rawOffsetMs, r.driftSlope, r.driftResMs, r.unitResMs, r.driftMeasMs, r.driftContentMs, r.driftConfident, r.driftScale ? 1 : 0)
+            b += "motivo=" + r.reason.trimmingCharacters(in: .whitespaces) + " | " + r.driftNote + "\n"
+        }
+        b += "resultado=\(o.kind) nota=\(o.note)\n"
+        return b + extra
     }
 
     /** transforma o resultado do alinhador em decisão: mexer só se aceito e se o atraso certo difere do atual por mais que a banda morta */
@@ -282,13 +303,14 @@ final class AudioSyncCore {
         let a = r.scale, off = r.rawOffsetMs
         o.scale = a
         o.offsetMs = off
+        o.drift = r.driftScale
         let cue = (Double(nowMs) - off) / a                 // fala da legenda que aparece agora
         var target = (a - 1.0) * cue + off                  // atraso que a deixa no tempo certo agora
         target = max(-600_000, min(600_000, target))
         o.targetDelay = jround(target / 10.0) * 10
         let scaled = abs(a - 1.0) > 1e-9
         o.kind = (scaled || abs(Double(o.targetDelay - currentDelay)) >= P.deadbandMs) ? .fix : .ok
-        o.note += String(format: " escala=%.5f deslocamento=%.0f ms", a, off)
+        o.note += String(format: " escala=%.5f deslocamento=%.0f ms", a, off) + (r.driftScale ? " (deriva provada pelas janelas)" : "")
     }
 
     // ---------------------------------------------------------------- reverificação

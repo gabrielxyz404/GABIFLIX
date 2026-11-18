@@ -48,6 +48,22 @@ final class AudioResult {
     var audioMs = 0
     var rounds = 0
 
+    // ---- deriva (escala de fps: 1,001 e afins). Cada janela mede o atraso local SEM escala; a escala só vale se a reta atraso(t) = a + b*t explica todas as janelas
+    struct Win {
+        var startMs = 0
+        var centerMs = 0.0, delayMs = 0.0, ncc = 0.0, z = 0.0, second = 0.0
+        var speech = false, confident = false
+    }
+    var wins: [Win] = []
+    /** a escala (1,001 ou outra razão de fps) foi aceita pela evidência das janelas */
+    var driftScale = false
+    var driftSlope = 0.0, driftResMs = 0.0, unitResMs = 0.0, driftMeasMs = 0.0, driftContentMs = 0.0
+    var driftConfident = 0
+    /** as janelas confiáveis discordam de uma reta de escala 1,0: vale pedir mais janelas espalhadas */
+    var driftSuspect = false
+    var driftMore: [[Int]]? = nil
+    var driftNote = ""
+
     func apply(_ subMs: Double) -> Double { return scale * subMs + offsetMs }
 }
 

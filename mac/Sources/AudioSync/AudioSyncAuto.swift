@@ -72,7 +72,20 @@ final class AudioSyncAuto {
         var nextFollowAt = 0
         /** gatilho "ajuste manual + salto grande": os dois têm de acontecer depois do resultado confiante */
         var manualEdited = false, farSeek = false
+        /** a análise corrente começou com um atraso manual (só a escala pode mudar) */
+        var manualRun = false
+        /** ajustes manuais do atraso: (tempo do vídeo ms, atraso ms, relógio ms); os últimos 4 ficam guardados por legenda */
+        var pts: [(Int, Int, Int)] = []
     }
+
+    /** o áudio e o ajuste manual do usuário podem discordar até isto (ms) no instante da análise para a escala entrar em volta do ponto manual */
+    private static let manualAgreeMs = 1500
+    private static let driftMsg = "Legenda a desviar — corrigi a velocidade"
+    private static let ptsPrefix = "audio-sync-pts:"
+    /** vigia dos ajustes manuais: o atraso que ESPERAMOS (o último que nós ou o player pusemos); qualquer outro valor é do usuário */
+    private var expectDelay = 0
+    private var expectInit = false
+    private var baseSince = 0, editSeenAt = 0
 
     private let h: AudioSyncHost
     private let core = AudioSyncCore()
@@ -319,6 +332,10 @@ final class AudioSyncAuto {
             fresh = true
         }
         cur = found
+        expectInit = false
+        editSeenAt = 0
+        baseSince = now
+        if fresh, let f = found { loadPts(f, kk) }
         let seen = found.map { "já vista nesta sessão: \(AudioSyncAuto.stName($0.st)), análises=\($0.analyses)" } ?? ""
         log("legenda ativa: " + AudioSyncAuto.shortKey(kk) + (fresh ? " (nova nesta sessão)" : " (" + seen + ")"))
         if fresh { trigger("troca-de-legenda", kk, "avaliar (espera \(startAfterMs / 1000) s tocando; se há resultado guardado, não analisa)") }
@@ -336,6 +353,7 @@ final class AudioSyncAuto {
         let cand = h.activeCand()
         let k: String? = (cand == nil || cand?.text == nil) ? nil : h.delayKey()
         if k != key { switchSub(k, now) }
+        if let kk = k, let c0 = cur { watchManual(c0, kk, now) }
         guard let kk = k, let cd = cand, let s = cur, autoOn else { return }
         if running && hBuf >= 2 && now - lastStartAt > 5000 { abortForStall(s, kk) }
         let ra = rescanAt.value
@@ -351,6 +369,7 @@ final class AudioSyncAuto {
             if lastStallAt > 0 && now - lastStallAt < 20_000 { return }
             decideStart(s, cd, kk)
         case .done:
+            if h.delayMs() != s.lastWritten && abs(s.mScale - 1.0) > 1e-9 { return }   // modelo com escala: o ajuste manual em andamento é tratado em watchManual (reancora o modelo no ponto)
             if h.delayMs() != s.lastWritten {
                 s.st = .hold
                 s.manualEdited = true
@@ -398,8 +417,9 @@ final class AudioSyncAuto {
             return
         }
         if saved != 0 || h.delayMs() != 0 {
-            s.st = .off
-            trigger(second ? "segunda-tentativa" : "início", k, "ignorado: atraso manual guardado (\(saved != 0 ? saved : h.delayMs()) ms)")
+            // atraso manual guardado: o deslocamento dele vence sempre, mas a legenda pode estar DESVIANDO (escala): a análise roda assim mesmo, com janelas
+            // espalhadas, e só a escala pode entrar (ancorada no ponto de alinhamento do usuário)
+            startRun(s, cand, k, (second ? "segunda-tentativa" : "início") + "-com-atraso-manual(\(saved != 0 ? saved : h.delayMs()) ms)")
             return
         }
         startRun(s, cand, k, second ? "segunda-tentativa" : "início")
@@ -416,6 +436,7 @@ final class AudioSyncAuto {
         trigger(why, k, "análise")
         lastStartAt = AudioSyncAuto.now()
         let d0 = h.delayMs()
+        s.manualRun = d0 != 0 || h.savedDelay(k) != 0
         let pos = h.timeMs(), dur = h.durationMs()
         let url = h.url()
         let text = cand.text
@@ -463,12 +484,44 @@ final class AudioSyncAuto {
         log(healthLine())
         guard let s = subs[k] else { return }
         if let kk = key, k != kk { return }
-        if h.delayMs() != d0 { s.st = .off; log("o usuário mexeu no atraso durante a análise: descartado"); return }
+        if h.delayMs() != d0 { s.st = .off; log("o usuário mexeu no atraso durante a análise: descartado"); sendReport(o, s, d0, "descartado: o usuário mexeu no atraso durante a análise"); return }
         switch o.kind {
         case .fix:
-            let persist = o.scale == 1.0
+            let scaled = abs(o.scale - 1.0) > 1e-9
+            let tNow = h.timeMs()
+            if s.manualRun {
+                // atraso manual presente: o deslocamento do usuário vence; só a escala (deriva) pode entrar, ancorada no ponto de alinhamento dele (agora)
+                if !scaled {
+                    s.mScale = 1.0; s.mOffset = Double(d0); s.lastWritten = d0
+                    mark(k, "ok", 1.0, o.offsetMs, d0)
+                    s.st = .done; s.attempts = 0; s.manualEdited = false; s.farSeek = false
+                    log("o áudio sugere atraso \(o.targetDelay) ms, mas o ajuste manual de \(d0) ms vence: não mexi")
+                    sendReport(o, s, d0, "manteve_manual: o áudio sugere \(o.targetDelay) ms (sem escala)")
+                    return
+                }
+                let engineNow = ManualDrift.delayAt(o.scale, o.offsetMs, Double(tNow))
+                if abs(engineNow - Double(d0)) > Double(AudioSyncAuto.manualAgreeMs) {
+                    s.mScale = 1.0; s.mOffset = Double(d0); s.lastWritten = d0
+                    mark(k, "ok", 1.0, o.offsetMs, d0)
+                    s.st = .done; s.attempts = 0
+                    log("escala \(o.scale) achada, mas o atraso do áudio agora (\(jround(engineNow)) ms) e o manual (\(d0) ms) discordam por mais de \(AudioSyncAuto.manualAgreeMs) ms: não mexi")
+                    sendReport(o, s, d0, "manteve_manual: escala \(o.scale) mas áudio e manual discordam em \(jround(abs(engineNow - Double(d0)))) ms")
+                    return
+                }
+                s.mScale = o.scale
+                s.mOffset = ManualDrift.anchorOffset(o.scale, Double(d0), Double(tNow))
+                s.lastWritten = d0
+                mark(k, "fix", o.scale, s.mOffset, d0)
+                s.st = .done; s.attempts = 0; s.manualEdited = false; s.farSeek = false
+                s.nextFollowAt = AudioSyncAuto.now() + 15_000
+                h.notice(AudioSyncAuto.driftMsg)
+                log("aplicado em volta do ponto manual: escala \(o.scale), atraso \(d0) ms em \(tNow / 1000) s (o áudio daria \(jround(engineNow)) ms ali); não pula")
+                sendReport(o, s, d0, "aplicou_escala_ancorada_no_manual: escala \(o.scale) ancora=\(d0) ms em \(tNow / 1000) s")
+                return
+            }
+            let persist = !scaled
             let changed = o.targetDelay != d0 || !persist
-            if changed { h.applyDelay(o.targetDelay, persist) }
+            if changed { writeDelay(o.targetDelay, persist) }
             s.mScale = o.scale
             s.mOffset = o.offsetMs
             s.lastWritten = changed ? o.targetDelay : d0
@@ -479,8 +532,9 @@ final class AudioSyncAuto {
             s.farSeek = false
             s.nextFollowAt = AudioSyncAuto.now() + 15_000
             // o atraso mudou de verdade: único caso com aviso (além da primeira confirmação do filme)
-            if changed { h.notice(persist ? "Legenda acertada pelo áudio (" + AudioSyncAuto.secs(o.targetDelay) + ")" : "Legenda acertada pelo áudio (velocidade e atraso)") }
+            if changed { h.notice(persist ? "Legenda acertada pelo áudio (" + AudioSyncAuto.secs(o.targetDelay) + ")" : (o.drift ? AudioSyncAuto.driftMsg : "Legenda acertada pelo áudio (velocidade e atraso)")) }
             log("aplicado: atraso \(o.targetDelay) ms, escala \(o.scale) (resultado confiante: não será reverificado)")
+            sendReport(o, s, d0, !persist ? "aplicou_escala" + (o.drift ? "_por_deriva" : "") + ": \(o.scale) desl=\(jround(o.offsetMs))" : "aplicou_atraso: \(o.targetDelay) ms")
         case .ok:
             s.mScale = 1.0
             s.mOffset = Double(h.delayMs())
@@ -492,9 +546,11 @@ final class AudioSyncAuto {
             s.farSeek = false
             log("a legenda já estava certa (deslocamento medido \(jround(o.offsetMs)) ms): não mexi (resultado confiante: não será reverificado)")
             if firstCheckOfFilm(k) { h.notice("Legenda confirmada pelo áudio") }   // confirmação silenciosa: só na primeira conferência do filme
+            sendReport(o, s, d0, "ja_certa: nao_mexeu")
         case .refused:
             mark(k, "no", 1.0, 0, 0)
             log("o áudio não tem certeza: legenda deixada como estava")
+            sendReport(o, s, d0, "recusou: manteve" + (s.manualRun ? "_o_manual" : ""))
             inconclusive(s, k, "o áudio não tem certeza")
         default: // erro, cancelado, pulado
             if o.kind == .cancelled {
@@ -518,9 +574,97 @@ final class AudioSyncAuto {
     private func follow(_ s: Sub, _ now: Int) {
         s.nextFollowAt = now + 15_000
         let d = AudioSyncAuto.delayAt(s.mScale, s.mOffset, h.timeMs())
-        if abs(d - h.delayMs()) < 250 { return }
-        h.applyDelay(d, false)
+        if abs(d - h.delayMs()) < 100 { return }
+        writeDelay(d, false)
         s.lastWritten = d
+    }
+
+    /** põe um atraso pelo caminho do ajuste manual e anota que fomos nós (o vigia dos ajustes manuais não confunde com o usuário) */
+    private func writeDelay(_ ms: Int, _ persist: Bool) {
+        h.applyDelay(ms, persist)
+        expectDelay = h.delayMs()
+        expectInit = true
+    }
+
+    // ------------------------------------------------------------ ajustes manuais do atraso (dica de deriva)
+
+    private func loadPts(_ s: Sub, _ k: String) {
+        guard let v = UserDefaults.standard.string(forKey: AudioSyncAuto.ptsPrefix + k), !v.isEmpty else { return }
+        let nowW = Int(Date().timeIntervalSince1970 * 1000)
+        for it in v.split(separator: ";") {
+            let a = it.split(separator: ",").compactMap { Int($0) }
+            if a.count == 3 && nowW - a[2] < AudioSyncAuto.confidentTtlMs { s.pts.append((a[0], a[1], a[2])) }
+        }
+    }
+
+    private func savePts(_ s: Sub, _ k: String) {
+        let v = s.pts.map { "\($0.0),\($0.1),\($0.2)" }.joined(separator: ";")
+        UserDefaults.standard.set(v, forKey: AudioSyncAuto.ptsPrefix + k)
+    }
+
+    /** vigia o atraso: qualquer valor que não foi posto por nós (nem carregado pelo player ao abrir a legenda) é do usuário; quando assenta (4 s sem mexer) vira um ponto manual */
+    private func watchManual(_ s: Sub, _ k: String, _ now: Int) {
+        let d = h.delayMs()
+        if !expectInit || now - baseSince < 4000 { expectDelay = d; expectInit = true; return }
+        if d != expectDelay { expectDelay = d; editSeenAt = now; return }
+        if editSeenAt > 0 && now - editSeenAt >= 4000 {
+            editSeenAt = 0
+            onManualPoint(s, k, d)
+        }
+    }
+
+    private func onManualPoint(_ s: Sub, _ k: String, _ d: Int) {
+        let t = h.timeMs()
+        let wall = Int(Date().timeIntervalSince1970 * 1000)
+        log("ajuste manual registrado: posição \(t / 1000) s, atraso \(d) ms")
+        s.pts.append((t, d, wall))
+        while s.pts.count > 4 { s.pts.removeFirst() }
+        savePts(s, k)
+        if s.st == .done && abs(s.mScale - 1.0) > 1e-9 {
+            // o modelo com escala está ativo e o usuário reajustou: o modelo passa por este novo ponto (mesma escala)
+            s.mOffset = ManualDrift.anchorOffset(s.mScale, Double(d), Double(t))
+            s.lastWritten = d
+            s.nextFollowAt = AudioSyncAuto.now() + 15_000
+            mark(k, "fix", s.mScale, s.mOffset, h.savedDelay(k))
+            log("modelo com escala \(s.mScale) reancorado no ajuste manual (\(d) ms em \(t / 1000) s)")
+            return
+        }
+        // dica de deriva: outro ponto manual a mais de 10 min de distância no filme, com mudança de atraso que bate com uma razão de fps conhecida
+        var best: ManualDrift.Fit? = nil
+        var with: (Int, Int, Int)? = nil
+        let known = AudioAligner.Params().knownScales
+        var i = s.pts.count - 2
+        while i >= 0 {
+            let q = s.pts[i]
+            if let f = ManualDrift.fit(q.0, Double(q.1), t, Double(d), known), best == nil || f.errMs < best!.errMs { best = f; with = q }
+            i -= 1
+        }
+        guard let b = best, let w = with else {
+            log("ajuste manual: \(s.pts.count) ponto(s); nenhum par com mais de 10 min e mudança que bata com uma razão de fps conhecida")
+            if s.st == .done && abs(s.mScale - 1.0) < 1e-9 && d != s.lastWritten { s.st = .hold; s.manualEdited = true }
+            return
+        }
+        s.mScale = b.scale
+        s.mOffset = b.offsetMs
+        s.lastWritten = d
+        s.st = .done
+        s.attempts = 0
+        s.retryPending = false
+        s.nextFollowAt = AudioSyncAuto.now() + 15_000
+        mark(k, "fix", b.scale, b.offsetMs, h.savedDelay(k))
+        h.notice(AudioSyncAuto.driftMsg)
+        log("deriva pelos ajustes manuais: \(w.1) ms em \(w.0 / 1000) s e \(d) ms em \(t / 1000) s => escala \(b.scale) (inclinação " + String(format: "%.6f", b.slope) + ", erro \(jround(b.errMs)) ms); modelo ancorado no último ponto")
+    }
+
+    private func manualLine(_ s: Sub) -> String {
+        let nowW = Int(Date().timeIntervalSince1970 * 1000)
+        return "manual pontos=[" + s.pts.map { "(t_s=\($0.0 / 1000),atraso_ms=\($0.1),ha_s=\((nowW - $0.2) / 1000))" }.joined() + "]"
+    }
+
+    /** relatório de cada análise (no Mac vai para o registro, linha "AUDIOSYNC ANALISE ...") */
+    private func sendReport(_ o: AudioSyncCore.Outcome, _ s: Sub, _ d0: Int, _ decision: String) {
+        let extra = "decisao=\(decision)\natraso_ao_iniciar_ms=\(d0) atraso_manual_guardado=\(s.manualRun ? 1 : 0) tentativa=\(s.attempts + 1)\n" + manualLine(s) + "\n"
+        log("ANALISE\n" + AudioSyncCore.reportBody(o, h.durationMs(), extra))
     }
 
     /** "+1,2 s" / "−3,0 s" (sinal de menos de verdade, vírgula decimal) */
