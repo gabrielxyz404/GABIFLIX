@@ -378,7 +378,7 @@ public class PlayerActivity extends Activity {
             }
             boolean on = ovCues != null && c != null && c.uri != null && c.uri.getLastPathSegment() != null && c.uri.getLastPathSegment().startsWith("app-");
             if (!on) ovCues = null;
-            if (on != appSubs) { appSubs = on; glog("legenda do app: " + (on ? "ligada" : "desligada (faixa embutida ou nenhuma: o libVLC desenha)")); zoomVideo(); }
+            if (on != appSubs) { appSubs = on; glog("legenda do app: " + (on ? "ligada" : "desligada (faixa embutida ou nenhuma: o libVLC desenha)")); zoomVideo(); if (!on) applySubDelay(); }
         }
         String want = null;
         if (ovCues != null) {
@@ -1934,6 +1934,9 @@ public class PlayerActivity extends Activity {
 
     private void applySubDelay() {
         if (player == null) return;
+        // legenda desenhada pelo app: o atraso já é aplicado por overlayTick (tempo - subDelayMs); a faixa do libVLC é um arquivo em branco, então não há
+        // por que chamar o código nativo (menos uma chamada nativa no momento em que o automático acerta a legenda)
+        if (appSubs) return;
         try { player.setSpuDelay(subDelayMs * 1000L); } catch (Exception ignored) {}
     }
 
