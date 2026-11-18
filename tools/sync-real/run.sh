@@ -77,6 +77,7 @@ for sc in "C1:menos2.srt" "C2:certa.srt"; do
   save $n
 done
 
+if [ -f tools/sync-real/ONLY_C ]; then adb logcat -d | grep -E "FATAL EXCEPTION" | head -20 > $OUT/crash.txt; cat $OUT/passos.txt; exit 0; fi
 # ---- A) 20 Mbit/s, AC3 5.1 + AAC (dublagem). A1: +3 s automatico, rede sem limite
 CLIP=real-ac3.mkv
 cpu_start; bytes_mark A1a
