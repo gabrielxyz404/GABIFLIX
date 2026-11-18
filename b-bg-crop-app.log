@@ -1,0 +1,21 @@
+2026-11-18 04:37:14.845 FramePlay[8114:25712] creating player instance with private library as options were given
+IOServiceMatchingfailed for: AppleM2ScalerParavirtDriver
+*** Terminating app due to uncaught exception 'Can't take a video snapshot', reason: 'No video output'
+*** First throw call stack:
+(
+	0   CoreFoundation                      0x000000018c7483b0 __exceptionPreprocess + 176
+	1   libobjc.A.dylib                     0x000000018c20ab90 objc_exception_throw + 88
+	2   CoreFoundation                      0x000000018c76ca0c _CFBundleGetValueForInfoKey + 0
+	3   VLCKit                              0x0000000106154074 -[VLCMediaPlayer saveVideoSnapshotAt:withWidth:andHeight:] + 140
+	4   FramePlay                           0x0000000100f6851c $s9FramePlay22PlayerWindowControllerC11testCommandyySSFyyYbcfU_TA + 132
+	5   FramePlay                           0x0000000100f2e59c $sIeg_IeyB_TRTm + 28
+	6   libdispatch.dylib                   0x000000018c433b2c _dispatch_call_block_and_release + 32
+	7   libdispatch.dylib                   0x000000018c44d85c _dispatch_client_callout + 16
+	8   libdispatch.dylib                   0x000000018c469868 _dispatch_queue_override_invoke.cold.3 + 32
+	9   libdispatch.dylib                   0x000000018c438278 _dispatch_queue_override_invoke + 848
+	10  libdispatch.dylib                   0x000000018c445e30 _dispatch_root_queue_drain + 364
+	11  libdispatch.dylib                   0x000000018c4465d4 _dispatch_worker_thread2 + 156
+	12  libsystem_pthread.dylib             0x000000018c5e7de4 _pthread_wqthread + 232
+	13  libsystem_pthread.dylib             0x000000018c5e6b74 start_wqthread + 8
+)
+libc++abi: terminating due to uncaught exception of type NSException
