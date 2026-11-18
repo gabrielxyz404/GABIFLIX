@@ -106,7 +106,7 @@ jobs:
         if: steps.skip.outputs.skip != '1'
         run: |
           sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg >/dev/null
-          bash tools/sync-real/mk-media.sh /tmp/media 2>&1 | tail -40
+          [ -f tools/sync-real/ONLY_C ] || bash tools/sync-real/mk-media.sh /tmp/media 2>&1 | tail -40
           df -h /tmp | tail -1
       - name: Servidor dos videos
         if: steps.skip.outputs.skip != '1'
