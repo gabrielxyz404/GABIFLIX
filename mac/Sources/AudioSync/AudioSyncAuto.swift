@@ -6,6 +6,7 @@
 // Regras: o atraso manual do usuário sempre vence (atraso guardado que não foi posto por aqui, ou mexido depois, nunca é alterado); na dúvida não
 // mexe; nada disto toca o player de reprodução nem a vista do vídeo (só o atraso da legenda, pelo mesmo caminho do ajuste manual).
 import Foundation
+import Network
 
 /** o que a janela do player empresta a este controlador (tudo chamado na thread principal) */
 struct AudioSyncHost {
@@ -57,6 +58,12 @@ final class AudioSyncAuto {
     private let autoOn: Bool
     private var startAfterMs = 25_000
     private var recheckMs = 600_000
+    /** orçamento de leitura da rede (as 3 janelas) para o modo automático: o botão não tem limite (rede com limite de dados: 250 MB; normal: 2 GB) */
+    private var budgetOverrideMb = -1
+    private static let budgetNormal = 2048 << 20, budgetExpensive = 250 << 20
+    private static let recheckNormal = 450 << 20, recheckExpensive = 80 << 20
+    private let netMon = NWPathMonitor()
+    private let expensive = AudioBox<Bool>(false)
     private var noticedKey = ""
 
     // estado da legenda ativa
@@ -90,13 +97,16 @@ final class AudioSyncAuto {
         if let v = env["FP_AUDIO_START_SEC"], let n = Int(v) { startAfterMs = n * 1000 }
         if let v = env["FP_AUDIO_RECHECK_SEC"], let n = Int(v) { recheckMs = n * 1000 }
         if env["FP_AUDIO_DSP"] == "true" { core.forceDsp = true }
+        if let v = env["FP_AUDIO_BUDGET_MB"], let n = Int(v) { budgetOverrideMb = n }
+        let ex = expensive
+        netMon.pathUpdateHandler = { ex.value = $0.isExpensive || $0.isConstrained }
+        netMon.start(queue: DispatchQueue(label: "frameplay.audiosync.net", qos: .utility))
         let hh = host
         core.logger = { hh.log($0) }
     }
 
-    /** sem limite de dados: a sincronização automática roda sempre, qualquer que seja o tamanho do arquivo e o tipo de rede (decisão do usuário) */
-    private func autoBudget() -> Int { return AudioSyncCore.noLimit }
-    private func recheckBudget() -> Int { return AudioSyncCore.noLimit }
+    private func autoBudget() -> Int { return budgetOverrideMb >= 0 ? budgetOverrideMb << 20 : (expensive.value ? AudioSyncAuto.budgetExpensive : AudioSyncAuto.budgetNormal) }
+    private func recheckBudget() -> Int { return budgetOverrideMb >= 0 ? budgetOverrideMb << 18 : (expensive.value ? AudioSyncAuto.recheckExpensive : AudioSyncAuto.recheckNormal) }
 
     /** um aviso discreto por situação e por legenda (não repete a cada tentativa) */
     private func noticeOnce(_ k: String, _ what: String, _ text: String) {
@@ -124,6 +134,7 @@ final class AudioSyncAuto {
         token.value += 1
         timer?.invalidate()
         timer = nil
+        netMon.cancel()
         core.close()
     }
 
@@ -297,7 +308,7 @@ final class AudioSyncAuto {
         resetHealth()
         maxTickGapMs = 0
         let budget = autoBudget()
-        log("começando: posição \(pos / 1000) s, duração \(dur / 1000) s, atraso atual \(d0) ms, sem limite de dados")
+        log("começando: posição \(pos / 1000) s, duração \(dur / 1000) s, atraso atual \(d0) ms, orçamento \(budget >> 20) MB (rede \(expensive.value ? "com limite de dados" : "normal"))")
         noticeOnce(k, "verificando", "Legenda: a verificar pelo áudio…")
         queue.async { [weak self] in
             guard let self = self else { return }
