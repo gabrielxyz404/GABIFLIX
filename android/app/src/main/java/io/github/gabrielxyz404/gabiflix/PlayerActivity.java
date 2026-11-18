@@ -198,6 +198,9 @@ public class PlayerActivity extends Activity {
                 for (int y = y0; y < y1; y++) if (luma(px[y * w + fx + x]) > BAR_LUMA) cnt++;
                 cols[x] = cnt * 100 > (y1 - y0) * 2;
             }
+            { StringBuilder sb = new StringBuilder();
+              for (int x = 0; x < 40 && x < fW; x++) { int mx = 0; for (int y = y0; y < y1; y++) mx = Math.max(mx, luma(px[y * w + fx + x])); sb.append(mx).append(cols[x] ? '*' : '.').append(' '); }
+              glog("amostra-col " + w + "x" + h + " frame " + fW + "x" + fH + "+" + fx + " : " + sb); }
             // quadro quase todo preto (fade, transição): não conta
             if (any * 100 < fH * 8) return;
             float[] r;

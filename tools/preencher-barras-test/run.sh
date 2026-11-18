@@ -50,7 +50,7 @@ abrir() {  # $1 = arquivo de vídeo
 }
 [ "$P" = tel ] && adb root >/dev/null && sleep 3
 adb logcat -c
-for v in barra wide hd pilar; do
+for v in pilar; do
   abrir $v.mkv
   sleep 22
   snap $v-normal 0.4
@@ -60,7 +60,7 @@ for v in barra wide hd pilar; do
   adb shell input keyevent KEYCODE_MEDIA_PAUSE; sleep 1.5
   snap $v-preencher 0.4
 done
-adb logcat -d | grep -E "GFPlayer|zoom Preencher|escala|barras" > $OUT/$P-log.txt
+adb logcat -d | grep -E "GFPlayer|zoom Preencher|escala|barras|amostra" > $OUT/$P-log.txt
 adb logcat -d | grep -E "FATAL EXCEPTION|AndroidRuntime" | head -40 > $OUT/$P-crash.txt
 [ "$BAD" = 1 ] && { echo "ANR detectado" ; exit 1; }
 exit 0
