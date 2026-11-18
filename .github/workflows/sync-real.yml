@@ -138,4 +138,4 @@ jobs:
           cd shots || exit 0
           git init -q -b x && git add -A
           git -c user.name=ci -c user.email=ci@x commit -qm fotos
-          git push -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" x:sync-real-out-${{ matrix.apk }}
+          git push -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" x:sync-real-out-${{ matrix.apk }}-${GITHUB_SHA::7}
