@@ -1058,10 +1058,14 @@ public class PlayerActivity extends Activity {
         @Override public int delayMs() { return subDelayMs; }
         @Override public int savedDelay(String key) { return PlayerActivity.this.savedDelay(key); }
         @Override public void applyDelay(int ms, boolean persist) {
-            if (persist) { setSubDelay(ms, panelValue); return; }
-            subDelayMs = Math.max(-MAX_DELAY_MS, Math.min(MAX_DELAY_MS, ms));
-            applySubDelay();
-            if (panelValue != null) panelValue.setText(delayLabel());
+            int before = subDelayMs;
+            if (persist) setSubDelay(ms, panelValue);
+            else {
+                subDelayMs = Math.max(-MAX_DELAY_MS, Math.min(MAX_DELAY_MS, ms));
+                applySubDelay();
+                if (panelValue != null) panelValue.setText(delayLabel());
+            }
+            reflushSubs(before, subDelayMs);
         }
         @Override public void notice(String s) { PlayerActivity.this.notice(s); }
         @Override public String debug() {
@@ -1518,7 +1522,9 @@ public class PlayerActivity extends Activity {
         String msg;
         int color;
         if (res.status == AutoSync.FIXED) {
+            int dBefore = subDelayMs;
             setSubDelay(res.delayMs, panelValue);
+            reflushSubs(dBefore, subDelayMs);
             msg = (res.note != null && res.note.startsWith("áudio") ? "Legenda acertada pelo áudio (" : "Legenda acertada (") + signedSecs(res.delayMs) + ")";
             color = 0xFF7BD88F;
             if (!subPanelOpen) notice(msg, 5000);
@@ -1605,6 +1611,26 @@ public class PlayerActivity extends Activity {
         noticeLabel.setVisibility(View.VISIBLE);
         ui.removeCallbacks(hideNotice);
         ui.postDelayed(hideNotice, ms);
+    }
+
+    /**
+     * O VLC lê o arquivo de legenda só para a frente: as falas que ele já mandou para o decodificador (as das próximas dezenas de segundos)
+     * ficam com o tempo ANTIGO quando o atraso muda, e as que vêm depois do novo atraso só chegam quando o relógio alcança o tempo antigo:
+     * a legenda some por um tempo (igual ao tamanho da mudança) e depois volta. Religar a faixa (sem mexer no vídeo) faz o VLC recomeçar
+     * a legenda a partir do instante atual já com o atraso novo. Só para mudanças feitas pelo motor (o ajuste manual de 1 s não precisa).
+     */
+    private String delayStrategy = null;
+    private void reflushSubs(int before, int after) {
+        if (player == null || before == after) return;
+        String st = delayStrategy;
+        if (st == null) { st = getIntent().getStringExtra("gfDelayStrategy"); if (st == null) st = "plain"; delayStrategy = st; }
+        int id = player.getSpuTrack();
+        glog("AUDIOSYNC legenda: atraso " + before + " -> " + after + " ms, estratégia " + st + ", faixa " + id + ", posição " + player.getTime() + " ms");
+        if (id == -1 || "plain".equals(st)) return;
+        try {
+            if ("toggle".equals(st)) { player.setSpuTrack(-1); player.setSpuTrack(id); }
+            else if ("reselect".equals(st)) player.setSpuTrack(id);
+        } catch (Throwable t) { glog("AUDIOSYNC religar a faixa falhou: " + t); }
     }
 
     private void applySubDelay() {
