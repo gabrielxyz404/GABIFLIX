@@ -1,0 +1,146 @@
+         1795019498.418  6707  6753 I GFCrash : corpo de CRASH_NATIVE:
+         1795019498.418  6707  6753 I GFCrash : FramePlay 1.0 | CRASH_NATIVE | processo io.github.gabrielxyz404.gabiflix:audiocap
+         1795019498.418  6707  6753 I GFCrash : Aparelho: Google sdk_gphone_x86 | Android 11 (API 30) | RAM 1981 MB, livre 1147 MB | tv=false
+         1795019498.418  6707  6753 I GFCrash : ABI: [x86, armeabi-v7a, armeabi] (64 bits: []) processo=32 bits
+         1795019498.418  6707  6753 I GFCrash : Código: 5  estado: 11  importância: 100
+         1795019498.418  6707  6753 I GFCrash : Hora da morte: 2026-11-18 16:29:51
+         1795019498.418  6707  6753 I GFCrash : Descrição: crash
+         1795019498.418  6707  6753 I GFCrash : PSS: 0 kB  RSS: 0 kB
+         1795019498.418  6707  6753 I GFCrash : 
+         1795019498.418  6707  6753 I GFCrash : Registo de queda do sistema (logcat, filtrado):
+         1795019498.418  6707  6753 I GFCrash : (nenhuma linha de queda do pid 6172 no registo do sistema; buffer crash=0 bytes, principal=28 bytes)
+         1795019498.418  6707  6753 I GFCrash : 
+         1795019498.418  6707  6753 I GFCrash : Migalhas do processo audiocap antes da morte:
+         1795019498.418  6707  6753 I GFCrash : (sem migalhas)
+         1795019498.953  6707  6753 I GFCrash : POST CRASH_NATIVE parte 1/1 (568 bytes) -> HTTP 200
+         1795019541.683  6707  7059 I GFCrash : corpo de CAPTURA_CAIU:
+         1795019541.683  6707  7059 I GFCrash : FramePlay 1.0 | CAPTURA_CAIU | processo audiocap
+         1795019541.683  6707  7059 I GFCrash : Aparelho: Google sdk_gphone_x86 | Android 11 (API 30) | RAM 1981 MB, livre 1145 MB | tv=false
+         1795019541.683  6707  7059 I GFCrash : ABI: [x86, armeabi-v7a, armeabi] (64 bits: []) processo=32 bits
+         1795019541.683  6707  7059 I GFCrash : Etapa em curso (processo principal): vad  vad cfg=0 (desconectou)
+         1795019541.683  6707  7059 I GFCrash : Última etapa marcada pelo processo que caiu: 16:32:19.656 pid=7005 TESTE: queda nativa forçada no VAD (modo 0)
+         1795019541.683  6707  7059 I GFCrash : Hora da queda: 2026-11-18 16:32:20
+         1795019541.683  6707  7059 I GFCrash : Motivo da morte (getHistoricalProcessExitReasons): CRASH_NATIVE (5)  estado: 11  pid: 7005  importância: 100
+         1795019541.683  6707  7059 I GFCrash : Descrição: crash  PSS: 0 kB  RSS: 0 kB
+         1795019541.683  6707  7059 I GFCrash : 
+         1795019541.683  6707  7059 I GFCrash : Registo de queda do sistema (logcat, filtrado, pid 7005):
+         1795019541.683  6707  7059 I GFCrash : 11-18 16:32:19.660 F/libc    ( 7005): Fatal signal 11 (SIGSEGV), code 0 (SI_USER) in tid 7005 (biflix:audiocap), pid 7005 (biflix:audiocap)
+         1795019541.683  6707  7059 I GFCrash : 11-18 16:32:19.719 F/DEBUG   ( 7046): pid: 7005, tid: 7005, name: biflix:audiocap  >>> io.github.gabrielxyz404.gabiflix:audiocap <<<
+         1795019541.683  6707  7059 I GFCrash : 11-18 16:32:19.719 F/DEBUG   ( 7046): signal 11 (SIGSEGV), code 0 (SI_USER), fault addr --------
+         1795019541.683  6707  7059 I GFCrash : 11-18 16:32:19.846 F/DEBUG   ( 7046): backtrace:
+         1795019541.683  6707  7059 I GFCrash : 11-18 16:32:19.846 F/DEBUG   ( 7046):       #00 pc 00000b89  [vdso] (__kernel_vsyscall+9)
+         1795019541.683  6707  7059 I GFCrash : 11-18 16:32:19.846 F/DEBUG   ( 7046):       #01 pc 000cf2bb  /apex/com.android.runtime/lib/bionic/libc.so (__epoll_pwait+43)
+         1795019541.683  6707  7059 I GFCrash : 11-18 16:32:19.846 F/DEBUG   ( 7046):       #02 pc 00088f8d  /apex/com.android.runtime/lib/bionic/libc.so (epoll_wait+45)
+         1795019541.683  6707  7059 I GFCrash : 11-18 16:32:19.846 F/DEBUG   ( 7046):       #03 pc 0001a003  /system/lib/libutils.so (android::Looper::pollInner(int)+259)
+         1795019541.683  6707  7059 I GFCrash : 11-18 16:32:19.846 F/DEBUG   ( 7046):       #04 pc 00019e96  /system/lib/libutils.so (android::Looper::pollOnce(int, int*, int*, void**)+118)
+         1795019541.683  6707  7059 I GFCrash : 11-18 16:32:19.846 F/DEBUG   ( 7046):       #05 pc 0010ef8b  /system/lib/libandroid_runtime.so (android::android_os_MessageQueue_nativePollOnce(_JNIEnv*, _jobject*, long long, int)+59)
+         1795019541.683  6707  7059 I GFCrash : 11-18 16:32:19.846 F/DEBUG   ( 7046):       #06 pc 0021be48  /system/framework/x86/boot-framework.oat (art_jni_trampoline+136)
+         1795019541.683  6707  7059 I GFCrash : 11-18 16:32:19.846 F/DEBUG   ( 7046):       #07 pc 00639e80  /system/framework/x86/boot-framework.oat (android.os.MessageQueue.next+224)
+         1795019541.683  6707  7059 I GFCrash : 11-18 16:32:19.846 F/DEBUG   ( 7046):       #08 pc 00636550  /system/framework/x86/boot-framework.oat (android.os.Looper.loop+592)
+         1795019541.683  6707  7059 I GFCrash : 11-18 16:32:19.847 F/DEBUG   ( 7046):       #09 pc 0040581a  /system/framework/x86/boot-framework.oat (android.app.ActivityThread.main+746)
+         1795019541.683  6707  7059 I GFCrash : 11-18 16:32:19.847 F/DEBUG   ( 7046):       #10 pc 0013bc72  /apex/com.android.art/lib/libart.so (art_quick_invoke_static_stub+418)
+         1795019541.683  6707  7059 I GFCrash : 11-18 16:32:19.847 F/DEBUG   ( 7046):       #11 pc 001d0512  /apex/com.android.art/lib/libart.so (art::ArtMethod::Invoke(art::Thread*, unsigned int*, unsigned int, art::JValue*, char const*)+258)
+         1795019541.683  6707  7059 I GFCrash : 11-18 16:32:19.847 F/DEBUG   ( 7046):       #12 pc 00631e68  /apex/com.android.art/lib/libart.so (art::InvokeMethod(art::ScopedObjectAccessAlreadyRunnable const&, _jobject*, _jobject*, _jobject*, unsigned int)+1464)
+         1795019541.683  6707  7059 I GFCrash : 11-18 16:32:19.847 F/DEBUG   ( 7046):       #13 pc 0058a500  /apex/com.android.art/lib/libart.so (art::Method_invoke(_JNIEnv*, _jobject*, _jobject*, _jobjectArray*)+80)
+         1795019541.683  6707  7059 I GFCrash : 11-18 16:32:19.847 F/DEBUG   ( 7046):       #14 pc 0008a778  /apex/com.android.art/javalib/x86/boot.oat (art_jni_trampoline+168)
+         1795019541.683  6707  7059 I GFCrash : 11-18 16:32:19.847 F/DEBUG   ( 7046):       #15 pc 0088ac49  /system/framework/x86/boot-framework.oat (com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run+137)
+         1795019541.683  6707  7059 I GFCrash : 11-18 16:32:19.847 F/DEBUG   ( 7046):       #16 pc 00893656  /system/framework/x86/boot-framework.oat (com.android.internal.os.ZygoteInit.main+2102)
+         1795019541.683  6707  7059 I GFCrash : 11-18 16:32:19.847 F/DEBUG   ( 7046):       #17 pc 0013bc72  /apex/com.android.art/lib/libart.so (art_quick_invoke_static_stub+418)
+         1795019541.683  6707  7059 I GFCrash : 11-18 16:32:19.847 F/DEBUG   ( 7046):       #18 pc 001d0512  /apex/com.android.art/lib/libart.so (art::ArtMethod::Invoke(art::Thread*, unsigned int*, unsigned int, art::JValue*, char const*)+258)
+         1795019541.683  6707  7059 I GFCrash : 11-18 16:32:19.847 F/DEBUG   ( 7046):       #19 pc 006304b3  /apex/com.android.art/lib/libart.so (art::JValue art::InvokeWithVarArgs<art::ArtMethod*>(art::ScopedObjectAccessAlreadyRunnable const&, _jobject*, art::ArtMethod*, char*)+579)
+         1795019541.683  6707  7059 I GFCrash : 11-18 16:32:19.847 F/DEBUG   ( 7046):       #20 pc 00630985  /apex/com.android.art/lib/libart.so (art::JValue art::InvokeWithVarArgs<_jmethodID*>(art::ScopedObjectAccessAlreadyRunnable const&, _jobject*, _jmethodID*, char*)+85)
+         1795019541.683  6707  7059 I GFCrash : 11-18 16:32:19.847 F/DEBUG   ( 7046):       #21 pc 004cf63f  /apex/com.android.art/lib/libart.so (art::JNI<true>::CallStaticVoidMethodV(_JNIEnv*, _jclass*, _jmethodID*, char*)+735)
+         1795019541.683  6707  7059 I GFCrash : 11-18 16:32:19.847 F/DEBUG   ( 7046):       #22 pc 0008f90e  /system/lib/libandroid_runtime.so (_JNIEnv::CallStaticVoidMethod(_jclass*, _jmethodID*, ...)+62)
+         1795019541.683  6707  7059 I GFCrash : 11-18 16:32:19.847 F/DEBUG   ( 7046):       #23 pc 00098c8e  /system/lib/libandroid_runtime.so (android::AndroidRuntime::start(char const*, android::Vector<android::String8> const&, bool)+910)
+         1795019541.683  6707  7059 I GFCrash : 11-18 16:32:19.847 F/DEBUG   ( 7046):       #24 pc 00003804  /system/bin/app_process32 (main+1588)
+         1795019541.683  6707  7059 I GFCrash : 11-18 16:32:19.847 F/DEBUG   ( 7046):       #25 pc 000522d3  /apex/com.android.runtime/lib/bionic/libc.so (__libc_init+115)
+         1795019541.683  6707  7059 I GFCrash : 
+         1795019541.683  6707  7059 I GFCrash : 
+         1795019541.683  6707  7059 I GFCrash : Etapas marcadas (últimas):
+         1795019541.683  6707  7059 I GFCrash : 16:32:16.635 pid=7005 captura cfg=0 criando o libVLC (nativo)
+         1795019541.683  6707  7059 I GFCrash : 16:32:16.672 pid=7005 captura cfg=0 tocando a janela 275 s (nativo: demux, decodificador, transcode)
+         1795019541.683  6707  7059 I GFCrash : 16:32:18.848 pid=7005 captura cfg=0 terminou (fim)
+         1795019541.683  6707  7059 I GFCrash : 16:32:19.268 pid=7005 vad começando: lendo o PCM
+         1795019541.683  6707  7059 I GFCrash : 16:32:19.287 pid=7005 vad modo 0 lendo o modelo silero_vad.onnx
+         1795019541.683  6707  7059 I GFCrash : 16:32:19.346 pid=7005 vad modo 0 criando a sessão do ONNX Runtime (carrega as bibliotecas nativas)
+         1795019541.683  6707  7059 I GFCrash : 16:32:19.622 pid=7005 vad modo 0 ONNX Runtime inferência (nativo), 90 s de áudio
+         1795019541.683  6707  7059 I GFCrash : 16:32:19.656 pid=7005 TESTE: queda nativa forçada no VAD (modo 0)
+         1795019541.683  6707  7059 I GFCrash : 
+         1795019541.683  6707  7059 I GFCrash : Migalhas do processo que caiu:
+         1795019541.683  6707  7059 I GFCrash : 16:32:16.630 processo audiocap iniciado, versão 1.0, pid 7005
+         1795019541.683  6707  7059 I GFCrash : 16:32:16.635 ETAPA captura cfg=0 criando o libVLC (nativo)
+         1795019541.683  6707  7059 I GFCrash : 16:32:16.672 ETAPA captura cfg=0 tocando a janela 275 s (nativo: demux, decodificador, transcode)
+         1795019541.683  6707  7059 I GFCrash : 16:32:18.844 ETAPA captura cfg=0 terminou (fim)
+         1795019541.683  6707  7059 I GFCrash : 16:32:19.268 ETAPA vad começando: lendo o PCM
+         1795019541.683  6707  7059 I GFCrash : 16:32:19.287 ETAPA vad modo 0 lendo o modelo silero_vad.onnx
+         1795019541.683  6707  7059 I GFCrash : 16:32:19.345 ETAPA vad modo 0 criando a sessão do ONNX Runtime (carrega as bibliotecas nativas)
+         1795019541.683  6707  7059 I GFCrash : 16:32:19.622 ETAPA vad modo 0 ONNX Runtime inferência (nativo), 90 s de áudio
+         1795019541.683  6707  7059 I GFCrash : 16:32:19.656 ETAPA TESTE: queda nativa forçada no VAD (modo 0)
+         1795019542.233  6707  7059 I GFCrash : POST CAPTURA_CAIU parte 1/2 (3600 bytes) -> HTTP 200
+         1795019542.796  6707  7059 I GFCrash : POST CAPTURA_CAIU parte 2/2 (2736 bytes) -> HTTP 200
+         1795019543.863  6707  7103 I GFCrash : corpo de CAPTURA_CAIU:
+         1795019543.863  6707  7103 I GFCrash : FramePlay 1.0 | CAPTURA_CAIU | processo audiocap
+         1795019543.863  6707  7103 I GFCrash : Aparelho: Google sdk_gphone_x86 | Android 11 (API 30) | RAM 1981 MB, livre 1143 MB | tv=false
+         1795019543.863  6707  7103 I GFCrash : ABI: [x86, armeabi-v7a, armeabi] (64 bits: []) processo=32 bits
+         1795019543.863  6707  7103 I GFCrash : Etapa em curso (processo principal): vad  vad cfg=1 (desconectou)
+         1795019543.863  6707  7103 I GFCrash : Última etapa marcada pelo processo que caiu: 16:32:21.835 pid=7062 TESTE: queda nativa forçada no VAD (modo 1)
+         1795019543.863  6707  7103 I GFCrash : Hora da queda: 2026-11-18 16:32:22
+         1795019543.863  6707  7103 I GFCrash : Motivo da morte (getHistoricalProcessExitReasons): CRASH_NATIVE (5)  estado: 11  pid: 7062  importância: 100
+         1795019543.863  6707  7103 I GFCrash : Descrição: crash  PSS: 0 kB  RSS: 0 kB
+         1795019543.863  6707  7103 I GFCrash : 
+         1795019543.863  6707  7103 I GFCrash : Registo de queda do sistema (logcat, filtrado, pid 7062):
+         1795019543.863  6707  7103 I GFCrash : 11-18 16:32:21.841 F/libc    ( 7062): Fatal signal 11 (SIGSEGV), code 0 (SI_USER) in tid 7062 (biflix:audiocap), pid 7062 (biflix:audiocap)
+         1795019543.863  6707  7103 I GFCrash : 11-18 16:32:21.872 F/DEBUG   ( 7093): pid: 7062, tid: 7062, name: biflix:audiocap  >>> io.github.gabrielxyz404.gabiflix:audiocap <<<
+         1795019543.863  6707  7103 I GFCrash : 11-18 16:32:21.872 F/DEBUG   ( 7093): signal 11 (SIGSEGV), code 0 (SI_USER), fault addr --------
+         1795019543.863  6707  7103 I GFCrash : 11-18 16:32:21.987 F/DEBUG   ( 7093): backtrace:
+         1795019543.863  6707  7103 I GFCrash : 11-18 16:32:21.987 F/DEBUG   ( 7093):       #00 pc 00000b89  [vdso] (__kernel_vsyscall+9)
+         1795019543.863  6707  7103 I GFCrash : 11-18 16:32:21.987 F/DEBUG   ( 7093):       #01 pc 000cf2bb  /apex/com.android.runtime/lib/bionic/libc.so (__epoll_pwait+43)
+         1795019543.863  6707  7103 I GFCrash : 11-18 16:32:21.987 F/DEBUG   ( 7093):       #02 pc 00088f8d  /apex/com.android.runtime/lib/bionic/libc.so (epoll_wait+45)
+         1795019543.863  6707  7103 I GFCrash : 11-18 16:32:21.989 F/DEBUG   ( 7093):       #03 pc 0001a003  /system/lib/libutils.so (android::Looper::pollInner(int)+259)
+         1795019543.863  6707  7103 I GFCrash : 11-18 16:32:21.989 F/DEBUG   ( 7093):       #04 pc 00019e96  /system/lib/libutils.so (android::Looper::pollOnce(int, int*, int*, void**)+118)
+         1795019543.863  6707  7103 I GFCrash : 11-18 16:32:21.990 F/DEBUG   ( 7093):       #05 pc 0010ef8b  /system/lib/libandroid_runtime.so (android::android_os_MessageQueue_nativePollOnce(_JNIEnv*, _jobject*, long long, int)+59)
+         1795019543.863  6707  7103 I GFCrash : 11-18 16:32:21.990 F/DEBUG   ( 7093):       #06 pc 0021be48  /system/framework/x86/boot-framework.oat (art_jni_trampoline+136)
+         1795019543.863  6707  7103 I GFCrash : 11-18 16:32:21.990 F/DEBUG   ( 7093):       #07 pc 00639e80  /system/framework/x86/boot-framework.oat (android.os.MessageQueue.next+224)
+         1795019543.863  6707  7103 I GFCrash : 11-18 16:32:21.990 F/DEBUG   ( 7093):       #08 pc 00636550  /system/framework/x86/boot-framework.oat (android.os.Looper.loop+592)
+         1795019543.863  6707  7103 I GFCrash : 11-18 16:32:21.990 F/DEBUG   ( 7093):       #09 pc 0040581a  /system/framework/x86/boot-framework.oat (android.app.ActivityThread.main+746)
+         1795019543.863  6707  7103 I GFCrash : 11-18 16:32:21.990 F/DEBUG   ( 7093):       #10 pc 0013bc72  /apex/com.android.art/lib/libart.so (art_quick_invoke_static_stub+418)
+         1795019543.863  6707  7103 I GFCrash : 11-18 16:32:21.990 F/DEBUG   ( 7093):       #11 pc 001d0512  /apex/com.android.art/lib/libart.so (art::ArtMethod::Invoke(art::Thread*, unsigned int*, unsigned int, art::JValue*, char const*)+258)
+         1795019543.863  6707  7103 I GFCrash : 11-18 16:32:21.990 F/DEBUG   ( 7093):       #12 pc 00631e68  /apex/com.android.art/lib/libart.so (art::InvokeMethod(art::ScopedObjectAccessAlreadyRunnable const&, _jobject*, _jobject*, _jobject*, unsigned int)+1464)
+         1795019543.863  6707  7103 I GFCrash : 11-18 16:32:21.990 F/DEBUG   ( 7093):       #13 pc 0058a500  /apex/com.android.art/lib/libart.so (art::Method_invoke(_JNIEnv*, _jobject*, _jobject*, _jobjectArray*)+80)
+         1795019543.863  6707  7103 I GFCrash : 11-18 16:32:21.990 F/DEBUG   ( 7093):       #14 pc 0008a778  /apex/com.android.art/javalib/x86/boot.oat (art_jni_trampoline+168)
+         1795019543.863  6707  7103 I GFCrash : 11-18 16:32:21.990 F/DEBUG   ( 7093):       #15 pc 0088ac49  /system/framework/x86/boot-framework.oat (com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run+137)
+         1795019543.863  6707  7103 I GFCrash : 11-18 16:32:21.990 F/DEBUG   ( 7093):       #16 pc 00893656  /system/framework/x86/boot-framework.oat (com.android.internal.os.ZygoteInit.main+2102)
+         1795019543.863  6707  7103 I GFCrash : 11-18 16:32:21.990 F/DEBUG   ( 7093):       #17 pc 0013bc72  /apex/com.android.art/lib/libart.so (art_quick_invoke_static_stub+418)
+         1795019543.863  6707  7103 I GFCrash : 11-18 16:32:21.990 F/DEBUG   ( 7093):       #18 pc 001d0512  /apex/com.android.art/lib/libart.so (art::ArtMethod::Invoke(art::Thread*, unsigned int*, unsigned int, art::JValue*, char const*)+258)
+         1795019543.863  6707  7103 I GFCrash : 11-18 16:32:21.990 F/DEBUG   ( 7093):       #19 pc 006304b3  /apex/com.android.art/lib/libart.so (art::JValue art::InvokeWithVarArgs<art::ArtMethod*>(art::ScopedObjectAccessAlreadyRunnable const&, _jobject*, art::ArtMethod*, char*)+579)
+         1795019543.863  6707  7103 I GFCrash : 11-18 16:32:21.990 F/DEBUG   ( 7093):       #20 pc 00630985  /apex/com.android.art/lib/libart.so (art::JValue art::InvokeWithVarArgs<_jmethodID*>(art::ScopedObjectAccessAlreadyRunnable const&, _jobject*, _jmethodID*, char*)+85)
+         1795019543.863  6707  7103 I GFCrash : 11-18 16:32:21.990 F/DEBUG   ( 7093):       #21 pc 004cf63f  /apex/com.android.art/lib/libart.so (art::JNI<true>::CallStaticVoidMethodV(_JNIEnv*, _jclass*, _jmethodID*, char*)+735)
+         1795019543.863  6707  7103 I GFCrash : 11-18 16:32:21.990 F/DEBUG   ( 7093):       #22 pc 0008f90e  /system/lib/libandroid_runtime.so (_JNIEnv::CallStaticVoidMethod(_jclass*, _jmethodID*, ...)+62)
+         1795019543.863  6707  7103 I GFCrash : 11-18 16:32:21.990 F/DEBUG   ( 7093):       #23 pc 00098c8e  /system/lib/libandroid_runtime.so (android::AndroidRuntime::start(char const*, android::Vector<android::String8> const&, bool)+910)
+         1795019543.863  6707  7103 I GFCrash : 11-18 16:32:21.990 F/DEBUG   ( 7093):       #24 pc 00003804  /system/bin/app_process32 (main+1588)
+         1795019543.863  6707  7103 I GFCrash : 11-18 16:32:21.990 F/DEBUG   ( 7093):       #25 pc 000522d3  /apex/com.android.runtime/lib/bionic/libc.so (__libc_init+115)
+         1795019543.863  6707  7103 I GFCrash : 
+         1795019543.863  6707  7103 I GFCrash : 
+         1795019543.863  6707  7103 I GFCrash : Etapas marcadas (últimas):
+         1795019543.863  6707  7103 I GFCrash : 16:32:16.672 pid=7005 captura cfg=0 tocando a janela 275 s (nativo: demux, decodificador, transcode)
+         1795019543.863  6707  7103 I GFCrash : 16:32:18.848 pid=7005 captura cfg=0 terminou (fim)
+         1795019543.863  6707  7103 I GFCrash : 16:32:19.268 pid=7005 vad começando: lendo o PCM
+         1795019543.863  6707  7103 I GFCrash : 16:32:19.287 pid=7005 vad modo 0 lendo o modelo silero_vad.onnx
+         1795019543.863  6707  7103 I GFCrash : 16:32:19.346 pid=7005 vad modo 0 criando a sessão do ONNX Runtime (carrega as bibliotecas nativas)
+         1795019543.863  6707  7103 I GFCrash : 16:32:19.622 pid=7005 vad modo 0 ONNX Runtime inferência (nativo), 90 s de áudio
+         1795019543.863  6707  7103 I GFCrash : 16:32:19.656 pid=7005 TESTE: queda nativa forçada no VAD (modo 0)
+         1795019543.863  6707  7103 I GFCrash : 16:32:21.707 pid=7062 vad começando: lendo o PCM
+         1795019543.863  6707  7103 I GFCrash : 16:32:21.712 pid=7062 vad modo 1 lendo o modelo silero_vad.onnx
+         1795019543.863  6707  7103 I GFCrash : 16:32:21.732 pid=7062 vad modo 1 criando a sessão do ONNX Runtime (carrega as bibliotecas nativas)
+         1795019543.863  6707  7103 I GFCrash : 16:32:21.828 pid=7062 vad modo 1 ONNX Runtime inferência (nativo), 90 s de áudio
+         1795019543.863  6707  7103 I GFCrash : 16:32:21.835 pid=7062 TESTE: queda nativa forçada no VAD (modo 1)
+         1795019543.863  6707  7103 I GFCrash : 
+         1795019543.863  6707  7103 I GFCrash : Migalhas do processo que caiu:
+         1795019543.863  6707  7103 I GFCrash : 16:32:21.701 processo audiocap iniciado, versão 1.0, pid 7062
+         1795019543.863  6707  7103 I GFCrash : 16:32:21.707 ETAPA vad começando: lendo o PCM
+         1795019543.863  6707  7103 I GFCrash : 16:32:21.712 ETAPA vad modo 1 lendo o modelo silero_vad.onnx
+         1795019543.863  6707  7103 I GFCrash : 16:32:21.732 ETAPA vad modo 1 criando a sessão do ONNX Runtime (carrega as bibliotecas nativas)
+         1795019543.863  6707  7103 I GFCrash : 16:32:21.827 ETAPA vad modo 1 ONNX Runtime inferência (nativo), 90 s de áudio
+         1795019543.863  6707  7103 I GFCrash : 16:32:21.835 ETAPA TESTE: queda nativa forçada no VAD (modo 1)
+         1795019544.446  6707  7103 I GFCrash : POST CAPTURA_CAIU parte 1/2 (3600 bytes) -> HTTP 200
+         1795019544.506  6707  7103 I GFCrash : POST CAPTURA_CAIU parte 2/2 (2833 bytes) -> HTTP 200

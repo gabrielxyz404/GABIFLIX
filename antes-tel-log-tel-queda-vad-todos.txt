@@ -1,0 +1,331 @@
+         1795019492.434   484  1904 I ActivityManager: Force stopping io.github.gabrielxyz404.gabiflix appid=10167 user=0: from pid 6656
+         1795019492.436   484  1904 I ActivityManager: Killing 4377:io.github.gabrielxyz404.gabiflix/u0a167 (adj 0): stop io.github.gabrielxyz404.gabiflix due to from pid 6656
+         1795019492.441   484  1904 W ActivityTaskManager: Force removing ActivityRecord{a1eb897 u0 io.github.gabrielxyz404.gabiflix/.PlayerActivity t9 f}}: app died, no saved state
+         1795019492.453  4437  4437 I AndroidRuntime: VM exiting with result code 0, cleanup skipped.
+         1795019492.544   484  1904 W ActivityTaskManager: Force removing ActivityRecord{7faaf0 u0 io.github.gabrielxyz404.gabiflix/.MainActivity t9 f}}: app died, no saved state
+         1795019492.570   484  1904 I ActivityManager: Killing 4437:com.google.android.webview:sandboxed_process0:org.chromium.content.app.SandboxedProcessService0:0/u0a167i0 (adj 0): isolated not needed
+         1795019492.572   484   517 W Looper  : Slow dispatch took 137ms android.ui h=com.android.server.am.ActivityManagerService$UiHandler c=null m=53
+         1795019492.593   484   519 W ActivityManager: setHasOverlayUi called on unknown pid: 4377
+         1795019492.723   484   519 W ActivityTaskManager: Current config: {1.0 310mcc260mnc [en_US] ldltr sw411dp w866dp h381dp 420dpi nrml long land finger qwerty/v/v -nav/h winConfig={ mBounds=Rect(0, 0 - 2400, 1080) mAppBounds=Rect(0, 0 - 2274, 1080) mWindowingMode=fullscreen mDisplayWindowingMode=fullscreen mActivityType=undefined mAlwaysOnTop=undefined mRotation=ROTATION_90} s.163} unchanged for IME proc com.google.android.inputmethod.latin
+         1795019492.724   484   519 I ActivityTaskManager: Config changes=20000480 {1.0 310mcc260mnc [en_US] ldltr sw411dp w411dp h836dp 420dpi nrml long port finger qwerty/v/v -nav/h winConfig={ mBounds=Rect(0, 0 - 1080, 2400) mAppBounds=Rect(0, 0 - 1080, 2274) mWindowingMode=fullscreen mDisplayWindowingMode=fullscreen mActivityType=undefined mAlwaysOnTop=undefined mRotation=ROTATION_0} s.209}
+         1795019492.888   484   519 W ActivityTaskManager: Current config: {1.0 310mcc260mnc [en_US] ldltr sw411dp w866dp h381dp 420dpi nrml long land finger qwerty/v/v -nav/h winConfig={ mBounds=Rect(0, 0 - 2400, 1080) mAppBounds=Rect(0, 0 - 2274, 1080) mWindowingMode=fullscreen mDisplayWindowingMode=fullscreen mActivityType=undefined mAlwaysOnTop=undefined mRotation=ROTATION_90} s.163} unchanged for IME proc com.google.android.inputmethod.latin
+         1795019492.898   484   519 V ActivityTaskManager: Sending to IME proc com.google.android.inputmethod.latin new config {1.0 310mcc260mnc [en_US] ldltr sw411dp w411dp h836dp 420dpi nrml long port finger qwerty/v/v -nav/h winConfig={ mBounds=Rect(0, 0 - 1080, 2400) mAppBounds=Rect(0, 0 - 1080, 2274) mWindowingMode=fullscreen mDisplayWindowingMode=fullscreen mActivityType=undefined mAlwaysOnTop=undefined mRotation=ROTATION_0} s.209}
+         1795019492.898   484   519 W ActivityTaskManager: Current config: {1.0 310mcc260mnc [en_US] ldltr sw411dp w411dp h836dp 420dpi nrml long port finger qwerty/v/v -nav/h winConfig={ mBounds=Rect(0, 0 - 1080, 2400) mAppBounds=Rect(0, 0 - 1080, 2274) mWindowingMode=fullscreen mDisplayWindowingMode=fullscreen mActivityType=undefined mAlwaysOnTop=undefined mRotation=ROTATION_0} s.209} unchanged for IME proc com.google.android.inputmethod.latin
+         1795019492.903   484   520 W system_server: Long monitor contention with owner android.display (519) at android.content.res.Configuration com.android.server.wm.ActivityTaskManagerService.getGlobalConfigurationForPid(int)(ActivityTaskManagerService.java:976) waiters=0 in void com.android.server.wm.WindowAnimator.lambda$new$1$WindowAnimator(long) for 188ms
+         1795019492.958   484   971 W system_server: Long monitor contention with owner android.display (519) at android.content.res.Configuration com.android.server.wm.ActivityTaskManagerService.getGlobalConfigurationForPid(int)(ActivityTaskManagerService.java:976) waiters=1 in boolean com.android.server.wm.WindowManagerService.getInTouchMode() for 214ms
+         1795019493.827   484  2274 I ActivityManager: Force stopping io.github.gabrielxyz404.gabiflix appid=10167 user=0: clear data
+         1795019493.855   484   525 I ActivityManager: Force stopping io.github.gabrielxyz404.gabiflix appid=10167 user=-1: clearApplicationUserData
+         1795019494.112   484   526 I ActivityManager: Start proc 6673:com.android.chrome/u0a128 for broadcast {com.android.chrome/org.chromium.chrome.browser.browserservices.ClientAppBroadcastReceiver}
+         1795019494.171   484  2274 I ActivityTaskManager: START u0 {act=android.intent.action.MAIN cat=[android.intent.category.LAUNCHER] flg=0x10200000 cmp=io.github.gabrielxyz404.gabiflix/.MainActivity} from uid 0
+         1795019494.248   484   526 W ActivityManager: Slow operation: 52ms so far, now at startProcess: returned from zygote!
+         1795019494.258   484   613 I ActivityManager: Killing 5574:com.google.android.gms.ui/u0a123 (adj 985): empty #17
+         1795019494.259   484   526 W ActivityManager: Slow operation: 64ms so far, now at startProcess: done updating battery stats
+         1795019494.259   484   526 W ActivityManager: Slow operation: 64ms so far, now at startProcess: building log message
+         1795019494.259   484   526 I ActivityManager: Start proc 6707:io.github.gabrielxyz404.gabiflix/u0a167 for pre-top-activity {io.github.gabrielxyz404.gabiflix/io.github.gabrielxyz404.gabiflix.MainActivity}
+         1795019494.259   484   526 W ActivityManager: Slow operation: 64ms so far, now at startProcess: starting to update pids map
+         1795019494.259   484   526 W ActivityManager: Slow operation: 64ms so far, now at startProcess: done updating pids map
+         1795019494.264   484   526 I ActivityManager: Start proc 6718:com.google.android.documentsui/u0a83 for broadcast {com.google.android.documentsui/com.android.documentsui.PackageReceiver}
+         1795019494.407   484   971 I ActivityManager: Killing 5521:com.google.android.apps.maps/u0a140 (adj 985): empty #17
+         1795019494.524   484   526 W ActivityManager: Slow operation: 55ms so far, now at startProcess: returned from zygote!
+         1795019494.524   484   526 W ActivityManager: Slow operation: 55ms so far, now at startProcess: done updating battery stats
+         1795019494.524   484   526 W ActivityManager: Slow operation: 55ms so far, now at startProcess: building log message
+         1795019494.524   484   526 I ActivityManager: Start proc 6782:com.google.android.webview:webview_service/u0a143 for service {com.google.android.webview/org.chromium.android_webview.services.VariationsSeedServer}
+         1795019494.524   484   526 W ActivityManager: Slow operation: 56ms so far, now at startProcess: starting to update pids map
+         1795019494.524   484   526 W ActivityManager: Slow operation: 56ms so far, now at startProcess: done updating pids map
+         1795019494.535   484   526 W ActivityManager: Slow operation: 58ms so far, now at startProcess: returned from zygote!
+         1795019494.535   484   526 W ActivityManager: Slow operation: 58ms so far, now at startProcess: done updating battery stats
+         1795019494.535   484   526 W ActivityManager: Slow operation: 58ms so far, now at startProcess: building log message
+         1795019494.535   484   526 I ActivityManager: Start proc 6793:com.google.android.webview:sandboxed_process0:org.chromium.content.app.SandboxedProcessService0:0/u0i1 for  {io.github.gabrielxyz404.gabiflix/org.chromium.content.app.SandboxedProcessService0:0}
+         1795019494.535   484   526 W ActivityManager: Slow operation: 58ms so far, now at startProcess: starting to update pids map
+         1795019494.536   484   526 W ActivityManager: Slow operation: 58ms so far, now at startProcess: done updating pids map
+         1795019495.059   484   524 I ActivityTaskManager: Displayed io.github.gabrielxyz404.gabiflix/.MainActivity: +851ms
+         1795019498.418  6707  6753 I GFCrash : corpo de CRASH_NATIVE:
+         1795019498.418  6707  6753 I GFCrash : FramePlay 1.0 | CRASH_NATIVE | processo io.github.gabrielxyz404.gabiflix:audiocap
+         1795019498.418  6707  6753 I GFCrash : Aparelho: Google sdk_gphone_x86 | Android 11 (API 30) | RAM 1981 MB, livre 1147 MB | tv=false
+         1795019498.418  6707  6753 I GFCrash : ABI: [x86, armeabi-v7a, armeabi] (64 bits: []) processo=32 bits
+         1795019498.418  6707  6753 I GFCrash : Código: 5  estado: 11  importância: 100
+         1795019498.418  6707  6753 I GFCrash : Hora da morte: 2026-11-18 16:29:51
+         1795019498.418  6707  6753 I GFCrash : Descrição: crash
+         1795019498.418  6707  6753 I GFCrash : PSS: 0 kB  RSS: 0 kB
+         1795019498.418  6707  6753 I GFCrash : 
+         1795019498.418  6707  6753 I GFCrash : Registo de queda do sistema (logcat, filtrado):
+         1795019498.418  6707  6753 I GFCrash : (nenhuma linha de queda do pid 6172 no registo do sistema; buffer crash=0 bytes, principal=28 bytes)
+         1795019498.418  6707  6753 I GFCrash : 
+         1795019498.418  6707  6753 I GFCrash : Migalhas do processo audiocap antes da morte:
+         1795019498.418  6707  6753 I GFCrash : (sem migalhas)
+         1795019498.953  6707  6753 I GFCrash : POST CRASH_NATIVE parte 1/1 (568 bytes) -> HTTP 200
+         1795019502.235   484  1918 I ActivityTaskManager: START u0 {flg=0x10000000 cmp=io.github.gabrielxyz404.gabiflix/.PlayerActivity (has extras)} from uid 0
+         1795019502.240   484  1107 W ActivityTaskManager: Tried to set launchTime (0) < mLastActivityLaunchTime (227829)
+         1795019502.306  6707  6707 I GabiFlixPlayer: ciclo: onStart, tocando=false, tempo=-1, escala=0, atraso=0, vista=SurfaceView 0x0, vout=true
+         1795019502.307  6707  6707 I GabiFlixPlayer: ciclo: onResume, tocando=false, tempo=-1, escala=0, atraso=0, vista=SurfaceView 0x0, vout=true
+         1795019502.526  6707  6894 I GabiFlixPlayer: hash=7ca135ceed9da48f tamanho=39670384 arquivo=clip.mkv
+         1795019502.526  6707  6894 I GabiFlixPlayer: Hash calculado, mas a busca de legendas falhou
+         1795019502.526  6707  6894 I GabiFlixPlayer: candidatas para baixar: 1 (do site: 1)
+         1795019502.739  6707  6894 I GabiFlixPlayer: legendas PT válidas: 1 de 1; referências baixadas: 0
+         1795019502.867  6707  6894 I GabiFlixPlayer: alinhamento com 0 referência(s):
+         1795019502.867  6707  6894 I GabiFlixPlayer:   sem referência (nem outro idioma, nem PT do hash) e menos de 2 PT para comparar: ranking antigo
+         1795019502.867  6707  6894 I GabiFlixPlayer:   alinhadas: 0
+         1795019503.006   484   524 I ActivityTaskManager: Displayed io.github.gabrielxyz404.gabiflix/.PlayerActivity: +770ms
+         1795019503.054   484   519 W ActivityTaskManager: Current config: {1.0 310mcc260mnc [en_US] ldltr sw411dp w411dp h836dp 420dpi nrml long port finger qwerty/v/v -nav/h winConfig={ mBounds=Rect(0, 0 - 1080, 2400) mAppBounds=Rect(0, 0 - 1080, 2274) mWindowingMode=fullscreen mDisplayWindowingMode=fullscreen mActivityType=undefined mAlwaysOnTop=undefined mRotation=ROTATION_0} s.209} unchanged for IME proc com.google.android.inputmethod.latin
+         1795019503.054   484   519 I ActivityTaskManager: Config changes=20000480 {1.0 310mcc260mnc [en_US] ldltr sw411dp w866dp h381dp 420dpi nrml long land finger qwerty/v/v -nav/h winConfig={ mBounds=Rect(0, 0 - 2400, 1080) mAppBounds=Rect(0, 0 - 2274, 1080) mWindowingMode=fullscreen mDisplayWindowingMode=fullscreen mActivityType=undefined mAlwaysOnTop=undefined mRotation=ROTATION_90} s.244}
+         1795019503.059   484   519 W ActivityTaskManager: Current config: {1.0 310mcc260mnc [en_US] ldltr sw411dp w411dp h836dp 420dpi nrml long port finger qwerty/v/v -nav/h winConfig={ mBounds=Rect(0, 0 - 1080, 2400) mAppBounds=Rect(0, 0 - 1080, 2274) mWindowingMode=fullscreen mDisplayWindowingMode=fullscreen mActivityType=undefined mAlwaysOnTop=undefined mRotation=ROTATION_0} s.209} unchanged for IME proc com.google.android.inputmethod.latin
+         1795019503.061   484   519 V ActivityTaskManager: Sending to IME proc com.google.android.inputmethod.latin new config {1.0 310mcc260mnc [en_US] ldltr sw411dp w866dp h381dp 420dpi nrml long land finger qwerty/v/v -nav/h winConfig={ mBounds=Rect(0, 0 - 2400, 1080) mAppBounds=Rect(0, 0 - 2274, 1080) mWindowingMode=fullscreen mDisplayWindowingMode=fullscreen mActivityType=undefined mAlwaysOnTop=undefined mRotation=ROTATION_90} s.244}
+         1795019503.078   484   519 W ActivityTaskManager: Current config: {1.0 310mcc260mnc [en_US] ldltr sw411dp w866dp h381dp 420dpi nrml long land finger qwerty/v/v -nav/h winConfig={ mBounds=Rect(0, 0 - 2400, 1080) mAppBounds=Rect(0, 0 - 2274, 1080) mWindowingMode=fullscreen mDisplayWindowingMode=fullscreen mActivityType=undefined mAlwaysOnTop=undefined mRotation=ROTATION_90} s.244} unchanged for IME proc com.google.android.inputmethod.latin
+         1795019503.679  6707  6707 I GabiFlixPlayer: ciclo: evento Vout, saídas=1
+         1795019505.429  6707  6707 I GabiFlixPlayer: vistas do vídeo: SurfaceView(vídeo) SurfaceView
+         1795019505.429  6707  6707 I GabiFlixPlayer: AUDIOSYNC pronto (sem limite de dados; automático=true, começa 25 s depois de a legenda ficar ativa, reverifica a cada 600 s)
+         1795019505.462  6707  6707 I GabiFlixPlayer: legenda PT embutida: não há
+         1795019505.465  6707  6707 I GabiFlixPlayer: ranking das legendas:
+         1795019505.465  6707  6707 I GabiFlixPlayer:   referência de fim=0ms (sem referência), duração=1200023ms
+         1795019505.465  6707  6707 I GabiFlixPlayer:   #0 fim=6111228ms hash=false corrigida=false nota=0.3000
+         1795019505.466  6707  6707 I GabiFlixPlayer: escolhida: candidata #0; melhor baixada: #0 alinhada=false nota=0.00 deslocamento=0ms hash=false corrigida=false; 1 no menu
+         1795019505.477  6707  6707 I GabiFlixPlayer: atraso da legenda ativa (d3:u|h:7ca135ceed9da48f|http://10.0.2.2:8000/mais3.srt#raw): 0 ms
+         1795019506.003  6707  6707 I GabiFlixPlayer: legenda do app: 1458 falas da faixa ativa
+         1795019506.006  6707  6707 I GabiFlixPlayer: legenda do app: ligada
+         1795019506.450  6707  6707 I GabiFlixPlayer: AUDIOSYNC estado: st=0 executando=false tocando=true carregando=false faixa=2 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 2:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=132MB java=6/512MB nativo=64MB livre=1108MB limiar=144MB poucaMemoria=false
+         1795019506.450  6707  6707 I GabiFlixPlayer: AUDIOSYNC legenda ativa: d3:u|h:7ca135ceed9da48f|http://10.0.2.2:8000/mais3.srt#raw
+         1795019508.848   484   526 I ActivityManager: Start proc 6920:com.google.android.gms.unstable/u0a123 for service {com.google.android.gms/com.google.android.gms.droidguard.DroidGuardService}
+         1795019509.492  6920  6937 E libc    : Access denied finding property "persist.adb.tls_server.enable"
+         1795019509.492  6920  6937 E libc    : Access denied finding property "service.adb.tls.port"
+         1795019514.540   484   971 I ActivityManager: Killing 5644:com.google.android.apps.docs/u0a144 (adj 975): empty #17
+         1795019515.820   484  1126 I ActivityManager: Killing 5421:com.google.android.configupdater/u0a120 (adj 975): empty #17
+         1795019526.484  6707  6707 I GabiFlixPlayer: AUDIOSYNC estado: st=0 executando=false tocando=true carregando=false faixa=2 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 2:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=133MB java=7/512MB nativo=65MB livre=1119MB limiar=144MB poucaMemoria=false
+         1795019535.878   484  1126 I ActivityManager: Killing 6331:com.google.android.apps.wallpaper/u0a151 (adj 975): empty #17
+         1795019536.489  6707  6707 I GabiFlixPlayer: AUDIOSYNC antes da análise: saúde da reprodução: amostras=30 paradas=0 razão_mínima=0.76 carregando=0 quadros_perdidos=10
+         1795019536.489  6707  6707 I GabiFlixPlayer: AUDIOSYNC começando: posição 32 s, duração 1200 s, atraso atual 0 ms, faixa de áudio 1
+         1795019536.591   484   526 I ActivityManager: Start proc 7005:io.github.gabrielxyz404.gabiflix:audiocap/u0a167 for service {io.github.gabrielxyz404.gabiflix/io.github.gabrielxyz404.gabiflix.AudioCapService}
+         1795019539.204  6707  7002 I GabiFlixPlayer: AUDIOSYNC captura 275 s +90 s: 90.06 s de PCM em 2.62 s (fim) leitura=3 MB | usou a faixa -1 (pedida 1) de []
+         1795019539.660  7005  7005 F libc    : Fatal signal 11 (SIGSEGV), code 0 (SI_USER) in tid 7005 (biflix:audiocap), pid 7005 (biflix:audiocap)
+         1795019539.719  7046  7046 F DEBUG   : *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** ***
+         1795019539.719  7046  7046 F DEBUG   : Build fingerprint: 'google/sdk_gphone_x86/generic_x86_arm:11/RSR1.240422.006/12134477:userdebug/dev-keys'
+         1795019539.719  7046  7046 F DEBUG   : Revision: '0'
+         1795019539.719  7046  7046 F DEBUG   : ABI: 'x86'
+         1795019539.719  7046  7046 F DEBUG   : Timestamp: 2026-11-18 16:32:19+0000
+         1795019539.719  7046  7046 F DEBUG   : pid: 7005, tid: 7005, name: biflix:audiocap  >>> io.github.gabrielxyz404.gabiflix:audiocap <<<
+         1795019539.719  7046  7046 F DEBUG   : uid: 10167
+         1795019539.719  7046  7046 F DEBUG   : signal 11 (SIGSEGV), code 0 (SI_USER), fault addr --------
+         1795019539.719  7046  7046 F DEBUG   :     eax fffffffc  ebx 0000002f  ecx ffb94ca0  edx 00000010
+         1795019539.720  7046  7046 F DEBUG   :     edi 00000000  esi ffffffff
+         1795019539.720  7046  7046 F DEBUG   :     ebp 00000008  esp ffb94bd0  eip f04d2b89
+         1795019539.846  7046  7046 F DEBUG   : backtrace:
+         1795019539.846  7046  7046 F DEBUG   :       #00 pc 00000b89  [vdso] (__kernel_vsyscall+9)
+         1795019539.846  7046  7046 F DEBUG   :       #01 pc 000cf2bb  /apex/com.android.runtime/lib/bionic/libc.so (__epoll_pwait+43) (BuildId: f10845bd3cfdcd0076d81b46b7a06459)
+         1795019539.846  7046  7046 F DEBUG   :       #02 pc 00088f8d  /apex/com.android.runtime/lib/bionic/libc.so (epoll_wait+45) (BuildId: f10845bd3cfdcd0076d81b46b7a06459)
+         1795019539.846  7046  7046 F DEBUG   :       #03 pc 0001a003  /system/lib/libutils.so (android::Looper::pollInner(int)+259) (BuildId: ab4be013cda31e8c45d48aa23a89d0f8)
+         1795019539.846  7046  7046 F DEBUG   :       #04 pc 00019e96  /system/lib/libutils.so (android::Looper::pollOnce(int, int*, int*, void**)+118) (BuildId: ab4be013cda31e8c45d48aa23a89d0f8)
+         1795019539.846  7046  7046 F DEBUG   :       #05 pc 0010ef8b  /system/lib/libandroid_runtime.so (android::android_os_MessageQueue_nativePollOnce(_JNIEnv*, _jobject*, long long, int)+59) (BuildId: 93b8a76261a5d972cc69b8b7c6e74be9)
+         1795019539.846  7046  7046 F DEBUG   :       #06 pc 0021be48  /system/framework/x86/boot-framework.oat (art_jni_trampoline+136) (BuildId: f400323f788c32a925e5a0a4af64957ac870d5f8)
+         1795019539.846  7046  7046 F DEBUG   :       #07 pc 00639e80  /system/framework/x86/boot-framework.oat (android.os.MessageQueue.next+224) (BuildId: f400323f788c32a925e5a0a4af64957ac870d5f8)
+         1795019539.846  7046  7046 F DEBUG   :       #08 pc 00636550  /system/framework/x86/boot-framework.oat (android.os.Looper.loop+592) (BuildId: f400323f788c32a925e5a0a4af64957ac870d5f8)
+         1795019539.847  7046  7046 F DEBUG   :       #09 pc 0040581a  /system/framework/x86/boot-framework.oat (android.app.ActivityThread.main+746) (BuildId: f400323f788c32a925e5a0a4af64957ac870d5f8)
+         1795019539.847  7046  7046 F DEBUG   :       #10 pc 0013bc72  /apex/com.android.art/lib/libart.so (art_quick_invoke_static_stub+418) (BuildId: bf39832c4acabbc939d5c516b6f1d211)
+         1795019539.847  7046  7046 F DEBUG   :       #11 pc 001d0512  /apex/com.android.art/lib/libart.so (art::ArtMethod::Invoke(art::Thread*, unsigned int*, unsigned int, art::JValue*, char const*)+258) (BuildId: bf39832c4acabbc939d5c516b6f1d211)
+         1795019539.847  7046  7046 F DEBUG   :       #12 pc 00631e68  /apex/com.android.art/lib/libart.so (art::InvokeMethod(art::ScopedObjectAccessAlreadyRunnable const&, _jobject*, _jobject*, _jobject*, unsigned int)+1464) (BuildId: bf39832c4acabbc939d5c516b6f1d211)
+         1795019539.847  7046  7046 F DEBUG   :       #13 pc 0058a500  /apex/com.android.art/lib/libart.so (art::Method_invoke(_JNIEnv*, _jobject*, _jobject*, _jobjectArray*)+80) (BuildId: bf39832c4acabbc939d5c516b6f1d211)
+         1795019539.847  7046  7046 F DEBUG   :       #14 pc 0008a778  /apex/com.android.art/javalib/x86/boot.oat (art_jni_trampoline+168) (BuildId: b386118502376442aa402e8d28c29e95a6eb8614)
+         1795019539.847  7046  7046 F DEBUG   :       #15 pc 0088ac49  /system/framework/x86/boot-framework.oat (com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run+137) (BuildId: f400323f788c32a925e5a0a4af64957ac870d5f8)
+         1795019539.847  7046  7046 F DEBUG   :       #16 pc 00893656  /system/framework/x86/boot-framework.oat (com.android.internal.os.ZygoteInit.main+2102) (BuildId: f400323f788c32a925e5a0a4af64957ac870d5f8)
+         1795019539.847  7046  7046 F DEBUG   :       #17 pc 0013bc72  /apex/com.android.art/lib/libart.so (art_quick_invoke_static_stub+418) (BuildId: bf39832c4acabbc939d5c516b6f1d211)
+         1795019539.847  7046  7046 F DEBUG   :       #18 pc 001d0512  /apex/com.android.art/lib/libart.so (art::ArtMethod::Invoke(art::Thread*, unsigned int*, unsigned int, art::JValue*, char const*)+258) (BuildId: bf39832c4acabbc939d5c516b6f1d211)
+         1795019539.847  7046  7046 F DEBUG   :       #19 pc 006304b3  /apex/com.android.art/lib/libart.so (art::JValue art::InvokeWithVarArgs<art::ArtMethod*>(art::ScopedObjectAccessAlreadyRunnable const&, _jobject*, art::ArtMethod*, char*)+579) (BuildId: bf39832c4acabbc939d5c516b6f1d211)
+         1795019539.847  7046  7046 F DEBUG   :       #20 pc 00630985  /apex/com.android.art/lib/libart.so (art::JValue art::InvokeWithVarArgs<_jmethodID*>(art::ScopedObjectAccessAlreadyRunnable const&, _jobject*, _jmethodID*, char*)+85) (BuildId: bf39832c4acabbc939d5c516b6f1d211)
+         1795019539.847  7046  7046 F DEBUG   :       #21 pc 004cf63f  /apex/com.android.art/lib/libart.so (art::JNI<true>::CallStaticVoidMethodV(_JNIEnv*, _jclass*, _jmethodID*, char*)+735) (BuildId: bf39832c4acabbc939d5c516b6f1d211)
+         1795019539.847  7046  7046 F DEBUG   :       #22 pc 0008f90e  /system/lib/libandroid_runtime.so (_JNIEnv::CallStaticVoidMethod(_jclass*, _jmethodID*, ...)+62) (BuildId: 93b8a76261a5d972cc69b8b7c6e74be9)
+         1795019539.847  7046  7046 F DEBUG   :       #23 pc 00098c8e  /system/lib/libandroid_runtime.so (android::AndroidRuntime::start(char const*, android::Vector<android::String8> const&, bool)+910) (BuildId: 93b8a76261a5d972cc69b8b7c6e74be9)
+         1795019539.847  7046  7046 F DEBUG   :       #24 pc 00003804  /system/bin/app_process32 (main+1588) (BuildId: c5eedbfb6130af84c3db8e121fb1202e)
+         1795019539.847  7046  7046 F DEBUG   :       #25 pc 000522d3  /apex/com.android.runtime/lib/bionic/libc.so (__libc_init+115) (BuildId: f10845bd3cfdcd0076d81b46b7a06459)
+         1795019540.102   484  1983 I ActivityManager: Process io.github.gabrielxyz404.gabiflix:audiocap (pid 7005) has died: vis BTOP
+         1795019540.102   484  1983 W ActivityManager: Scheduling restart of crashed service io.github.gabrielxyz404.gabiflix/.AudioCapService in 1000ms for connection
+         1795019540.103  6707  6707 I GabiFlixPlayer: AUDIOSYNC o processo de captura caiu (desconectou) durante: vad cfg=0; o filme continua. Última etapa: 16:32:19.656 pid=7005 TESTE: queda nativa forçada no VAD (modo 0)
+         1795019540.103  6707  7002 I GabiFlixPlayer: AUDIOSYNC o Silero derrubou o processo no modo normal; tento o modo 1 (seguro) na hora
+         1795019541.651   484   526 I ActivityManager: Start proc 7062:io.github.gabrielxyz404.gabiflix:audiocap/u0a167 for service {io.github.gabrielxyz404.gabiflix/io.github.gabrielxyz404.gabiflix.AudioCapService}
+         1795019541.683  6707  7059 I GFCrash : corpo de CAPTURA_CAIU:
+         1795019541.683  6707  7059 I GFCrash : FramePlay 1.0 | CAPTURA_CAIU | processo audiocap
+         1795019541.683  6707  7059 I GFCrash : Aparelho: Google sdk_gphone_x86 | Android 11 (API 30) | RAM 1981 MB, livre 1145 MB | tv=false
+         1795019541.683  6707  7059 I GFCrash : ABI: [x86, armeabi-v7a, armeabi] (64 bits: []) processo=32 bits
+         1795019541.683  6707  7059 I GFCrash : Etapa em curso (processo principal): vad  vad cfg=0 (desconectou)
+         1795019541.683  6707  7059 I GFCrash : Última etapa marcada pelo processo que caiu: 16:32:19.656 pid=7005 TESTE: queda nativa forçada no VAD (modo 0)
+         1795019541.683  6707  7059 I GFCrash : Hora da queda: 2026-11-18 16:32:20
+         1795019541.683  6707  7059 I GFCrash : Motivo da morte (getHistoricalProcessExitReasons): CRASH_NATIVE (5)  estado: 11  pid: 7005  importância: 100
+         1795019541.683  6707  7059 I GFCrash : Descrição: crash  PSS: 0 kB  RSS: 0 kB
+         1795019541.683  6707  7059 I GFCrash : 
+         1795019541.683  6707  7059 I GFCrash : Registo de queda do sistema (logcat, filtrado, pid 7005):
+         1795019541.683  6707  7059 I GFCrash : 11-18 16:32:19.660 F/libc    ( 7005): Fatal signal 11 (SIGSEGV), code 0 (SI_USER) in tid 7005 (biflix:audiocap), pid 7005 (biflix:audiocap)
+         1795019541.683  6707  7059 I GFCrash : 11-18 16:32:19.719 F/DEBUG   ( 7046): pid: 7005, tid: 7005, name: biflix:audiocap  >>> io.github.gabrielxyz404.gabiflix:audiocap <<<
+         1795019541.683  6707  7059 I GFCrash : 11-18 16:32:19.719 F/DEBUG   ( 7046): signal 11 (SIGSEGV), code 0 (SI_USER), fault addr --------
+         1795019541.683  6707  7059 I GFCrash : 11-18 16:32:19.846 F/DEBUG   ( 7046): backtrace:
+         1795019541.683  6707  7059 I GFCrash : 11-18 16:32:19.846 F/DEBUG   ( 7046):       #00 pc 00000b89  [vdso] (__kernel_vsyscall+9)
+         1795019541.683  6707  7059 I GFCrash : 11-18 16:32:19.846 F/DEBUG   ( 7046):       #01 pc 000cf2bb  /apex/com.android.runtime/lib/bionic/libc.so (__epoll_pwait+43)
+         1795019541.683  6707  7059 I GFCrash : 11-18 16:32:19.846 F/DEBUG   ( 7046):       #02 pc 00088f8d  /apex/com.android.runtime/lib/bionic/libc.so (epoll_wait+45)
+         1795019541.683  6707  7059 I GFCrash : 11-18 16:32:19.846 F/DEBUG   ( 7046):       #03 pc 0001a003  /system/lib/libutils.so (android::Looper::pollInner(int)+259)
+         1795019541.683  6707  7059 I GFCrash : 11-18 16:32:19.846 F/DEBUG   ( 7046):       #04 pc 00019e96  /system/lib/libutils.so (android::Looper::pollOnce(int, int*, int*, void**)+118)
+         1795019541.683  6707  7059 I GFCrash : 11-18 16:32:19.846 F/DEBUG   ( 7046):       #05 pc 0010ef8b  /system/lib/libandroid_runtime.so (android::android_os_MessageQueue_nativePollOnce(_JNIEnv*, _jobject*, long long, int)+59)
+         1795019541.683  6707  7059 I GFCrash : 11-18 16:32:19.846 F/DEBUG   ( 7046):       #06 pc 0021be48  /system/framework/x86/boot-framework.oat (art_jni_trampoline+136)
+         1795019541.683  6707  7059 I GFCrash : 11-18 16:32:19.846 F/DEBUG   ( 7046):       #07 pc 00639e80  /system/framework/x86/boot-framework.oat (android.os.MessageQueue.next+224)
+         1795019541.683  6707  7059 I GFCrash : 11-18 16:32:19.846 F/DEBUG   ( 7046):       #08 pc 00636550  /system/framework/x86/boot-framework.oat (android.os.Looper.loop+592)
+         1795019541.683  6707  7059 I GFCrash : 11-18 16:32:19.847 F/DEBUG   ( 7046):       #09 pc 0040581a  /system/framework/x86/boot-framework.oat (android.app.ActivityThread.main+746)
+         1795019541.683  6707  7059 I GFCrash : 11-18 16:32:19.847 F/DEBUG   ( 7046):       #10 pc 0013bc72  /apex/com.android.art/lib/libart.so (art_quick_invoke_static_stub+418)
+         1795019541.683  6707  7059 I GFCrash : 11-18 16:32:19.847 F/DEBUG   ( 7046):       #11 pc 001d0512  /apex/com.android.art/lib/libart.so (art::ArtMethod::Invoke(art::Thread*, unsigned int*, unsigned int, art::JValue*, char const*)+258)
+         1795019541.683  6707  7059 I GFCrash : 11-18 16:32:19.847 F/DEBUG   ( 7046):       #12 pc 00631e68  /apex/com.android.art/lib/libart.so (art::InvokeMethod(art::ScopedObjectAccessAlreadyRunnable const&, _jobject*, _jobject*, _jobject*, unsigned int)+1464)
+         1795019541.683  6707  7059 I GFCrash : 11-18 16:32:19.847 F/DEBUG   ( 7046):       #13 pc 0058a500  /apex/com.android.art/lib/libart.so (art::Method_invoke(_JNIEnv*, _jobject*, _jobject*, _jobjectArray*)+80)
+         1795019541.683  6707  7059 I GFCrash : 11-18 16:32:19.847 F/DEBUG   ( 7046):       #14 pc 0008a778  /apex/com.android.art/javalib/x86/boot.oat (art_jni_trampoline+168)
+         1795019541.683  6707  7059 I GFCrash : 11-18 16:32:19.847 F/DEBUG   ( 7046):       #15 pc 0088ac49  /system/framework/x86/boot-framework.oat (com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run+137)
+         1795019541.683  6707  7059 I GFCrash : 11-18 16:32:19.847 F/DEBUG   ( 7046):       #16 pc 00893656  /system/framework/x86/boot-framework.oat (com.android.internal.os.ZygoteInit.main+2102)
+         1795019541.683  6707  7059 I GFCrash : 11-18 16:32:19.847 F/DEBUG   ( 7046):       #17 pc 0013bc72  /apex/com.android.art/lib/libart.so (art_quick_invoke_static_stub+418)
+         1795019541.683  6707  7059 I GFCrash : 11-18 16:32:19.847 F/DEBUG   ( 7046):       #18 pc 001d0512  /apex/com.android.art/lib/libart.so (art::ArtMethod::Invoke(art::Thread*, unsigned int*, unsigned int, art::JValue*, char const*)+258)
+         1795019541.683  6707  7059 I GFCrash : 11-18 16:32:19.847 F/DEBUG   ( 7046):       #19 pc 006304b3  /apex/com.android.art/lib/libart.so (art::JValue art::InvokeWithVarArgs<art::ArtMethod*>(art::ScopedObjectAccessAlreadyRunnable const&, _jobject*, art::ArtMethod*, char*)+579)
+         1795019541.683  6707  7059 I GFCrash : 11-18 16:32:19.847 F/DEBUG   ( 7046):       #20 pc 00630985  /apex/com.android.art/lib/libart.so (art::JValue art::InvokeWithVarArgs<_jmethodID*>(art::ScopedObjectAccessAlreadyRunnable const&, _jobject*, _jmethodID*, char*)+85)
+         1795019541.683  6707  7059 I GFCrash : 11-18 16:32:19.847 F/DEBUG   ( 7046):       #21 pc 004cf63f  /apex/com.android.art/lib/libart.so (art::JNI<true>::CallStaticVoidMethodV(_JNIEnv*, _jclass*, _jmethodID*, char*)+735)
+         1795019541.683  6707  7059 I GFCrash : 11-18 16:32:19.847 F/DEBUG   ( 7046):       #22 pc 0008f90e  /system/lib/libandroid_runtime.so (_JNIEnv::CallStaticVoidMethod(_jclass*, _jmethodID*, ...)+62)
+         1795019541.683  6707  7059 I GFCrash : 11-18 16:32:19.847 F/DEBUG   ( 7046):       #23 pc 00098c8e  /system/lib/libandroid_runtime.so (android::AndroidRuntime::start(char const*, android::Vector<android::String8> const&, bool)+910)
+         1795019541.683  6707  7059 I GFCrash : 11-18 16:32:19.847 F/DEBUG   ( 7046):       #24 pc 00003804  /system/bin/app_process32 (main+1588)
+         1795019541.683  6707  7059 I GFCrash : 11-18 16:32:19.847 F/DEBUG   ( 7046):       #25 pc 000522d3  /apex/com.android.runtime/lib/bionic/libc.so (__libc_init+115)
+         1795019541.683  6707  7059 I GFCrash : 
+         1795019541.683  6707  7059 I GFCrash : 
+         1795019541.683  6707  7059 I GFCrash : Etapas marcadas (últimas):
+         1795019541.683  6707  7059 I GFCrash : 16:32:16.635 pid=7005 captura cfg=0 criando o libVLC (nativo)
+         1795019541.683  6707  7059 I GFCrash : 16:32:16.672 pid=7005 captura cfg=0 tocando a janela 275 s (nativo: demux, decodificador, transcode)
+         1795019541.683  6707  7059 I GFCrash : 16:32:18.848 pid=7005 captura cfg=0 terminou (fim)
+         1795019541.683  6707  7059 I GFCrash : 16:32:19.268 pid=7005 vad começando: lendo o PCM
+         1795019541.683  6707  7059 I GFCrash : 16:32:19.287 pid=7005 vad modo 0 lendo o modelo silero_vad.onnx
+         1795019541.683  6707  7059 I GFCrash : 16:32:19.346 pid=7005 vad modo 0 criando a sessão do ONNX Runtime (carrega as bibliotecas nativas)
+         1795019541.683  6707  7059 I GFCrash : 16:32:19.622 pid=7005 vad modo 0 ONNX Runtime inferência (nativo), 90 s de áudio
+         1795019541.683  6707  7059 I GFCrash : 16:32:19.656 pid=7005 TESTE: queda nativa forçada no VAD (modo 0)
+         1795019541.683  6707  7059 I GFCrash : 
+         1795019541.683  6707  7059 I GFCrash : Migalhas do processo que caiu:
+         1795019541.683  6707  7059 I GFCrash : 16:32:16.630 processo audiocap iniciado, versão 1.0, pid 7005
+         1795019541.683  6707  7059 I GFCrash : 16:32:16.635 ETAPA captura cfg=0 criando o libVLC (nativo)
+         1795019541.683  6707  7059 I GFCrash : 16:32:16.672 ETAPA captura cfg=0 tocando a janela 275 s (nativo: demux, decodificador, transcode)
+         1795019541.683  6707  7059 I GFCrash : 16:32:18.844 ETAPA captura cfg=0 terminou (fim)
+         1795019541.683  6707  7059 I GFCrash : 16:32:19.268 ETAPA vad começando: lendo o PCM
+         1795019541.683  6707  7059 I GFCrash : 16:32:19.287 ETAPA vad modo 0 lendo o modelo silero_vad.onnx
+         1795019541.683  6707  7059 I GFCrash : 16:32:19.345 ETAPA vad modo 0 criando a sessão do ONNX Runtime (carrega as bibliotecas nativas)
+         1795019541.683  6707  7059 I GFCrash : 16:32:19.622 ETAPA vad modo 0 ONNX Runtime inferência (nativo), 90 s de áudio
+         1795019541.683  6707  7059 I GFCrash : 16:32:19.656 ETAPA TESTE: queda nativa forçada no VAD (modo 0)
+         1795019541.841  7062  7062 F libc    : Fatal signal 11 (SIGSEGV), code 0 (SI_USER) in tid 7062 (biflix:audiocap), pid 7062 (biflix:audiocap)
+         1795019541.872  7093  7093 F DEBUG   : *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** ***
+         1795019541.872  7093  7093 F DEBUG   : Build fingerprint: 'google/sdk_gphone_x86/generic_x86_arm:11/RSR1.240422.006/12134477:userdebug/dev-keys'
+         1795019541.872  7093  7093 F DEBUG   : Revision: '0'
+         1795019541.872  7093  7093 F DEBUG   : ABI: 'x86'
+         1795019541.872  7093  7093 F DEBUG   : Timestamp: 2026-11-18 16:32:21+0000
+         1795019541.872  7093  7093 F DEBUG   : pid: 7062, tid: 7062, name: biflix:audiocap  >>> io.github.gabrielxyz404.gabiflix:audiocap <<<
+         1795019541.872  7093  7093 F DEBUG   : uid: 10167
+         1795019541.872  7093  7093 F DEBUG   : signal 11 (SIGSEGV), code 0 (SI_USER), fault addr --------
+         1795019541.872  7093  7093 F DEBUG   :     eax fffffffc  ebx 0000002f  ecx ffb94ca0  edx 00000010
+         1795019541.872  7093  7093 F DEBUG   :     edi 00000000  esi ffffffff
+         1795019541.872  7093  7093 F DEBUG   :     ebp 00000008  esp ffb94bd0  eip f04d2b89
+         1795019541.987  7093  7093 F DEBUG   : backtrace:
+         1795019541.987  7093  7093 F DEBUG   :       #00 pc 00000b89  [vdso] (__kernel_vsyscall+9)
+         1795019541.987  7093  7093 F DEBUG   :       #01 pc 000cf2bb  /apex/com.android.runtime/lib/bionic/libc.so (__epoll_pwait+43) (BuildId: f10845bd3cfdcd0076d81b46b7a06459)
+         1795019541.987  7093  7093 F DEBUG   :       #02 pc 00088f8d  /apex/com.android.runtime/lib/bionic/libc.so (epoll_wait+45) (BuildId: f10845bd3cfdcd0076d81b46b7a06459)
+         1795019541.989  7093  7093 F DEBUG   :       #03 pc 0001a003  /system/lib/libutils.so (android::Looper::pollInner(int)+259) (BuildId: ab4be013cda31e8c45d48aa23a89d0f8)
+         1795019541.989  7093  7093 F DEBUG   :       #04 pc 00019e96  /system/lib/libutils.so (android::Looper::pollOnce(int, int*, int*, void**)+118) (BuildId: ab4be013cda31e8c45d48aa23a89d0f8)
+         1795019541.990  7093  7093 F DEBUG   :       #05 pc 0010ef8b  /system/lib/libandroid_runtime.so (android::android_os_MessageQueue_nativePollOnce(_JNIEnv*, _jobject*, long long, int)+59) (BuildId: 93b8a76261a5d972cc69b8b7c6e74be9)
+         1795019541.990  7093  7093 F DEBUG   :       #06 pc 0021be48  /system/framework/x86/boot-framework.oat (art_jni_trampoline+136) (BuildId: f400323f788c32a925e5a0a4af64957ac870d5f8)
+         1795019541.990  7093  7093 F DEBUG   :       #07 pc 00639e80  /system/framework/x86/boot-framework.oat (android.os.MessageQueue.next+224) (BuildId: f400323f788c32a925e5a0a4af64957ac870d5f8)
+         1795019541.990  7093  7093 F DEBUG   :       #08 pc 00636550  /system/framework/x86/boot-framework.oat (android.os.Looper.loop+592) (BuildId: f400323f788c32a925e5a0a4af64957ac870d5f8)
+         1795019541.990  7093  7093 F DEBUG   :       #09 pc 0040581a  /system/framework/x86/boot-framework.oat (android.app.ActivityThread.main+746) (BuildId: f400323f788c32a925e5a0a4af64957ac870d5f8)
+         1795019541.990  7093  7093 F DEBUG   :       #10 pc 0013bc72  /apex/com.android.art/lib/libart.so (art_quick_invoke_static_stub+418) (BuildId: bf39832c4acabbc939d5c516b6f1d211)
+         1795019541.990  7093  7093 F DEBUG   :       #11 pc 001d0512  /apex/com.android.art/lib/libart.so (art::ArtMethod::Invoke(art::Thread*, unsigned int*, unsigned int, art::JValue*, char const*)+258) (BuildId: bf39832c4acabbc939d5c516b6f1d211)
+         1795019541.990  7093  7093 F DEBUG   :       #12 pc 00631e68  /apex/com.android.art/lib/libart.so (art::InvokeMethod(art::ScopedObjectAccessAlreadyRunnable const&, _jobject*, _jobject*, _jobject*, unsigned int)+1464) (BuildId: bf39832c4acabbc939d5c516b6f1d211)
+         1795019541.990  7093  7093 F DEBUG   :       #13 pc 0058a500  /apex/com.android.art/lib/libart.so (art::Method_invoke(_JNIEnv*, _jobject*, _jobject*, _jobjectArray*)+80) (BuildId: bf39832c4acabbc939d5c516b6f1d211)
+         1795019541.990  7093  7093 F DEBUG   :       #14 pc 0008a778  /apex/com.android.art/javalib/x86/boot.oat (art_jni_trampoline+168) (BuildId: b386118502376442aa402e8d28c29e95a6eb8614)
+         1795019541.990  7093  7093 F DEBUG   :       #15 pc 0088ac49  /system/framework/x86/boot-framework.oat (com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run+137) (BuildId: f400323f788c32a925e5a0a4af64957ac870d5f8)
+         1795019541.990  7093  7093 F DEBUG   :       #16 pc 00893656  /system/framework/x86/boot-framework.oat (com.android.internal.os.ZygoteInit.main+2102) (BuildId: f400323f788c32a925e5a0a4af64957ac870d5f8)
+         1795019541.990  7093  7093 F DEBUG   :       #17 pc 0013bc72  /apex/com.android.art/lib/libart.so (art_quick_invoke_static_stub+418) (BuildId: bf39832c4acabbc939d5c516b6f1d211)
+         1795019541.990  7093  7093 F DEBUG   :       #18 pc 001d0512  /apex/com.android.art/lib/libart.so (art::ArtMethod::Invoke(art::Thread*, unsigned int*, unsigned int, art::JValue*, char const*)+258) (BuildId: bf39832c4acabbc939d5c516b6f1d211)
+         1795019541.990  7093  7093 F DEBUG   :       #19 pc 006304b3  /apex/com.android.art/lib/libart.so (art::JValue art::InvokeWithVarArgs<art::ArtMethod*>(art::ScopedObjectAccessAlreadyRunnable const&, _jobject*, art::ArtMethod*, char*)+579) (BuildId: bf39832c4acabbc939d5c516b6f1d211)
+         1795019541.990  7093  7093 F DEBUG   :       #20 pc 00630985  /apex/com.android.art/lib/libart.so (art::JValue art::InvokeWithVarArgs<_jmethodID*>(art::ScopedObjectAccessAlreadyRunnable const&, _jobject*, _jmethodID*, char*)+85) (BuildId: bf39832c4acabbc939d5c516b6f1d211)
+         1795019541.990  7093  7093 F DEBUG   :       #21 pc 004cf63f  /apex/com.android.art/lib/libart.so (art::JNI<true>::CallStaticVoidMethodV(_JNIEnv*, _jclass*, _jmethodID*, char*)+735) (BuildId: bf39832c4acabbc939d5c516b6f1d211)
+         1795019541.990  7093  7093 F DEBUG   :       #22 pc 0008f90e  /system/lib/libandroid_runtime.so (_JNIEnv::CallStaticVoidMethod(_jclass*, _jmethodID*, ...)+62) (BuildId: 93b8a76261a5d972cc69b8b7c6e74be9)
+         1795019541.990  7093  7093 F DEBUG   :       #23 pc 00098c8e  /system/lib/libandroid_runtime.so (android::AndroidRuntime::start(char const*, android::Vector<android::String8> const&, bool)+910) (BuildId: 93b8a76261a5d972cc69b8b7c6e74be9)
+         1795019541.990  7093  7093 F DEBUG   :       #24 pc 00003804  /system/bin/app_process32 (main+1588) (BuildId: c5eedbfb6130af84c3db8e121fb1202e)
+         1795019541.990  7093  7093 F DEBUG   :       #25 pc 000522d3  /apex/com.android.runtime/lib/bionic/libc.so (__libc_init+115) (BuildId: f10845bd3cfdcd0076d81b46b7a06459)
+         1795019542.175   484  1983 I ActivityManager: Process io.github.gabrielxyz404.gabiflix:audiocap (pid 7062) has died: vis BTOP
+         1795019542.175   484  1983 W ActivityManager: Scheduling restart of crashed service io.github.gabrielxyz404.gabiflix/.AudioCapService in 1000ms for connection
+         1795019542.176  6707  6707 I GabiFlixPlayer: AUDIOSYNC o processo de captura caiu (desconectou) durante: vad cfg=1; o filme continua. Última etapa: 16:32:21.835 pid=7062 TESTE: queda nativa forçada no VAD (modo 1)
+         1795019542.177  6707  7002 I GabiFlixPlayer: AUDIOSYNC o Silero derrubou o processo no modo seguro e não há mais modos: desligado neste aparelho (versão atual); o VAD por DSP segue a análise
+         1795019542.182  6707  7002 I GabiFlixPlayer: AUDIOSYNC Silero indisponível (ele derrubou o processo de captura neste aparelho): usando o VAD por DSP
+         1795019542.233  6707  7059 I GFCrash : POST CAPTURA_CAIU parte 1/2 (3600 bytes) -> HTTP 200
+         1795019542.796  6707  7059 I GFCrash : POST CAPTURA_CAIU parte 2/2 (2736 bytes) -> HTTP 200
+         1795019543.863  6707  7103 I GFCrash : corpo de CAPTURA_CAIU:
+         1795019543.863  6707  7103 I GFCrash : FramePlay 1.0 | CAPTURA_CAIU | processo audiocap
+         1795019543.863  6707  7103 I GFCrash : Aparelho: Google sdk_gphone_x86 | Android 11 (API 30) | RAM 1981 MB, livre 1143 MB | tv=false
+         1795019543.863  6707  7103 I GFCrash : ABI: [x86, armeabi-v7a, armeabi] (64 bits: []) processo=32 bits
+         1795019543.863  6707  7103 I GFCrash : Etapa em curso (processo principal): vad  vad cfg=1 (desconectou)
+         1795019543.863  6707  7103 I GFCrash : Última etapa marcada pelo processo que caiu: 16:32:21.835 pid=7062 TESTE: queda nativa forçada no VAD (modo 1)
+         1795019543.863  6707  7103 I GFCrash : Hora da queda: 2026-11-18 16:32:22
+         1795019543.863  6707  7103 I GFCrash : Motivo da morte (getHistoricalProcessExitReasons): CRASH_NATIVE (5)  estado: 11  pid: 7062  importância: 100
+         1795019543.863  6707  7103 I GFCrash : Descrição: crash  PSS: 0 kB  RSS: 0 kB
+         1795019543.863  6707  7103 I GFCrash : 
+         1795019543.863  6707  7103 I GFCrash : Registo de queda do sistema (logcat, filtrado, pid 7062):
+         1795019543.863  6707  7103 I GFCrash : 11-18 16:32:21.841 F/libc    ( 7062): Fatal signal 11 (SIGSEGV), code 0 (SI_USER) in tid 7062 (biflix:audiocap), pid 7062 (biflix:audiocap)
+         1795019543.863  6707  7103 I GFCrash : 11-18 16:32:21.872 F/DEBUG   ( 7093): pid: 7062, tid: 7062, name: biflix:audiocap  >>> io.github.gabrielxyz404.gabiflix:audiocap <<<
+         1795019543.863  6707  7103 I GFCrash : 11-18 16:32:21.872 F/DEBUG   ( 7093): signal 11 (SIGSEGV), code 0 (SI_USER), fault addr --------
+         1795019543.863  6707  7103 I GFCrash : 11-18 16:32:21.987 F/DEBUG   ( 7093): backtrace:
+         1795019543.863  6707  7103 I GFCrash : 11-18 16:32:21.987 F/DEBUG   ( 7093):       #00 pc 00000b89  [vdso] (__kernel_vsyscall+9)
+         1795019543.863  6707  7103 I GFCrash : 11-18 16:32:21.987 F/DEBUG   ( 7093):       #01 pc 000cf2bb  /apex/com.android.runtime/lib/bionic/libc.so (__epoll_pwait+43)
+         1795019543.863  6707  7103 I GFCrash : 11-18 16:32:21.987 F/DEBUG   ( 7093):       #02 pc 00088f8d  /apex/com.android.runtime/lib/bionic/libc.so (epoll_wait+45)
+         1795019543.863  6707  7103 I GFCrash : 11-18 16:32:21.989 F/DEBUG   ( 7093):       #03 pc 0001a003  /system/lib/libutils.so (android::Looper::pollInner(int)+259)
+         1795019543.863  6707  7103 I GFCrash : 11-18 16:32:21.989 F/DEBUG   ( 7093):       #04 pc 00019e96  /system/lib/libutils.so (android::Looper::pollOnce(int, int*, int*, void**)+118)
+         1795019543.863  6707  7103 I GFCrash : 11-18 16:32:21.990 F/DEBUG   ( 7093):       #05 pc 0010ef8b  /system/lib/libandroid_runtime.so (android::android_os_MessageQueue_nativePollOnce(_JNIEnv*, _jobject*, long long, int)+59)
+         1795019543.863  6707  7103 I GFCrash : 11-18 16:32:21.990 F/DEBUG   ( 7093):       #06 pc 0021be48  /system/framework/x86/boot-framework.oat (art_jni_trampoline+136)
+         1795019543.863  6707  7103 I GFCrash : 11-18 16:32:21.990 F/DEBUG   ( 7093):       #07 pc 00639e80  /system/framework/x86/boot-framework.oat (android.os.MessageQueue.next+224)
+         1795019543.863  6707  7103 I GFCrash : 11-18 16:32:21.990 F/DEBUG   ( 7093):       #08 pc 00636550  /system/framework/x86/boot-framework.oat (android.os.Looper.loop+592)
+         1795019543.863  6707  7103 I GFCrash : 11-18 16:32:21.990 F/DEBUG   ( 7093):       #09 pc 0040581a  /system/framework/x86/boot-framework.oat (android.app.ActivityThread.main+746)
+         1795019543.863  6707  7103 I GFCrash : 11-18 16:32:21.990 F/DEBUG   ( 7093):       #10 pc 0013bc72  /apex/com.android.art/lib/libart.so (art_quick_invoke_static_stub+418)
+         1795019543.863  6707  7103 I GFCrash : 11-18 16:32:21.990 F/DEBUG   ( 7093):       #11 pc 001d0512  /apex/com.android.art/lib/libart.so (art::ArtMethod::Invoke(art::Thread*, unsigned int*, unsigned int, art::JValue*, char const*)+258)
+         1795019543.863  6707  7103 I GFCrash : 11-18 16:32:21.990 F/DEBUG   ( 7093):       #12 pc 00631e68  /apex/com.android.art/lib/libart.so (art::InvokeMethod(art::ScopedObjectAccessAlreadyRunnable const&, _jobject*, _jobject*, _jobject*, unsigned int)+1464)
+         1795019543.863  6707  7103 I GFCrash : 11-18 16:32:21.990 F/DEBUG   ( 7093):       #13 pc 0058a500  /apex/com.android.art/lib/libart.so (art::Method_invoke(_JNIEnv*, _jobject*, _jobject*, _jobjectArray*)+80)
+         1795019543.863  6707  7103 I GFCrash : 11-18 16:32:21.990 F/DEBUG   ( 7093):       #14 pc 0008a778  /apex/com.android.art/javalib/x86/boot.oat (art_jni_trampoline+168)
+         1795019543.863  6707  7103 I GFCrash : 11-18 16:32:21.990 F/DEBUG   ( 7093):       #15 pc 0088ac49  /system/framework/x86/boot-framework.oat (com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run+137)
+         1795019543.863  6707  7103 I GFCrash : 11-18 16:32:21.990 F/DEBUG   ( 7093):       #16 pc 00893656  /system/framework/x86/boot-framework.oat (com.android.internal.os.ZygoteInit.main+2102)
+         1795019543.863  6707  7103 I GFCrash : 11-18 16:32:21.990 F/DEBUG   ( 7093):       #17 pc 0013bc72  /apex/com.android.art/lib/libart.so (art_quick_invoke_static_stub+418)
+         1795019543.863  6707  7103 I GFCrash : 11-18 16:32:21.990 F/DEBUG   ( 7093):       #18 pc 001d0512  /apex/com.android.art/lib/libart.so (art::ArtMethod::Invoke(art::Thread*, unsigned int*, unsigned int, art::JValue*, char const*)+258)
+         1795019543.863  6707  7103 I GFCrash : 11-18 16:32:21.990 F/DEBUG   ( 7093):       #19 pc 006304b3  /apex/com.android.art/lib/libart.so (art::JValue art::InvokeWithVarArgs<art::ArtMethod*>(art::ScopedObjectAccessAlreadyRunnable const&, _jobject*, art::ArtMethod*, char*)+579)
+         1795019543.863  6707  7103 I GFCrash : 11-18 16:32:21.990 F/DEBUG   ( 7093):       #20 pc 00630985  /apex/com.android.art/lib/libart.so (art::JValue art::InvokeWithVarArgs<_jmethodID*>(art::ScopedObjectAccessAlreadyRunnable const&, _jobject*, _jmethodID*, char*)+85)
+         1795019543.863  6707  7103 I GFCrash : 11-18 16:32:21.990 F/DEBUG   ( 7093):       #21 pc 004cf63f  /apex/com.android.art/lib/libart.so (art::JNI<true>::CallStaticVoidMethodV(_JNIEnv*, _jclass*, _jmethodID*, char*)+735)
+         1795019543.863  6707  7103 I GFCrash : 11-18 16:32:21.990 F/DEBUG   ( 7093):       #22 pc 0008f90e  /system/lib/libandroid_runtime.so (_JNIEnv::CallStaticVoidMethod(_jclass*, _jmethodID*, ...)+62)
+         1795019543.863  6707  7103 I GFCrash : 11-18 16:32:21.990 F/DEBUG   ( 7093):       #23 pc 00098c8e  /system/lib/libandroid_runtime.so (android::AndroidRuntime::start(char const*, android::Vector<android::String8> const&, bool)+910)
+         1795019543.863  6707  7103 I GFCrash : 11-18 16:32:21.990 F/DEBUG   ( 7093):       #24 pc 00003804  /system/bin/app_process32 (main+1588)
+         1795019543.863  6707  7103 I GFCrash : 11-18 16:32:21.990 F/DEBUG   ( 7093):       #25 pc 000522d3  /apex/com.android.runtime/lib/bionic/libc.so (__libc_init+115)
+         1795019543.863  6707  7103 I GFCrash : 
+         1795019543.863  6707  7103 I GFCrash : 
+         1795019543.863  6707  7103 I GFCrash : Etapas marcadas (últimas):
+         1795019543.863  6707  7103 I GFCrash : 16:32:16.672 pid=7005 captura cfg=0 tocando a janela 275 s (nativo: demux, decodificador, transcode)
+         1795019543.863  6707  7103 I GFCrash : 16:32:18.848 pid=7005 captura cfg=0 terminou (fim)
+         1795019543.863  6707  7103 I GFCrash : 16:32:19.268 pid=7005 vad começando: lendo o PCM
+         1795019543.863  6707  7103 I GFCrash : 16:32:19.287 pid=7005 vad modo 0 lendo o modelo silero_vad.onnx
+         1795019543.863  6707  7103 I GFCrash : 16:32:19.346 pid=7005 vad modo 0 criando a sessão do ONNX Runtime (carrega as bibliotecas nativas)
+         1795019543.863  6707  7103 I GFCrash : 16:32:19.622 pid=7005 vad modo 0 ONNX Runtime inferência (nativo), 90 s de áudio
+         1795019543.863  6707  7103 I GFCrash : 16:32:19.656 pid=7005 TESTE: queda nativa forçada no VAD (modo 0)
+         1795019543.863  6707  7103 I GFCrash : 16:32:21.707 pid=7062 vad começando: lendo o PCM
+         1795019543.863  6707  7103 I GFCrash : 16:32:21.712 pid=7062 vad modo 1 lendo o modelo silero_vad.onnx
+         1795019543.863  6707  7103 I GFCrash : 16:32:21.732 pid=7062 vad modo 1 criando a sessão do ONNX Runtime (carrega as bibliotecas nativas)
+         1795019543.863  6707  7103 I GFCrash : 16:32:21.828 pid=7062 vad modo 1 ONNX Runtime inferência (nativo), 90 s de áudio
+         1795019543.863  6707  7103 I GFCrash : 16:32:21.835 pid=7062 TESTE: queda nativa forçada no VAD (modo 1)
+         1795019543.863  6707  7103 I GFCrash : 
+         1795019543.863  6707  7103 I GFCrash : Migalhas do processo que caiu:
+         1795019543.863  6707  7103 I GFCrash : 16:32:21.701 processo audiocap iniciado, versão 1.0, pid 7062
+         1795019543.863  6707  7103 I GFCrash : 16:32:21.707 ETAPA vad começando: lendo o PCM
+         1795019543.863  6707  7103 I GFCrash : 16:32:21.712 ETAPA vad modo 1 lendo o modelo silero_vad.onnx
+         1795019543.863  6707  7103 I GFCrash : 16:32:21.732 ETAPA vad modo 1 criando a sessão do ONNX Runtime (carrega as bibliotecas nativas)
+         1795019543.863  6707  7103 I GFCrash : 16:32:21.827 ETAPA vad modo 1 ONNX Runtime inferência (nativo), 90 s de áudio
+         1795019543.863  6707  7103 I GFCrash : 16:32:21.835 ETAPA TESTE: queda nativa forçada no VAD (modo 1)
+         1795019544.446  6707  7103 I GFCrash : POST CAPTURA_CAIU parte 1/2 (3600 bytes) -> HTTP 200
+         1795019544.506  6707  7103 I GFCrash : POST CAPTURA_CAIU parte 2/2 (2833 bytes) -> HTTP 200
+         1795019544.639   484   526 I ActivityManager: Start proc 7121:io.github.gabrielxyz404.gabiflix:audiocap/u0a167 for service {io.github.gabrielxyz404.gabiflix/io.github.gabrielxyz404.gabiflix.AudioCapService}
+         1795019546.551  6707  6707 I GabiFlixPlayer: AUDIOSYNC estado: st=0 executando=true tocando=true carregando=false faixa=2 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 2:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=113MB java=4/512MB nativo=63MB livre=1135MB limiar=144MB poucaMemoria=false
+         1795019547.347  6707  7002 I GabiFlixPlayer: AUDIOSYNC captura 710 s +90 s: 89.97 s de PCM em 2.75 s (fim) leitura=4 MB | usou a faixa 1 (pedida 1) de [1:Scarlet Street 1945 HD; ]
+         1795019547.355  6707  7002 I GabiFlixPlayer: AUDIOSYNC Silero indisponível (ele derrubou o processo de captura neste aparelho): usando o VAD por DSP
+         1795019550.846  6707  7002 I GabiFlixPlayer: AUDIOSYNC captura 1050 s +90 s: 89.99 s de PCM em 2.34 s (fim) leitura=3 MB | usou a faixa 1 (pedida 1) de [1:Scarlet Street 1945 HD; ]
+         1795019550.861  6707  7002 I GabiFlixPlayer: AUDIOSYNC Silero indisponível (ele derrubou o processo de captura neste aparelho): usando o VAD por DSP
+         1795019552.089  6707  6707 I GabiFlixPlayer: AUDIOSYNC resultado: recusada z=9.0 janelas=2/3 (janelas discordam;) | vad=dsp(reserva) janelas=3 captura=15089 ms vad=6619 ms (cpu 3087) solve=405 ms (cpu 374) cpu_thread=3580 ms total=15583 ms leitura_estimada=8 MB leitura_real=11 MB pss=134->132 MB java=7->22 MB
+         1795019552.089  6707  6707 I GabiFlixPlayer: AUDIOSYNC saúde da reprodução: amostras=15 paradas=0 razão_mínima=0.79 carregando=0 quadros_perdidos=2
+         1795019552.089  6707  6707 I GabiFlixPlayer: AUDIOSYNC o áudio não tem certeza: legenda deixada como estava
+         1795019554.058  6707  6707 I GabiFlixPlayer: legenda do app: tempo 49715 ms, atraso 0 ms -> "ALMAS PERVERSAS (1945)"
+         1795019554.129  7121  7121 I AndroidRuntime: VM exiting with result code 0, cleanup skipped.
+         1795019554.141   484  1794 I ActivityManager: Process io.github.gabrielxyz404.gabiflix:audiocap (pid 7121) has died: cch+5 CEM 
+         1795019559.149  6707  6707 I GabiFlixPlayer: legenda do app: tempo 54880 ms, atraso 0 ms -> (nada)
+         1795019566.576  6707  6707 I GabiFlixPlayer: AUDIOSYNC estado: st=3 executando=false tocando=true carregando=false faixa=2 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 2:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=139MB java=23/512MB nativo=63MB livre=1132MB limiar=144MB poucaMemoria=false
+         1795019586.594  6707  6707 I GabiFlixPlayer: AUDIOSYNC estado: st=3 executando=false tocando=true carregando=false faixa=2 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 2:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=133MB java=23/512MB nativo=63MB livre=1130MB limiar=144MB poucaMemoria=false
