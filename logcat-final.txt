@@ -1,0 +1,376 @@
+--------- beginning of kernel
+11-18 20:09:50.558     0     0 D logd    : logdr: UID=0 GID=0 PID=10731 n tail=0 logMask=99 pid=0 start=0ns timeout=0ns
+--------- beginning of system
+11-18 20:09:52.386   485  1924 I ActivityManager: Force stopping io.github.gabrielxyz404.gabiflix appid=10167 user=0: from pid 10750
+11-18 20:09:52.387   485  1924 I ActivityManager: Killing 10334:io.github.gabrielxyz404.gabiflix/u0a167 (adj 0): stop io.github.gabrielxyz404.gabiflix due to from pid 10750
+11-18 20:09:52.387   485  1924 W ActivityTaskManager: Force removing ActivityRecord{fc912e0 u0 io.github.gabrielxyz404.gabiflix/.PlayerActivity t14 f}}: app died, no saved state
+--------- beginning of main
+11-18 20:09:52.410   302   302 W EmuHWC2 : No layers, exit, buffer 0x0
+11-18 20:09:52.415   433   471 E OMXNodeInstance: !!! Observer died. Quickly, do something, ... anything...
+11-18 20:09:52.418   429   429 E mediaserver: unlinkToDeath: removed reference to death recipient but unlink failed.
+11-18 20:09:52.418   429   429 E IPCThreadState: attemptIncStrongHandle(3): Not supported
+11-18 20:09:52.419   282   282 I Zygote  : Process 10334 exited due to signal 9 (Killed)
+11-18 20:09:52.643     0     0 I binder  : undelivered transaction 590896, process died.
+11-18 20:09:52.423   485   520 W ActivityManager: setHasOverlayUi called on unknown pid: 10334
+11-18 20:09:52.424  1014  1014 D CarrierSvcBindHelper: No carrier app for: 0
+11-18 20:09:52.426   302   302 W EmuHWC2 : No layers, exit, buffer 0x0
+11-18 20:09:52.432   485   528 I libprocessgroup: Successfully killed process cgroup uid 10167 pid 10334 in 44ms
+11-18 20:09:52.442   302   302 W EmuHWC2 : No layers, exit, buffer 0x0
+11-18 20:09:52.478   485   521 V WindowManager: Orientation start waiting for draw, mDrawState=DRAW_PENDING in Window{f1ebc42 u0 com.android.systemui.ImageWallpaper}, surfaceController Surface(name=com.android.systemui.ImageWallpaper)/@0x9ae0f77
+11-18 20:09:52.459   302   302 I chatty  : uid=1000(system) composer@2.3-se identical 1 line
+11-18 20:09:52.476   302   302 W EmuHWC2 : No layers, exit, buffer 0x0
+11-18 20:09:52.480   699   837 D EglHelper: createEglContext start
+11-18 20:09:52.484   699   837 D EGL_emulation: eglCreateContext: 0xb8346e50: maj 3 min 0 rcv 3
+11-18 20:09:52.484   699   837 D EglHelper: createEglContext done
+11-18 20:09:52.484   699   837 D EglHelper: createEglSurface start
+11-18 20:09:52.505   699   837 D EglHelper: createEglSurface done
+11-18 20:09:52.523   485   520 W ActivityTaskManager: Current config: {1.0 310mcc260mnc [en_US] ldltr sw411dp w866dp h381dp 420dpi nrml long land finger qwerty/v/v -nav/h winConfig={ mBounds=Rect(0, 0 - 2400, 1080) mAppBounds=Rect(0, 0 - 2274, 1080) mWindowingMode=fullscreen mDisplayWindowingMode=fullscreen mActivityType=undefined mAlwaysOnTop=undefined mRotation=ROTATION_90} s.526} unchanged for IME proc com.google.android.inputmethod.latin
+11-18 20:09:52.523   485   520 I ActivityTaskManager: Config changes=20000480 {1.0 310mcc260mnc [en_US] ldltr sw411dp w411dp h836dp 420dpi nrml long port finger qwerty/v/v -nav/h winConfig={ mBounds=Rect(0, 0 - 1080, 2400) mAppBounds=Rect(0, 0 - 1080, 2274) mWindowingMode=fullscreen mDisplayWindowingMode=fullscreen mActivityType=undefined mAlwaysOnTop=undefined mRotation=ROTATION_0} s.563}
+11-18 20:09:52.525   485   520 W ActivityTaskManager: Current config: {1.0 310mcc260mnc [en_US] ldltr sw411dp w866dp h381dp 420dpi nrml long land finger qwerty/v/v -nav/h winConfig={ mBounds=Rect(0, 0 - 2400, 1080) mAppBounds=Rect(0, 0 - 2274, 1080) mWindowingMode=fullscreen mDisplayWindowingMode=fullscreen mActivityType=undefined mAlwaysOnTop=undefined mRotation=ROTATION_90} s.526} unchanged for IME proc com.google.android.inputmethod.latin
+11-18 20:09:52.526   485   520 I WindowManager: Override config changes=20000480 {1.0 310mcc260mnc [en_US] ldltr sw411dp w411dp h836dp 420dpi nrml long port finger qwerty/v/v -nav/h winConfig={ mBounds=Rect(0, 0 - 1080, 2400) mAppBounds=Rect(0, 0 - 1080, 2274) mWindowingMode=fullscreen mDisplayWindowingMode=fullscreen mActivityType=undefined mAlwaysOnTop=undefined mRotation=ROTATION_0} s.563} for displayId=0
+11-18 20:09:52.535   485   520 V ActivityTaskManager: Sending to IME proc com.google.android.inputmethod.latin new config {1.0 310mcc260mnc [en_US] ldltr sw411dp w411dp h836dp 420dpi nrml long port finger qwerty/v/v -nav/h winConfig={ mBounds=Rect(0, 0 - 1080, 2400) mAppBounds=Rect(0, 0 - 1080, 2274) mWindowingMode=fullscreen mDisplayWindowingMode=fullscreen mActivityType=undefined mAlwaysOnTop=undefined mRotation=ROTATION_0} s.563}
+11-18 20:09:52.535   485   520 W ActivityTaskManager: Current config: {1.0 310mcc260mnc [en_US] ldltr sw411dp w411dp h836dp 420dpi nrml long port finger qwerty/v/v -nav/h winConfig={ mBounds=Rect(0, 0 - 1080, 2400) mAppBounds=Rect(0, 0 - 1080, 2274) mWindowingMode=fullscreen mDisplayWindowingMode=fullscreen mActivityType=undefined mAlwaysOnTop=undefined mRotation=ROTATION_0} s.563} unchanged for IME proc com.google.android.inputmethod.latin
+11-18 20:09:52.538  1452  1452 W GoogleInputMethodService: GoogleInputMethodService.onConfigurationChanged():1401 onConfigurationChanged() : NewConfig = {1.0 310mcc260mnc [en_US] ldltr sw411dp w411dp h836dp 420dpi nrml long port finger qwerty/v/v -nav/h winConfig={ mBounds=Rect(0, 0 - 1080, 2400) mAppBounds=Rect(0, 0 - 1080, 2274) mWindowingMode=fullscreen mDisplayWindowingMode=fullscreen mActivityType=undefined mAlwaysOnTop=undefined mRotation=ROTATION_0} as.1 s.579}
+11-18 20:09:52.538  1452  1452 W KeyboardModeManager: KeyboardModeManager.reloadOrientationAwareData():457 reloadOrientationAwareData() : orientation = 1
+11-18 20:09:52.545   485   520 I InputManager-JNI: Viewport [0] to add: local:8141603649153536, isActive: true
+11-18 20:09:52.545   485   580 I InputReader: Reconfiguring input devices, changes=DISPLAY_INFO | 
+11-18 20:09:52.545   485   580 I InputReader: Touch device 'virtio_input_multi_touch_10' could not query the properties of its associated display.  The device will be inoperable until the display size becomes available.
+11-18 20:09:52.545   485   580 I InputReader: Touch device 'virtio_input_multi_touch_7' could not query the properties of its associated display.  The device will be inoperable until the display size becomes available.
+11-18 20:09:52.545   485   580 I InputReader: Touch device 'virtio_input_multi_touch_4' could not query the properties of its associated display.  The device will be inoperable until the display size becomes available.
+11-18 20:09:52.545   485   580 I InputReader: Touch device 'virtio_input_multi_touch_11' could not query the properties of its associated display.  The device will be inoperable until the display size becomes available.
+11-18 20:09:52.545   485   580 I InputReader: Touch device 'virtio_input_multi_touch_5' could not query the properties of its associated display.  The device will be inoperable until the display size becomes available.
+11-18 20:09:52.545   485   580 I InputReader: Touch device 'virtio_input_multi_touch_2' could not query the properties of its associated display.  The device will be inoperable until the display size becomes available.
+11-18 20:09:52.545   485   580 I InputReader: Touch device 'virtio_input_multi_touch_6' could not query the properties of its associated display.  The device will be inoperable until the display size becomes available.
+11-18 20:09:52.545   485   580 I InputReader: Touch device 'virtio_input_multi_touch_3' could not query the properties of its associated display.  The device will be inoperable until the display size becomes available.
+11-18 20:09:52.545   485   580 I InputReader: Device reconfigured: id=4, name='virtio_input_multi_touch_1', size 1136x2400, orientation 0, mode 1, display id 0
+11-18 20:09:52.545   485   580 I InputReader: Touch device 'virtio_input_multi_touch_8' could not query the properties of its associated display.  The device will be inoperable until the display size becomes available.
+11-18 20:09:52.545   485   580 I InputReader: Touch device 'virtio_input_multi_touch_9' could not query the properties of its associated display.  The device will be inoperable until the display size becomes available.
+11-18 20:09:52.558  1452  1452 W KeyboardModeManager: KeyboardModeManager.setInputView():302 setInputView() : inputView = null
+11-18 20:09:52.558  1452  1452 I GoogleInputMethodService: GoogleInputMethodService.initializeKeyboardTheme():1171 Apply keyboard theme: theme_border_stylesheet_googleblue_materiallight_assets:theme_package_metadata_google_blue_light.binarypb_port
+11-18 20:09:52.562  1452  1452 I Environment: Environment.getDeviceMode():694 Get device mode by ui mode:1 and smallestScreenWidthDp:411
+11-18 20:09:52.563  1452  1452 I chatty  : uid=10143(com.google.android.inputmethod.latin) identical 4 lines
+11-18 20:09:52.563  1452  1452 I Environment: Environment.getDeviceMode():694 Get device mode by ui mode:1 and smallestScreenWidthDp:411
+11-18 20:09:52.565  1452  1452 I KeyboardViewUtil: KeyboardViewUtil.getKeyboardHeightRatio():128 systemKeyboardHeightRatio:1.000000; userKeyboardHeightRatio:1.000000.
+11-18 20:09:52.566  1452  1452 W SessionManager: SessionManager.beginSession():53 Try to begin an already begun session [INPUT_SESSION], end it first
+11-18 20:09:52.567  1452  1452 I Environment: Environment.getDeviceMode():694 Get device mode by ui mode:1 and smallestScreenWidthDp:411
+11-18 20:09:52.567  1452  1452 I Environment: Environment.getDeviceMode():694 Get device mode by ui mode:1 and smallestScreenWidthDp:411
+11-18 20:09:52.622   699   699 D StatusBar: disable<e i a s b h r c s > disable2<q i n >
+11-18 20:09:52.640  1949  2129 W ThreadPoolDumper: Queue length for executor EventBus is now 11. Perhaps some tasks are too long, or the pool is too small.
+11-18 20:09:52.705  1949  2174 W LocationOracle: No location history returned by ContextManager
+11-18 20:09:52.854  1108  2722 W GCoreFlp: No location to return for getLastLocation()
+11-18 20:09:53.033   901   901 I Choreographer: Skipped 31 frames!  The application may be doing too much work on its main thread.
+11-18 20:09:53.154   699  1554 D HostConnection: HostConnection::get() New Host Connection established 0xb8364200, tid 1554
+11-18 20:09:53.329   901  2141 I OpenGLRenderer: Davey! duration=820ms; Flags=0, IntendedVsync=496972360721, Vsync=497489027367, OldestInputEvent=9223372036854775807, NewestInputEvent=0, HandleInputStart=497497433777, AnimationStart=497497434327, PerformTraversalsStart=497497490673, DrawStart=497497516591, SyncQueued=497497525548, SyncStart=497497613352, IssueDrawCommandsStart=497497654399, SwapBuffers=497503087773, FrameCompleted=497792789358, DequeueBufferDuration=283507090, QueueBufferDuration=111408, GpuCompleted=0, 
+11-18 20:09:53.330   699  1554 D HostConnection: HostComposition ext ANDROID_EMU_CHECKSUM_HELPER_v1 ANDROID_EMU_native_sync_v2 ANDROID_EMU_dma_v1 ANDROID_EMU_direct_mem ANDROID_EMU_host_composition_v1 ANDROID_EMU_host_composition_v2 ANDROID_EMU_vulkan ANDROID_EMU_deferred_vulkan_commands ANDROID_EMU_vulkan_null_optional_strings ANDROID_EMU_vulkan_create_resources_with_requirements ANDROID_EMU_YUV_Cache ANDROID_EMU_vulkan_ignored_handles ANDROID_EMU_has_shared_slots_host_memory_allocator ANDROID_EMU_vulkan_free_memory_sync ANDROID_EMU_vulkan_shader_float16_int8 ANDROID_EMU_vulkan_async_queue_submit ANDROID_EMU_sync_buffer_data ANDROID_EMU_vulkan_async_qsri ANDROID_EMU_read_color_buffer_dma ANDROID_EMU_hwc_color_transform GL_OES_EGL_image_external_essl3 GL_OES_vertex_array_object GL_KHR_texture_compression_astc_ldr ANDROID_EMU_host_side_tracing ANDROID_EMU_gles_max_version_3_0 
+11-18 20:09:53.337  1949  1949 I BgTaskExecutorImpl: Starting EXCLUSIVE background task TNG_MINUS_ONE_SYNC.
+11-18 20:09:53.340  1949  2129 I TngMinusOneSync: Syncing TNG:-1
+11-18 20:09:53.360   699  1554 D EGL_emulation: eglCreateContext: 0xb8341350: maj 3 min 0 rcv 3
+11-18 20:09:53.362   699  1554 D EGL_emulation: eglMakeCurrent: 0xb8341350: ver 3 0 (tinfo 0xb96278b0) (first time)
+11-18 20:09:53.476   374   437 W APM::AudioPolicyEngine: getDevicesForStrategy() unknown strategy: -1
+11-18 20:09:53.476   374   437 W APM::AudioPolicyEngine: getDevicesForStrategy() unknown strategy: -1
+11-18 20:09:53.480   485   823 I system_server: oneway function results will be dropped but finished with status OK and parcel size 4
+11-18 20:09:53.523   699  1221 I OpenGLRenderer: Davey! duration=956ms; Flags=1, IntendedVsync=497022333896, Vsync=497272333886, OldestInputEvent=9223372036854775807, NewestInputEvent=0, HandleInputStart=497274850788, AnimationStart=497274851459, PerformTraversalsStart=497274930858, DrawStart=497395719565, SyncQueued=497964463996, SyncStart=497972299191, IssueDrawCommandsStart=497972391654, SwapBuffers=497980267488, FrameCompleted=497986641090, DequeueBufferDuration=3402533, QueueBufferDuration=2241755, GpuCompleted=0, 
+11-18 20:09:53.536   699   699 D StatusBar: disable<e i a s b h r c s > disable2<q i n >
+11-18 20:09:53.565   485   520 D EventSequenceValidator: Transition from ACTIVITY_FINISHED to INTENT_STARTED
+11-18 20:09:53.565   485  3560 I ActivityTaskManager: START u0 {flg=0x10000000 cmp=io.github.gabrielxyz404.gabiflix/.PlayerActivity (has extras)} from uid 0
+11-18 20:09:53.572   485   520 D CompatibilityChangeReporter: Compat change id reported: 135634846; UID 10167; state: DISABLED
+11-18 20:09:53.574   485   520 D EventSequenceValidator: Transition from INTENT_STARTED to ACTIVITY_LAUNCHED
+11-18 20:09:53.575   485   527 D CompatibilityChangeReporter: Compat change id reported: 143937733; UID 10167; state: ENABLED
+11-18 20:09:53.729   699  1221 I OpenGLRenderer: Davey! duration=1143ms; Flags=1, IntendedVsync=497022333896, Vsync=497272333886, OldestInputEvent=9223372036854775807, NewestInputEvent=0, HandleInputStart=497274850788, AnimationStart=497274851459, PerformTraversalsStart=497274930858, DrawStart=498013293576, SyncQueued=498013657906, SyncStart=498041094759, IssueDrawCommandsStart=498041251732, SwapBuffers=498184513813, FrameCompleted=498193003293, DequeueBufferDuration=1309134, QueueBufferDuration=134021, GpuCompleted=0, 
+11-18 20:09:53.749   699   699 I OpaEnabledReceiver: Dispatching OPA eligble = false; AGSA = true; OPA enabled = false
+11-18 20:09:53.749   699   699 I OpaLayout: Setting opa enabled to false
+11-18 20:09:53.759   485   823 V WindowManager: Orientation start waiting for draw, mDrawState=DRAW_PENDING in Window{f08a83b u0 Splash Screen io.github.gabrielxyz404.gabiflix}, surfaceController Surface(name=Splash Screen io.github.gabrielxyz404.gabiflix)/@0xc3c996e
+11-18 20:09:53.749   699   699 I OpaLayout: Setting opa enabled to false
+11-18 20:09:53.773   699   699 I Choreographer: Skipped 56 frames!  The application may be doing too much work on its main thread.
+11-18 20:09:53.795   282   282 D Zygote  : Forked child process 10768
+11-18 20:09:53.798   699  1221 I OpenGLRenderer: Davey! duration=967ms; Flags=1, IntendedVsync=497288946657, Vsync=498222279953, OldestInputEvent=9223372036854775807, NewestInputEvent=0, HandleInputStart=498236992758, AnimationStart=498236994191, PerformTraversalsStart=498237001104, DrawStart=498238539777, SyncQueued=498245171377, SyncStart=498251010451, IssueDrawCommandsStart=498251058971, SwapBuffers=498257207190, FrameCompleted=498262035033, DequeueBufferDuration=1168020, QueueBufferDuration=94796, GpuCompleted=0, 
+11-18 20:09:53.865   485   527 W ActivityManager: Slow operation: 294ms so far, now at startProcess: returned from zygote!
+11-18 20:09:53.874 10768 10768 W xyz404.gabifli: Unexpected CPU variant for X86 using defaults: x86
+11-18 20:09:53.887   412   412 I perfetto: ing_service_impl.cc:758 Configured tracing session 11, #sources:1, duration:5000 ms, #buffers:1, total buffer size:4096 KB, total sessions:1, uid:1071 session name: ""
+11-18 20:09:53.887   411   411 I perfetto: probes_producer.cc:230  Ftrace setup (target_buf=11)
+11-18 20:09:53.920   485   527 W ActivityManager: Slow operation: 349ms so far, now at startProcess: done updating battery stats
+11-18 20:09:53.920   485   527 W ActivityManager: Slow operation: 349ms so far, now at startProcess: building log message
+11-18 20:09:53.920   485   527 I ActivityManager: Start proc 10768:io.github.gabrielxyz404.gabiflix/u0a167 for pre-top-activity {io.github.gabrielxyz404.gabiflix/io.github.gabrielxyz404.gabiflix.PlayerActivity}
+11-18 20:09:53.920   485   527 W ActivityManager: Slow operation: 349ms so far, now at startProcess: starting to update pids map
+11-18 20:09:53.923  4551  4558 I adbd    : jdwp connection from 10768
+11-18 20:09:53.923   485   527 W ActivityManager: Slow operation: 352ms so far, now at startProcess: done updating pids map
+11-18 20:09:53.942   411   411 I perfetto: ftrace_procfs.cc:176    enabled ftrace
+11-18 20:09:54.168     0     0 W perfetto: enabled ftrace
+11-18 20:09:53.949   340   340 E SurfaceFlinger: [Splash Screen io.github.gabrielxyz404.gabiflix#0] rejecting buffer: bufWidth=1080, bufHeight=2400, front.active_legacy.{w=2400, h=1080}
+11-18 20:09:54.097 10768 10768 D NetworkSecurityConfig: No Network Security Config specified, using platform default
+11-18 20:09:54.098 10768 10768 D NetworkSecurityConfig: No Network Security Config specified, using platform default
+11-18 20:09:54.116 10768 10794 D libEGL  : loaded /vendor/lib/egl/libEGL_emulation.so
+11-18 20:09:54.117 10768 10794 D libEGL  : loaded /vendor/lib/egl/libGLESv1_CM_emulation.so
+11-18 20:09:54.119 10768 10794 D libEGL  : loaded /vendor/lib/egl/libGLESv2_emulation.so
+11-18 20:09:54.398     0     0 D logd    : logdr: UID=0 GID=0 PID=10766 n tail=0 logMask=99 pid=0 start=0ns timeout=0ns
+11-18 20:09:54.175   699  1221 I OpenGLRenderer: Davey! duration=1288ms; Flags=1, IntendedVsync=497288946657, Vsync=498222279953, OldestInputEvent=9223372036854775807, NewestInputEvent=0, HandleInputStart=498236992758, AnimationStart=498236994191, PerformTraversalsStart=498237001104, DrawStart=498265870233, SyncQueued=498265947588, SyncStart=498327751772, IssueDrawCommandsStart=498330743768, SwapBuffers=498390763489, FrameCompleted=498638834392, DequeueBufferDuration=223369838, QueueBufferDuration=3898228, GpuCompleted=0, 
+11-18 20:09:54.248 10768 10768 D VLC/JNI/VLCObject: JNI interface loaded.
+11-18 20:09:54.261 10768 10768 E VLC     : [e6644370/2a10] libvlc audio output: GetStaticFieldID(AudioFormat.ENCODING_PCM_32BIT) failed
+11-18 20:09:54.340 10768 10768 I GabiFlixPlayer: ciclo: onStart, tocando=false, tempo=-1, escala=0, atraso=0, vista=SurfaceView 0x0, vout=true
+11-18 20:09:54.341 10768 10768 I GabiFlixPlayer: ciclo: onResume, tocando=false, tempo=-1, escala=0, atraso=0, vista=SurfaceView 0x0, vout=true
+11-18 20:09:54.383 10768 10793 D HostConnection: HostConnection::get() New Host Connection established 0xec9eb430, tid 10793
+11-18 20:09:54.391 10768 10793 D HostConnection: HostComposition ext ANDROID_EMU_CHECKSUM_HELPER_v1 ANDROID_EMU_native_sync_v2 ANDROID_EMU_dma_v1 ANDROID_EMU_direct_mem ANDROID_EMU_host_composition_v1 ANDROID_EMU_host_composition_v2 ANDROID_EMU_vulkan ANDROID_EMU_deferred_vulkan_commands ANDROID_EMU_vulkan_null_optional_strings ANDROID_EMU_vulkan_create_resources_with_requirements ANDROID_EMU_YUV_Cache ANDROID_EMU_vulkan_ignored_handles ANDROID_EMU_has_shared_slots_host_memory_allocator ANDROID_EMU_vulkan_free_memory_sync ANDROID_EMU_vulkan_shader_float16_int8 ANDROID_EMU_vulkan_async_queue_submit ANDROID_EMU_sync_buffer_data ANDROID_EMU_vulkan_async_qsri ANDROID_EMU_read_color_buffer_dma ANDROID_EMU_hwc_color_transform GL_OES_EGL_image_external_essl3 GL_OES_vertex_array_object GL_KHR_texture_compression_astc_ldr ANDROID_EMU_host_side_tracing ANDROID_EMU_gles_max_version_3_0 
+11-18 20:09:54.435   160   160 I hwservicemanager: getTransport: Cannot find entry android.hardware.configstore@1.0::ISurfaceFlingerConfigs/default in either framework or device manifest.
+11-18 20:09:54.456 10768 10793 D EGL_emulation: eglCreateContext: 0xec9ee4c0: maj 3 min 0 rcv 3
+11-18 20:09:54.457 10768 10793 D EGL_emulation: eglMakeCurrent: 0xec9ee4c0: ver 3 0 (tinfo 0xecd3c1f0) (first time)
+11-18 20:09:54.488   160   160 I hwservicemanager: getTransport: Cannot find entry android.hardware.graphics.mapper@4.0::IMapper/default in either framework or device manifest.
+11-18 20:09:54.489 10768 10793 I Gralloc4: mapper 4.x is not supported
+11-18 20:09:54.489 10768 10793 D HostConnection: createUnique: call
+11-18 20:09:54.490 10768 10793 D HostConnection: HostConnection::get() New Host Connection established 0xec9eea70, tid 10793
+11-18 20:09:54.501 10768 10793 D HostConnection: HostComposition ext ANDROID_EMU_CHECKSUM_HELPER_v1 ANDROID_EMU_native_sync_v2 ANDROID_EMU_dma_v1 ANDROID_EMU_direct_mem ANDROID_EMU_host_composition_v1 ANDROID_EMU_host_composition_v2 ANDROID_EMU_vulkan ANDROID_EMU_deferred_vulkan_commands ANDROID_EMU_vulkan_null_optional_strings ANDROID_EMU_vulkan_create_resources_with_requirements ANDROID_EMU_YUV_Cache ANDROID_EMU_vulkan_ignored_handles ANDROID_EMU_has_shared_slots_host_memory_allocator ANDROID_EMU_vulkan_free_memory_sync ANDROID_EMU_vulkan_shader_float16_int8 ANDROID_EMU_vulkan_async_queue_submit ANDROID_EMU_sync_buffer_data ANDROID_EMU_vulkan_async_qsri ANDROID_EMU_read_color_buffer_dma ANDROID_EMU_hwc_color_transform GL_OES_EGL_image_external_essl3 GL_OES_vertex_array_object GL_KHR_texture_compression_astc_ldr ANDROID_EMU_host_side_tracing ANDROID_EMU_gles_max_version_3_0 
+11-18 20:09:54.623   485   520 W ActivityTaskManager: Current config: {1.0 310mcc260mnc [en_US] ldltr sw411dp w411dp h836dp 420dpi nrml long port finger qwerty/v/v -nav/h winConfig={ mBounds=Rect(0, 0 - 1080, 2400) mAppBounds=Rect(0, 0 - 1080, 2274) mWindowingMode=fullscreen mDisplayWindowingMode=fullscreen mActivityType=undefined mAlwaysOnTop=undefined mRotation=ROTATION_0} s.563} unchanged for IME proc com.google.android.inputmethod.latin
+11-18 20:09:54.624   485   520 I ActivityTaskManager: Config changes=20000480 {1.0 310mcc260mnc [en_US] ldltr sw411dp w866dp h381dp 420dpi nrml long land finger qwerty/v/v -nav/h winConfig={ mBounds=Rect(0, 0 - 2400, 1080) mAppBounds=Rect(0, 0 - 2274, 1080) mWindowingMode=fullscreen mDisplayWindowingMode=fullscreen mActivityType=undefined mAlwaysOnTop=undefined mRotation=ROTATION_90} s.595}
+11-18 20:09:54.626   485   520 W ActivityTaskManager: Current config: {1.0 310mcc260mnc [en_US] ldltr sw411dp w411dp h836dp 420dpi nrml long port finger qwerty/v/v -nav/h winConfig={ mBounds=Rect(0, 0 - 1080, 2400) mAppBounds=Rect(0, 0 - 1080, 2274) mWindowingMode=fullscreen mDisplayWindowingMode=fullscreen mActivityType=undefined mAlwaysOnTop=undefined mRotation=ROTATION_0} s.563} unchanged for IME proc com.google.android.inputmethod.latin
+11-18 20:09:54.626   485   520 I WindowManager: Override config changes=20000480 {1.0 310mcc260mnc [en_US] ldltr sw411dp w866dp h381dp 420dpi nrml long land finger qwerty/v/v -nav/h winConfig={ mBounds=Rect(0, 0 - 2400, 1080) mAppBounds=Rect(0, 0 - 2274, 1080) mWindowingMode=fullscreen mDisplayWindowingMode=fullscreen mActivityType=undefined mAlwaysOnTop=undefined mRotation=ROTATION_90} s.595} for displayId=0
+11-18 20:09:54.631   699   699 D StatusBar: disable<e i a s b h r c s > disable2<q i n >
+11-18 20:09:54.642   485   520 V ActivityTaskManager: Sending to IME proc com.google.android.inputmethod.latin new config {1.0 310mcc260mnc [en_US] ldltr sw411dp w866dp h381dp 420dpi nrml long land finger qwerty/v/v -nav/h winConfig={ mBounds=Rect(0, 0 - 2400, 1080) mAppBounds=Rect(0, 0 - 2274, 1080) mWindowingMode=fullscreen mDisplayWindowingMode=fullscreen mActivityType=undefined mAlwaysOnTop=undefined mRotation=ROTATION_90} s.595}
+11-18 20:09:54.642   485   520 W ActivityTaskManager: Current config: {1.0 310mcc260mnc [en_US] ldltr sw411dp w866dp h381dp 420dpi nrml long land finger qwerty/v/v -nav/h winConfig={ mBounds=Rect(0, 0 - 2400, 1080) mAppBounds=Rect(0, 0 - 2274, 1080) mWindowingMode=fullscreen mDisplayWindowingMode=fullscreen mActivityType=undefined mAlwaysOnTop=undefined mRotation=ROTATION_90} s.595} unchanged for IME proc com.google.android.inputmethod.latin
+11-18 20:09:54.645  1452  1452 W GoogleInputMethodService: GoogleInputMethodService.onConfigurationChanged():1401 onConfigurationChanged() : NewConfig = {1.0 310mcc260mnc [en_US] ldltr sw411dp w866dp h381dp 420dpi nrml long land finger qwerty/v/v -nav/h winConfig={ mBounds=Rect(0, 0 - 2400, 1080) mAppBounds=Rect(0, 0 - 2274, 1080) mWindowingMode=fullscreen mDisplayWindowingMode=fullscreen mActivityType=undefined mAlwaysOnTop=undefined mRotation=ROTATION_90} as.1 s.612}
+11-18 20:09:54.645  1452  1452 W KeyboardModeManager: KeyboardModeManager.reloadOrientationAwareData():457 reloadOrientationAwareData() : orientation = 2
+11-18 20:09:54.646   485   520 V WindowManager: Orientation start waiting for draw, mDrawState=DRAW_PENDING in Window{f1ebc42 u0 com.android.systemui.ImageWallpaper}, surfaceController Surface(name=com.android.systemui.ImageWallpaper)/@0x9ae0f77
+11-18 20:09:54.658  1452  1452 W KeyboardModeManager: KeyboardModeManager.setInputView():302 setInputView() : inputView = null
+11-18 20:09:54.658  1452  1452 I GoogleInputMethodService: GoogleInputMethodService.initializeKeyboardTheme():1171 Apply keyboard theme: theme_border_stylesheet_googleblue_materiallight_assets:theme_package_metadata_google_blue_light.binarypb_land
+11-18 20:09:54.660  1452  1452 I Environment: Environment.getDeviceMode():694 Get device mode by ui mode:1 and smallestScreenWidthDp:411
+11-18 20:09:54.660  1452  1452 I chatty  : uid=10143(com.google.android.inputmethod.latin) identical 4 lines
+11-18 20:09:54.661  1452  1452 I Environment: Environment.getDeviceMode():694 Get device mode by ui mode:1 and smallestScreenWidthDp:411
+11-18 20:09:54.665  1452  1452 I KeyboardViewUtil: KeyboardViewUtil.getKeyboardHeightRatio():128 systemKeyboardHeightRatio:1.000000; userKeyboardHeightRatio:1.000000.
+11-18 20:09:54.671  1452  1452 W SessionManager: SessionManager.beginSession():53 Try to begin an already begun session [INPUT_SESSION], end it first
+11-18 20:09:54.671  1452  1452 I Environment: Environment.getDeviceMode():694 Get device mode by ui mode:1 and smallestScreenWidthDp:411
+11-18 20:09:54.779   485   518 W Looper  : Slow dispatch took 135ms android.ui h=com.android.server.wm.DisplayPolicy$PolicyHandler c=com.android.server.wm.-$$Lambda$DisplayPolicy$HbdRZfPpJ53Wnk7_Ueb0ycyz_AQ@73bf3f5 m=0
+11-18 20:09:54.671  1452  1452 I Environment: Environment.getDeviceMode():694 Get device mode by ui mode:1 and smallestScreenWidthDp:411
+11-18 20:09:54.779   485   520 I InputManager-JNI: Viewport [0] to add: local:8141603649153536, isActive: true
+11-18 20:09:54.801   485   580 I InputReader: Reconfiguring input devices, changes=DISPLAY_INFO | 
+11-18 20:09:54.801   485   580 I InputReader: Touch device 'virtio_input_multi_touch_10' could not query the properties of its associated display.  The device will be inoperable until the display size becomes available.
+11-18 20:09:54.801   485   580 I InputReader: Touch device 'virtio_input_multi_touch_7' could not query the properties of its associated display.  The device will be inoperable until the display size becomes available.
+11-18 20:09:54.801   485   580 I InputReader: Touch device 'virtio_input_multi_touch_4' could not query the properties of its associated display.  The device will be inoperable until the display size becomes available.
+11-18 20:09:54.801   485   580 I InputReader: Touch device 'virtio_input_multi_touch_11' could not query the properties of its associated display.  The device will be inoperable until the display size becomes available.
+11-18 20:09:54.801   485   580 I InputReader: Touch device 'virtio_input_multi_touch_5' could not query the properties of its associated display.  The device will be inoperable until the display size becomes available.
+11-18 20:09:54.801   485   580 I InputReader: Touch device 'virtio_input_multi_touch_2' could not query the properties of its associated display.  The device will be inoperable until the display size becomes available.
+11-18 20:09:54.801   485   580 I InputReader: Touch device 'virtio_input_multi_touch_6' could not query the properties of its associated display.  The device will be inoperable until the display size becomes available.
+11-18 20:09:54.801   485   580 I InputReader: Touch device 'virtio_input_multi_touch_3' could not query the properties of its associated display.  The device will be inoperable until the display size becomes available.
+11-18 20:09:54.801   485   580 I InputReader: Device reconfigured: id=4, name='virtio_input_multi_touch_1', size 1136x2400, orientation 1, mode 1, display id 0
+11-18 20:09:54.801   485   580 I InputReader: Touch device 'virtio_input_multi_touch_8' could not query the properties of its associated display.  The device will be inoperable until the display size becomes available.
+11-18 20:09:54.801   485   580 I InputReader: Touch device 'virtio_input_multi_touch_9' could not query the properties of its associated display.  The device will be inoperable until the display size becomes available.
+11-18 20:09:54.915   699   699 D StatusBar: disable<e i a s b h r c s > disable2<q i n >
+11-18 20:09:55.365 10768 10793 I OpenGLRenderer: Davey! duration=989ms; Flags=1, IntendedVsync=498838689645, Vsync=498838689645, OldestInputEvent=9223372036854775807, NewestInputEvent=0, HandleInputStart=498840389155, AnimationStart=498840389696, PerformTraversalsStart=498840389956, DrawStart=498965559537, SyncQueued=498966481729, SyncStart=498967038078, IssueDrawCommandsStart=498967158443, SwapBuffers=499722947815, FrameCompleted=499829116929, DequeueBufferDuration=8066710, QueueBufferDuration=386030, GpuCompleted=281890752383744, 
+11-18 20:09:55.369 10768 10768 I Choreographer: Skipped 58 frames!  The application may be doing too much work on its main thread.
+11-18 20:09:55.485   485  3560 I system_server: oneway function results will be dropped but finished with status OK and parcel size 4
+11-18 20:09:55.503 10768 10793 I OpenGLRenderer: Davey! duration=1111ms; Flags=0, IntendedVsync=498855356311, Vsync=499822022939, OldestInputEvent=9223372036854775807, NewestInputEvent=0, HandleInputStart=499833312860, AnimationStart=499833313561, PerformTraversalsStart=499833349698, DrawStart=499833431651, SyncQueued=499833464583, SyncStart=499833550076, IssueDrawCommandsStart=499833573239, SwapBuffers=499952942411, FrameCompleted=499966837212, DequeueBufferDuration=9294645, QueueBufferDuration=248926, GpuCompleted=3973274704, 
+11-18 20:09:55.510   485   520 D EventSequenceValidator: Transition from ACTIVITY_LAUNCHED to ACTIVITY_FINISHED
+11-18 20:09:55.519   485   525 D ArtManagerInternalImpl: /data/misc/iorapd/io.github.gabrielxyz404.gabiflix/1/io.github.gabrielxyz404.gabiflix.PlayerActivity/compiled_traces/compiled_trace.pb doesn't exist
+11-18 20:09:55.544   699  1221 I OpenGLRenderer: Davey! duration=895ms; Flags=1, IntendedVsync=499105402214, Vsync=499255402208, OldestInputEvent=9223372036854775807, NewestInputEvent=0, HandleInputStart=499263503951, AnimationStart=499263505064, PerformTraversalsStart=499263546842, DrawStart=499453830693, SyncQueued=499950949079, SyncStart=499957391457, IssueDrawCommandsStart=499958692125, SwapBuffers=499968708959, FrameCompleted=500007624138, DequeueBufferDuration=20418019, QueueBufferDuration=3095729, GpuCompleted=0, 
+11-18 20:09:55.548   699   699 I OpaEnabledReceiver: Dispatching OPA eligble = false; AGSA = true; OPA enabled = false
+11-18 20:09:55.548   699   699 I OpaLayout: Setting opa enabled to false
+11-18 20:09:55.548   699   699 I OpaLayout: Setting opa enabled to false
+11-18 20:09:55.549   699   699 I Choreographer: Skipped 44 frames!  The application may be doing too much work on its main thread.
+11-18 20:09:55.550   699   837 D EglHelper: createEglContext start
+11-18 20:09:55.563   699   837 D EGL_emulation: eglCreateContext: 0xb837a8c0: maj 3 min 0 rcv 3
+11-18 20:09:55.569   699   837 D EglHelper: createEglContext done
+11-18 20:09:55.569   699   837 D EglHelper: createEglSurface start
+11-18 20:09:55.584   485   525 I ActivityTaskManager: Displayed io.github.gabrielxyz404.gabiflix/.PlayerActivity: +1s943ms
+11-18 20:09:55.641  1949  2848 I PBSessionCacheImpl: Deleted sessionId[8573587682273341] from persistence.
+11-18 20:09:55.648  1949  2129 W SearchServiceCore: Abort, client detached.
+11-18 20:09:55.655   699   837 D EglHelper: createEglSurface done
+11-18 20:09:55.671   699  1221 I OpenGLRenderer: Davey! duration=845ms; Flags=1, IntendedVsync=499272108292, Vsync=500005441596, OldestInputEvent=9223372036854775807, NewestInputEvent=0, HandleInputStart=500012717257, AnimationStart=500012718189, PerformTraversalsStart=500012725702, DrawStart=500069011237, SyncQueued=500069187386, SyncStart=500086758066, IssueDrawCommandsStart=500086818259, SwapBuffers=500114105813, FrameCompleted=500134818312, DequeueBufferDuration=14130972, QueueBufferDuration=155239, GpuCompleted=0, 
+11-18 20:09:55.982   699  1221 I OpenGLRenderer: Davey! duration=1163ms; Flags=1, IntendedVsync=499272108292, Vsync=500005441596, OldestInputEvent=9223372036854775807, NewestInputEvent=0, HandleInputStart=500012717257, AnimationStart=500012718189, PerformTraversalsStart=500012725702, DrawStart=500416409766, SyncQueued=500417065170, SyncStart=500427764114, IssueDrawCommandsStart=500427844074, SwapBuffers=500431184512, FrameCompleted=500446069562, DequeueBufferDuration=12298841, QueueBufferDuration=988802, GpuCompleted=0, 
+11-18 20:09:56.501     0     0 D logd    : logdr: UID=0 GID=0 PID=10825 n tail=0 logMask=99 pid=0 start=0ns timeout=0ns
+11-18 20:09:56.301   485  3560 D WifiNl80211Manager: Scan result ready event
+11-18 20:09:56.302   485  3560 D WifiNative: Scan result ready event
+11-18 20:09:56.393 10768 10799 I GabiFlixPlayer: hash=deea472cd3c9ce1b tamanho=39670384 arquivo=clip.mkv
+11-18 20:09:56.393 10768 10799 I GabiFlixPlayer: Hash calculado, mas a busca de legendas falhou
+11-18 20:09:56.393 10768 10799 I GabiFlixPlayer: candidatas para baixar: 1 (do site: 1)
+11-18 20:09:56.753 10768 10799 I GabiFlixPlayer: legendas PT válidas: 1 de 1; referências baixadas: 0
+11-18 20:09:56.802 10768 10799 I GabiFlixPlayer: alinhamento com 0 referência(s):
+11-18 20:09:56.802 10768 10799 I GabiFlixPlayer:   sem referência (nem outro idioma, nem PT do hash) e menos de 2 PT para comparar: ranking antigo
+11-18 20:09:56.802 10768 10799 I GabiFlixPlayer:   alinhadas: 0
+11-18 20:09:58.112  1452  1519 I PeriodicStatsRunner: PeriodicStatsRunner.call():180 call()
+11-18 20:09:58.112  1452  1519 I PeriodicStatsRunner: PeriodicStatsRunner.call():184 No submit PeriodicStats since input started.
+11-18 20:09:58.239 10768 10805 I VideoCapabilities: Unsupported profile 4 for video/mp4v-es
+11-18 20:09:58.242 10768 10844 E VLC     : [ecc30f40/2a5c] libvlc window: request 1 not implemented
+11-18 20:09:58.244 10768 10844 E VLC     : [ecc30f40/2a5c] libvlc window: request 0 not implemented
+11-18 20:09:58.244 10768 10844 E VLC     : [ecc30f40/2a5c] libvlc window: request 0 not implemented
+11-18 20:09:58.244 10768 10844 E VLC     : [ecc30f40/2a5c] libvlc window: request 1 not implemented
+11-18 20:09:58.251 10768 10846 I OMXClient: IOmx service obtained
+11-18 20:09:58.251   433   471 I OMXMaster: makeComponentInstance(OMX.android.goldfish.h264.decoder) in android.hardwar process
+11-18 20:09:58.251   433   471 I GoldfishOMXPlugin: makeComponentInstance 'OMX.android.goldfish.h264.decoder'
+11-18 20:09:58.251   433   471 I GoldfishOMXPlugin: Using goldfish codec for 'avcdec'
+11-18 20:09:58.251   433   471 I goldfish_avcdec: created GoldfishAVCDec 96 object 0xf0644790
+11-18 20:09:58.252 10768 10845 D SurfaceUtils: connecting to surface 0xe728b068, reason connectToSurface
+11-18 20:09:58.252 10768 10845 I MediaCodec: [OMX.android.goldfish.h264.decoder] setting surface generation to 11026433
+11-18 20:09:58.252 10768 10845 D SurfaceUtils: disconnecting from surface 0xe728b068, reason connectToSurface(reconnect)
+11-18 20:09:58.252 10768 10845 D SurfaceUtils: connecting to surface 0xe728b068, reason connectToSurface(reconnect)
+11-18 20:09:58.253   433   471 W OMXNodeInstance: [0xf1100400:android.goldfish.h264.decoder] component does not support metadata mode; using fallback
+11-18 20:09:58.253 10768 10846 E ACodec  : [OMX.android.goldfish.h264.decoder] setPortMode on output to DynamicANWBuffer failed w/ err -1010
+11-18 20:09:58.254   433   471 E OMXNodeInstance: getParameter(0xf1100400:android.goldfish.h264.decoder, ??(0x6f600011)) ERROR: UnsupportedIndex(0x8000101a)
+11-18 20:09:58.254   433   471 W OMXNodeInstance: [0xf1100400:android.goldfish.h264.decoder] component does not support metadata mode; using fallback
+11-18 20:09:58.255   433  9665 D GoldfishVideoDecoderOMXComponent: Color Aspects preference: 1 
+11-18 20:09:58.255   433  9665 E OMXNodeInstance: getConfig(0xf1100400:android.goldfish.h264.decoder, ConfigAndroidVendorExtension(0x6f100004)) ERROR: UnsupportedIndex(0x8000101a)
+11-18 20:09:58.255   433  9665 E OMXNodeInstance: getConfig(0xf1100400:android.goldfish.h264.decoder, ??(0x7f000003)) ERROR: UnsupportedSetting(0x80001019)
+11-18 20:09:58.261 10768 10768 I GabiFlixPlayer: ciclo: evento Vout, saídas=1
+11-18 20:09:58.297 10768 10846 D SurfaceUtils: disconnecting from surface 0xe728b068, reason setNativeWindowSizeFormatAndUsage
+11-18 20:09:58.297 10768 10846 D SurfaceUtils: connecting to surface 0xe728b068, reason setNativeWindowSizeFormatAndUsage
+11-18 20:09:58.298 10768 10846 D SurfaceUtils: set up nativeWindow 0xe728b068 for 640x480, color 0x13, rotation 0, usage 0x1002900
+11-18 20:09:58.298   301  7346 W android.hardware.graphics.allocator@3.0-service: gralloc_alloc: Requested OMX_COLOR_FormatYUV420Planar, given YCbCr_420_888, taking experimental path. usage=1000900
+11-18 20:09:58.579     0     0 D logd    : logdr: UID=0 GID=0 PID=10850 n tail=0 logMask=99 pid=0 start=0ns timeout=0ns
+11-18 20:09:58.357   301  7346 I chatty  : uid=1000(system) HwBinder:301_3 identical 3 lines
+11-18 20:09:58.362   301  7346 W android.hardware.graphics.allocator@3.0-service: gralloc_alloc: Requested OMX_COLOR_FormatYUV420Planar, given YCbCr_420_888, taking experimental path. usage=1000900
+11-18 20:09:58.369   429   429 W ResourceManagerService: Ignoring request to add new resource entry with value <= 0
+11-18 20:09:58.369   433 10848 I goldfish_avcdec: GoldfishAVC decoder version 1.0
+11-18 20:09:58.403   374   443 D AudioFlinger: Client defaulted notificationFrames to 1956 for frameCount 3912
+11-18 20:09:58.404   374   443 D AF::TrackHandle: OpPlayAudio: track:62 usage:1 not muted
+11-18 20:09:58.434   485  3560 I system_server: oneway function results will be dropped but finished with status OK and parcel size 4
+11-18 20:09:58.434   485  3560 I chatty  : uid=1000(system) Binder:485_20 identical 2 lines
+11-18 20:09:58.434   485  3560 I system_server: oneway function results will be dropped but finished with status OK and parcel size 4
+11-18 20:09:58.434   433 10848 D GoldfishVideoDecoderOMXComponent: Color Aspects preference: 1 
+11-18 20:09:58.438   433  9665 E OMXNodeInstance: getConfig(0xf1100400:android.goldfish.h264.decoder, ??(0x7f000003)) ERROR: UnsupportedSetting(0x80001019)
+11-18 20:09:58.450 10768 10853 E VLC     : [ec84ec80/2a65] libvlc decoder: output: 19 unknown, 640x480 stride 640 480, crop 0 0 0 0
+11-18 20:09:58.451 10768 10855 W AudioTrack: Use of stream types is deprecated for operations other than volume control
+11-18 20:09:58.451 10768 10855 W AudioTrack: See the documentation of AudioTrack() for what to use instead with android.media.AudioAttributes to qualify your playback use case
+11-18 20:09:58.451   374   443 W APM::AudioPolicyEngine: getDevicesForStrategy() unknown strategy: -1
+11-18 20:09:58.451   374   443 W APM::AudioPolicyEngine: getDevicesForStrategy() unknown strategy: -1
+11-18 20:09:58.452   485  1890 I system_server: oneway function results will be dropped but finished with status OK and parcel size 4
+11-18 20:09:58.863   374   442 D AudioFlinger: mixer(0xe9389030) throttle end: throttle time(79)
+11-18 20:09:58.889   411   411 I perfetto: probes_producer.cc:329  Producer stop (id=11)
+11-18 20:09:58.891   412   412 I perfetto: ng_service_impl.cc:1948 Tracing session 11 ended, total sessions:0
+11-18 20:09:58.891   411   411 I perfetto: ftrace_procfs.cc:183    disabled ftrace
+11-18 20:09:59.116     0     0 W perfetto: disabled ftrace
+11-18 20:09:59.267 10768 10844 E VLC     : [ecc30f40/2a5c] libvlc window: request 3 not implemented
+11-18 20:09:59.874 10768 10768 I GabiFlixPlayer: vistas do vídeo: SurfaceView(vídeo) SurfaceView
+11-18 20:09:59.875 10768 10768 I GabiFlixPlayer: AUDIOSYNC pronto (sem limite de dados; automático=true, começa 30 s depois de a legenda ficar ativa, reverifica a cada 600 s)
+11-18 20:09:59.888 10768 10768 I GabiFlixPlayer: legenda PT embutida: não há
+11-18 20:09:59.888 10768 10768 I GabiFlixPlayer: ranking das legendas:
+11-18 20:09:59.888 10768 10768 I GabiFlixPlayer:   referência de fim=0ms (sem referência), duração=1200023ms
+11-18 20:09:59.888 10768 10768 I GabiFlixPlayer:   #0 fim=6111228ms hash=false corrigida=false nota=0.3000
+11-18 20:09:59.889 10768 10768 I GabiFlixPlayer: escolhida: candidata #0; melhor baixada: #0 alinhada=false nota=0.00 deslocamento=0ms hash=false corrigida=false; 1 no menu
+11-18 20:09:59.889 10768 10768 I GabiFlixPlayer: atraso da legenda ativa (nenhuma): 0 ms
+11-18 20:10:00.004   699   699 D KeyguardClockSwitch: Updating clock: 810
+11-18 20:10:00.205 10768 10768 I GabiFlixPlayer: legenda do app: 1458 falas da faixa ativa
+11-18 20:10:00.205 10768 10768 I GabiFlixPlayer: legenda do app: ligada
+11-18 20:10:00.312 10768 10780 I xyz404.gabifli: NativeAlloc concurrent copying GC freed 235585(8438KB) AllocSpace objects, 18(1632KB) LOS objects, 49% free, 4267KB/8535KB, paused 16us total 125.601ms
+11-18 20:10:00.324   374   442 D AudioFlinger: mixer(0xe9389030) throttle end: throttle time(28)
+11-18 20:10:00.635     0     0 D logd    : logdr: UID=0 GID=0 PID=10874 n tail=0 logMask=99 pid=0 start=0ns timeout=0ns
+11-18 20:10:00.642  1452  1519 I PeriodicStatsRunner: PeriodicStatsRunner.call():180 call()
+11-18 20:10:00.642  1452  1519 I PeriodicStatsRunner: PeriodicStatsRunner.call():184 No submit PeriodicStats since input started.
+11-18 20:10:00.761   374   442 D AudioFlinger: mixer(0xe9389030) throttle end: throttle time(78)
+11-18 20:10:00.875   160   160 E SELinux : avc:  denied  { find } for interface=android.hardware.memtrack::IMemtrack sid=u:r:untrusted_app:s0:c167,c256,c512,c768 pid=10768 scontext=u:r:untrusted_app:s0:c167,c256,c512,c768 tcontext=u:object_r:hal_memtrack_hwservice:s0 tclass=hwservice_manager permissive=0
+11-18 20:10:00.876 10768 10768 E memtrack: Couldn't load memtrack module
+11-18 20:10:00.876 10768 10768 I xyz404.gabifli: Using smaps_rollup for pss collection
+11-18 20:10:00.882 10768 10768 I GabiFlixPlayer: AUDIOSYNC estado: st=0 executando=false tocando=true carregando=false faixa=2 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 2:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=75MB java=4/512MB nativo=47MB livre=1146MB limiar=144MB poucaMemoria=false
+11-18 20:10:00.886 10768 10768 I GabiFlixPlayer: AUDIOSYNC legenda ativa: d3:u|h:deea472cd3c9ce1b|http://10.0.2.2:8001/mais3.srt#raw
+11-18 20:10:00.892   374   442 D AudioFlinger: mixer(0xe9389030) throttle end: throttle time(15)
+11-18 20:10:01.014   374   442 D AudioFlinger: mixer(0xe9389030) throttle end: throttle time(10)
+11-18 20:10:01.090   374   442 D AudioFlinger: mixer(0xe9389030) throttle end: throttle time(7)
+11-18 20:10:01.120   374   442 D AudioFlinger: mixer(0xe9389030) throttle end: throttle time(9)
+11-18 20:10:01.241   374   442 D AudioFlinger: mixer(0xe9389030) throttle end: throttle time(53)
+11-18 20:10:01.299   374   442 D AudioFlinger: mixer(0xe9389030) throttle end: throttle time(21)
+11-18 20:10:01.382   485  1890 I system_server: oneway function results will be dropped but finished with status OK and parcel size 4
+11-18 20:10:01.391 10768 10768 I GabiFlixPlayer: atraso da legenda ativa (d3:u|h:deea472cd3c9ce1b|http://10.0.2.2:8001/mais3.srt#raw): 0 ms
+11-18 20:10:01.564   374   442 D AudioFlinger: mixer(0xe9389030) throttle end: throttle time(4)
+11-18 20:10:02.679     0     0 D logd    : logdr: UID=0 GID=0 PID=10886 n tail=0 logMask=99 pid=0 start=0ns timeout=0ns
+11-18 20:10:03.484   374   442 D AudioFlinger: mixer(0xe9389030) throttle end: throttle time(5)
+11-18 20:10:03.511   374   442 D AudioFlinger: mixer(0xe9389030) throttle end: throttle time(7)
+11-18 20:10:03.623   374   442 D AudioFlinger: mixer(0xe9389030) throttle end: throttle time(1)
+11-18 20:10:03.671   374   442 D AudioFlinger: mixer(0xe9389030) throttle end: throttle time(10)
+11-18 20:10:03.778   374   442 D AudioFlinger: mixer(0xe9389030) throttle end: throttle time(12)
+11-18 20:10:04.718     0     0 D logd    : logdr: UID=0 GID=0 PID=10903 n tail=0 logMask=99 pid=0 start=0ns timeout=0ns
+11-18 20:10:06.748     0     0 D logd    : logdr: UID=0 GID=0 PID=10920 n tail=0 logMask=99 pid=0 start=0ns timeout=0ns
+11-18 20:10:08.788     0     0 D logd    : logdr: UID=0 GID=0 PID=10937 n tail=0 logMask=99 pid=0 start=0ns timeout=0ns
+11-18 20:10:08.701   485   496 W JavaBinder: BinderProxy is being destroyed but the application did not call unlinkToDeath to unlink all of its death recipients beforehand.  Releasing leaked death recipient: com.android.server.AlarmManagerService$2
+11-18 20:10:08.701   485   496 I BpBinder: onLastStrongRef automatically unlinking death recipients: <uncached descriptor>
+11-18 20:10:08.705   485   496 W JavaBinder: BinderProxy is being destroyed but the application did not call unlinkToDeath to unlink all of its death recipients beforehand.  Releasing leaked death recipient: com.android.server.AlarmManagerService$2
+11-18 20:10:08.705   485   496 I BpBinder: onLastStrongRef automatically unlinking death recipients: <uncached descriptor>
+11-18 20:10:08.705   485   496 W JavaBinder: BinderProxy is being destroyed but the application did not call unlinkToDeath to unlink all of its death recipients beforehand.  Releasing leaked death recipient: com.android.server.AlarmManagerService$2
+11-18 20:10:08.705   485   496 I BpBinder: onLastStrongRef automatically unlinking death recipients: <uncached descriptor>
+11-18 20:10:10.828     0     0 D logd    : logdr: UID=0 GID=0 PID=10955 n tail=0 logMask=99 pid=0 start=0ns timeout=0ns
+11-18 20:10:12.863     0     0 D logd    : logdr: UID=0 GID=0 PID=10972 n tail=0 logMask=99 pid=0 start=0ns timeout=0ns
+11-18 20:10:14.914     0     0 D logd    : logdr: UID=0 GID=0 PID=10989 n tail=0 logMask=99 pid=0 start=0ns timeout=0ns
+11-18 20:10:16.957     0     0 D logd    : logdr: UID=0 GID=0 PID=11006 n tail=0 logMask=99 pid=0 start=0ns timeout=0ns
+11-18 20:10:18.996     0     0 D logd    : logdr: UID=0 GID=0 PID=11017 n tail=0 logMask=99 pid=0 start=0ns timeout=0ns
+11-18 20:10:21.043     0     0 D logd    : logdr: UID=0 GID=0 PID=11033 n tail=0 logMask=99 pid=0 start=0ns timeout=0ns
+11-18 20:10:20.913 10768 10768 I GabiFlixPlayer: AUDIOSYNC estado: st=0 executando=false tocando=true carregando=false faixa=2 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 2:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=80MB java=4/512MB nativo=48MB livre=1149MB limiar=144MB poucaMemoria=false
+11-18 20:10:23.082     0     0 D logd    : logdr: UID=0 GID=0 PID=11050 n tail=0 logMask=99 pid=0 start=0ns timeout=0ns
+11-18 20:10:25.120     0     0 D logd    : logdr: UID=0 GID=0 PID=11067 n tail=0 logMask=99 pid=0 start=0ns timeout=0ns
+11-18 20:10:27.158     0     0 D logd    : logdr: UID=0 GID=0 PID=11084 n tail=0 logMask=99 pid=0 start=0ns timeout=0ns
+11-18 20:10:29.197     0     0 D logd    : logdr: UID=0 GID=0 PID=11101 n tail=0 logMask=99 pid=0 start=0ns timeout=0ns
+11-18 20:10:30.917 10768 10768 I GabiFlixPlayer: AUDIOSYNC antes da análise: saúde da reprodução: amostras=30 paradas=0 razão_mínima=0.76 carregando=0 quadros_perdidos=4
+11-18 20:10:30.917 10768 10768 I GabiFlixPlayer: AUDIOSYNC começando: posição 32 s, duração 1200 s, atraso atual 0 ms, faixa de áudio 1
+11-18 20:10:31.257     0     0 D logd    : logdr: UID=0 GID=0 PID=11120 n tail=0 logMask=99 pid=0 start=0ns timeout=0ns
+11-18 20:10:31.041   485  1924 D CompatibilityChangeReporter: Compat change id reported: 135634846; UID 10167; state: DISABLED
+11-18 20:10:31.041   485   527 D CompatibilityChangeReporter: Compat change id reported: 143937733; UID 10167; state: ENABLED
+11-18 20:10:31.045   282   282 D Zygote  : Forked child process 11125
+11-18 20:10:31.046   485   527 I ActivityManager: Start proc 11125:io.github.gabrielxyz404.gabiflix:audiocap/u0a167 for service {io.github.gabrielxyz404.gabiflix/io.github.gabrielxyz404.gabiflix.AudioCapService}
+11-18 20:10:31.051 11125 11125 W biflix:audioca: Unexpected CPU variant for X86 using defaults: x86
+11-18 20:10:31.055   485  1924 D CompatibilityChangeReporter: Compat change id reported: 136274596; UID 10167; state: ENABLED
+11-18 20:10:31.061  4551  4558 I adbd    : jdwp connection from 11125
+11-18 20:10:31.070 11125 11125 D NetworkSecurityConfig: No Network Security Config specified, using platform default
+11-18 20:10:31.070 11125 11125 D NetworkSecurityConfig: No Network Security Config specified, using platform default
+11-18 20:10:31.104 11125 11146 D VLC/JNI/VLCObject: JNI interface loaded.
+11-18 20:10:31.109 11125 11146 E VLC     : [e6642f20/2b8a] libvlc audio output: GetStaticFieldID(AudioFormat.ENCODING_PCM_32BIT) failed
+11-18 20:10:33.306     0     0 D logd    : logdr: UID=0 GID=0 PID=11167 n tail=0 logMask=99 pid=0 start=0ns timeout=0ns
+11-18 20:10:34.094 11125 11158 E VLC     : [eca85720/2b96] libvlc mux: cannot add this stream
+11-18 20:10:34.094 11125 11158 E VLC     : [ec8488c0/2b96] libvlc decoder: cannot create packetizer output (h264)
+11-18 20:10:34.104 11125 11149 E VLC     : [ec8488c0/2b8d] libvlc decoder: buffer deadlock prevented
+11-18 20:10:35.330     0     0 D logd    : logdr: UID=0 GID=0 PID=11184 n tail=0 logMask=99 pid=0 start=0ns timeout=0ns
+11-18 20:10:37.374     0     0 D logd    : logdr: UID=0 GID=0 PID=11201 n tail=0 logMask=99 pid=0 start=0ns timeout=0ns
+11-18 20:10:39.410     0     0 D logd    : logdr: UID=0 GID=0 PID=11211 n tail=0 logMask=99 pid=0 start=0ns timeout=0ns
+11-18 20:10:40.927 10768 10768 I GabiFlixPlayer: AUDIOSYNC estado: st=0 executando=true tocando=true carregando=false faixa=2 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 2:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=71MB java=5/512MB nativo=48MB livre=1142MB limiar=144MB poucaMemoria=false
+11-18 20:10:41.446     0     0 D logd    : logdr: UID=0 GID=0 PID=11228 n tail=0 logMask=99 pid=0 start=0ns timeout=0ns
+11-18 20:10:43.476     0     0 D logd    : logdr: UID=0 GID=0 PID=11245 n tail=0 logMask=99 pid=0 start=0ns timeout=0ns
+11-18 20:10:45.502     0     0 D logd    : logdr: UID=0 GID=0 PID=11262 n tail=0 logMask=99 pid=0 start=0ns timeout=0ns
+11-18 20:10:47.545     0     0 D logd    : logdr: UID=0 GID=0 PID=11279 n tail=0 logMask=99 pid=0 start=0ns timeout=0ns
+11-18 20:10:48.393 10768 10768 I GabiFlixPlayer: legenda do app: tempo 49795 ms, atraso 0 ms -> "ALMAS PERVERSAS (1945)"
+11-18 20:10:49.003     0     0 W healthd : battery l=100 v=5000 t=25.0 h=2 st=2 c=900000 fc=300000 cc=10 chg=a
+11-18 20:10:49.577     0     0 D logd    : logdr: UID=0 GID=0 PID=11296 n tail=0 logMask=99 pid=0 start=0ns timeout=0ns
+11-18 20:10:51.602     0     0 D logd    : logdr: UID=0 GID=0 PID=11313 n tail=0 logMask=99 pid=0 start=0ns timeout=0ns
+11-18 20:10:51.653 10768 11119 I GabiFlixPlayer: AUDIOSYNC captura 275 s +90 s: 90.06 s de PCM em 20.61 s (fim) leitura=3 MB | usou a faixa 1 (pedida 1) de [1:Scarlet Street 1945 HD; ]
+11-18 20:10:53.678     0     0 D logd    : logdr: UID=0 GID=0 PID=11328 n tail=0 logMask=99 pid=0 start=0ns timeout=0ns
+11-18 20:10:53.632 10768 10768 I GabiFlixPlayer: legenda do app: tempo 54999 ms, atraso 0 ms -> (nada)
+11-18 20:10:55.724     0     0 D logd    : logdr: UID=0 GID=0 PID=11342 n tail=0 logMask=99 pid=0 start=0ns timeout=0ns
+11-18 20:10:57.750     0     0 D logd    : logdr: UID=0 GID=0 PID=11361 n tail=0 logMask=99 pid=0 start=0ns timeout=0ns
+11-18 20:10:57.832 11125 11352 E VLC     : [eca85540/2c58] libvlc mux: cannot add this stream
+11-18 20:10:57.832 11125 11352 E VLC     : [ec840d60/2c58] libvlc decoder: cannot create packetizer output (h264)
+11-18 20:10:58.173 11125 11340 E VLC     : [ec840d60/2c4c] libvlc decoder: buffer deadlock prevented
+11-18 20:10:59.799     0     0 D logd    : logdr: UID=0 GID=0 PID=11378 n tail=0 logMask=99 pid=0 start=0ns timeout=0ns
+11-18 20:11:00.005   699   699 D KeyguardClockSwitch: Updating clock: 811
+11-18 20:11:00.939 10768 10768 I GabiFlixPlayer: AUDIOSYNC estado: st=0 executando=true tocando=true carregando=false faixa=2 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 2:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=76MB java=8/512MB nativo=48MB livre=1127MB limiar=144MB poucaMemoria=false
+11-18 20:11:01.832     0     0 D logd    : logdr: UID=0 GID=0 PID=11395 n tail=0 logMask=99 pid=0 start=0ns timeout=0ns
+11-18 20:11:03.879     0     0 D logd    : logdr: UID=0 GID=0 PID=11412 n tail=0 logMask=99 pid=0 start=0ns timeout=0ns
+11-18 20:11:05.922     0     0 D logd    : logdr: UID=0 GID=0 PID=11429 n tail=0 logMask=99 pid=0 start=0ns timeout=0ns
+11-18 20:11:07.963     0     0 D logd    : logdr: UID=0 GID=0 PID=11446 n tail=0 logMask=99 pid=0 start=0ns timeout=0ns
+11-18 20:11:10.002     0     0 D logd    : logdr: UID=0 GID=0 PID=11463 n tail=0 logMask=99 pid=0 start=0ns timeout=0ns
+11-18 20:11:12.053     0     0 D logd    : logdr: UID=0 GID=0 PID=11480 n tail=0 logMask=99 pid=0 start=0ns timeout=0ns
+11-18 20:11:14.085     0     0 D logd    : logdr: UID=0 GID=0 PID=11492 n tail=0 logMask=99 pid=0 start=0ns timeout=0ns
+11-18 20:11:14.692 10768 11119 I GabiFlixPlayer: AUDIOSYNC captura 710 s +90 s: 89.97 s de PCM em 20.01 s (fim) leitura=3 MB | usou a faixa 1 (pedida 1) de [1:Scarlet Street 1945 HD; ]
+11-18 20:11:16.175     0     0 D logd    : logdr: UID=0 GID=0 PID=11507 n tail=0 logMask=99 pid=0 start=0ns timeout=0ns
+11-18 20:11:18.225     0     0 D logd    : logdr: UID=0 GID=0 PID=11526 n tail=0 logMask=99 pid=0 start=0ns timeout=0ns
+11-18 20:11:20.252     0     0 D logd    : logdr: UID=0 GID=0 PID=11545 n tail=0 logMask=99 pid=0 start=0ns timeout=0ns
+11-18 20:11:20.704 11125 11536 E VLC     : [eca84820/2d10] libvlc mux: cannot add this stream
+11-18 20:11:20.704 11125 11536 E VLC     : [ec84f700/2d10] libvlc decoder: cannot create packetizer output (h264)
+11-18 20:11:20.721 11125 11524 E VLC     : [ec84f700/2d04] libvlc decoder: buffer deadlock prevented
+11-18 20:11:20.967 10768 10768 I GabiFlixPlayer: AUDIOSYNC estado: st=0 executando=true tocando=true carregando=false faixa=2 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 2:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=76MB java=14/512MB nativo=48MB livre=1120MB limiar=144MB poucaMemoria=false
+11-18 20:11:22.320     0     0 D logd    : logdr: UID=0 GID=0 PID=11562 n tail=0 logMask=99 pid=0 start=0ns timeout=0ns
+11-18 20:11:22.455   374   442 D AudioFlinger: mixer(0xe9389030) throttle end: throttle time(1)
+11-18 20:11:24.360     0     0 D logd    : logdr: UID=0 GID=0 PID=11579 n tail=0 logMask=99 pid=0 start=0ns timeout=0ns
+11-18 20:11:26.412     0     0 D logd    : logdr: UID=0 GID=0 PID=11596 n tail=0 logMask=99 pid=0 start=0ns timeout=0ns
+11-18 20:11:28.459     0     0 D logd    : logdr: UID=0 GID=0 PID=11613 n tail=0 logMask=99 pid=0 start=0ns timeout=0ns
+11-18 20:11:30.245 10768 11119 I GabiFlixPlayer: AUDIOSYNC captura 1050 s +90 s: 89.99 s de PCM em 12.84 s (fim) leitura=3 MB | usou a faixa 1 (pedida 1) de [1:Scarlet Street 1945 HD; ]
+11-18 20:11:30.494     0     0 D logd    : logdr: UID=0 GID=0 PID=11630 n tail=0 logMask=99 pid=0 start=0ns timeout=0ns
+11-18 20:11:32.593     0     0 D logd    : logdr: UID=0 GID=0 PID=11642 n tail=0 logMask=99 pid=0 start=0ns timeout=0ns
+11-18 20:11:33.063 10768 10768 I GabiFlixPlayer: AUDIOSYNC resultado: aceita z=11.7 janelas=3/3 escala=1.00000 deslocamento=-3032 ms | vad=silero janelas=3 captura=61565 ms vad=7360 ms (cpu 16) solve=449 ms (cpu 378) cpu_thread=537 ms total=62135 ms leitura_estimada=8 MB leitura_real=9 MB pss=84->80 MB java=5->18 MB
+11-18 20:11:33.063 10768 10768 I GabiFlixPlayer: AUDIOSYNC saúde da reprodução: amostras=62 paradas=0 razão_mínima=0.75 carregando=0 quadros_perdidos=0
+11-18 20:11:33.063 10768 10768 I GabiFlixPlayer: atraso da legenda: -3030 ms (d3:u|h:deea472cd3c9ce1b|http://10.0.2.2:8001/mais3.srt#raw)
+11-18 20:11:33.063 10768 10768 I GabiFlixPlayer: AUDIOSYNC legenda: atraso 0 -> -3030 ms, estratégia plain, faixa 2, posição 94465 ms
+11-18 20:11:33.064 10768 10768 I GabiFlixPlayer: AUDIOSYNC aplicado: atraso -3030 ms, escala 1.0
+11-18 20:11:34.640     0     0 D logd    : logdr: UID=0 GID=0 PID=11659 n tail=0 logMask=99 pid=0 start=0ns timeout=0ns
+11-18 20:11:35.118 11125 11125 I biflix:audioca: System.exit called, status: 0
+11-18 20:11:35.118 11125 11125 I AndroidRuntime: VM exiting with result code 0, cleanup skipped.
+11-18 20:11:35.130   485  1924 I ActivityManager: Process io.github.gabrielxyz404.gabiflix:audiocap (pid 11125) has died: cch+5 CEM 
+11-18 20:11:35.131   282   282 I Zygote  : Process 11125 exited cleanly (0)
+11-18 20:11:35.175   485   528 I libprocessgroup: Successfully killed process cgroup uid 10167 pid 11125 in 43ms
+11-18 20:11:36.818   160   160 I hwservicemanager: getTransport: Cannot find entry android.hardware.graphics.mapper@4.0::IMapper/default in either framework or device manifest.
+11-18 20:11:36.819 11687 11687 I Gralloc4: mapper 4.x is not supported
+11-18 20:11:36.841 11687 11687 D HostConnection: createUnique: call
+11-18 20:11:36.844 11687 11687 D HostConnection: HostConnection::get() New Host Connection established 0xf3840f60, tid 11687
+11-18 20:11:36.875 11687 11687 D HostConnection: HostComposition ext ANDROID_EMU_CHECKSUM_HELPER_v1 ANDROID_EMU_native_sync_v2 ANDROID_EMU_dma_v1 ANDROID_EMU_direct_mem ANDROID_EMU_host_composition_v1 ANDROID_EMU_host_composition_v2 ANDROID_EMU_vulkan ANDROID_EMU_deferred_vulkan_commands ANDROID_EMU_vulkan_null_optional_strings ANDROID_EMU_vulkan_create_resources_with_requirements ANDROID_EMU_YUV_Cache ANDROID_EMU_vulkan_ignored_handles ANDROID_EMU_has_shared_slots_host_memory_allocator ANDROID_EMU_vulkan_free_memory_sync ANDROID_EMU_vulkan_shader_float16_int8 ANDROID_EMU_vulkan_async_queue_submit ANDROID_EMU_sync_buffer_data ANDROID_EMU_vulkan_async_qsri ANDROID_EMU_read_color_buffer_dma ANDROID_EMU_hwc_color_transform GL_OES_EGL_image_external_essl3 GL_OES_vertex_array_object GL_KHR_texture_compression_astc_ldr ANDROID_EMU_host_side_tracing ANDROID_EMU_gles_max_version_3_0 
+11-18 20:11:37.468     0     0 D logd    : logdr: UID=0 GID=0 PID=11689 n tail=0 logMask=99 pid=0 start=0ns timeout=0ns
+11-18 20:11:37.496     0     0 D logd    : logdr: UID=0 GID=0 PID=11692 n tail=0 logMask=99 pid=0 start=0ns timeout=0ns
