@@ -113,3 +113,20 @@ for r in rows:
         break
 for k, v in sorted(agg.items(), key=lambda kv: -kv[1])[:25]:
     print('  %8.2f MB  %s' % (v / 1048576, k))
+
+# so o CRESCIMENTO: o liquido gravado depois dos primeiros 4 min do perfil (a base do decodificador, que sobe no comeco, nao conta)
+print('\n== CRESCIMENTO (liquido depois dos 4 primeiros minutos do perfil), pela primeira funcao fora de libc/libc++/linker')
+t0 = q("select min(ts) t from heap_profile_allocation")[0].t or 0
+cut = t0 + 240 * 10**9
+tot_late = q("select sum(size) s from heap_profile_allocation where ts > %d" % cut)[0].s or 0
+print('total depois de 4 min: %.1f MB' % (tot_late / 1048576))
+agg = {}
+for r in q("select callsite_id, sum(size) liq from heap_profile_allocation where ts > %d group by callsite_id having liq != 0" % cut):
+    for name, pc, lib in stack(r.callsite_id, 40):
+        if lib.startswith(('libc.so', 'libc++', 'libc_malloc', 'libdl', 'linker', 'libheapprofd')) or (name or '').startswith(('malloc', 'calloc', 'realloc', 'operator new', 'posix_memalign', 'memalign', 'je_', 'scudo', '__', '_Znwj', '_Znaj')):
+            continue
+        key = '%s %s' % (lib, (name or sym(lib, pc or 0) or nearest(lib, pc or 0) or '+0x%x' % (pc or 0)))
+        agg[key] = agg.get(key, 0) + r.liq
+        break
+for k, v in sorted(agg.items(), key=lambda kv: -kv[1])[:15]:
+    print('  %8.2f MB  %s' % (v / 1048576, k))
