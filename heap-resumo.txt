@@ -1,0 +1,280 @@
+###                                                                        4.5%######################################################################## 100.0%
+Downloading https://commondatastorage.googleapis.com/perfetto-luci-artifacts/v59.1/linux-amd64/trace_processor_shell
+== processos com amostras
+upid=142 pid=3837 io.github.gabrielxyz404.gabiflix: 5112 linhas, liquido=197.3 MB, 903 s de perfil
+
+== estatisticas do heapprofd / unwinding
+heapprofd_last_profile_timestamp = 1074905607510
+heapprofd_unwind_time_us = 643747756
+heapprofd_unwind_samples = 1416472
+
+== liquido acumulado por dump (todos os processos)
+t=    0 s  liquido acumulado=   162.2 MB   (neste intervalo: alocou 805.2 MB, liberou 643.0 MB)
+t=   60 s  liquido acumulado=   163.9 MB   (neste intervalo: alocou 285.9 MB, liberou 284.2 MB)
+t=  120 s  liquido acumulado=   166.0 MB   (neste intervalo: alocou 304.1 MB, liberou 302.1 MB)
+t=  180 s  liquido acumulado=   168.0 MB   (neste intervalo: alocou 292.6 MB, liberou 290.6 MB)
+t=  240 s  liquido acumulado=   171.0 MB   (neste intervalo: alocou 294.8 MB, liberou 291.8 MB)
+t=  300 s  liquido acumulado=   173.5 MB   (neste intervalo: alocou 292.7 MB, liberou 290.2 MB)
+t=  360 s  liquido acumulado=   176.1 MB   (neste intervalo: alocou 290.1 MB, liberou 287.5 MB)
+t=  420 s  liquido acumulado=   179.0 MB   (neste intervalo: alocou 291.9 MB, liberou 288.9 MB)
+t=  480 s  liquido acumulado=   181.1 MB   (neste intervalo: alocou 290.7 MB, liberou 288.6 MB)
+t=  540 s  liquido acumulado=   183.0 MB   (neste intervalo: alocou 289.0 MB, liberou 287.1 MB)
+t=  600 s  liquido acumulado=   185.0 MB   (neste intervalo: alocou 288.3 MB, liberou 286.3 MB)
+t=  660 s  liquido acumulado=   187.2 MB   (neste intervalo: alocou 289.0 MB, liberou 286.8 MB)
+t=  720 s  liquido acumulado=   189.9 MB   (neste intervalo: alocou 293.4 MB, liberou 290.6 MB)
+t=  780 s  liquido acumulado=   192.3 MB   (neste intervalo: alocou 290.0 MB, liberou 287.6 MB)
+t=  840 s  liquido acumulado=   194.6 MB   (neste intervalo: alocou 286.5 MB, liberou 284.3 MB)
+t=  900 s  liquido acumulado=   197.2 MB   (neste intervalo: alocou 293.5 MB, liberou 290.9 MB)
+t=  903 s  liquido acumulado=   197.3 MB   (neste intervalo: alocou 12.9 MB, liberou 12.8 MB)
+
+==================== heap "unknown": maiores chamadas por memoria LIQUIDA
+total liquido deste heap: 197.3 MB
+
+  liquido=98.79 MB  contagem liquida=32  alocou 32 vezes, tamanho medio 3237120 B  (callsite 6445)
+      libc.so            +0x43275    memalign
+      libvlc.so          +0x242a3b2  log2l
+      libvlc.so          +0x72ec3d   vlc_sdp_Start
+      libvlc.so          +0x350676   picture_NewFromResource
+      libvlc.so          +0x350782   picture_NewFromFormat
+      libvlc.so          +0x4b512b   input_DecoderFlush
+      libvlc.so          +0x4b2ab3   input_DecoderFlush
+      libvlc.so          +0x3477ee   vout_window_Delete
+      libvlc.so          +0x340cd9   vout_ChangeAspectRatio
+      libvlc.so          +0x33fa0c   vout_ChangeAspectRatio
+      libvlc.so          +0x363137   vlc_GetCPUCount
+      libc.so            +0xe6964    _ZL15__pthread_startPv
+      libc.so            +0x78557    __start_thread
+
+  liquido=19.12 MB  contagem liquida=601  alocou 601 vezes, tamanho medio 33368 B  (callsite 3046)
+      libc.so            +0x431c4    malloc
+      libc++.so          +0x4bd97    _Znwj
+      libc++.so          +0x4be60    _Znaj
+      libEGL_emulation.s +0xe29c     _ZL11getGLStringi
+      libEGL_emulation.s +0xddfe     eglMakeCurrent
+      libEGL.so          +0x159a7    _ZN7android13egl_display_t11makeCurrentEPNS_13egl_context_tES2_PvS3_S3_S3_S3_S3_
+      libEGL.so          +0x1f3da    _ZN7android18eglMakeCurrentImplEPvS0_S0_S0_
+      libEGL.so          +0x1bfc6    eglMakeCurrent
+      libvlc.so          +0x6bac5a   vlc_http_live_read
+      libvlc.so          +0x4b2b59   input_DecoderFlush
+      libvlc.so          +0x3407db   vout_ChangeAspectRatio
+      libvlc.so          +0x33efbf   vout_ChangeAspectRatio
+      libvlc.so          +0x363137   vlc_GetCPUCount
+      libc.so            +0xe6964    _ZL15__pthread_startPv
+      libc.so            +0x78557    __start_thread
+
+  liquido=18.59 MB  contagem liquida=584  alocou 584 vezes, tamanho medio 33385 B  (callsite 3274)
+      libc.so            +0x431c4    malloc
+      libc++.so          +0x4bd97    _Znwj
+      libc++.so          +0x4be60    _Znaj
+      libEGL_emulation.s +0xe29c     _ZL11getGLStringi
+      libEGL_emulation.s +0xddfe     eglMakeCurrent
+      libEGL.so          +0x159a7    _ZN7android13egl_display_t11makeCurrentEPNS_13egl_context_tES2_PvS3_S3_S3_S3_S3_
+      libEGL.so          +0x1f3da    _ZN7android18eglMakeCurrentImplEPvS0_S0_S0_
+      libEGL.so          +0x1bfc6    eglMakeCurrent
+      libvlc.so          +0x6bac5a   vlc_http_live_read
+      libvlc.so          +0x4b2af8   input_DecoderFlush
+      libvlc.so          +0x3405a4   vout_ChangeAspectRatio
+      libvlc.so          +0x33efbf   vout_ChangeAspectRatio
+      libvlc.so          +0x363137   vlc_GetCPUCount
+      libc.so            +0xe6964    _ZL15__pthread_startPv
+      libc.so            +0x78557    __start_thread
+
+  liquido=16.00 MB  contagem liquida=1  alocou 1 vezes, tamanho medio 16777216 B  (callsite 4922)
+      libc.so            +0x431c4    malloc
+      libvlc.so          +0x4d0a13   input_DecoderFlush
+      libvlc.so          +0x31cdc0   module_need
+      libvlc.so          +0x31cabd   vlc_module_load
+      libvlc.so          +0x31cd96   module_need
+      libvlc.so          +0x338871   vlc_stream_FilterNew
+      libvlc.so          +0x338a6b   vlc_stream_FilterNew
+      libvlc.so          +0x375e4d   access_vaDirectoryControlHelper
+      libvlc.so          +0x332c74   input_CreateFilename
+      libvlc.so          +0x32c627   input_Read
+      libvlc.so          +0x32f5de   input_Start
+      libvlc.so          +0x363137   vlc_GetCPUCount
+      libc.so            +0xe6964    _ZL15__pthread_startPv
+      libc.so            +0x78557    __start_thread
+
+  liquido=12.00 MB  contagem liquida=1  alocou 1 vezes, tamanho medio 12582912 B  (callsite 4706)
+      libc.so            +0x431c4    malloc
+      libvlc.so          +0x44537b   input_DecoderFlush
+      libvlc.so          +0x31cdc0   module_need
+      libvlc.so          +0x31cabd   vlc_module_load
+      libvlc.so          +0x31cd96   module_need
+      libvlc.so          +0x338871   vlc_stream_FilterNew
+      libvlc.so          +0x338a6b   vlc_stream_FilterNew
+      libvlc.so          +0x375e4d   access_vaDirectoryControlHelper
+      libvlc.so          +0x332c74   input_CreateFilename
+      libvlc.so          +0x331fc7   input_CreateFilename
+      libvlc.so          +0x33077f   input_CreateFilename
+      libvlc.so          +0x32eca9   input_Read
+      libvlc.so          +0x32f610   input_Start
+      libvlc.so          +0x363137   vlc_GetCPUCount
+      libc.so            +0xe6964    _ZL15__pthread_startPv
+      libc.so            +0x78557    __start_thread
+
+  liquido=4.50 MB  contagem liquida=1  alocou 1 vezes, tamanho medio 4718592 B  (callsite 6436)
+      libc.so            +0x433a9    realloc
+      libOpenglSystemCom +0xd3d5     _ZN14QemuPipeStream11allocBufferEj
+      libOpenglSystemCom +0xd8bf     _ZN8IOStream5allocEj
+      lib_renderControl_ +0x52b2     _ZN12_GLOBAL__N_117rcGetGLString_encEPvjS0_i
+      libOpenglSystemCom +0xc9e9     _ZN14HostConnection17queryGLExtensionsEP24ExtendedRCEncoderContext
+      libOpenglSystemCom +0xaf4f     _ZN14HostConnection17setChecksumHelperEP24ExtendedRCEncoderContext
+      libOpenglSystemCom +0xae19     _ZN14HostConnection9rcEncoderEv
+      libEGL_emulation.s +0xb13c     eglChooseConfig
+      libEGL.so          +0x1d730    _ZN7android19eglChooseConfigImplEPvPKiPS0_iPi
+      libEGL.so          +0x1bc0c    eglChooseConfig
+      libvlc.so          +0x6baa6c   vlc_http_live_read
+      libvlc.so          +0x6ba793   vlc_http_live_read
+      libvlc.so          +0x31cdc0   module_need
+      libvlc.so          +0x31cabd   vlc_module_load
+      libvlc.so          +0x31cd96   module_need
+      libvlc.so          +0x722d9a   vlc_gl_Create
+      libvlc.so          +0x4b2856   input_DecoderFlush
+      libvlc.so          +0x31cdc0   module_need
+
+  liquido=4.50 MB  contagem liquida=1  alocou 1 vezes, tamanho medio 4718592 B  (callsite 4911)
+      libc.so            +0x433a9    realloc
+      libOpenglSystemCom +0xd3d5     _ZN14QemuPipeStream11allocBufferEj
+      libOpenglSystemCom +0xd8bf     _ZN8IOStream5allocEj
+      lib_renderControl_ +0x52b2     _ZN12_GLOBAL__N_117rcGetGLString_encEPvjS0_i
+      libOpenglSystemCom +0xc9e9     _ZN14HostConnection17queryGLExtensionsEP24ExtendedRCEncoderContext
+      libOpenglSystemCom +0xaf4f     _ZN14HostConnection17setChecksumHelperEP24ExtendedRCEncoderContext
+      libOpenglSystemCom +0xae19     _ZN14HostConnection9rcEncoderEv
+      android.hardware.g +0x4826     _ZN12_GLOBAL__N_114GoldfishMapper12importBufferERKN7android8hardware11hidl_handleENSt3__18functionIFvNS2_8graphics6mapper4V3_05ErrorEPvEEE
+      android.hardware.g +0x151b8    _ZN7android8hardware8graphics6mapper4V3_08BsMapper12importBufferERKNS0_11hidl_handleENSt3__18functionIFvNS3_5ErrorEPvEEE
+      libui.so           +0x30b59    _ZNK7android14Gralloc3Mapper12importBufferERKNS_8hardware11hidl_handleEPPK13native_handle
+      libui.so           +0x41cdd    _ZN7android19GraphicBufferMapper12importBufferEPK13native_handlejjjiyjPS3_
+      libui.so           +0x3f6a3    _ZN7android13GraphicBuffer9unflattenERPKvRjRPKiS4_
+      libandroid_runtime +0xdeeb0    _ZN7android6Parcel17FlattenableHelperINS_13GraphicBufferEE9unflattenEPKvjPKij
+      libbinder.so       +0x67812    _ZNK7android6Parcel4readERNS0_26FlattenableHelperInterfaceE
+      libgui.so          +0x9cfe9    _ZN7android23BpGraphicBufferProducer13requestBufferEiPNS_2spINS_13GraphicBufferEEE
+      libgui.so          +0x9ff4a    _ZN7android23HpGraphicBufferProducer13requestBufferEiPNS_2spINS_13GraphicBufferEEE
+      libgui.so          +0xc2e90    _ZN7android7Surface13dequeueBufferEPP19ANativeWindowBufferPi
+      libgui.so          +0xc1280    _ZN7android7Surface29hook_dequeueBuffer_DEPRECATEDEP13ANativeWindowPP19ANativeWindowBuffer
+
+  liquido=4.50 MB  contagem liquida=1  alocou 1 vezes, tamanho medio 4718592 B  (callsite 4795)
+      libc.so            +0x433a9    realloc
+      libOpenglSystemCom +0xd3d5     _ZN14QemuPipeStream11allocBufferEj
+      libOpenglSystemCom +0xd8bf     _ZN8IOStream5allocEj
+      lib_renderControl_ +0x52b2     _ZN12_GLOBAL__N_117rcGetGLString_encEPvjS0_i
+      libOpenglSystemCom +0xc9e9     _ZN14HostConnection17queryGLExtensionsEP24ExtendedRCEncoderContext
+      libOpenglSystemCom +0xaf4f     _ZN14HostConnection17setChecksumHelperEP24ExtendedRCEncoderContext
+      libOpenglSystemCom +0xae19     _ZN14HostConnection9rcEncoderEv
+      libEGL_emulation.s +0x7873     _ZN10eglDisplay10initializeEP22EGLClient_eglInterface
+      libEGL_emulation.s +0xab5a     eglInitialize
+      libEGL.so          +0x14d0f    _ZN7android13egl_display_t10initializeEPiS1_
+      libEGL.so          +0x1d366    _ZN7android17eglInitializeImplEPvPiS1_
+      libEGL.so          +0x1bb26    eglInitialize
+      libhwui.so         +0x25b84a   _ZN7android10uirenderer12renderthread10EglManager10initializeEv
+      libhwui.so         +0x26c698   _ZN7android10uirenderer12renderthread12RenderThread16requireGlContextEv
+      libhwui.so         +0x24e229   _ZN7android10uirenderer12skiapipeline18SkiaOpenGLPipeline10setSurfaceEP13ANativeWindowNS0_12renderthread12SwapBehaviorE
+      libhwui.so         +0x256f97   _ZN7android10uirenderer12renderthread13CanvasContext10setSurfaceEP13ANativeWindowb
+      libhwui.so         +0x266a1c   _ZNSt3__110__function6__funcIZN7android10uirenderer12renderthread11RenderProxy10setSurfaceEP13ANativeWindowbE3$_6NS_9allocatorIS8_EEFvvEEclEv$e00e280ebd5c3731d7fcaae7cf2ab064
+      libhwui.so         +0x24575d   _ZN7android10uirenderer9WorkQueue7processEv
+
+  liquido=3.99 MB  contagem liquida=8  alocou 8 vezes, tamanho medio 523344 B  (callsite 6501)
+      libc.so            +0x43275    memalign
+      libvlc.so          +0x242a3b2  log2l
+      libvlc.so          +0x17ec12c  av_malloc
+      libvlc.so          +0x17d9ddc  av_buffer_allocz
+      libvlc.so          +0x17da77e  av_buffer_pool_get
+      libvlc.so          +0x15228b3  ff_h264_get_slice_type
+      libvlc.so          +0x151e579  ff_h264_queue_decode_slice
+      libvlc.so          +0xeeb458   ff_h264_flush_change
+      libvlc.so          +0x1112ca4  ff_thread_release_buffer
+      libc.so            +0xe6964    _ZL15__pthread_startPv
+      libc.so            +0x78557    __start_thread
+
+  liquido=3.99 MB  contagem liquida=8  alocou 8 vezes, tamanho medio 523344 B  (callsite 6496)
+      libc.so            +0x43275    memalign
+      libvlc.so          +0x242a3b2  log2l
+      libvlc.so          +0x17ec12c  av_malloc
+      libvlc.so          +0x17d9ddc  av_buffer_allocz
+      libvlc.so          +0x17da77e  av_buffer_pool_get
+      libvlc.so          +0x152290f  ff_h264_get_slice_type
+      libvlc.so          +0x151e579  ff_h264_queue_decode_slice
+      libvlc.so          +0xeeb458   ff_h264_flush_change
+      libvlc.so          +0x1112ca4  ff_thread_release_buffer
+      libc.so            +0xe6964    _ZL15__pthread_startPv
+      libc.so            +0x78557    __start_thread
+
+  liquido=1.25 MB  contagem liquida=2  alocou 12 vezes, tamanho medio 217088 B  (callsite 657)
+      libc.so            +0x431c4    malloc
+      libc++_shared.so   +0x8cbe7    _Znwj
+      libvlc.so          +0x428dec   input_DecoderFlush
+      libvlc.so          +0x428c5d   input_DecoderFlush
+      libvlc.so          +0x4180eb   input_DecoderFlush
+      libvlc.so          +0x4167f7   input_DecoderFlush
+      libvlc.so          +0x40bf30   input_DecoderFlush
+      libvlc.so          +0x32e108   input_Read
+      libvlc.so          +0x32f610   input_Start
+      libvlc.so          +0x363137   vlc_GetCPUCount
+      libc.so            +0xe6964    _ZL15__pthread_startPv
+      libc.so            +0x78557    __start_thread
+
+  liquido=0.91 MB  contagem liquida=3  alocou 5 vezes, tamanho medio 309262 B  (callsite 6205)
+      libc.so            +0x43275    memalign
+      libvlc.so          +0x242a3b2  log2l
+      libvlc.so          +0x17ec5dd  av_mallocz
+      libvlc.so          +0x14e5e6c  ff_h2645_packet_split
+      libvlc.so          +0xeead85   ff_h264_flush_change
+      libvlc.so          +0x1112ca4  ff_thread_release_buffer
+      libc.so            +0xe6964    _ZL15__pthread_startPv
+      libc.so            +0x78557    __start_thread
+
+  liquido=0.76 MB  contagem liquida=2  alocou 2 vezes, tamanho medio 400752 B  (callsite 6538)
+      libc.so            +0x43275    memalign
+      libvlc.so          +0x242a3b2  log2l
+      libvlc.so          +0x17ec4ec  av_mallocz_array
+      libvlc.so          +0xee9c48   ff_h264_alloc_tables
+      libvlc.so          +0x151bfa5  ff_h264_update_thread_context
+      libvlc.so          +0x151b0c0  ff_h264_update_thread_context
+      libvlc.so          +0x11116af  ff_thread_decode_frame
+      libvlc.so          +0x1111018  ff_thread_decode_frame
+      libvlc.so          +0xe171e3   avcodec_send_packet
+      libvlc.so          +0xe16f72   avcodec_send_packet
+      libvlc.so          +0x571aae   input_DecoderFlush
+      libvlc.so          +0x3914fd   input_DecoderFlush
+      libvlc.so          +0x38e8f7   input_DecoderFlush
+      libvlc.so          +0x363137   vlc_GetCPUCount
+      libc.so            +0xe6964    _ZL15__pthread_startPv
+      libc.so            +0x78557    __start_thread
+
+  liquido=0.57 MB  contagem liquida=3  alocou 3 vezes, tamanho medio 199136 B  (callsite 6547)
+      libc.so            +0x43275    memalign
+      libvlc.so          +0x242a3b2  log2l
+      libvlc.so          +0x17ed102  av_fast_malloc
+      libvlc.so          +0x15201b4  ff_h264_get_slice_type
+      libvlc.so          +0x151fe0c  ff_h264_execute_decode_slices
+      libvlc.so          +0xeeb76e   ff_h264_flush_change
+      libvlc.so          +0x1112ca4  ff_thread_release_buffer
+      libc.so            +0xe6964    _ZL15__pthread_startPv
+      libc.so            +0x78557    __start_thread
+
+== soma do liquido pela PRIMEIRA funcao fora de libc/libc++/linker (quem pediu a memoria)
+    112.75 MB  libvlc.so log2l
+     37.72 MB  libEGL_emulation.so _ZL11getGLStringi
+     29.37 MB  libvlc.so input_DecoderFlush
+     13.50 MB  libOpenglSystemCommon.so _ZN14QemuPipeStream11allocBufferEj
+      0.53 MB  libvlc.so block_Alloc
+      0.38 MB  libvlc.so module_list_free
+      0.31 MB  libhwui.so _ZN12SkArenaAlloc11ensureSpaceEjj
+      0.29 MB  libhwui.so _ZNSt3__16vectorIN4SkSL7ASTNodeENS_9allocatorIS2_EEE24__emplace_back_slow_pathIJPS5_RiNS2_4KindEEEEvDpOT_
+      0.25 MB  libhwui.so _ZN13GrDrawOpAtlas4Plot11addSubImageEiiPKvP10SkIPoint16
+      0.19 MB  libandroidfw.so _ZN7android13AssetManager26GetBagEjRNSt3__16vectorIjNS1_9allocatorIjEEEE
+      0.14 MB  android.hardware.graphics.mapper@3.0-impl-ranchu.so _ZNSt3__16vectorIcNS_9allocatorIcEEE8__appendEj
+      0.12 MB  libicuuc.so uprv_malloc_66
+      0.09 MB  libvlc.so FT_Stream_OpenLZW
+      0.09 MB  libhwui.so _ZN7android10uirenderer15RecordingCanvas14onDrawDrawableEP10SkDrawablePK8SkMatrix
+      0.09 MB  libvlc.so _asn1_add_static_node
+      0.06 MB  libhwui.so _ZN17GrBufferAllocPool14CpuBufferCache10makeBufferEjb
+      0.06 MB  libvlc.so picture_NewFromResource
+      0.06 MB  libhwui.so _ZL11sk_ft_allocP13FT_MemoryRec_l
+      0.06 MB  libGLESv2_enc.so _ZNSt3__16vectorINS_12basic_stringIcNS_11char_traitsIcEENS_9allocatorIcEEEENS4_IS6_EEE6assignIPS6_EENS_9enable_ifIXaasr21__is_forward_iteratorIT_EE5valuesr16is_constructibleIS6_NS_15iterator_traitsISC_E9referenceEEE5valueEvE4typeESC_SC_
+      0.06 MB  libhwui.so _ZN7androidL30android_view_RenderNode_createEP7_JNIEnvP8_jobjectP8_jstring
+      0.06 MB  libhwui.so _ZN7android10uirenderer12skiapipeline19SkiaRecordingCanvas14drawRenderNodeEPNS0_10RenderNodeE
+      0.06 MB  libhwui.so _ZN4SkSL11IRGenerator17convertExpressionERKNS_7ASTNodeE
+      0.06 MB  libbinder.so _ZN7android6Parcel13continueWriteEj
+      0.06 MB  libaudioclient.so _ZN7android20BnAudioFlingerClient10onTransactEjRKNS_6ParcelEPS1_j
+      0.06 MB  ERROR ERROR MEMORY_INVALID
