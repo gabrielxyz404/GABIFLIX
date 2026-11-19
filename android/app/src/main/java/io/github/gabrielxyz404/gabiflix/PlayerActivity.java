@@ -658,11 +658,13 @@ public class PlayerActivity extends Activity {
         } catch (Throwable t) { glog("AUDIOSYNC não iniciou: " + t); }
         // TV: relatório anônimo MEMORIA a cada 15 min de reprodução (máx. 8 por sessão)
         try {
+            long gMemMs = 0;
+            try { String g = getIntent().getStringExtra("gfMemTelMs"); if (g != null) gMemMs = Long.parseLong(g); } catch (Throwable ignored) {}   // só nos testes
             if (memTel == null) memTel = MemTelemetry.startIfTv(this, tv, new MemTelemetry.Host() {
                 @Override public boolean playing() { return player != null && player.isPlaying() && !buffering; }
                 @Override public String decoder() { return decoderKind(); }
                 @Override public String surface() { View v = videoLayout == null ? null : findVideoView(videoLayout); return v == null ? "?" : v.getClass().getSimpleName(); }
-            });
+            }, gMemMs);
         } catch (Throwable t) { glog("telemetria de memória não iniciou: " + t); }
         // só nos testes: modo de tela, atraso da legenda e registro da posição (para medir quando cada fala aparece)
         try {

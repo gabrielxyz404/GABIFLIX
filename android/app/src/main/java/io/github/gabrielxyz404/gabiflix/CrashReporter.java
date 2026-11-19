@@ -241,10 +241,12 @@ public final class CrashReporter {
     }
 
     /** relatório anônimo "MEMORIA" (só TV, a cada 15 min de reprodução; ver {@link MemTelemetry}): mesmo tópico do relatório de erros, sem migalhas nem dado pessoal. Chamar fora da thread principal. */
-    static void memoria(String body) {
+    static void memoria(String body, boolean dryRun) {
         if (app == null) return;
+        String full = header("MEMORIA", proc) + body;
+        if (dryRun) { android.util.Log.i("GFCrash", "MEMORIA (teste, não enviado):\n" + full); return; }
         crumb("MEMORIA enviada: " + body.split("\n")[0]);
-        send("MEMORIA", header("MEMORIA", proc) + body, "bar_chart");
+        send("MEMORIA", full, "bar_chart");
     }
 
     /** relatório de um fecho inesperado que não deixa rasto do sistema (por exemplo, a tela do player fechada sem o usuário pedir) */

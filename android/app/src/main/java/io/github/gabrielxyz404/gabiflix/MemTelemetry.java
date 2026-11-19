@@ -38,9 +38,12 @@ final class MemTelemetry {
 
     private final Context app;
     private final Host host;
+    /** só nos testes (extra gfMemTelMs): intervalo curto e envio só para o log, sem postar no tópico */
+    private final long intervalMs;
+    private final boolean dry;
     private final Handler ui = new Handler(Looper.getMainLooper());
     private long playMs, lastTick;
-    private long nextAtMs = INTERVAL_MS;
+    private long nextAtMs;
     private boolean stopped;
     private final Runnable tick = new Runnable() {
         @Override public void run() {
@@ -49,19 +52,22 @@ final class MemTelemetry {
             try { if (lastTick > 0 && host.playing()) playMs += Math.min(now - lastTick, 2 * TICK_MS); } catch (Throwable ignored) {}
             lastTick = now;
             if (playMs >= nextAtMs) {
-                nextAtMs += INTERVAL_MS;
+                nextAtMs += intervalMs;
                 report();
             }
             ui.postDelayed(this, TICK_MS);
         }
     };
 
-    private MemTelemetry(Context c, Host h) { app = c.getApplicationContext(); host = h; }
+    private MemTelemetry(Context c, Host h, long interval, boolean dryRun) { app = c.getApplicationContext(); host = h; intervalMs = interval; nextAtMs = interval; dry = dryRun; }
 
-    /** liga a telemetria (só na TV; fora dela devolve null). Chamar quando o filme já está tocando. */
-    static MemTelemetry startIfTv(Context c, boolean tv, Host h) {
-        if (!tv) return null;
-        MemTelemetry t = new MemTelemetry(c, h);
+    /**
+     * liga a telemetria (só na TV; fora dela devolve null). Chamar quando o filme já está tocando.
+     * @param testIntervalMs só nos testes: intervalo curto em ms (liga também fora da TV e NÃO posta no tópico, só escreve no log "GFCrash"); 0 = uso normal
+     */
+    static MemTelemetry startIfTv(Context c, boolean tv, Host h, long testIntervalMs) {
+        if (!tv && testIntervalMs <= 0) return null;
+        MemTelemetry t = new MemTelemetry(c, h, testIntervalMs > 0 ? testIntervalMs : INTERVAL_MS, testIntervalMs > 0);
         t.lastTick = SystemClock.elapsedRealtime();
         t.ui.postDelayed(t.tick, TICK_MS);
         return t;
@@ -75,7 +81,7 @@ final class MemTelemetry {
         final long minutes = playMs / 60_000L;
         final String surf = safe(host::surface);   // toca nas vistas: na thread principal
         Thread th = new Thread(() -> {
-            try { CrashReporter.memoria(body(n, minutes, safe(host::decoder), surf)); } catch (Throwable ignored) {}
+            try { CrashReporter.memoria(body(n, minutes, safe(host::decoder), surf), dry); } catch (Throwable ignored) {}
         }, "gf-mem-telemetry");
         th.setPriority(Thread.MIN_PRIORITY);
         th.start();
@@ -85,7 +91,7 @@ final class MemTelemetry {
 
     private String body(int n, long playMinutes, String decoder, String surface) {
         StringBuilder b = new StringBuilder();
-        b.append("Relatório ").append(n).append('/').append(MAX_PER_SESSION).append(" da sessão, a cada ").append(INTERVAL_MS / 60_000L).append(" min de reprodução\n");
+        b.append("Relatório ").append(n).append('/').append(MAX_PER_SESSION).append(" da sessão, a cada ").append(intervalMs / 60_000L).append(" min de reprodução\n");
         b.append("reprodução: ").append(playMinutes).append(" min | processo ligado há ").append(uptimeMin()).append(" min | decodificador: ").append(decoder).append(" | vídeo: ").append(surface).append('\n');
         long pssKb = 0, nativeKb = 0;
         try {
