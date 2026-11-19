@@ -1,0 +1,52 @@
+name: Analise de traces do heapprofd
+
+# Reanalisa traces ja gravados (branches heap-out-*) sem rodar o emulador de novo. Entrada: nomes dos branches heap-out separados por espaco
+# (ou, no push a um branch run-analise*, a lista do arquivo tools/bug-sweep/stress/analise-branches.txt).
+# Resultado: branch heap-analise-out (um .txt por trace). Nunca publica o app.
+on:
+  push:
+    branches: ['run-analise**']
+  workflow_dispatch:
+    inputs:
+      branches:
+        description: branches heap-out-* separados por espaco
+        required: false
+
+permissions:
+  contents: write
+
+jobs:
+  analise:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - name: Ferramentas
+        run: |
+          pip install -q perfetto 2>&1 | tail -2
+          mkdir -p /tmp/aar /tmp/libs
+          curl -sSL -o /tmp/aar/vlc.aar https://repo1.maven.org/maven2/org/videolan/android/libvlc-all/3.6.0/libvlc-all-3.6.0.aar
+          unzip -o -q /tmp/aar/vlc.aar 'jni/x86/*' -d /tmp/aar/x && cp /tmp/aar/x/jni/x86/*.so /tmp/libs/ && ls -la /tmp/libs
+      - name: Analisar
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BRANCHES: ${{ github.event.inputs.branches }}
+        run: |
+          mkdir -p /tmp/out
+          LIST="$BRANCHES"
+          [ -z "$LIST" ] && LIST="$(cat tools/bug-sweep/stress/analise-branches.txt 2>/dev/null | tr '\n' ' ')"
+          echo "branches: $LIST"
+          for b in $LIST; do
+            rm -rf /tmp/t
+            git clone -q --depth 1 -b "$b" "https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git" /tmp/t || continue
+            [ -f /tmp/t/heap.trace ] || { echo "$b: sem heap.trace"; continue; }
+            python3 tools/bug-sweep/stress/heap_analyze.py /tmp/t/heap.trace /tmp/libs > "/tmp/out/$b.txt" 2>&1 || true
+            echo "== $b"; head -60 "/tmp/out/$b.txt" | cut -c1-200
+          done
+      - name: Publicar
+        if: always()
+        run: |
+          cd /tmp/out || exit 0
+          git init -q -b x && git add -A
+          git -c user.name=ci -c user.email=ci@x commit -qm analise
+          git push -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" x:heap-analise-out

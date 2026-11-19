@@ -28,9 +28,14 @@ for d in dumps:
     print('t=%5.0f s  liquido acumulado=%8.1f MB   (neste intervalo: alocou %.1f MB, liberou %.1f MB)' % ((d.ts - t0) / 1e9, cum / 1048576, (d.al or 0) / 1048576, -(d.fr or 0) / 1048576))
 
 # frames / mapeamentos
+def txt(h):
+    """texto vindo como hex (o protobuf do trace_processor quebra com bytes que nao sao UTF-8)"""
+    try: return bytes.fromhex(h).decode('utf-8', 'replace') if h else None
+    except Exception: return None
+
 frames = {}
-for r in q("select f.id, f.name, f.rel_pc, m.name mname, m.build_id from stack_profile_frame f left join stack_profile_mapping m on f.mapping = m.id"):
-    frames[r.id] = (r.name, r.rel_pc, os.path.basename(r.mname or '?'))
+for r in q("select f.id, hex(f.name) nh, f.rel_pc, hex(m.name) mh from stack_profile_frame f left join stack_profile_mapping m on f.mapping = m.id"):
+    frames[r.id] = (txt(r.nh), r.rel_pc, os.path.basename(txt(r.mh) or '?'))
 callsite = {}
 for r in q("select id, parent_id, frame_id, depth from stack_profile_callsite"):
     callsite[r.id] = (r.parent_id, r.frame_id)

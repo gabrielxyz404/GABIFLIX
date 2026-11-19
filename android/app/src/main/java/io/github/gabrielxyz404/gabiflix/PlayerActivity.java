@@ -87,8 +87,24 @@ public class PlayerActivity extends Activity {
         } catch (Throwable t) { glog("memória: não soltou os caches: " + t); }
     }
 
-    /** "hardware" (MediaCodec) ou "software" (ffmpeg dentro do libVLC) */
-    private String decoderKind() { return "?"; }
+    /**
+     * Qual decodificador o libVLC está usando. O libVLC 3.6 não diz isso pela API Java, mas quando decodifica por MediaCodec (hardware) o processo ganha as threads
+     * do MediaCodec NDK ("CodecLooper", "NDK MediaCodec_"); na decodificação por software (ffmpeg dentro do libVLC, o que acontece no emulador sem codec de hardware aceito)
+     * essas threads não existem. Medido no emulador: celular API 30 (MediaCodec) tem "CodecLooper"; TV API 30 (ffmpeg) não tem. Lê só /proc/self/task, sem tocar no player.
+     */
+    private String decoderKind() {
+        int n = 0;
+        try {
+            java.io.File[] ts = new java.io.File("/proc/self/task").listFiles();
+            if (ts != null) for (java.io.File t : ts) {
+                try (java.io.BufferedReader r = new java.io.BufferedReader(new java.io.FileReader(new java.io.File(t, "comm")))) {
+                    String c = r.readLine();
+                    if (c != null && (c.startsWith("CodecLooper") || c.startsWith("NDK MediaCodec") || c.startsWith("MediaCodec_loop"))) n++;
+                } catch (Throwable ignored) {}
+            }
+        } catch (Throwable t) { return "?"; }
+        return n > 0 ? "hardware (MediaCodec, " + n + " threads)" : "software (ffmpeg no libVLC)";
+    }
 
     private LibVLC libVLC;
     private MediaPlayer player;

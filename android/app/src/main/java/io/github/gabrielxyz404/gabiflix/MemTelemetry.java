@@ -73,9 +73,9 @@ final class MemTelemetry {
         if (sent.get() >= MAX_PER_SESSION) return;
         final int n = sent.incrementAndGet();
         final long minutes = playMs / 60_000L;
-        final String dec = safe(host::decoder), surf = safe(host::surface);
+        final String surf = safe(host::surface);   // toca nas vistas: na thread principal
         Thread th = new Thread(() -> {
-            try { CrashReporter.memoria(body(n, minutes, dec, surf)); } catch (Throwable ignored) {}
+            try { CrashReporter.memoria(body(n, minutes, safe(host::decoder), surf)); } catch (Throwable ignored) {}
         }, "gf-mem-telemetry");
         th.setPriority(Thread.MIN_PRIORITY);
         th.start();
