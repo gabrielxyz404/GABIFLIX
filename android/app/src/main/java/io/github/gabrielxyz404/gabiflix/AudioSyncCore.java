@@ -411,8 +411,8 @@ final class AudioSyncCore {
             }
             b.append(String.format(Locale.ROOT, "ajuste escala=%.6f deslocamento_ms=%.0f inclinacao=%.6f residuo_ms=%.0f residuo_sem_escala_ms=%.0f deriva_janelas_ms=%.0f deriva_filme_ms=%.0f confiaveis=%d deriva_provada=%d%n",
                     r.scale, r.rawOffsetMs, r.driftSlope, r.driftResMs, r.unitResMs, r.driftMeasMs, r.driftContentMs, r.driftConfident, r.driftScale ? 1 : 0));
-            b.append(String.format(Locale.ROOT, "motor aceita=%d inSync=%d z=%.1f margem=%.2f ncc=%.2f janelas_concordam=%d/%d desvio_max_ms=%.0f escala_conhecida=%d suspeita_deriva=%d cortes=%d%n",
-                    r.accepted ? 1 : 0, r.inSync ? 1 : 0, r.z, r.margin, r.nccMean, r.winsAgree, r.winsValid, r.winMaxDev, r.scaleKnown ? 1 : 0, r.driftSuspect ? 1 : 0, r.cutsWarning ? 1 : 0));
+            b.append(String.format(Locale.ROOT, "motor aceita=%d inSync=%d z=%.1f margem=%.2f ncc=%.2f janelas_concordam=%d/%d desvio_max_ms=%.0f escala_conhecida=%d suspeita_deriva=%d cortes=%d plano_b=%d consenso=%d%n",
+                    r.accepted ? 1 : 0, r.inSync ? 1 : 0, r.z, r.margin, r.nccMean, r.winsAgree, r.winsValid, r.winMaxDev, r.scaleKnown ? 1 : 0, r.driftSuspect ? 1 : 0, r.cutsWarning ? 1 : 0, r.planB ? 1 : 0, r.winConsensus ? 1 : 0));
             b.append("motivo=").append(r.reason == null ? "" : r.reason.trim()).append(" | ").append(r.driftNote).append('\n');
         }
         b.append("resultado=").append(o.kind == Outcome.FIX ? "corrigir" : o.kind == Outcome.OK ? "ja_certa" : o.kind == Outcome.REFUSED ? "sem_confianca" : o.kind == Outcome.ERROR ? "erro" : o.kind == Outcome.CANCELLED ? "cancelado" : "pulado")

@@ -45,6 +45,10 @@ public final class Result {
     /** a escala (1,001 ou outra razão de fps) foi aceita pela evidência das janelas (não por chute) */
     /** índice da janela confiável que ficou fora da reta de deriva (descartada na prova e na porta de desvio); -1 = nenhuma */
     public int driftDropWin = -1;
+    /** as janelas de z alto concordam em torno da mediana (porta robusta, ver finalEvidence) */
+    public boolean winConsensus = true;
+    /** o resultado é o do plano B (motor de antes sobre as 3 janelas densas): o ajuste com 9 janelas não passou, ou discordou de uma escala de fps comum */
+    public boolean planB;
     public boolean driftScale;
     /** inclinação ajustada livremente (ms de atraso por ms de filme), resíduos máximos (ms) com a escala escolhida e com escala 1,0, deriva medida nas janelas e no filme todo (ms) */
     public double driftSlope, driftResMs, unitResMs, driftMeasMs, driftContentMs;

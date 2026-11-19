@@ -55,6 +55,14 @@ enum AudioAligner {
         var maxDriftWindows = 10
         var gateWinDevMs = 150.0
         var gateMinWinsAgree = 0
+        /** porta de concordância robusta (sem deriva): descarta as janelas de z baixo (< gateZFrac x o maior z), pede que as que ficam concordem em torno da mediana
+         *  (desvio máximo <= min(gateTolMaxMs, gateWinDevMs + gateTolStepMs x (janelas - 3))) e que o desvio robusto (1,4826 x MAD) fique abaixo de gateSigmaMs */
+        var gateZFrac = 0.6
+        var gateTolMaxMs = 350.0
+        var gateTolStepMs = 50.0
+        var gateSigmaMs = 150.0
+        /** motor de ANTES (plano B): sem prova de deriva e com a porta de 150 ms sobre o desvio máximo bruto; é o que o origin/main fazia */
+        var legacy = false
         var unitSnap = 0.0035
         var allowFreeScale = false
         var minBlocks = 3
@@ -558,7 +566,7 @@ enum AudioAligner {
         }
         R.scale = a0
         R.offsetMs = b0
-        driftCheck(R, cues, windows, ps, fine, mediaDurationMs, P)
+        if !P.legacy { driftCheck(R, cues, windows, ps, fine, mediaDurationMs, P) }
         finalEvidence(windows, ps, fine, R, P)
         decide(R, P)
         if !R.driftScale { analyzeCuts(R, cues, windows, ps, bl, use, nu, P, mediaDurationMs, fine) }
@@ -808,6 +816,7 @@ enum AudioAligner {
         var sum = 0.0, mn = 9.0
         var cnt = 0
         var tp = 0.0, fp = 0.0, fn = 0.0
+        var devs: [Double] = [], zs: [Double] = []
         for w in 0..<ws.count {
             if w == R.driftDropWin { continue }
             let f = fineWindow(ps[w], ws[w].startMs, fine, R.scale, R.offsetMs, 40)
@@ -817,6 +826,7 @@ enum AudioAligner {
             let dev = abs(fw.bestDelta)
             if dev > R.winMaxDev { R.winMaxDev = dev }
             if dev <= 150 { R.winsAgree += 1 }
+            devs.append(fw.bestDelta); zs.append(fw.z)
             sum += f.ncc0; cnt += 1
             if f.ncc0 < mn { mn = f.ncc0 }
             for j in 0..<ps[w].count {
@@ -826,10 +836,40 @@ enum AudioAligner {
                 if m && s { tp += 1 } else if m { fp += 1 } else if s { fn += 1 }
             }
         }
+        R.winConsensus = consensus(devs, zs, P)
         R.nccMean = cnt > 0 ? sum / Double(cnt) : 0
         R.nccMin = cnt > 0 ? mn : 0
         let pr = tp / max(1, tp + fp), rc = tp / max(1, tp + fn)
         R.f1 = (pr + rc) > 0 ? 2 * pr * rc / (pr + rc) : 0
+    }
+
+    private static func median(_ v: [Double]) -> Double {
+        let c = v.sorted()
+        let n = c.count
+        return n % 2 == 1 ? c[n / 2] : 0.5 * (c[n / 2 - 1] + c[n / 2])
+    }
+
+    /**
+     * Porta de concordância robusta entre as janelas (porte de consensus): descarta as de z baixo (< gateZFrac x o maior z); exige que fiquem pelo menos metade das
+     * janelas (e 2); as que ficam concordam em torno da MEDIANA: desvio máximo <= tolerância (150 ms com 3 janelas, +gateTolStepMs por janela a mais, no máximo
+     * gateTolMaxMs) e desvio robusto (1,4826 x MAD) <= gateSigmaMs.
+     */
+    private static func consensus(_ dev: [Double], _ z: [Double], _ P: Params) -> Bool {
+        let n = dev.count
+        if n < 2 { return true }
+        var zmax = 0.0
+        for v in z { zmax = max(zmax, v) }
+        var kd: [Double] = []
+        for i in 0..<n where z[i] >= P.gateZFrac * zmax { kd.append(dev[i]) }
+        let k = kd.count
+        if k < max(2, (n + 1) / 2) { return false }
+        let med = median(kd)
+        var ad: [Double] = []
+        var maxd = 0.0
+        for v in kd { let d = abs(v - med); ad.append(d); maxd = max(maxd, d) }
+        let sigma = 1.4826 * median(ad)
+        let tol = min(P.gateTolMaxMs, P.gateWinDevMs + P.gateTolStepMs * Double(max(0, k - 3)))
+        return maxd <= tol && sigma <= P.gateSigmaMs
     }
 
     private static func decide(_ R: AudioResult, _ P: Params) {
@@ -841,7 +881,8 @@ enum AudioAligner {
         // família 1,001: só com a prova de deriva (driftCheck); um valor assim sem prova é ruído de ajuste
         let nearUnit = !R.driftScale && abs(R.scale - 1.0) > 1e-9 && abs(R.scale - 1.0) < P.nearUnitEps
         if nearUnit { ok = false }
-        let gateDev = P.gateWinDevMs > 0 && R.winsValid >= 2 && R.winMaxDev > (R.driftScale ? P.driftGateDevMs : P.gateWinDevMs)
+        let gateDev = P.gateWinDevMs > 0 && R.winsValid >= 2
+            && (P.legacy ? R.winMaxDev > P.gateWinDevMs : R.driftScale ? R.winMaxDev > P.driftGateDevMs : !R.winConsensus)
         let gateWin = P.gateMinWinsAgree > 0 && R.winsAgree < P.gateMinWinsAgree
         if gateDev || gateWin { ok = false }
         R.accepted = ok

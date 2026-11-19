@@ -176,6 +176,25 @@ final class AudioSyncSession {
             r = ses.solve()
         }
         r.windows = ses.windowCount
+        // plano B: o motor de ANTES (3 janelas densas, uma resolução, sem prova de deriva) quando o ajuste de todas as janelas não passou, ou quando achou uma escala
+        // de fps comum (25/23,976 etc.) sem ser deriva provada: o resultado nunca é pior que o do motor anterior
+        if dense > 0 && all.count >= dense && (!r.accepted || (!r.driftScale && abs(r.scale - 1.0) > 1e-9)) {
+            var L = AudioAligner.Params()
+            L.legacy = true
+            let bs = AudioSyncSession(cues: cues, mediaDurationMs: durMs, params: L)
+            for i in 0..<dense { bs.addWindow(all[i]) }
+            let b = bs.solve()
+            if b.accepted {
+                let agree = r.accepted && abs(b.scale - r.scale) < 1e-6 && abs(b.rawOffsetMs - r.rawOffsetMs) < 400
+                if !agree {
+                    b.planB = true
+                    b.windows = all.count
+                    b.driftNote = "plano B: motor anterior sobre as \(dense) janelas densas" + (r.accepted ? " (o ajuste de todas as janelas discordou de uma escala de fps comum)" : " (o ajuste de todas as janelas não passou: " + r.reason.trimmingCharacters(in: .whitespaces) + ")")
+                    b.wins = r.wins
+                    r = b
+                }
+            }
+        }
         used = all
         return r
     }

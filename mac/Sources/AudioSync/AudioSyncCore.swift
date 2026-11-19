@@ -290,6 +290,7 @@ final class AudioSyncCore {
             }
             b += String(format: "ajuste escala=%.6f deslocamento_ms=%.0f inclinacao=%.6f residuo_ms=%.0f residuo_sem_escala_ms=%.0f deriva_janelas_ms=%.0f deriva_filme_ms=%.0f confiaveis=%d deriva_provada=%d\n",
                         r.scale, r.rawOffsetMs, r.driftSlope, r.driftResMs, r.unitResMs, r.driftMeasMs, r.driftContentMs, r.driftConfident, r.driftScale ? 1 : 0)
+            b += "plano_b=\(r.planB ? 1 : 0) consenso=\(r.winConsensus ? 1 : 0)\n"
             b += "motivo=" + r.reason.trimmingCharacters(in: .whitespaces) + " | " + r.driftNote + "\n"
         }
         b += "resultado=\(o.kind) nota=\(o.note)\n"

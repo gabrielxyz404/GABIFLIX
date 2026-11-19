@@ -85,6 +85,14 @@ public final class AudioAligner {
         public double gateWinDevMs = 150;
         /** porta opcional: mínimo de janelas com fala e concordantes (0 = desligada) */
         public int gateMinWinsAgree = 0;
+        /** porta de concordância robusta (sem deriva): descarta as janelas de z baixo (< gateZFrac x o maior z), pede que as que ficam concordem em torno da mediana
+         *  (desvio máximo <= min(gateTolMaxMs, gateWinDevMs + gateTolStepMs x (janelas - 3))) e que o desvio robusto (1,4826 x MAD) fique abaixo de gateSigmaMs */
+        public double gateZFrac = 0.6;
+        public double gateTolMaxMs = 350;
+        public double gateTolStepMs = 50;
+        public double gateSigmaMs = 150;
+        /** motor de ANTES (plano B): sem prova de deriva e com a porta de 150 ms sobre o desvio máximo bruto; é o que o origin/main fazia */
+        public boolean legacy = false;
         /** escalas fora das razões de fps conhecidas: ajuste dentro de unitSnap de 1,0 vira 1,0 (reajusta o offset); fora disso é recusado (allowFreeScale=false) */
         public double unitSnap = 0.0035;
         public boolean allowFreeScale = false;
@@ -564,7 +572,7 @@ public final class AudioAligner {
         }
         R.scale = a0;
         R.offsetMs = b0;
-        driftCheck(R, cues, windows, ps, fine, mediaDurationMs, P);
+        if (!P.legacy) driftCheck(R, cues, windows, ps, fine, mediaDurationMs, P);
         finalEvidence(windows, ps, fine, R, P);
         decide(R, P);
         try {
@@ -826,6 +834,8 @@ public final class AudioAligner {
         double sum = 0, min = 9;
         int cnt = 0;
         double tp = 0, fp = 0, fn = 0;
+        double[] devs = new double[ws.length], zs = new double[ws.length];
+        int nd = 0;
         for (int w = 0; w < ws.length; w++) {
             if (w == R.driftDropWin) continue;
             Fine f = fineWindow(ps[w], ws[w].startMs, fine, R.scale, R.offsetMs, 40);
@@ -835,6 +845,7 @@ public final class AudioAligner {
             double dev = Math.abs(fw.bestDelta);
             if (dev > R.winMaxDev) R.winMaxDev = dev;
             if (dev <= 150) R.winsAgree++;
+            devs[nd] = fw.bestDelta; zs[nd] = fw.z; nd++;
             sum += f.ncc0; cnt++;
             if (f.ncc0 < min) min = f.ncc0;
             for (int j = 0; j < ps[w].length; j++) {
@@ -844,10 +855,40 @@ public final class AudioAligner {
                 if (m && s) tp++; else if (m) fp++; else if (s) fn++;
             }
         }
+        R.winConsensus = consensus(devs, zs, nd, P);
         R.nccMean = cnt > 0 ? sum / cnt : 0;
         R.nccMin = cnt > 0 ? min : 0;
         double pr = tp / Math.max(1, tp + fp), rc = tp / Math.max(1, tp + fn);
         R.f1 = (pr + rc) > 0 ? 2 * pr * rc / (pr + rc) : 0;
+    }
+
+    private static double median(double[] v, int n) {
+        double[] c = Arrays.copyOf(v, n);
+        Arrays.sort(c);
+        return n % 2 == 1 ? c[n / 2] : 0.5 * (c[n / 2 - 1] + c[n / 2]);
+    }
+
+    /**
+     * Porta de concordância robusta entre as janelas (no lugar do desvio máximo bruto de 150 ms, que vetava respostas certas: as janelas de z baixo e o ruído de
+     * ~300 ms entre janelas de 90 s). Descarta as de z baixo (< gateZFrac x o maior z); exige que fiquem pelo menos metade das janelas (e 2); as que ficam têm de
+     * concordar em torno da MEDIANA: desvio máximo <= tolerância (150 ms com 3 janelas, +gateTolStepMs por janela a mais, no máximo gateTolMaxMs) e desvio
+     * robusto (1,4826 x MAD) <= gateSigmaMs. Legenda de outro título discorda por segundos: continua recusada.
+     */
+    private static boolean consensus(double[] dev, double[] z, int n, Params P) {
+        if (n < 2) return true;
+        double zmax = 0;
+        for (int i = 0; i < n; i++) zmax = Math.max(zmax, z[i]);
+        double[] kd = new double[n];
+        int k = 0;
+        for (int i = 0; i < n; i++) if (z[i] >= P.gateZFrac * zmax) kd[k++] = dev[i];
+        if (k < Math.max(2, (n + 1) / 2)) return false;
+        double med = median(kd, k);
+        double[] ad = new double[k];
+        double maxd = 0;
+        for (int i = 0; i < k; i++) { ad[i] = Math.abs(kd[i] - med); maxd = Math.max(maxd, ad[i]); }
+        double sigma = 1.4826 * median(ad, k);
+        double tol = Math.min(P.gateTolMaxMs, P.gateWinDevMs + P.gateTolStepMs * Math.max(0, k - 3));
+        return maxd <= tol && sigma <= P.gateSigmaMs;
     }
 
     private static void decide(Result R, Params P) {
@@ -860,7 +901,8 @@ public final class AudioAligner {
         // família 1,001: só com a prova de deriva (driftCheck); um valor assim sem prova é ruído de ajuste
         boolean nearUnit = !R.driftScale && Math.abs(R.scale - 1.0) > 1e-9 && Math.abs(R.scale - 1.0) < P.nearUnitEps;
         if (nearUnit) ok = false;
-        boolean gateDev = P.gateWinDevMs > 0 && R.winsValid >= 2 && R.winMaxDev > (R.driftScale ? P.driftGateDevMs : P.gateWinDevMs);
+        boolean gateDev = P.gateWinDevMs > 0 && R.winsValid >= 2
+                && (P.legacy ? R.winMaxDev > P.gateWinDevMs : R.driftScale ? R.winMaxDev > P.driftGateDevMs : !R.winConsensus);
         boolean gateWin = P.gateMinWinsAgree > 0 && R.winsAgree < P.gateMinWinsAgree;
         if (gateDev || gateWin) ok = false;
         R.accepted = ok;

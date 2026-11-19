@@ -173,7 +173,27 @@ public final class AudioSyncSession {
             r = ses.solve();
         }
         r.windows = ses.windows();
-        if (usedOut != null && usedOut.length > 0) usedOut[0] = ses.all();
+        Window[] all = ses.all();
+        // plano B: o motor de ANTES (3 janelas densas, uma resolução, sem prova de deriva) quando o ajuste de todas as janelas não passou, ou quando achou uma escala
+        // de fps comum (25/23,976 etc.) sem ser deriva provada: o resultado nunca é pior que o do motor anterior
+        if (dense > 0 && all.length >= dense && (!r.accepted || (!r.driftScale && Math.abs(r.scale - 1.0) > 1e-9))) {
+            AudioAligner.Params L = new AudioAligner.Params();
+            L.legacy = true;
+            AudioSyncSession bs = new AudioSyncSession(cues, durMs, L);
+            for (int i = 0; i < dense; i++) bs.addWindow(all[i]);
+            Result b = bs.solve();
+            if (b.accepted) {
+                boolean agree = r.accepted && Math.abs(b.scale - r.scale) < 1e-6 && Math.abs(b.rawOffsetMs - r.rawOffsetMs) < 400;
+                if (!agree) {
+                    b.planB = true;
+                    b.windows = all.length;
+                    b.driftNote = "plano B: motor anterior sobre as " + dense + " janelas densas" + (r.accepted ? " (o ajuste de todas as janelas discordou de uma escala de fps comum)" : " (o ajuste de todas as janelas não passou: " + r.reason.trim() + ")");
+                    b.wins = r.wins;
+                    r = b;
+                }
+            }
+        }
+        if (usedOut != null && usedOut.length > 0) usedOut[0] = all;
         return r;
     }
 
