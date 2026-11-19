@@ -565,11 +565,14 @@ public class PlayerActivity extends Activity {
         options.add("--network-caching=3000");
         options.add("--audio-time-stretch");
         options.add("--sub-text-scale=90");
+        // só nos testes (diagnóstico de memória): log detalhado do libVLC (qual decodificador/saída de vídeo ele escolheu)
+        if (getIntent().getStringExtra("gfVlcV") != null) options.add("-vv");
         libVLC = new LibVLC(this, options);
         player = new MediaPlayer(libVLC);
         // na TV (Fire TV) o vídeo vai por TextureView: com SurfaceView a imagem ficava preta (só som)
         // quando os controles sumiam, porque o Fire TV passa o vídeo para outra camada da tela
-        player.attachViews(videoLayout, null, true, tv);
+        String gTex = getIntent().getStringExtra("gfTexture");   // só nos testes: força TextureView (1) ou SurfaceView (0), qualquer que seja o aparelho
+        player.attachViews(videoLayout, null, true, gTex != null ? "1".equals(gTex) : tv);
         player.setEventListener(this::onPlayerEvent);
         // rotação / mudança de tamanho da tela: refaz o zoom do modo Preencher e a proporção do Esticar
         videoLayout.addOnLayoutChangeListener((v, l, t, r, b, ol, ot, or, ob) -> {
@@ -577,7 +580,8 @@ public class PlayerActivity extends Activity {
         });
 
         Media media = new Media(libVLC, Uri.parse(url));
-        media.setHWDecoderEnabled(true, false);
+        String gHw = getIntent().getStringExtra("gfHw");   // só nos testes: "0" = só software, "force" = só hardware (MediaCodec), sem recuo
+        media.setHWDecoderEnabled(!"0".equals(gHw), "force".equals(gHw));
         media.addOption(":network-caching=3000");
         player.setMedia(media);
         media.release();
@@ -2349,7 +2353,8 @@ public class PlayerActivity extends Activity {
     private void reattachViews() {
         try {
             lastScaleW = -1; lastScaleH = -1;
-            player.attachViews(videoLayout, null, true, tv);
+            String gTex = getIntent().getStringExtra("gfTexture");
+            player.attachViews(videoLayout, null, true, gTex != null ? "1".equals(gTex) : tv);
             viewsDetached = false;
             refreshFrame = true;
             applySubDelay();
