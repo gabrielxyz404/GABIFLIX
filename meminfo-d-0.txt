@@ -1,0 +1,66 @@
+Applications Memory Usage (in Kilobytes):
+Uptime: 129012 Realtime: 129012
+
+** MEMINFO in pid 3291 [io.github.gabrielxyz404.gabiflix] **
+                   Pss  Private  Private  SwapPss      Rss     Heap     Heap     Heap
+                 Total    Dirty    Clean    Dirty    Total     Size    Alloc     Free
+                ------   ------   ------   ------   ------   ------   ------   ------
+  Native Heap   145208   145172        0        0   146952   190860   174034     7449
+  Dalvik Heap     9598     9512        0        0    13520    16079     8040     8039
+ Dalvik Other      899      728        0        0     1652                           
+        Stack      860      860        0        0      864                           
+       Ashmem       12        0        0        0       28                           
+    Other dev        8        0        8        0      172                           
+     .so mmap    15236     1056     6056        1    55824                           
+    .jar mmap     1111        0       64        0    23720                           
+    .apk mmap      824        0        8        0    24716                           
+    .ttf mmap      339        0      104        0      868                           
+    .dex mmap     2669        4     1052        0     4356                           
+    .oat mmap      718        0        0        0    15292                           
+    .art mmap     1251      900        0        0    14648                           
+   Other mmap      124       36       28        0     1540                           
+      Unknown      568      564        0        1      828                           
+        TOTAL   179427   158832     7320        2   179427   206939   182074    15488
+ 
+ Dalvik Details
+        .Heap     1056     1056        0        0     1056                           
+         .LOS     7968     7940        0        0     9576                           
+      .Zygote      530      472        0        0     2844                           
+   .NonMoving       44       44        0        0       44                           
+ .LinearAlloc      525      516        0        0      988                           
+          .GC      117      116        0        0      164                           
+   .ZygoteJIT        1        0        0        0       76                           
+      .AppJIT      164        4        0        0      324                           
+ .IndirectRef       92       92        0        0      100                           
+   .Boot vdex        1        0        0        0       52                           
+     .App dex       64        4        0        0      148                           
+    .App vdex     2604        0     1052        0     4156                           
+    .Boot art     1251      900        0        0    14648                           
+ 
+ App Summary
+                       Pss(KB)                        Rss(KB)
+                        ------                         ------
+           Java Heap:    10412                          28168
+         Native Heap:   145172                         146952
+                Code:     8348                         125176
+               Stack:      860                            864
+            Graphics:        0                              0
+       Private Other:     1360
+              System:    13275
+             Unknown:                                    3820
+ 
+           TOTAL PSS:   179427            TOTAL RSS:   304980       TOTAL SWAP PSS:        2
+ 
+ Objects
+               Views:      102         ViewRootImpl:        2
+         AppContexts:        7           Activities:        2
+              Assets:        8        AssetManagers:        0
+       Local Binders:       19        Proxy Binders:       35
+       Parcel memory:        8         Parcel count:       35
+    Death Recipients:        1      OpenSSL Sockets:        4
+            WebViews:        0
+ 
+ SQL
+         MEMORY_USED:        0
+  PAGECACHE_OVERFLOW:        0          MALLOC_SIZE:        0
+ 
