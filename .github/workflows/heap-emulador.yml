@@ -24,12 +24,10 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { nome: tv30-guest, modo: tv, api: 30, target: android-tv, profile: tv_1080p, ram: 2048M, hp: none, gpu: guest }
-          - { nome: tv30-guest-hp, modo: tv, api: 30, target: android-tv, profile: tv_1080p, ram: 2048M, hp: attach, gpu: guest }
-          - { nome: cel28-guest, modo: phone, api: 28, target: google_apis, profile: pixel_5, ram: 3072M, hp: none, gpu: guest }
-          - { nome: cel28-host, modo: phone, api: 28, target: google_apis, profile: pixel_5, ram: 3072M, hp: none }
-          - { nome: tv30-host, modo: tv, api: 30, target: android-tv, profile: tv_1080p, ram: 2048M, hp: none }
-          - { nome: cel30-tex-hp, modo: phone, api: 30, target: google_apis, profile: pixel_5, ram: 3072M, hp: startup, extra: '--es gfTexture 1' }
+          - { nome: tv30-vout-shot, modo: tv, api: 30, target: android-tv, profile: tv_1080p, ram: 2048M, hp: none, play: '240', extra: '--es gfVlcOpt --vout=android_display --es gfMemTelMs 60000' }
+          - { nome: tv30-tel, modo: tv, api: 30, target: android-tv, profile: tv_1080p, ram: 2048M, hp: none, play: '240', extra: '--es gfMemTelMs 60000' }
+          - { nome: cel30-tel, modo: phone, api: 30, target: google_apis, profile: pixel_5, ram: 3072M, hp: none, play: '240', extra: '--es gfMemTelMs 60000' }
+          - { nome: cel28-vout-shot, modo: phone, api: 28, target: google_apis, profile: pixel_5, ram: 3072M, hp: none, play: '240', extra: '--es gfVlcOpt --vout=android_display' }
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v5
@@ -79,7 +77,7 @@ jobs:
           heap-size: 512M
           disable-animations: true
           emulator-options: -no-window -gpu ${{ matrix.gpu || 'swiftshader_indirect' }} -no-snapshot -noaudio -no-boot-anim
-          script: timeout 4200 bash tools/bug-sweep/stress/heap.sh /tmp/teste.apk ${{ matrix.modo }} ${{ github.event.inputs.play || '900' }} "${{ matrix.extra }}" ${{ matrix.hp }}
+          script: timeout 4200 bash tools/bug-sweep/stress/heap.sh /tmp/teste.apk ${{ matrix.modo }} ${{ matrix.play || github.event.inputs.play || '900' }} "${{ matrix.extra }}" ${{ matrix.hp }}
       - name: Analise do heapprofd
         if: always() && matrix.hp != 'none'
         run: |

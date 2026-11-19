@@ -105,7 +105,10 @@ while [ $(date +%s) -lt $END ]; do
   if [ $((k % 40)) = 0 ]; then tell seek 60; fi
 done
 sample fim; snapshot 1
+adb exec-out screencap -p > $OUT/fim.png 2>/dev/null
+echo "imagem no fim (fracao de pixels acesos no meio da tela; preto = 0): $(adb exec-out screencap 2>/dev/null | python3 -I $HERE/pixels.py)" > $OUT/imagem-fim.txt
 adb logcat -d > $OUT/logcat-fim.txt 2>&1
+grep -A12 "GFCrash" $OUT/logcat-fim.txt | grep -E "MEMORIA|Relatório|reprodução:|PSS total|availMem|heap Java|desde o 1|onTrimMemory" > $OUT/telemetria.txt 2>/dev/null
 grep -E "pss=|nativo=" $OUT/logcat-fim.txt | tail -3 > $OUT/estado-fim.txt
 
 # ---- fecha o trace e traz o arquivo
