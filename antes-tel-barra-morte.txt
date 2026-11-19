@@ -1,0 +1,15 @@
+         1795108384.335   521   592 I am_proc_died: [0,935,WebViewLoader-x86_64,-700,0]
+         1795108399.547   521   571 I am_kill : [0,1090,com.google.android.apps.nexuslauncher,0,change com.google.android.apps.nexuslauncher]
+         1795108402.711   521   571 I am_kill : [0,2334,com.google.android.gm,0,change com.google.android.gm]
+         1795108406.710   521   549 I ActivityManager: Start proc 3599:io.github.gabrielxyz404.gabiflix/u0a192 for next-top-activity {io.github.gabrielxyz404.gabiflix/io.github.gabrielxyz404.gabiflix.PlayerActivity}
+         1795108410.426   521   571 I am_kill : [0,3698,com.android.intentresolver,915,change com.android.intentresolver]
+         1795108410.447   521   571 I am_kill : [0,3726,com.android.nfc,0,change com.android.nfc]
+         1795108415.072   521  3922 I am_anr  : [0,1394,com.google.android.gms.persistent,-1597325755,Broadcast of Intent { act=android.intent.action.SIM_STATE_CHANGED flg=0x15000010 cmp=com.google.android.gms/.chimera.GmsIntentOperationService$PersistentTrustedReceiver (has extras) }]
+         1795108418.563   521   571 I am_kill : [0,4022,com.google.android.settings.intelligence,0,change com.google.android.settings.intelligence]
+         1795108418.822   829   829 E AndroidRuntime: FATAL EXCEPTION: main
+         1795108419.335   521  3922 E ActivityManager: ANR in com.google.android.gms.persistent
+         1795108419.340   521  3922 I am_kill : [0,1394,com.google.android.gms.persistent,0,bg anr]
+         1795108419.944   521  1721 I am_crash: [829,0,com.android.systemui,550026765,java.lang.NullPointerException,Attempt to read from field 'android.content.pm.ServiceInfo android.content.pm.ResolveInfo.serviceInfo' on a null object reference in method 'void com.android.systemui.recents.Overview
+         1795108420.036   521  1725 I am_proc_died: [0,1394,com.google.android.gms.persistent,0,5]
+         1795108421.076   521   794 I ActivityManager: Process com.android.systemui (pid 829) has died: pers PER 
+         1795108421.076   521   794 I am_proc_died: [0,829,com.android.systemui,-800,0]
