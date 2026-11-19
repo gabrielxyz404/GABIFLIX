@@ -1,0 +1,173 @@
+         1795124678.022  3359  3418 I GabiFlixPlayer: hash=a7fbbfd36b0af080 tamanho=790318371 arquivo=film.mkv
+         1795124678.022  3359  3418 I GabiFlixPlayer: Hash calculado, mas a busca de legendas falhou
+         1795124678.022  3359  3418 I GabiFlixPlayer: candidatas para baixar: 1 (do site: 1)
+         1795124678.051  3359  3359 E VLC     : [f1ec7d40/d1f] libvlc audio output: GetStaticFieldID(AudioFormat.ENCODING_PCM_32BIT) failed
+         1795124678.054  3359  3359 I GabiFlixPlayer: ciclo: onStart, tocando=false, tempo=-1, escala=0, atraso=0, vista=TextureView 0x0, vout=true
+         1795124678.054  3359  3359 I GabiFlixPlayer: ciclo: onResume, tocando=false, tempo=-1, escala=0, atraso=0, vista=TextureView 0x0, vout=true
+         1795124678.133  3359  3418 I GabiFlixPlayer: legendas PT válidas: 1 de 1; referências baixadas: 0
+         1795124678.139  3359  3418 I GabiFlixPlayer: alinhamento com 0 referência(s):
+         1795124678.139  3359  3418 I GabiFlixPlayer:   sem referência (nem outro idioma, nem PT do hash) e menos de 2 PT para comparar: ranking antigo
+         1795124678.139  3359  3418 I GabiFlixPlayer:   alinhadas: 0
+         1795124678.558  3359  3424 E VLC     : [f1ec7d40/d60] libvlc audio output: too low audio sample frequency (0)
+         1795124678.558  3359  3424 E VLC     : [f764dcc0/d60] libvlc decoder: failed to create audio output
+         1795124678.567  3359  3434 E VLC     : [f1ec7d40/d6a] libvlc audio output: module not functional
+         1795124678.567  3359  3434 E VLC     : [f764dcc0/d6a] libvlc decoder: failed to create audio output
+         1795124678.775  3359  3451 E VLC     : [f79bc190/d7b] libvlc window: request 1 not implemented
+         1795124678.864  3359  3451 E VLC     : [f79bc190/d7b] libvlc window: request 0 not implemented
+         1795124678.864  3359  3451 E VLC     : [f79bc190/d7b] libvlc window: request 0 not implemented
+         1795124678.866  3359  3359 I GabiFlixPlayer: ciclo: evento Vout, saídas=1
+         1795124678.870  3359  3451 E VLC     : [f79bc190/d7b] libvlc window: request 1 not implemented
+         1795124678.882  3359  3359 I GabiFlixPlayer: vistas do vídeo: TextureView(vídeo)
+         1795124678.907  3359  3359 I GabiFlixPlayer: AUDIOSYNC pronto (sem limite de dados; automático=true, começa 25 s depois de a legenda ficar ativa; resultado confiante vale 30 dias e não se reverifica; sem confiança: 1 nova tentativa em 1200 s; salto grande = 600 s)
+         1795124678.957  3359  3451 E VLC     : [f79bc190/d7b] libvlc window: request 1 not implemented
+         1795124679.803  3359  3451 E VLC     : [f79bc190/d7b] libvlc window: request 3 not implemented
+         1795124680.009  3359  3359 I GabiFlixPlayer: AUDIOSYNC estado: st=- executando=false tocando=true carregando=false faixa=-1 baixadas=0 addedSubs=0 embeddedKnown=false faixas=[] cand=false | pss=169MB java=5/512MB nativo=152MB livre=1002MB limiar=144MB poucaMemoria=false
+         1795124680.285  3359  3359 I GabiFlixPlayer: legenda PT embutida: não há
+         1795124680.285  3359  3359 I GabiFlixPlayer: ranking das legendas:
+         1795124680.285  3359  3359 I GabiFlixPlayer:   referência de fim=0ms (sem referência), duração=720000ms
+         1795124680.285  3359  3359 I GabiFlixPlayer:   #0 fim=705471ms hash=false corrigida=false nota=0.0448
+         1795124680.286  3359  3359 I GabiFlixPlayer: escolhida: candidata #0; melhor baixada: #0 alinhada=false nota=0.00 deslocamento=0ms hash=false corrigida=false; 1 no menu
+         1795124680.286  3359  3359 I GabiFlixPlayer: atraso da legenda ativa (nenhuma): 0 ms
+         1795124681.018  3359  3359 I GabiFlixPlayer: legenda do app: 66 falas da faixa ativa
+         1795124681.019  3359  3359 I GabiFlixPlayer: legenda do app: ligada
+         1795124681.019  3359  3359 I GabiFlixPlayer: AUDIOSYNC legenda ativa: fbbfd36b0af080|http://10.0.2.2:8000/film.srt#raw (nova nesta sessão)
+         1795124681.019  3359  3359 I GabiFlixPlayer: AUDIOSYNC GATILHO motivo=troca-de-legenda legenda=fbbfd36b0af080|http://10.0.2.2:8000/film.srt#raw decisão=avaliar (espera 25 s tocando; se há resultado guardado, não analisa) [análises=0 sem_confiança=0 estado=nova]
+         1795124681.813  3359  3359 I GabiFlixPlayer: atraso da legenda ativa (d3:u|h:a7fbbfd36b0af080|http://10.0.2.2:8000/film.srt#raw): 0 ms
+         1795124693.415  2335  2387 W xli     : 	at libcore.io.IoBridge.write(IoBridge.java:540)
+         1795124693.415  2335  2387 W xli     : 	at libcore.io.Linux.writeBytes(Native Method)
+         1795124693.415  2335  2387 W xli     : 	at libcore.io.Linux.write(Linux.java:293)
+         1795124693.415  2335  2387 W xli     : 	at libcore.io.ForwardingOs.write(ForwardingOs.java:240)
+         1795124693.415  2335  2387 W xli     : 	at libcore.io.BlockGuardOs.write(BlockGuardOs.java:418)
+         1795124693.415  2335  2387 W xli     : 	at libcore.io.ForwardingOs.write(ForwardingOs.java:240)
+         1795124693.415  2335  2387 W xli     : 	at libcore.io.IoBridge.write(IoBridge.java:535)
+         1795124696.911  3359  3359 I GabiFlixPlayer: legenda do app: tempo 17800 ms, atraso 0 ms -> "Não, você não está entendendo isso, eu já disse que não vai dar."
+         1795124700.320  3359  3359 I GabiFlixPlayer: AUDIOSYNC estado: st=nova executando=false tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=176MB java=8/512MB nativo=168MB livre=1044MB limiar=144MB poucaMemoria=false
+         1795124702.118  3359  3359 I GabiFlixPlayer: legenda do app: tempo 23155 ms, atraso 0 ms -> (nada)
+         1795124707.386  3359  3359 I GabiFlixPlayer: legenda do app: tempo 28322 ms, atraso 0 ms -> "Então porque você está aqui? Eu estou com muito medo, tá bem?"
+         1795124710.613  3359  3359 I GabiFlixPlayer: AUDIOSYNC GATILHO motivo=início legenda=fbbfd36b0af080|http://10.0.2.2:8000/film.srt#raw decisão=análise [análises=1 sem_confiança=0 estado=nova]
+         1795124710.613  3359  3359 I GabiFlixPlayer: AUDIOSYNC antes da análise: saúde da reprodução: amostras=30 paradas=0 razão_mínima=0.72 carregando=0 quadros_perdidos=218
+         1795124710.613  3359  3359 I GabiFlixPlayer: AUDIOSYNC começando: posição 31 s, duração 720 s, atraso atual 0 ms, faixa de áudio 1
+         1795124711.327  3673  3693 E VLC     : [f1ec6c10/e6d] libvlc audio output: GetStaticFieldID(AudioFormat.ENCODING_PCM_32BIT) failed
+         1795124712.927  3359  3359 I GabiFlixPlayer: legenda do app: tempo 33988 ms, atraso 0 ms -> (nada)
+         1795124714.187  3673  3707 E VLC     : [f7802e80/e7b] libvlc mux: cannot add this stream
+         1795124714.187  3673  3707 E VLC     : [f7642a40/e7b] libvlc decoder: cannot create packetizer output (h264)
+         1795124714.930  3673  3696 E VLC     : [f7642a40/e70] libvlc decoder: buffer deadlock prevented
+         1795124714.976  3673  3709 E VLC     : [f7802e80/e7d] libvlc mux: cannot add this stream
+         1795124714.976  3673  3709 E VLC     : [f7646160/e7d] libvlc decoder: cannot continue streaming due to errors with codec a52 
+         1795124717.841  3359  3359 I GabiFlixPlayer: legenda do app: tempo 38884 ms, atraso 0 ms -> "Obrigado, mas isso não é tudo, ele também tem uma filha."
+         1795124720.876  3359  3359 I GabiFlixPlayer: AUDIOSYNC estado: st=nova executando=true tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=172MB java=9/512MB nativo=169MB livre=993MB limiar=144MB poucaMemoria=false
+         1795124722.565  3359  3359 I GabiFlixPlayer: legenda do app: tempo 43615 ms, atraso 0 ms -> (nada)
+         1795124728.459  3359  3359 I GabiFlixPlayer: legenda do app: tempo 49319 ms, atraso 0 ms -> "Nós já fomos até lá, meu amigo, e foi muito bem, sim."
+         1795124732.581  1144  3772 E libc    : Access denied finding property "ro.vendor.opa.device_model_id"
+         1795124733.499  3359  3359 I GabiFlixPlayer: legenda do app: tempo 54488 ms, atraso 0 ms -> (nada)
+         1795124738.852  3359  3359 I GabiFlixPlayer: legenda do app: tempo 59748 ms, atraso 0 ms -> "Ela vai ficar aqui, minha casa é dela também, pra mim tudo bem."
+         1795124741.169  3359  3359 I GabiFlixPlayer: AUDIOSYNC estado: st=nova executando=true tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=168MB java=5/512MB nativo=170MB livre=989MB limiar=144MB poucaMemoria=false
+         1795124744.471  3359  3359 I GabiFlixPlayer: legenda do app: tempo 65470 ms, atraso 0 ms -> (nada)
+         1795124749.392  3359  3359 I GabiFlixPlayer: legenda do app: tempo 70407 ms, atraso 0 ms -> "Isso são coisas que você tem que saber, porque nós não temos tempo."
+         1795124754.495  3359  3359 I GabiFlixPlayer: legenda do app: tempo 75332 ms, atraso 0 ms -> (nada)
+         1795124759.895  3359  3359 I GabiFlixPlayer: legenda do app: tempo 80739 ms, atraso 0 ms -> "Não, você não está entendendo isso, eu já disse que não vai dar."
+         1795124761.510  3359  3359 I GabiFlixPlayer: AUDIOSYNC estado: st=nova executando=true tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=170MB java=6/512MB nativo=171MB livre=982MB limiar=144MB poucaMemoria=false
+         1795124765.024  3359  3359 I GabiFlixPlayer: legenda do app: tempo 85928 ms, atraso 0 ms -> (nada)
+         1795124770.339  3359  3359 I GabiFlixPlayer: legenda do app: tempo 91396 ms, atraso 0 ms -> "Então porque você está aqui? Eu estou com muito medo, tá bem?"
+         1795124775.867  3359  3359 I GabiFlixPlayer: legenda do app: tempo 96826 ms, atraso 0 ms -> (nada)
+         1795124778.314  3359  3670 I GabiFlixPlayer: AUDIOSYNC captura 63 s +90 s: 90.08 s de PCM em 67.63 s (fim) leitura=100 MB | usou a faixa 2 (pedida 1) de [1:Track 1; 2:Track 2; ]
+         1795124780.930  3359  3359 I GabiFlixPlayer: legenda do app: tempo 101780 ms, atraso 0 ms -> "Obrigado, mas isso não é tudo, ele também tem uma filha."
+         1795124781.781  3359  3359 I GabiFlixPlayer: AUDIOSYNC estado: st=nova executando=true tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=178MB java=13/512MB nativo=172MB livre=984MB limiar=144MB poucaMemoria=false
+         1795124785.693  3359  3359 I GabiFlixPlayer: legenda do app: tempo 106741 ms, atraso 0 ms -> (nada)
+         1795124790.215  3673  4272 E VLC     : [f7802b60/10b0] libvlc mux: cannot add this stream
+         1795124790.215  3673  4272 E VLC     : [f764da20/10b0] libvlc decoder: cannot create packetizer output (h264)
+         1795124790.348  3673  4270 E VLC     : [f764da20/10ae] libvlc decoder: buffer deadlock prevented
+         1795124790.370  3673  4274 E VLC     : [f7802b60/10b2] libvlc mux: cannot add this stream
+         1795124790.370  3673  4274 E VLC     : [f764b800/10b2] libvlc decoder: cannot continue streaming due to errors with codec a52 
+         1795124791.408  3359  3359 I GabiFlixPlayer: legenda do app: tempo 112228 ms, atraso 0 ms -> "Nós já fomos até lá, meu amigo, e foi muito bem, sim."
+         1795124796.555  3359  3359 I GabiFlixPlayer: legenda do app: tempo 117444 ms, atraso 0 ms -> (nada)
+         1795124801.806  3359  3359 I GabiFlixPlayer: legenda do app: tempo 122852 ms, atraso 0 ms -> "Ela vai ficar aqui, minha casa é dela também, pra mim tudo bem."
+         1795124802.175  3359  3359 I GabiFlixPlayer: AUDIOSYNC estado: st=nova executando=true tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=181MB java=14/512MB nativo=173MB livre=992MB limiar=144MB poucaMemoria=false
+         1795124804.028  2000  2972 E libc    : Access denied finding property "persist.adb.tls_server.enable"
+         1795124804.029  2000  2972 E libc    : Access denied finding property "service.adb.tls.port"
+         1795124807.503  3359  3359 I GabiFlixPlayer: legenda do app: tempo 128516 ms, atraso 0 ms -> (nada)
+         1795124812.342  3359  3359 I GabiFlixPlayer: legenda do app: tempo 133406 ms, atraso 0 ms -> "Isso são coisas que você tem que saber, porque nós não temos tempo."
+         1795124817.458  3359  3359 I GabiFlixPlayer: legenda do app: tempo 138319 ms, atraso 0 ms -> (nada)
+         1795124821.306  3840  3879 D StrictMode: 	at libcore.io.IoTracker.trackIo(IoTracker.java:35)
+         1795124821.306  3840  3879 D StrictMode: 	at libcore.io.IoTracker.trackIo(IoTracker.java:45)
+         1795124822.438  3359  3359 I GabiFlixPlayer: AUDIOSYNC estado: st=nova executando=true tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=182MB java=15/512MB nativo=175MB livre=1021MB limiar=144MB poucaMemoria=false
+         1795124822.891  3359  3359 I GabiFlixPlayer: legenda do app: tempo 143846 ms, atraso 0 ms -> "Não, você não está entendendo isso, eu já disse que não vai dar."
+         1795124828.115  3359  3359 I GabiFlixPlayer: legenda do app: tempo 149028 ms, atraso 0 ms -> (nada)
+         1795124833.367  3359  3359 I GabiFlixPlayer: legenda do app: tempo 154277 ms, atraso 0 ms -> "Então porque você está aqui? Eu estou com muito medo, tá bem?"
+         1795124838.313  3359  3670 I GabiFlixPlayer: AUDIOSYNC captura 315 s +90 s: 90.08 s de PCM em 50.31 s (fim) leitura=101 MB | usou a faixa 2 (pedida 1) de [1:Track 1; 2:Track 2; ]
+         1795124838.929  3359  3359 I GabiFlixPlayer: legenda do app: tempo 160004 ms, atraso 0 ms -> (nada)
+         1795124842.691  3359  3359 I GabiFlixPlayer: AUDIOSYNC estado: st=nova executando=true tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=192MB java=23/512MB nativo=176MB livre=1028MB limiar=144MB poucaMemoria=false
+         1795124843.900  3359  3359 I GabiFlixPlayer: legenda do app: tempo 164932 ms, atraso 0 ms -> "Obrigado, mas isso não é tudo, ele também tem uma filha."
+         1795124846.099  3840  3879 W aadg    : 	at libcore.io.IoBridge.write(IoBridge.java:540)
+         1795124846.099  3840  3879 W aadg    : 	at libcore.io.Linux.writeBytes(Native Method)
+         1795124846.099  3840  3879 W aadg    : 	at libcore.io.Linux.write(Linux.java:293)
+         1795124846.099  3840  3879 W aadg    : 	at libcore.io.ForwardingOs.write(ForwardingOs.java:240)
+         1795124846.099  3840  3879 W aadg    : 	at libcore.io.BlockGuardOs.write(BlockGuardOs.java:418)
+         1795124846.099  3840  3879 W aadg    : 	at libcore.io.ForwardingOs.write(ForwardingOs.java:240)
+         1795124846.099  3840  3879 W aadg    : 	at libcore.io.IoBridge.write(IoBridge.java:535)
+         1795124846.230  3840  3879 W aadg    : 	at libcore.io.IoBridge.write(IoBridge.java:540)
+         1795124846.230  3840  3879 W aadg    : 	at libcore.io.Linux.writeBytes(Native Method)
+         1795124846.230  3840  3879 W aadg    : 	at libcore.io.Linux.write(Linux.java:293)
+         1795124846.230  3840  3879 W aadg    : 	at libcore.io.ForwardingOs.write(ForwardingOs.java:240)
+         1795124846.230  3840  3879 W aadg    : 	at libcore.io.BlockGuardOs.write(BlockGuardOs.java:418)
+         1795124846.230  3840  3879 W aadg    : 	at libcore.io.ForwardingOs.write(ForwardingOs.java:240)
+         1795124846.230  3840  3879 W aadg    : 	at libcore.io.IoBridge.write(IoBridge.java:535)
+         1795124846.938  2465  2559 D cr_ClientAuthCredsWidevine: [ClientAuthCredsWidevine.java:276] PostRequest:https://www.googleapis.com/certificateprovisioning/v1/devicecertificates/create?key=AIzaSyB-5OLKTx2iU5mko18DfdwK5611JIjbUhE&signedRequest=CugYEgRvI9uBGhMIARIPY2FzdC5nb29nbGUuY29tKqgYCgx3aWRldmluZS5jb20SEFFDT-KkTHY7zCyCai1u-aca8BVstghfjlZid5wmVZAqHLkP0nqZaYHU0wOdMgM9FeBnMaoGDh4lNDFfcNgvUqpmNqPyJMejpcYLtGruJvVK1XUtlWtHBiLw0sbrM5wUuiMQQ3c42sAQRjrTAJhJEFPxRa7PIZwFGEobEw6QUtUJtMy5crMcDKp6iRryZL8N3dI6YSdWQLY0vrdXvCvxEk1yKZloud4W8jJ-dbqlNxXmi3vdAQymZ01xNtiB1NINmm10TfaJiV8iNVWEaCSrJ_p6YndCOL_FJ8xt9_3HObEtmL4TdkfZ6CAkfDeOZ_tingW9_5JnZcDoFXSQdL5pC9WxiScAW-1eWiq_xp40P52ZvxDsPkwHdJEm3ttGr5HU0s-q5FiOUO9cAryh0p1YZ-vDk_dld4tF-Ze1caC5TdQFno-3RHYAalZWlPcoUhXRdQDYJX2EwTa8MbhqbPjucAfgnBJ4ubTbWDl9cDC5NUy-zmS7kt2KcB3WizLGkTkmBbiyX_RTg2P9srTntkil3srKUOrnTXS5Z2t3FKdlZ_SYHdaKAw810tp2Tapgx3enoyeVgshXqmAhAFVLlpmufTQAcbOBcV2WDMSCdqrD42cqVT7tUkAdBqzZkUOcwmPfw7we4xN00o8xRMVionsnBLOCofU7q4_Yg2y61jm9tXnr8_TvyGZbfKm-gKKYXn64wTNWyWUKlJX0VWE264CN-5WRR7hBcfsy7cM9bWeCxHdgA1wTLOf-tr6YJQ2fsGyZXNilQPu1_fMsxpXNmCk9wJeWhZW8VWSPG3FbbWnApZi6LJpuONhEdsN0_EvbbX9oqM-Gy71-kzTwafys23epPViuufTt_VT8t8uV3FGbrLLFFc0EzLhh6VmZjfxsV9y6KAWqywFFH3r1tGBfTVbidBDBo97gqpU8ER7GCw8fbQVTVNlRKxIntltM3PkCBbPlGqi-efqE7u9F3a9_agGVGAJ2jpfmRhJ7Ulca9kVc-U3dHaAB-LsFxs6hggvuExecKCQiO7Urz3p_5Srk8kUzKBHA1DkJSnX4Tve1zG5xOuX3vhyS7G0Nn37nhJUgJayi0JDSwxfAHkzZVyzy2At4l3rYnTJk_b_oKiVLynjCD9xe1zyI61yRe-Sh0x1t89LZXuEFNe-oTzudP3Rep725hmRxKBeM8LGDP2SssuheM38_14ZWRZeiJFWBlu-aAh4qM2Lj8HA3w0JkyxkEnJn9C5LVOb1NvgbraFn-4oLfDhLgZ80s908boQUf04tVEM1ma1dhP4I5WdYPVGMEVfzVzWstrcZ8WaFY0-X-yfXWt_GMaaIToXnl4hqeRX1oJxqV4EmD6_oZ52_I111to3rJXpIH-IGzowACV5IG6v58BrB4bjnNsGXe_ahTdbm6_Qbd_k_WZxLNBOeZgNlpV0ghNBn6OiqSROh1oDqJXaVpAVNR-z_rMiTuxFFwxD334GcnCdheAf86h7vJ5CLlOyTwStoopUgyIzLjmrt8T0DqJD70SnrB3YuqAtaw4zs6798zX6ADDf-w23P97sQ_d8rTUqY0-dsRoNpfiMFG_tgk-yleshs67flj5mCOglRvgnNZ2-axlsag-8Qeu4dWAuxM-LJgU3FUpoRMMq-VvAhMNr3RXXOcSEwV5skhJ8a6Ms06O7mHnUvPMAfmSnzVlTTppiMDDGWWdCOou1tAjcHdsbyGI4qGKVbgxqLOaGcz75b1wgjMxlJNlbOUMkGXTa7WD_PI2m51tbE8Yq6KhxJRvgMUUmw0QOyQIaZ9DupxLzeK2Xp1xRnB5lvVdOOPgCctfFHK3hJXqbpcbOicrPDrArm1adbcAMiIeXrKLhDY6uvEchXFihBcTs7CAyOGBdrLyZjQakQX8W91EiMDA07MhefGsCrN9-SAQubHYOcw5Z15QuQc_T5cZK35i2FQBOk1XhzW8kBzIi9w0vvAV7_HXpkiWe0XBeo3j00mDWnDaRYGrzEVJZYqk5revW29CsU50DHoIXl5vddMNB-gB7gKTPv4px4dzn2diN3VYFgYDLofVG70nc3BgSSO9rDUZ-sYDG2MU1mY4P_zzU_u0hAm8t46OCnq9_sEhf55ymtT9svr5WnmmPd7fl6-VqKdHot1o2zSrpmchTFPmMOrKoVvd2CiaUsgv6fFSkfeGJ_csGtfdz8cvwNu0_kiUsZdY4bNJWR4xAMTJXvSriXPTsIoWbLQn9KoGZGJIzVHUmtu17-FkRylZsnBCGsaFYIeM9oXwAciE9VpJCX6P1Ec-4U_J_JgnoKQXVMyB-m8R7oQKoVgtmLLwrR7uWtXFspyXXOnF-AV2knUFtbRIIFwq1zuwp24hxApQ9PWDlhqIlUXrbDHIE4q1Tp71GHaSBLvjW4XYdSn4NTC-bgmxBA7u1FOb6c2Ew07XZ_DmsdbDx7Bg6RUvcL5Mlc3blZ8i5irLHIcxx5WDxxvNZu37uyP6b8gKGpUiRo7Uua4ztZENfOR1ZFk2_WEzxn0ll5FFmKJRTBSwAuzmJjphm9l3fP4eoqQrCF3FF54i1f23FGVE8QPVgqYxMod0LAfuHVAhiymajyvGTRqiT0XljEqaq6kT1NSvkchKotC8aIr2Mv-flG84pu9ugL7ygIXCIoel38WDynIgQ7Vod2hpVGDsPNQZe28c_mHDNV6aPgy_QUx2VydrHEiZweXQjip5JxUvqV-z9bbHhvs2UKGd7HI7g3KqBEnMiXq3FoAIQeuw8vo8DEseVdqMkOyCq8kMt0A_GhE6BBYspD9Ho9oXP11hjtgov3pIRKYdKf2WQ2Z3-5qZ0tPSzupw1cRgH9w_SdKSZKqIu9FPQuUZ9MDADnxdPqHprhVN8DQKAeQnp2abR54d3pv38Rc_EK2_VhuGxN1uKaJ-BiCJ0RvPzglUpQ0ReMwxDy9NgMEsv4hU7QGGCYdIiTba2sSYmt--grdngeaRcJj9bEqmmOh7Y3x34X8ZUQwL9_jWFH4WFFGFv6NGkY7uo-SZB6yBAnJOqWwornrJjiv3bWTh8uyoe4aTvA6CdnGFZbYzAjxCThrvBlx7gvnCKRkPR3BVxx2gkygvc2G37-Rg4JC26UAp0nuoV9C2k21BMWkxBH8ygO25Nv2VbdE26tV4LPPVJ_o8q7HROSeqoWCcgLJnBt_e6ODrmr4_A46pzSFCUqAyKg8HwtLknoBY7LSaz1uB0VC7625b6KV_OjmXKLfIu6Ulc9vlcWWWGGBj6Sj32MjhiEmkWjsLj11MwAYgg1StQlemUth0KkHqh6uydLRPk-_cXx-hAYCmEB1Lwjnc2oiiavx5Tceb6GD35ll5wqEbbpePgYdWzhFkJJV8XZzE00MgZJw4__9VKlKDc0W4OinSG_aUNkILApqc2r9uHP2dc6o_Wv1ImTGza43lZ0WpnDtZ7XnetTU4DA3dbQj4biO9IXpemnJbJAYez0FGcrSKOgNuPzQYtqS7j4oRytGp_No13A7_cAzqvJjr6JgspEHyBIn9VTQdPkKMxOrI2D5RYN0yiII7cF1Z4BOPlQ5rOiC__z8_g2osIu15bCwFqfrwFmSzg_B-SEhd2_uRzDopIZI1gbAt5EE02-NWL7L_UJCcoBcLcK-nl9ErTr4brSst0m4u49R-h7vl-UWHy6HKErcpMo1orua3I6owl17JgYhNntXZ7a9nce-RAMmoeT4A3Lg5vd_hWkTxHxMgqeaE7_GN6PqsUXuggLV8zvZXniobJsA-8lgs_bbwUyvqXxUP0oSIhB0TYWwOvAlTqmZYTdnZDA8KoACI0
+         1795124848.638  3359  3359 I GabiFlixPlayer: legenda do app: tempo 169663 ms, atraso 0 ms -> (nada)
+         1795124849.336  3840  3879 W aadg    : 	at libcore.io.IoBridge.write(IoBridge.java:540)
+         1795124849.336  3840  3879 W aadg    : 	at libcore.io.Linux.writeBytes(Native Method)
+         1795124849.336  3840  3879 W aadg    : 	at libcore.io.Linux.write(Linux.java:293)
+         1795124849.336  3840  3879 W aadg    : 	at libcore.io.ForwardingOs.write(ForwardingOs.java:240)
+         1795124849.336  3840  3879 W aadg    : 	at libcore.io.BlockGuardOs.write(BlockGuardOs.java:418)
+         1795124849.336  3840  3879 W aadg    : 	at libcore.io.ForwardingOs.write(ForwardingOs.java:240)
+         1795124849.336  3840  3879 W aadg    : 	at libcore.io.IoBridge.write(IoBridge.java:535)
+         1795124849.421  3840  3879 W aadg    : 	at libcore.io.IoBridge.write(IoBridge.java:540)
+         1795124849.421  3840  3879 W aadg    : 	at libcore.io.Linux.writeBytes(Native Method)
+         1795124849.421  3840  3879 W aadg    : 	at libcore.io.Linux.write(Linux.java:293)
+         1795124849.421  3840  3879 W aadg    : 	at libcore.io.ForwardingOs.write(ForwardingOs.java:240)
+         1795124849.421  3840  3879 W aadg    : 	at libcore.io.BlockGuardOs.write(BlockGuardOs.java:418)
+         1795124849.421  3840  3879 W aadg    : 	at libcore.io.ForwardingOs.write(ForwardingOs.java:240)
+         1795124849.421  3840  3879 W aadg    : 	at libcore.io.IoBridge.write(IoBridge.java:535)
+         1795124854.360  3359  3359 I GabiFlixPlayer: legenda do app: tempo 175430 ms, atraso 0 ms -> "Nós já fomos até lá, meu amigo, e foi muito bem, sim."
+         1795124856.749  3673  4786 E VLC     : [f7802e80/12b2] libvlc mux: cannot add this stream
+         1795124856.749  3673  4786 E VLC     : [f7642ce0/12b2] libvlc decoder: cannot create packetizer output (h264)
+         1795124856.834  3673  4769 E VLC     : [f7642ce0/12a1] libvlc decoder: buffer deadlock prevented
+         1795124856.846  3673  4788 E VLC     : [f7802e80/12b4] libvlc mux: cannot add this stream
+         1795124856.846  3673  4788 E VLC     : [f7644f00/12b4] libvlc decoder: cannot continue streaming due to errors with codec a52 
+         1795124859.546  3359  3359 I GabiFlixPlayer: legenda do app: tempo 180612 ms, atraso 0 ms -> (nada)
+         1795124862.950  3359  3359 I GabiFlixPlayer: AUDIOSYNC estado: st=nova executando=true tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=194MB java=24/512MB nativo=177MB livre=979MB limiar=144MB poucaMemoria=false
+         1795124864.805  3359  3359 I GabiFlixPlayer: legenda do app: tempo 185860 ms, atraso 0 ms -> "Ela vai ficar aqui, minha casa é dela também, pra mim tudo bem."
+         1795124870.379  3359  3359 I GabiFlixPlayer: legenda do app: tempo 191332 ms, atraso 0 ms -> (nada)
+         1795124875.387  3359  3359 I GabiFlixPlayer: legenda do app: tempo 196199 ms, atraso 0 ms -> "Isso são coisas que você tem que saber, porque nós não temos tempo."
+         1795124880.475  3359  3359 I GabiFlixPlayer: legenda do app: tempo 201532 ms, atraso 0 ms -> (nada)
+         1795124883.230  3359  3359 I GabiFlixPlayer: AUDIOSYNC estado: st=nova executando=true tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=195MB java=25/512MB nativo=178MB livre=955MB limiar=144MB poucaMemoria=false
+         1795124885.951  3359  3359 I GabiFlixPlayer: legenda do app: tempo 206980 ms, atraso 0 ms -> "Não, você não está entendendo isso, eu já disse que não vai dar."
+         1795124891.033  3359  3359 I GabiFlixPlayer: legenda do app: tempo 211905 ms, atraso 0 ms -> (nada)
+         1795124896.274  3359  3359 I GabiFlixPlayer: legenda do app: tempo 217350 ms, atraso 0 ms -> "Então porque você está aqui? Eu estou com muito medo, tá bem?"
+         1795124901.854  3359  3359 I GabiFlixPlayer: legenda do app: tempo 222820 ms, atraso 0 ms -> (nada)
+         1795124903.621  3359  3359 I GabiFlixPlayer: AUDIOSYNC estado: st=nova executando=true tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=196MB java=26/512MB nativo=179MB livre=936MB limiar=144MB poucaMemoria=false
+         1795124906.835  3359  3359 I GabiFlixPlayer: legenda do app: tempo 227793 ms, atraso 0 ms -> "Obrigado, mas isso não é tudo, ele também tem uma filha."
+         1795124910.920  3359  3670 I GabiFlixPlayer: AUDIOSYNC captura 567 s +90 s: 90.08 s de PCM em 60.67 s (fim) leitura=104 MB | usou a faixa -1 (pedida 1) de []
+         1795124911.540  3359  3359 I GabiFlixPlayer: legenda do app: tempo 232492 ms, atraso 0 ms -> (nada)
+         1795124917.408  3359  3359 I GabiFlixPlayer: legenda do app: tempo 238468 ms, atraso 0 ms -> "Nós já fomos até lá, meu amigo, e foi muito bem, sim."
+         1795124922.411  3359  3359 I GabiFlixPlayer: legenda do app: tempo 243384 ms, atraso 0 ms -> (nada)
+         1795124923.946  3359  3359 I GabiFlixPlayer: AUDIOSYNC estado: st=nova executando=true tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=195MB java=22/512MB nativo=180MB livre=928MB limiar=144MB poucaMemoria=false
+         1795124925.739  2000  2031 E libc    : Access denied finding property "persist.adb.tls_server.enable"
+         1795124925.739  2000  2031 E libc    : Access denied finding property "service.adb.tls.port"
+         1795124927.920  3359  3359 I GabiFlixPlayer: legenda do app: tempo 248740 ms, atraso 0 ms -> "Ela vai ficar aqui, minha casa é dela também, pra mim tudo bem."
+         1795124931.193  3359  3359 I GabiFlixPlayer: AUDIOSYNC resultado: recusada z=4.2 janelas=3/3 (z baixo; pico ambíguo;) | vad=silero janelas=3 captura=217928 ms vad=38045 ms (cpu 16) solve=2611 ms (cpu 308) cpu_thread=390 ms total=220555 ms leitura_estimada=282 MB leitura_real=306 MB pss=177->190 MB java=8->15 MB
+         1795124931.193  3359  3359 I GabiFlixPlayer: AUDIOSYNC saúde da reprodução: amostras=217 paradas=0 razão_mínima=0.75 carregando=0 quadros_perdidos=1393
+         1795124931.196  3359  3359 I GabiFlixPlayer: AUDIOSYNC o áudio não tem certeza: legenda deixada como estava
+         1795124931.196  3359  3359 I GabiFlixPlayer: AUDIOSYNC GATILHO motivo=sem-confiança legenda=fbbfd36b0af080|http://10.0.2.2:8000/film.srt#raw decisão=agendar UMA segunda tentativa em 1200 s: o áudio não tem certeza [análises=1 sem_confiança=1 estado=nova]
+         1795124933.248  3673  3673 I AndroidRuntime: VM exiting with result code 0, cleanup skipped.
+         1795124933.328  3359  3359 I GabiFlixPlayer: legenda do app: tempo 254276 ms, atraso 0 ms -> (nada)
+         1795124938.341  3359  3359 I GabiFlixPlayer: legenda do app: tempo 259236 ms, atraso 0 ms -> "Isso são coisas que você tem que saber, porque nós não temos tempo."
+         1795124943.468  3359  3359 I GabiFlixPlayer: legenda do app: tempo 264389 ms, atraso 0 ms -> (nada)
+         1795124944.122  3359  3359 I GabiFlixPlayer: AUDIOSYNC estado: st=nova executando=false tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=197MB java=15/512MB nativo=181MB livre=1030MB limiar=144MB poucaMemoria=false
+         1795124948.447  2000  2972 E libc    : Access denied finding property "persist.adb.tls_server.enable"
+         1795124948.447  2000  2972 E libc    : Access denied finding property "service.adb.tls.port"
+         1795124948.952  3359  3359 I GabiFlixPlayer: legenda do app: tempo 269796 ms, atraso 0 ms -> "Não, você não está entendendo isso, eu já disse que não vai dar."
+         1795124954.178  3359  3359 I GabiFlixPlayer: legenda do app: tempo 275018 ms, atraso 0 ms -> (nada)
+         1795124959.308  3359  3359 I GabiFlixPlayer: legenda do app: tempo 280282 ms, atraso 0 ms -> "Então porque você está aqui? Eu estou com muito medo, tá bem?"
+         1795124964.470  3359  3359 I GabiFlixPlayer: AUDIOSYNC estado: st=nova executando=false tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=198MB java=16/512MB nativo=182MB livre=989MB limiar=144MB poucaMemoria=false
+         1795124964.877  3359  3359 I GabiFlixPlayer: legenda do app: tempo 285733 ms, atraso 0 ms -> (nada)
