@@ -47,17 +47,77 @@ public final class Cue {
         return out.toArray(new Cue[0]);
     }
 
+    /** nomes de tag (HTML do SRT/VTT) que não são texto da fala */
+    private static final String TAGS_SIMPLE = ",i,b,u,s,c,em,strong,strike,br,big,small,sub,sup,tt,q,mark,del,ins,ruby,rt,rp,center,";
+    private static final String TAGS_ATTR = ",v,lang,font,span,a,p,div,";
+
+    /**
+     * s[i] é '<': se começa uma tag de verdade devolve o índice do '>' que a fecha, senão -1 (o '<' é um caractere de texto, como em
+     * "<Hoje estou alegre, >" ou "2 < 3"). Tag = "<00:01.500>" (tempo dentro da fala do VTT), "<i>", "</i>", "</ i>", "<c.cor>", "<v Ana>",
+     * "<font color=...>" (nome conhecido; atributos só onde fazem sentido).
+     */
+    static int tagEnd(String s, int i) {
+        int n = s.length(), j = i + 1;
+        if (j >= n) return -1;
+        char c = s.charAt(j);
+        if (c >= '0' && c <= '9') {
+            int k = j;
+            while (k < n && k < i + 16 && ((s.charAt(k) >= '0' && s.charAt(k) <= '9') || s.charAt(k) == ':' || s.charAt(k) == '.' || s.charAt(k) == ',')) k++;
+            return k < n && s.charAt(k) == '>' ? k : -1;
+        }
+        boolean closing = false;
+        if (c == '/') {
+            closing = true;
+            j++;
+            while (j < n && s.charAt(j) == ' ') j++;
+        }
+        int k = j;
+        while (k < n) {
+            char x = s.charAt(k);
+            if ((x >= 'a' && x <= 'z') || (x >= 'A' && x <= 'Z') || (x >= '0' && x <= '9')) k++; else break;
+        }
+        if (k == j) return -1;
+        String name = "," + s.substring(j, k).toLowerCase(java.util.Locale.ROOT) + ",";
+        boolean simple = TAGS_SIMPLE.contains(name), attr = TAGS_ATTR.contains(name);
+        if (!simple && !attr) return -1;
+        int e = k;
+        while (e < n && s.charAt(e) != '>' && s.charAt(e) != '<' && s.charAt(e) != '\n') e++;
+        if (e >= n || s.charAt(e) != '>') return -1;
+        if (e == k) return e;                                           // "<i>"
+        String rest = s.substring(k, e);
+        if (closing) return rest.trim().isEmpty() ? e : -1;
+        char r0 = rest.charAt(0);
+        if (r0 == '/' && rest.trim().equals("/")) return e;            // "<br/>"
+        if (r0 == '.' && simple) return rest.indexOf(' ') < 0 ? e : -1;  // "<c.yellow>"
+        if (r0 != ' ' && r0 != '\t') return -1;
+        if (rest.trim().isEmpty()) return e;                            // "<i >"
+        if (name.equals(",v,") || name.equals(",lang,")) return e;      // "<v Ana>", "<lang pt-BR>"
+        return attr && rest.indexOf('=') > 0 ? e : -1;                  // "<font color=\"#fff\">"
+    }
+
+    /** s[i] é '{': fim ('}') de um bloco de efeitos do ASS/MicroDVD ({\an8}, {\i1}, {an8}, {y:i}) na mesma linha; -1 se for só uma chave no texto */
+    static int braceEnd(String s, int i) {
+        int n = s.length(), j = i + 1;
+        if (j >= n) return -1;
+        char c = s.charAt(j);
+        boolean ok = c == '\\'
+                || (((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z')) && j + 1 < n && s.charAt(j + 1) == ':')
+                || (c == 'a' && j + 2 < n && s.charAt(j + 1) == 'n' && s.charAt(j + 2) >= '1' && s.charAt(j + 2) <= '9');
+        if (!ok) return -1;
+        for (int k = j; k < n; k++) {
+            if (s.charAt(k) == '}') return k;
+            if (s.charAt(k) == '\n') return -1;
+        }
+        return -1;
+    }
+
     /** {letras de fala, letras em colchetes/notas} */
     static int[] countChars(String s) {
         int speech = 0, other = 0, depth = 0;
-        boolean tag = false;
         for (int i = 0; i < s.length(); i++) {
             char c = s.charAt(i);
-            if (c == '<') { tag = true; continue; }
-            if (c == '>') { tag = false; continue; }
-            if (tag) continue;
-            if (c == '{') { tag = true; continue; }
-            if (c == '}') { tag = false; continue; }
+            if (c == '<') { int e = tagEnd(s, i); if (e > 0) { i = e; continue; } }
+            else if (c == '{') { int e = braceEnd(s, i); if (e > 0) { i = e; continue; } }
             if (c == '[' || c == '(') { depth++; continue; }
             if (c == ']' || c == ')') { if (depth > 0) depth--; continue; }
             if (c == '♪' || c == '♫' || c == '♬') { other += 1; continue; }
