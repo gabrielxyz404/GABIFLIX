@@ -862,6 +862,24 @@ public final class AudioAligner {
         R.f1 = (pr + rc) > 0 ? 2 * pr * rc / (pr + rc) : 0;
     }
 
+    /**
+     * Confere um modelo (escala, deslocamento) contra TODAS as janelas capturadas (o plano B só resolve com as densas): as janelas concordam com ele pela mesma
+     * porta robusta (consensus)? Impede que o plano B aplique uma resposta que as janelas espalhadas contradizem.
+     */
+    public static boolean verifyModel(Cue[] cues, Window[] ws, double scale, double offsetMs, Params P) {
+        float[] fine = fineMask(cues, P.trimCues);
+        double[] devs = new double[ws.length], zs = new double[ws.length];
+        int n = 0;
+        for (Window w : ws) {
+            float[] p = smooth(w.p, P.smoothMs);
+            Fine f = fineWindow(p, w.startMs, fine, scale, offsetMs, 40);
+            if (f.speechFrac < P.minSpeechFrac) continue;
+            Fine fw = fineWindow(p, w.startMs, fine, scale, offsetMs, 150);
+            devs[n] = fw.bestDelta; zs[n] = fw.z; n++;
+        }
+        return consensus(devs, zs, n, P);
+    }
+
     private static double median(double[] v, int n) {
         double[] c = Arrays.copyOf(v, n);
         Arrays.sort(c);

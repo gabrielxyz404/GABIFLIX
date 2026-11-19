@@ -182,7 +182,7 @@ public final class AudioSyncSession {
             AudioSyncSession bs = new AudioSyncSession(cues, durMs, L);
             for (int i = 0; i < dense; i++) bs.addWindow(all[i]);
             Result b = bs.solve();
-            if (b.accepted) {
+            if (b.accepted && AudioAligner.verifyModel(cues, all, b.scale, b.rawOffsetMs, P)) {
                 boolean agree = r.accepted && Math.abs(b.scale - r.scale) < 1e-6 && Math.abs(b.rawOffsetMs - r.rawOffsetMs) < 400;
                 if (!agree) {
                     b.planB = true;

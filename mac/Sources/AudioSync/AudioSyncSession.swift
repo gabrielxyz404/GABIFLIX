@@ -184,7 +184,7 @@ final class AudioSyncSession {
             let bs = AudioSyncSession(cues: cues, mediaDurationMs: durMs, params: L)
             for i in 0..<dense { bs.addWindow(all[i]) }
             let b = bs.solve()
-            if b.accepted {
+            if b.accepted && AudioAligner.verifyModel(cues, all, b.scale, b.rawOffsetMs, P) {
                 let agree = r.accepted && abs(b.scale - r.scale) < 1e-6 && abs(b.rawOffsetMs - r.rawOffsetMs) < 400
                 if !agree {
                     b.planB = true

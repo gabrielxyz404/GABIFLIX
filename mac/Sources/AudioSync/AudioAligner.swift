@@ -843,6 +843,20 @@ enum AudioAligner {
         R.f1 = (pr + rc) > 0 ? 2 * pr * rc / (pr + rc) : 0
     }
 
+    /** Confere um modelo (escala, deslocamento) contra TODAS as janelas capturadas pela mesma porta robusta (porte de verifyModel). */
+    static func verifyModel(_ cues: [AudioCue], _ ws: [AudioWindow], _ scale: Double, _ offsetMs: Double, _ P: Params) -> Bool {
+        let fine = fineMask(cues, P.trimCues)
+        var devs: [Double] = [], zs: [Double] = []
+        for w in ws {
+            let p = smooth(w.p, P.smoothMs)
+            let f = fineWindow(p, w.startMs, fine, scale, offsetMs, 40)
+            if f.speechFrac < P.minSpeechFrac { continue }
+            let fw = fineWindow(p, w.startMs, fine, scale, offsetMs, 150)
+            devs.append(fw.bestDelta); zs.append(fw.z)
+        }
+        return consensus(devs, zs, P)
+    }
+
     private static func median(_ v: [Double]) -> Double {
         let c = v.sorted()
         let n = c.count
