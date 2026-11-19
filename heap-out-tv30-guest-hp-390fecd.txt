@@ -1,0 +1,287 @@
+== processos com amostras
+upid=120 pid=3110 io.github.gabrielxyz404.gabiflix: 5390 linhas, liquido=44.0 MB, 845 s de perfil
+
+== estatisticas do heapprofd / unwinding
+heapprofd_last_profile_timestamp = 1070972176060
+heapprofd_unwind_time_us = 265047082
+heapprofd_unwind_samples = 1605463
+
+== liquido acumulado por dump (todos os processos)
+t=    0 s  liquido acumulado=     6.5 MB   (neste intervalo: alocou 735.4 MB, liberou 728.8 MB)
+t=   60 s  liquido acumulado=     9.2 MB   (neste intervalo: alocou 359.9 MB, liberou 357.2 MB)
+t=  120 s  liquido acumulado=    12.3 MB   (neste intervalo: alocou 364.3 MB, liberou 361.1 MB)
+t=  180 s  liquido acumulado=    14.8 MB   (neste intervalo: alocou 372.8 MB, liberou 370.4 MB)
+t=  240 s  liquido acumulado=    16.9 MB   (neste intervalo: alocou 368.0 MB, liberou 365.9 MB)
+t=  300 s  liquido acumulado=    19.4 MB   (neste intervalo: alocou 364.7 MB, liberou 362.2 MB)
+t=  360 s  liquido acumulado=    22.5 MB   (neste intervalo: alocou 368.9 MB, liberou 365.8 MB)
+t=  420 s  liquido acumulado=    25.4 MB   (neste intervalo: alocou 366.1 MB, liberou 363.2 MB)
+t=  480 s  liquido acumulado=    28.0 MB   (neste intervalo: alocou 360.4 MB, liberou 357.7 MB)
+t=  540 s  liquido acumulado=    30.6 MB   (neste intervalo: alocou 361.5 MB, liberou 358.9 MB)
+t=  600 s  liquido acumulado=    32.8 MB   (neste intervalo: alocou 364.1 MB, liberou 362.0 MB)
+t=  660 s  liquido acumulado=    35.3 MB   (neste intervalo: alocou 361.0 MB, liberou 358.4 MB)
+t=  720 s  liquido acumulado=    38.1 MB   (neste intervalo: alocou 361.7 MB, liberou 359.0 MB)
+t=  780 s  liquido acumulado=    41.1 MB   (neste intervalo: alocou 373.5 MB, liberou 370.5 MB)
+t=  840 s  liquido acumulado=    43.7 MB   (neste intervalo: alocou 366.1 MB, liberou 363.4 MB)
+t=  845 s  liquido acumulado=    44.0 MB   (neste intervalo: alocou 27.1 MB, liberou 26.8 MB)
+
+==================== heap "unknown": maiores chamadas por memoria LIQUIDA
+total liquido deste heap: 44.0 MB
+
+  liquido=21.53 MB  contagem liquida=671  alocou 671 vezes, tamanho medio 33647 B  (callsite 881)
+      libc.so            +0x431e4    malloc
+      libc++.so          +0x4bd97    _Znwj
+      libc++.so          +0x4be60    _Znaj
+      libEGL_emulation.s +0xe29c     _ZL11getGLStringi
+      libEGL_emulation.s +0xddfe     eglMakeCurrent
+      libEGL.so          +0x159a7    _ZN7android13egl_display_t11makeCurrentEPNS_13egl_context_tES2_PvS3_S3_S3_S3_S3_
+      libEGL.so          +0x1f3da    _ZN7android18eglMakeCurrentImplEPvS0_S0_S0_
+      libEGL.so          +0x1bfc6    eglMakeCurrent
+      libvlc.so          +0x6bac5a   vlc_http_live_read
+      libvlc.so          +0x4b2af8   input_DecoderFlush
+      libvlc.so          +0x3405a4   vout_ChangeAspectRatio
+      libvlc.so          +0x33efbf   vout_ChangeAspectRatio
+      libvlc.so          +0x363137   vlc_GetCPUCount
+      libc.so            +0xe6ab4    _ZL15__pthread_startPv
+      libc.so            +0x786a7    __start_thread
+
+  liquido=20.19 MB  contagem liquida=635  alocou 635 vezes, tamanho medio 33336 B  (callsite 657)
+      libc.so            +0x431e4    malloc
+      libc++.so          +0x4bd97    _Znwj
+      libc++.so          +0x4be60    _Znaj
+      libEGL_emulation.s +0xe29c     _ZL11getGLStringi
+      libEGL_emulation.s +0xddfe     eglMakeCurrent
+      libEGL.so          +0x159a7    _ZN7android13egl_display_t11makeCurrentEPNS_13egl_context_tES2_PvS3_S3_S3_S3_S3_
+      libEGL.so          +0x1f3da    _ZN7android18eglMakeCurrentImplEPvS0_S0_S0_
+      libEGL.so          +0x1bfc6    eglMakeCurrent
+      libvlc.so          +0x6bac5a   vlc_http_live_read
+      libvlc.so          +0x4b2b59   input_DecoderFlush
+      libvlc.so          +0x3407db   vout_ChangeAspectRatio
+      libvlc.so          +0x33efbf   vout_ChangeAspectRatio
+      libvlc.so          +0x363137   vlc_GetCPUCount
+      libc.so            +0xe6ab4    _ZL15__pthread_startPv
+      libc.so            +0x786a7    __start_thread
+
+  liquido=1.25 MB  contagem liquida=2  alocou 8 vezes, tamanho medio 307200 B  (callsite 922)
+      libc.so            +0x431e4    malloc
+      libc++_shared.so   +0x8cbe7    _Znwj
+      libvlc.so          +0x428dec   input_DecoderFlush
+      libvlc.so          +0x428c5d   input_DecoderFlush
+      libvlc.so          +0x4180eb   input_DecoderFlush
+      libvlc.so          +0x4167f7   input_DecoderFlush
+      libvlc.so          +0x40bf30   input_DecoderFlush
+      libvlc.so          +0x32e108   input_Read
+      libvlc.so          +0x32f610   input_Start
+      libvlc.so          +0x363137   vlc_GetCPUCount
+      libc.so            +0xe6ab4    _ZL15__pthread_startPv
+      libc.so            +0x786a7    __start_thread
+
+  liquido=0.69 MB  contagem liquida=18  alocou 7841 vezes, tamanho medio 37689 B  (callsite 626)
+      libc.so            +0x431e4    malloc
+      libvlc.so          +0x34d89f   block_Alloc
+      libvlc.so          +0x40d503   input_DecoderFlush
+      libvlc.so          +0x40b21e   input_DecoderFlush
+      libvlc.so          +0x40c1a0   input_DecoderFlush
+      libvlc.so          +0x32e108   input_Read
+      libvlc.so          +0x32f610   input_Start
+      libvlc.so          +0x363137   vlc_GetCPUCount
+      libc.so            +0xe6ab4    _ZL15__pthread_startPv
+      libc.so            +0x786a7    __start_thread
+
+  liquido=0.16 MB  contagem liquida=5  alocou 209 vezes, tamanho medio 35120 B  (callsite 1330)
+      libc.so            +0x431e4    malloc
+      libc++.so          +0x4bd97    _Znwj
+      libhwui.so         +0x771d51   _ZN10GrTextBlob4MakeERK14SkGlyphRunListP13GrStrikeCacheRK8SkMatrixjb
+      libhwui.so         +0x31da52   _ZN15GrTextBlobCache14makeCachedBlobERK14SkGlyphRunListP13GrStrikeCacheRKN10GrTextBlob3KeyERKN16SkMaskFilterBase7BlurRecERK8SkMatrixjb
+      libhwui.so         +0x31d46d   _ZN13GrTextContext16drawGlyphRunListEP18GrRecordingContextP12GrTextTargetRK6GrClipRK8SkMatrixRK14SkSurfacePropsRK14SkGlyphRunList
+      libhwui.so         +0x60e657   _ZN21GrRenderTargetContext16drawGlyphRunListERK6GrClipRK8SkMatrixRK14SkGlyphRunList
+      libhwui.so         +0x65a58c   _ZN11SkGpuDevice16drawGlyphRunListERK14SkGlyphRunList
+      libhwui.so         +0x319e3a   _ZN17SkGlyphRunBuilder12drawTextBlobERK7SkPaintRK10SkTextBlob7SkPointP12SkBaseDevice
+      libhwui.so         +0x2da659   _ZN8SkCanvas14onDrawTextBlobEPK10SkTextBlobffRK7SkPaint
+      libhwui.so         +0x2daa5d   _ZN8SkCanvas12drawTextBlobEPK10SkTextBlobffRK7SkPaint
+      libhwui.so         +0x220437   _ZN7android10uirenderer4$_308__invokeEPKvP8SkCanvasRK8SkMatrix
+      libhwui.so         +0x200265   _ZNK7android10uirenderer12skiapipeline18RenderNodeDrawable11drawContentEP8SkCanvas
+      libhwui.so         +0x200e0d   _ZN7android10uirenderer12skiapipeline18RenderNodeDrawable6onDrawEP8SkCanvas
+      libhwui.so         +0x2201c8   _ZN7android10uirenderer4$_248__invokeEPKvP8SkCanvasRK8SkMatrix
+      libhwui.so         +0x200265   _ZNK7android10uirenderer12skiapipeline18RenderNodeDrawable11drawContentEP8SkCanvas
+      libhwui.so         +0x200e0d   _ZN7android10uirenderer12skiapipeline18RenderNodeDrawable6onDrawEP8SkCanvas
+      libhwui.so         +0x2201c8   _ZN7android10uirenderer4$_248__invokeEPKvP8SkCanvasRK8SkMatrix
+      libhwui.so         +0x1fffac   _ZNK7android10uirenderer12skiapipeline18RenderNodeDrawable11drawContentEP8SkCanvas
+
+  liquido=0.03 MB  contagem liquida=1  alocou 1 vezes, tamanho medio 32768 B  (callsite 3097)
+      libc.so            +0x431e4    malloc
+      libc++.so          +0x4bd97    _Znwj
+      libart.so          +0x3c505e   _ZN3art3jit12JitCodeCache24AddProfilingInfoInternalEPNS_6ThreadEPNS_9ArtMethodERKNSt3__16vectorIjNS6_9allocatorIjEEEE
+      libart.so          +0x3c4ebe   _ZN3art3jit12JitCodeCache16AddProfilingInfoEPNS_6ThreadEPNS_9ArtMethodERKNSt3__16vectorIjNS6_9allocatorIjEEEEb
+      libart.so          +0x3cc0c1   _ZN3art13ProfilingInfo6CreateEPNS_6ThreadEPNS_9ArtMethodEb
+      libart.so          +0x3b6990   _ZN3art3jit3Jit18MaybeCompileMethodEPNS_6ThreadEPNS_9ArtMethodEjjb
+      libart.so          +0x3b6ce6   _ZN3art3jit3Jit13MethodEnteredEPNS_6ThreadEPNS_9ArtMethodE
+      libart.so          +0x36fd28   _ZN3art11interpreterL7ExecuteEPNS_6ThreadERKNS_20CodeItemDataAccessorERNS_11ShadowFrameENS_6JValueEbb.llvm.10827788305307183576
+      libart.so          +0x379c70   _ZN3art11interpreter30EnterInterpreterFromEntryPointEPNS_6ThreadERKNS_20CodeItemDataAccessorEPNS_11ShadowFrameE
+      libart.so          +0x78d175   artQuickToInterpreterBridge
+      libart.so          +0x14238d   art_quick_to_interpreter_bridge
+      memfd:jit-cache (d +0x2060951  ?
+
+  liquido=0.03 MB  contagem liquida=1  alocou 1 vezes, tamanho medio 32768 B  (callsite 1345)
+      libc.so            +0x431e4    malloc
+      libc++.so          +0x4bd97    _Znwj
+      libc++.so          +0x4be60    _Znaj
+      libhwui.so         +0x31eed7   _ZN12SkAutoTArrayIN12SkTHashTableIN10SkTHashMapIjN15GrTextBlobCache16BlobIDCacheEntryE10SkGoodHashE4PairEjS6_E4SlotEEC2Ei
+      libhwui.so         +0x31eb14   _ZN12SkTHashTableIN10SkTHashMapIjN15GrTextBlobCache16BlobIDCacheEntryE10SkGoodHashE4PairEjS5_E6resizeEi
+      libhwui.so         +0x31dca7   _ZN15GrTextBlobCache14makeCachedBlobERK14SkGlyphRunListP13GrStrikeCacheRKN10GrTextBlob3KeyERKN16SkMaskFilterBase7BlurRecERK8SkMatrixjb
+      libhwui.so         +0x31d46d   _ZN13GrTextContext16drawGlyphRunListEP18GrRecordingContextP12GrTextTargetRK6GrClipRK8SkMatrixRK14SkSurfacePropsRK14SkGlyphRunList
+      libhwui.so         +0x60e657   _ZN21GrRenderTargetContext16drawGlyphRunListERK6GrClipRK8SkMatrixRK14SkGlyphRunList
+      libhwui.so         +0x65a58c   _ZN11SkGpuDevice16drawGlyphRunListERK14SkGlyphRunList
+      libhwui.so         +0x319e3a   _ZN17SkGlyphRunBuilder12drawTextBlobERK7SkPaintRK10SkTextBlob7SkPointP12SkBaseDevice
+      libhwui.so         +0x2da659   _ZN8SkCanvas14onDrawTextBlobEPK10SkTextBlobffRK7SkPaint
+      libhwui.so         +0x2daa5d   _ZN8SkCanvas12drawTextBlobEPK10SkTextBlobffRK7SkPaint
+      libhwui.so         +0x220437   _ZN7android10uirenderer4$_308__invokeEPKvP8SkCanvasRK8SkMatrix
+      libhwui.so         +0x200265   _ZNK7android10uirenderer12skiapipeline18RenderNodeDrawable11drawContentEP8SkCanvas
+      libhwui.so         +0x200e0d   _ZN7android10uirenderer12skiapipeline18RenderNodeDrawable6onDrawEP8SkCanvas
+      libhwui.so         +0x2201c8   _ZN7android10uirenderer4$_248__invokeEPKvP8SkCanvasRK8SkMatrix
+      libhwui.so         +0x200265   _ZNK7android10uirenderer12skiapipeline18RenderNodeDrawable11drawContentEP8SkCanvas
+      libhwui.so         +0x200e0d   _ZN7android10uirenderer12skiapipeline18RenderNodeDrawable6onDrawEP8SkCanvas
+
+  liquido=0.03 MB  contagem liquida=1  alocou 6428 vezes, tamanho medio 38231 B  (callsite 644)
+      libc.so            +0x433c9    realloc
+      libvlc.so          +0x17ec1ea  av_realloc
+      libvlc.so          +0x17da27c  av_buffer_realloc
+      libvlc.so          +0xdb568e   av_packet_ref
+      libvlc.so          +0xe16f21   avcodec_send_packet
+      libvlc.so          +0x571aae   input_DecoderFlush
+      libvlc.so          +0x3914fd   input_DecoderFlush
+      libvlc.so          +0x38e8f7   input_DecoderFlush
+      libvlc.so          +0x363137   vlc_GetCPUCount
+      libc.so            +0xe6ab4    _ZL15__pthread_startPv
+      libc.so            +0x786a7    __start_thread
+
+  liquido=0.03 MB  contagem liquida=1  alocou 13509 vezes, tamanho medio 32768 B  (callsite 588)
+      libc.so            +0x431e4    malloc
+      libc++.so          +0x4bd97    _Znwj
+      android.hardware.g +0x5c52     _ZNSt3__16vectorIcNS_9allocatorIcEEE8__appendEj
+      libOpenglCodecComm +0x164d3    _ZN13GLSharedGroup16updateBufferDataEjlPKv
+      libGLESv2_enc.so   +0x23d05    _ZN10GL2Encoder14s_glBufferDataEPvjlPKvj
+      libGLESv2_emulatio +0xd6dc     glBufferData
+      libhwui.so         +0x6b9df6   _ZZN12GrGLFunctionIFvjlPKvjEEC1EPS2_ENUlS1_jlS1_jE_8__invokeES1_jlS1_j
+      libhwui.so         +0x6c49c8   _ZN10GrGLBuffer12onUpdateDataEPKvj
+      libhwui.so         +0x5f0794   _ZN11GrGpuBuffer10updateDataEPKvj
+      libhwui.so         +0x5cdb73   _ZN17GrBufferAllocPool12flushCpuDataERKNS_11BufferBlockEj
+      libhwui.so         +0x5cda92   _ZN17GrBufferAllocPool5unmapEv
+      libhwui.so         +0x5f496f   _ZN14GrOpFlushState15preExecuteDrawsEv
+      libhwui.so         +0x5e5818   _ZN16GrDrawingManager5flushEPP14GrSurfaceProxyiN9SkSurface20BackendSurfaceAccessERK11GrFlushInfoRK30GrPrepareForExternalIORequests
+      libhwui.so         +0x5e62a9   _ZN16GrDrawingManager13flushSurfacesEPP14GrSurfaceProxyiN9SkSurface20BackendSurfaceAccessERK11GrFlushInfo
+      libhwui.so         +0x61bc1b   _ZN21GrRenderTargetContext5flushEN9SkSurface20BackendSurfaceAccessERK11GrFlushInfo
+      libhwui.so         +0x65a847   _ZN11SkGpuDevice5flushEv
+      libhwui.so         +0x2c8cff   _ZN8SkCanvas7onFlushEv
+      libhwui.so         +0x250e3f   _ZN7android10uirenderer12skiapipeline12SkiaPipeline11renderFrameERKNS0_16LayerUpdateQueueERK6SkRectRKNSt3__16vectorINS_2spINS0_10RenderNodeEEENS9_9allocatorISD_EEEEbRKNS0_4RectE5sk_spI9SkSurfaceERK8SkMatrix
+
+  liquido=0.03 MB  contagem liquida=1  alocou 6459 vezes, tamanho medio 32768 B  (callsite 556)
+      libc.so            +0x431e4    malloc
+      libc++.so          +0x4bd97    _Znwj
+      android.hardware.g +0x5c52     _ZNSt3__16vectorIcNS_9allocatorIcEEE8__appendEj
+      libOpenglCodecComm +0x164d3    _ZN13GLSharedGroup16updateBufferDataEjlPKv
+      libGLESv2_enc.so   +0x23d05    _ZN10GL2Encoder14s_glBufferDataEPvjlPKvj
+      libGLESv2_emulatio +0xd6dc     glBufferData
+      libhwui.so         +0x6b9df6   _ZZN12GrGLFunctionIFvjlPKvjEEC1EPS2_ENUlS1_jlS1_jE_8__invokeES1_jlS1_j
+      libhwui.so         +0x6c49b2   _ZN10GrGLBuffer12onUpdateDataEPKvj
+      libhwui.so         +0x5f0794   _ZN11GrGpuBuffer10updateDataEPKvj
+      libhwui.so         +0x5cdb73   _ZN17GrBufferAllocPool12flushCpuDataERKNS_11BufferBlockEj
+      libhwui.so         +0x5cdfd7   _ZN17GrBufferAllocPool11createBlockEj
+      libhwui.so         +0x5cdcad   _ZN17GrBufferAllocPool9makeSpaceEjjP5sk_spIK8GrBufferEPj
+      libhwui.so         +0x5f54bd   _ZThn4_N14GrOpFlushState15makeVertexSpaceEjiP5sk_spIK8GrBufferEPi
+      libhwui.so         +0x726630   _ZN13GrAtlasTextOp14onPrepareDrawsEPN12GrMeshDrawOp6TargetE
+      libhwui.so         +0x73d19c   _ZN12GrMeshDrawOp9onPrepareEP14GrOpFlushState
+      libhwui.so         +0x5f8135   _ZN9GrOpsTask9onPrepareEP14GrOpFlushState
+      libhwui.so         +0x5e5b74   _ZN16GrDrawingManager5flushEPP14GrSurfaceProxyiN9SkSurface20BackendSurfaceAccessERK11GrFlushInfoRK30GrPrepareForExternalIORequests
+      libhwui.so         +0x5e62a9   _ZN16GrDrawingManager13flushSurfacesEPP14GrSurfaceProxyiN9SkSurface20BackendSurfaceAccessERK11GrFlushInfo
+
+  liquido=0.00 MB  contagem liquida=0  alocou 1 vezes, tamanho medio 32768 B  (callsite 4738)
+      libc.so            +0x431e4    malloc
+      libc++.so          +0x4bd97    _Znwj
+      libart.so          +0x2c771f   _ZNSt3__16vectorINS_5tupleIJjjbEEENS_9allocatorIS2_EEE21__push_back_slow_pathIS2_EEvOT_
+      libart.so          +0x2c70c2   _ZN3art2gc9collector12ImmuneSpaces25CreateLargestImmuneRegionEv
+      libart.so          +0x2c7582   _ZN3art2gc9collector12ImmuneSpaces8AddSpaceEPNS0_5space15ContinuousSpaceE
+      libart.so          +0x2a058f   _ZN3art2gc9collector17ConcurrentCopying11BindBitmapsEv
+      libart.so          +0x29c6d8   _ZN3art2gc9collector17ConcurrentCopying15InitializePhaseEv
+      libart.so          +0x29bc7a   _ZN3art2gc9collector17ConcurrentCopying9RunPhasesEv
+      libart.so          +0x2c5105   _ZN3art2gc9collector16GarbageCollector3RunENS0_7GcCauseEb
+      libart.so          +0x2e7082   _ZN3art2gc4Heap22CollectGarbageInternalENS0_9collector6GcTypeENS0_7GcCauseEb
+      libart.so          +0x2f49cf   _ZN3art2gc4Heap14CollectGarbageEbNS0_7GcCauseE
+      libopenjdkjvm.so   +0x502f     JVM_GC
+      libopenjdk.so      +0x2996a    Runtime_nativeGc
+      boot.oat           +0x82528    art_jni_trampoline
+      libart.so          +0x13baa2   art_quick_invoke_stub
+      libart.so          +0x1d0501   _ZN3art9ArtMethod6InvokeEPNS_6ThreadEPjjPNS_6JValueEPKc
+      libart.so          +0x386871   _ZN3art11interpreter34ArtInterpreterToCompiledCodeBridgeEPNS_6ThreadEPNS_9ArtMethodEPNS_11ShadowFrameEtPNS_6JValueE
+      libart.so          +0x37abae   _ZN3art11interpreter6DoCallILb0ELb0EEEbPNS_9ArtMethodEPNS_6ThreadERNS_11ShadowFrameEPKNS_11InstructionEtPNS_6JValueE
+
+  liquido=0.00 MB  contagem liquida=0  alocou 1 vezes, tamanho medio 32768 B  (callsite 4730)
+      libc.so            +0x431e4    malloc
+      libc++.so          +0x4bd97    _Znwj
+      libc++.so          +0x4be60    _Znaj
+      libart.so          +0x4dec24   _ZN3art3JNIILb1EE17GetStringUTFCharsEP7_JNIEnvP8_jstringPh
+      libart.so          +0x3fdb91   _ZN3art12_GLOBAL__N_18CheckJNI22GetStringCharsInternalEPKcP7_JNIEnvP8_jstringPhbb
+      libart.so          +0x3e8bcd   _ZN3art12_GLOBAL__N_18CheckJNI17GetStringUTFCharsEP7_JNIEnvP8_jstringPh
+      libjavacore.so     +0x28caf    _ZL12Linux_renameP7_JNIEnvP8_jobjectP8_jstringS4_
+      boot-core-libart.o +0x16f68    art_jni_trampoline
+      libart.so          +0x13baa2   art_quick_invoke_stub
+      libart.so          +0x1d0501   _ZN3art9ArtMethod6InvokeEPNS_6ThreadEPjjPNS_6JValueEPKc
+      libart.so          +0x386871   _ZN3art11interpreter34ArtInterpreterToCompiledCodeBridgeEPNS_6ThreadEPNS_9ArtMethodEPNS_11ShadowFrameEtPNS_6JValueE
+      libart.so          +0x37abae   _ZN3art11interpreter6DoCallILb0ELb0EEEbPNS_9ArtMethodEPNS_6ThreadERNS_11ShadowFrameEPKNS_11InstructionEtPNS_6JValueE
+      libart.so          +0x7a4f45   MterpInvokeInterface
+      libart.so          +0x135b21   mterp_op_invoke_interface
+      core-libart.jar    +0x4196c    libcore.io.ForwardingOs.rename
+      libart.so          +0x7a445e   MterpInvokeSuper
+      libart.so          +0x1359a1   mterp_op_invoke_super
+      core-libart.jar    +0x4057a    libcore.io.BlockGuardOs.rename
+
+  liquido=0.00 MB  contagem liquida=0  alocou 1 vezes, tamanho medio 32768 B  (callsite 4700)
+      libc.so            +0x431e4    malloc
+      libc++.so          +0x4bd97    _Znwj
+      libart.so          +0x5428ca   _ZNSt3__16vectorIPN3art6ThreadENS_9allocatorIS3_EEE21__push_back_slow_pathIRKS3_EEvOT_
+      libart.so          +0x6c0efb   _ZN3art10ThreadList13RunCheckpointEPNS_7ClosureES2_
+      libart.so          +0x29ce70   _ZN3art2gc9collector17ConcurrentCopying30ActivateReadBarrierEntrypointsEv
+      libart.so          +0x29be13   _ZN3art2gc9collector17ConcurrentCopying9RunPhasesEv
+      libart.so          +0x2c5105   _ZN3art2gc9collector16GarbageCollector3RunENS0_7GcCauseEb
+      libart.so          +0x2e7082   _ZN3art2gc4Heap22CollectGarbageInternalENS0_9collector6GcTypeENS0_7GcCauseEb
+      libart.so          +0x2f49cf   _ZN3art2gc4Heap14CollectGarbageEbNS0_7GcCauseE
+      libopenjdkjvm.so   +0x502f     JVM_GC
+      libopenjdk.so      +0x2996a    Runtime_nativeGc
+      boot.oat           +0x82528    art_jni_trampoline
+      libart.so          +0x13baa2   art_quick_invoke_stub
+      libart.so          +0x1d0501   _ZN3art9ArtMethod6InvokeEPNS_6ThreadEPjjPNS_6JValueEPKc
+      libart.so          +0x386871   _ZN3art11interpreter34ArtInterpreterToCompiledCodeBridgeEPNS_6ThreadEPNS_9ArtMethodEPNS_11ShadowFrameEtPNS_6JValueE
+      libart.so          +0x37abae   _ZN3art11interpreter6DoCallILb0ELb0EEEbPNS_9ArtMethodEPNS_6ThreadERNS_11ShadowFrameEPKNS_11InstructionEtPNS_6JValueE
+      libart.so          +0x7a5fc9   MterpInvokeDirect
+      libart.so          +0x135a21   mterp_op_invoke_direct
+
+  liquido=0.00 MB  contagem liquida=0  alocou 1 vezes, tamanho medio 32768 B  (callsite 4689)
+      libc.so            +0x431e4    malloc
+      libc++.so          +0x4bd97    _Znwj
+      libart.so          +0x3c5b0e   _ZN3art3jit12JitCodeCache18GetProfiledMethodsERKNSt3__13setINS2_12basic_stringIcNS2_11char_traitsIcEENS2_9allocatorIcEEEENS2_4lessIS9_EENS7_IS9_EEEERNS2_6vectorINS_17ProfileMethodInfoENS7_ISH_EEEE
+      libart.so          +0x3d10cc   _ZN3art12ProfileSaver20ProcessProfilingInfoEbPt
+      libart.so          +0x3ccc3b   _ZN3art12ProfileSaver3RunEv
+      libart.so          +0x3d2fff   _ZN3art12ProfileSaver21RunProfileSaverThreadEPv
+      libc.so            +0xe6ab4    _ZL15__pthread_startPv
+      libc.so            +0x786a7    __start_thread
+
+== soma do liquido pela PRIMEIRA funcao fora de libc/libc++/linker (quem pediu a memoria)
+     41.72 MB  libEGL_emulation.so _ZL11getGLStringi
+      1.25 MB  libvlc.so input_DecoderFlush
+      0.69 MB  libvlc.so block_Alloc
+      0.16 MB  libhwui.so _ZN10GrTextBlob4MakeERK14SkGlyphRunListP13GrStrikeCacheRK8SkMatrixjb
+      0.06 MB  android.hardware.graphics.mapper@3.0-impl-ranchu.so _ZNSt3__16vectorIcNS_9allocatorIcEEE8__appendEj
+      0.03 MB  libvlc.so av_realloc
+      0.03 MB  libhwui.so _ZN12SkAutoTArrayIN12SkTHashTableIN10SkTHashMapIjN15GrTextBlobCache16BlobIDCacheEntryE10SkGoodHashE4PairEjS6_E4SlotEEC2Ei
+      0.03 MB  libart.so _ZN3art3jit12JitCodeCache24AddProfilingInfoInternalEPNS_6ThreadEPNS_9ArtMethodERKNSt3__16vectorIjNS6_9allocatorIjEEEE
+
+== CRESCIMENTO (liquido depois dos 4 primeiros minutos do perfil), pela primeira funcao fora de libc/libc++/linker
+total depois de 4 min: 27.1 MB
+     26.19 MB  libEGL_emulation.so _ZL11getGLStringi
+      0.62 MB  libvlc.so input_DecoderFlush
+      0.16 MB  libhwui.so _ZN10GrTextBlob4MakeERK14SkGlyphRunListP13GrStrikeCacheRK8SkMatrixjb
+      0.06 MB  android.hardware.graphics.mapper@3.0-impl-ranchu.so _ZNSt3__16vectorIcNS_9allocatorIcEEE8__appendEj
+      0.03 MB  libvlc.so block_Alloc
+      0.03 MB  libvlc.so av_realloc
+      0.03 MB  libart.so _ZN3art3jit12JitCodeCache24AddProfilingInfoInternalEPNS_6ThreadEPNS_9ArtMethodERKNSt3__16vectorIjNS6_9allocatorIjEEEE
+     -0.03 MB  libvlc.so block_TryRealloc
+     -0.03 MB  libhwui.so _ZN17SkTextBlobBuilder13allocInternalERK6SkFontN10SkTextBlob16GlyphPositioningEii7SkPointPK6SkRect
