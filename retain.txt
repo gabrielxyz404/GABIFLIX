@@ -1,0 +1,10 @@
+== org.videolan.libvlc.MediaPlayer
+  retain em:   public int setRenderer(org.videolan.libvlc.RendererItem);
+  retain em:   public org.videolan.libvlc.MediaPlayer(org.videolan.libvlc.interfaces.IMedia);
+  retain em:   public synchronized org.videolan.libvlc.interfaces.IMedia getMedia();
+  retain em:   public void setMedia(org.videolan.libvlc.interfaces.IMedia);
+== org.videolan.libvlc.Media
+  retain em:   public org.videolan.libvlc.MediaList subItems();
+== org.videolan.libvlc.LibVLC
+== org.videolan.libvlc.util.VLCVideoLayout
+== org.videolan.libvlc.AWindow
