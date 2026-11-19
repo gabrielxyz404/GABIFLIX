@@ -864,7 +864,7 @@ enum AudioAligner {
     }
 
     /**
-     * Porta de concordância robusta entre as janelas (porte de consensus): descarta as de z baixo (< gateZFrac x o maior z); exige que fiquem pelo menos metade das
+     * Porta de concordância robusta entre as janelas (porte de consensus): descarta as de z baixo (< gateZFrac x o maior z); exige que fique pelo menos um terço das
      * janelas (e 2); as que ficam concordam em torno da MEDIANA: desvio máximo <= tolerância (150 ms com 3 janelas, +gateTolStepMs por janela a mais, no máximo
      * gateTolMaxMs) e desvio robusto (1,4826 x MAD) <= gateSigmaMs.
      */
@@ -876,7 +876,7 @@ enum AudioAligner {
         var kd: [Double] = []
         for i in 0..<n where z[i] >= P.gateZFrac * zmax { kd.append(dev[i]) }
         let k = kd.count
-        if k < max(2, (n + 1) / 2) { return false }
+        if k < max(2, (n + 2) / 3) { return false }
         let med = median(kd)
         var ad: [Double] = []
         var maxd = 0.0

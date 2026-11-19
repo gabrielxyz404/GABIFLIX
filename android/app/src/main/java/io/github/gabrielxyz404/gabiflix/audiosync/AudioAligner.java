@@ -888,7 +888,7 @@ public final class AudioAligner {
 
     /**
      * Porta de concordância robusta entre as janelas (no lugar do desvio máximo bruto de 150 ms, que vetava respostas certas: as janelas de z baixo e o ruído de
-     * ~300 ms entre janelas de 90 s). Descarta as de z baixo (< gateZFrac x o maior z); exige que fiquem pelo menos metade das janelas (e 2); as que ficam têm de
+     * ~300 ms entre janelas de 90 s). Descarta as de z baixo (< gateZFrac x o maior z); exige que fique pelo menos um terço das janelas (e 2); as que ficam têm de
      * concordar em torno da MEDIANA: desvio máximo <= tolerância (150 ms com 3 janelas, +gateTolStepMs por janela a mais, no máximo gateTolMaxMs) e desvio
      * robusto (1,4826 x MAD) <= gateSigmaMs. Legenda de outro título discorda por segundos: continua recusada.
      */
@@ -899,7 +899,7 @@ public final class AudioAligner {
         double[] kd = new double[n];
         int k = 0;
         for (int i = 0; i < n; i++) if (z[i] >= P.gateZFrac * zmax) kd[k++] = dev[i];
-        if (k < Math.max(2, (n + 1) / 2)) return false;
+        if (k < Math.max(2, (n + 2) / 3)) return false;
         double med = median(kd, k);
         double[] ad = new double[k];
         double maxd = 0;
