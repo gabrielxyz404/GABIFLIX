@@ -7,6 +7,102 @@ import VLCKit
 @_silgen_name("fp_try_snapshot")
 private func fpTrySnapshot(_ player: AnyObject, _ path: NSString, _ w: UInt, _ h: UInt) -> Int32
 
+/** Faixa com degradê preto transparente (igual ao Android: D9→80→00 em cima, 00→8C→E6 embaixo), sem barra cinza. Cliques fora dos botões passam para o vídeo. */
+final class GradientBar: NSView {
+    private let grad = CAGradientLayer()
+    init(top: Bool) {
+        super.init(frame: .zero)
+        wantsLayer = true
+        let a: [CGFloat] = top ? [0.85, 0.50, 0.0] : [0.0, 0.55, 0.90]
+        grad.colors = a.map { NSColor(white: 0, alpha: $0).cgColor }
+        grad.locations = [0, 0.5, 1]
+        grad.startPoint = CGPoint(x: 0.5, y: 1)   // topo da vista
+        grad.endPoint = CGPoint(x: 0.5, y: 0)
+        layer?.addSublayer(grad)
+    }
+    required init?(coder: NSCoder) { fatalError("não usado") }
+    override func layout() { super.layout(); grad.frame = bounds }
+    override func hitTest(_ point: NSPoint) -> NSView? { let v = super.hitTest(point); return v === self ? nil : v }
+}
+
+/** Linha do tempo como a do Android: trilho branco 28%, parte tocada vermelha (E50914) e bolinha vermelha */
+final class RedSliderCell: NSSliderCell {
+    static let red = NSColor(srgbRed: 0xE5 / 255.0, green: 0x09 / 255.0, blue: 0x14 / 255.0, alpha: 1)
+    override func drawBar(inside rect: NSRect, flipped: Bool) {
+        let th = max(3, min(rect.height, (controlView?.bounds.height ?? 24) * 0.16))
+        let r = NSRect(x: rect.minX, y: rect.midY - th / 2, width: rect.width, height: th)
+        NSColor(white: 1, alpha: 0.28).setFill()
+        NSBezierPath(roundedRect: r, xRadius: th / 2, yRadius: th / 2).fill()
+        let kx = knobRect(flipped: flipped).midX
+        let w = max(th, min(r.width, kx - r.minX))
+        RedSliderCell.red.setFill()
+        NSBezierPath(roundedRect: NSRect(x: r.minX, y: r.minY, width: w, height: th), xRadius: th / 2, yRadius: th / 2).fill()
+    }
+    override func drawKnob(_ knobRect: NSRect) {
+        let d = min(knobRect.height * 0.62, knobRect.width)
+        let r = NSRect(x: knobRect.midX - d / 2, y: knobRect.midY - d / 2, width: d, height: d)
+        RedSliderCell.red.setFill()
+        NSBezierPath(ovalIn: r).fill()
+    }
+    override var knobThickness: CGFloat { max(14, (controlView?.bounds.height ?? 24) * 0.62) }
+}
+
+/** Botão de vidro do player (como no Android): redondo só com ícone, ou cápsula com ícone e texto; borda branca fina e fundo preto translúcido */
+final class GlassButton: NSButton {
+    var circle = false
+    var symbolName: String?
+    var labelText = ""
+    var iconPt: CGFloat = 18
+    var fontPt: CGFloat = 15
+    private var hovered = false
+    private var area: NSTrackingArea?
+    override init(frame: NSRect) { super.init(frame: frame); setup() }
+    required init?(coder: NSCoder) { super.init(coder: coder); setup() }
+    private func setup() {
+        isBordered = false
+        bezelStyle = .regularSquare
+        setButtonType(.momentaryChange)
+        wantsLayer = true
+        layer?.borderWidth = 1
+        imageScaling = .scaleNone
+        imageHugsTitle = true
+        alignment = .center
+        refusesFirstResponder = true
+        setContentHuggingPriority(.required, for: .horizontal)
+        setContentCompressionResistancePriority(.required, for: .horizontal)
+        refresh()
+    }
+    func set(symbol: String?, label: String = "") { symbolName = symbol; labelText = label; refresh() }
+    func refresh() {
+        layer?.backgroundColor = NSColor(white: 0, alpha: hovered ? 0.58 : 0.38).cgColor
+        layer?.borderColor = NSColor(white: 1, alpha: hovered ? 0.55 : 0.28).cgColor
+        contentTintColor = .white
+        image = nil
+        if #available(macOS 11.0, *), let n = symbolName,
+           let img = NSImage(systemSymbolName: n, accessibilityDescription: labelText.isEmpty ? nil : labelText) {
+            image = img.withSymbolConfiguration(NSImage.SymbolConfiguration(pointSize: iconPt, weight: .semibold))
+        }
+        imagePosition = labelText.isEmpty ? .imageOnly : (image == nil ? .noImage : .imageLeading)
+        attributedTitle = NSAttributedString(string: labelText.isEmpty ? "" : (image == nil ? labelText : "  " + labelText),
+                                             attributes: [.foregroundColor: NSColor.white, .font: NSFont.systemFont(ofSize: fontPt, weight: .medium)])
+        invalidateIntrinsicContentSize()
+    }
+    override var intrinsicContentSize: NSSize {
+        let s = super.intrinsicContentSize
+        return circle ? s : NSSize(width: s.width + fontPt * 1.8, height: s.height)
+    }
+    override func layout() { super.layout(); layer?.cornerRadius = bounds.height / 2 }
+    override var alignmentRectInsets: NSEdgeInsets { NSEdgeInsetsZero }   // sem margens do botão do sistema: a altura pedida é a altura desenhada (círculo de verdade)
+    override func updateTrackingAreas() {
+        super.updateTrackingAreas()
+        if let a = area { removeTrackingArea(a) }
+        let t = NSTrackingArea(rect: .zero, options: [.mouseEnteredAndExited, .activeAlways, .inVisibleRect], owner: self, userInfo: nil)
+        addTrackingArea(t); area = t
+    }
+    override func mouseEntered(with event: NSEvent) { hovered = true; refresh() }
+    override func mouseExited(with event: NSEvent) { hovered = false; refresh() }
+}
+
 /** Vista principal do player: recebe teclado e mouse */
 final class PlayerRootView: NSView {
     var onKey: ((NSEvent) -> Bool)?
@@ -43,14 +139,27 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
 
     // o tamanho das legendas só vale se for passado aqui (opção da biblioteca), ver SubStyle
     // FP_VLC_OPTS (só no teste automático, ex.: --vout=dummy no GitHub, que não tem placa gráfica)
-    private let player = VLCMediaPlayer(options: SubStyle.libraryOptions + (ProcessInfo.processInfo.environment["FP_VLC_OPTS"] ?? "").split(separator: " ").map(String.init))
+    private let player = VLCMediaPlayer(options: SubStyle.libraryOptions + PlayerWindowController.vlcQuietOptions + (ProcessInfo.processInfo.environment["FP_VLC_OPTS"] ?? "").split(separator: " ").map(String.init))
+    /** A fotografia das barras (saveVideoSnapshot) fazia o VLC desenhar sozinho, em cima do vídeo, a miniatura da fotografia (canto superior esquerdo,
+        ~25% da largura) e o texto com o caminho do ficheiro (OSD); a imagem ficava "suja" por muito tempo. O app desenha as próprias legendas e controles:
+        sem miniatura, sem OSD e sem título do vídeo, o VLC não desenha nada por conta própria. */
+    static let vlcQuietOptions = ["--no-snapshot-preview", "--no-osd", "--no-video-title-show"]
     private let videoView = VLCVideoView()
     private let root = NSView()
     private let overlay = PlayerRootView()
-    private let controls = NSVisualEffectView()
-    private let topBar = NSVisualEffectView()
-    private let playButton = NSButton()
-    private let slider = NSSlider()
+    private let controls = GradientBar(top: false)
+    private let topBar = GradientBar(top: true)
+    private let playButton = GlassButton()
+    private let slider: NSSlider = { let s = NSSlider(); s.cell = RedSliderCell(); return s }()
+    private let titleLabel = NSTextField(labelWithString: "")
+    private let centerBox = NSStackView()
+    private let optsRow = NSStackView()
+    private var backBtn = GlassButton(), rwBtn = GlassButton(), ffBtn = GlassButton()
+    private var optBtns: [GlassButton] = []
+    private var uiK: CGFloat = 0
+    private var uiC: [String: NSLayoutConstraint] = [:]
+    private var playIconName = ""
+    private let titleText: String
     private let timeLabel = NSTextField(labelWithString: "0:00")
     private let lengthLabel = NSTextField(labelWithString: "0:00")
     private let spinner = NSProgressIndicator()
@@ -95,6 +204,16 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
     private var scaleMode = 0
     private var scaleButton: NSButton?
     private var lastScaleKey = ""
+    // Estabilidade do recorte (a imagem deslocada vinha de mexer no vout vivo): o recorte só muda no toque do usuário, na troca de
+    // tamanho (esperando 0,35 s sem mexer, como na animação da tela cheia), ao nascer o vout, na troca de resolução do vídeo e em UM ajuste das barras
+    private var viewW = 0, viewH = 0
+    private var sizeStamp = Date.distantPast
+    private var resizeTimer: Timer?
+    private var aspectCleared = false
+    private var voutWasUp = false
+    private var barRefineLeft = 1
+    private var trackSize = CGSize.zero
+    private var lastCropAt = Date.distantPast
     // legenda desenhada pelo app (SubOverlay.swift)
     private var overlayWin: NSWindow?
     private var overlayView: SubtitleOverlayView?
@@ -120,7 +239,7 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
     private var barSamplesGen = -1   // só mexe na barQueue
     private let barQueue = DispatchQueue(label: "frameplay.barras", qos: .utility)
     private var barSamples: [(rows: [Bool], cols: [Bool])] = []   // só mexe na barQueue
-    private var scaleForce = 0
+    private var tickN = 0
     private let noticeLabel = NSTextField(labelWithString: "")
     private var noticeUntil = Date.distantPast
     private var syncPanel: NSView?
@@ -147,6 +266,7 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
         self.metaType = type
         self.metaId = id
         self.startMs = startMs
+        self.titleText = title.trimmingCharacters(in: .whitespacesAndNewlines)
         let screen = NSScreen.main?.visibleFrame ?? NSRect(x: 0, y: 0, width: 1440, height: 900)
         let w = NSWindow(contentRect: screen, styleMask: [.titled, .closable, .miniaturizable, .resizable, .fullSizeContentView],
                          backing: .buffered, defer: false)
@@ -175,6 +295,7 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
 
         videoView.translatesAutoresizingMaskIntoConstraints = false
         videoView.fillScreen = false
+        videoView.backColor = .black   // fundo do desenho do VLC sempre preto (propriedade da vista, não mexe na hierarquia)
         root.addSubview(videoView)
 
         spinner.style = .spinning
@@ -204,53 +325,81 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
         overlay.translatesAutoresizingMaskIntoConstraints = false
         root.addSubview(overlay)
 
-        // barra de cima: voltar
-        topBar.material = .hudWindow
-        topBar.blendingMode = .withinWindow
-        topBar.state = .active
+        // Controles como no player do Android/TV: degradê transparente (sem barras cinza), voltar + título em cima, voltar/pausa/avançar 10 s no centro,
+        // linha do tempo vermelha e opções (Legendas, Áudio, Tela) embaixo. Tudo em função do tamanho da janela (uiK), ver applyUiScale
         topBar.translatesAutoresizingMaskIntoConstraints = false
-        root.addSubview(topBar)
-        let back = pill("←  Voltar", #selector(closePlayer))
-        topBar.addSubview(back)
-
-        // barra de baixo: play, -10/+10, tempo, linha do tempo, áudio, legendas, tela cheia
-        controls.material = .hudWindow
-        controls.blendingMode = .withinWindow
-        controls.state = .active
-        controls.wantsLayer = true
-        controls.layer?.cornerRadius = 16
+        centerBox.translatesAutoresizingMaskIntoConstraints = false
         controls.translatesAutoresizingMaskIntoConstraints = false
+        root.addSubview(centerBox)
+        root.addSubview(topBar)
         root.addSubview(controls)
 
-        playButton.title = "❚❚"
-        styleButton(playButton, #selector(togglePlay))
-        playButton.font = .boldSystemFont(ofSize: 18)
-        let rw = button("−10", #selector(rewind))
-        let ff = button("+10", #selector(forward))
+        func glass(_ sym: String, _ label: String, _ circle: Bool, _ action: Selector) -> GlassButton {
+            let g = GlassButton()
+            g.circle = circle
+            g.target = self
+            g.action = action
+            g.translatesAutoresizingMaskIntoConstraints = false
+            g.set(symbol: sym, label: label)
+            return g
+        }
+        let back = glass("arrow.left", "", true, #selector(closePlayer))
+        back.setAccessibilityLabel("Voltar")
+        backBtn = back
+        topBar.addSubview(back)
+        titleLabel.stringValue = titleText
+        titleLabel.textColor = .white
+        titleLabel.lineBreakMode = .byTruncatingTail
+        titleLabel.maximumNumberOfLines = 1
+        titleLabel.translatesAutoresizingMaskIntoConstraints = false
+        titleLabel.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
+        topBar.addSubview(titleLabel)
+
+        playButton.circle = true
+        playButton.target = self
+        playButton.action = #selector(togglePlay)
+        playButton.translatesAutoresizingMaskIntoConstraints = false
+        playButton.set(symbol: "pause.fill")
+        let rw = glass("gobackward.10", "", true, #selector(rewind))
+        let ff = glass("goforward.10", "", true, #selector(forward))
+        rwBtn = rw
+        ffBtn = ff
+        centerBox.orientation = .horizontal
+        centerBox.alignment = .centerY
+        centerBox.addArrangedSubview(rw)
+        centerBox.addArrangedSubview(playButton)
+        centerBox.addArrangedSubview(ff)
+
         for l in [timeLabel, lengthLabel] {
             l.textColor = .white
-            l.font = .monospacedDigitSystemFont(ofSize: 13, weight: .semibold)
+            l.translatesAutoresizingMaskIntoConstraints = false
         }
         slider.minValue = 0
         slider.maxValue = 1000
         slider.target = self
         slider.action = #selector(sliderMoved)
         slider.isContinuous = false
-        let audio = button("Áudio", #selector(chooseAudio))
-        let subs = button("Legendas", #selector(chooseSubtitles))
-        let scale = button("Tela: Normal", #selector(toggleScale(_:)))
-        scaleButton = scale
-        let fs = button("Tela cheia", #selector(toggleFullScreen))
-
-        let row = NSStackView(views: [playButton, rw, ff, timeLabel, slider, lengthLabel, audio, subs, scale, fs])
-        row.orientation = .horizontal
-        row.spacing = 12
-        row.alignment = .centerY
-        row.translatesAutoresizingMaskIntoConstraints = false
+        slider.translatesAutoresizingMaskIntoConstraints = false
         slider.setContentHuggingPriority(.defaultLow, for: .horizontal)
-        controls.addSubview(row)
+        controls.addSubview(timeLabel)
+        controls.addSubview(slider)
+        controls.addSubview(lengthLabel)
 
-        NSLayoutConstraint.activate([
+        let syncB = glass("arrow.triangle.2.circlepath", "Sincronizar", false, #selector(autoSyncPicked))   // igual ao Android; a mesma ação de "Sincronizar automaticamente" do menu de legendas
+        let subs = glass("captions.bubble", "Legendas", false, #selector(chooseSubtitles))
+        let audio = glass("speaker.wave.2.fill", "Áudio", false, #selector(chooseAudio))
+        let scale = glass("aspectratio", "Tela: Normal", false, #selector(toggleScale(_:)))
+        let fs = glass("arrow.up.left.and.arrow.down.right", "Tela cheia", false, #selector(toggleFullScreen))
+        scaleButton = scale
+        optBtns = [syncB, subs, audio, scale, fs]
+        optsRow.orientation = .horizontal
+        optsRow.alignment = .centerY
+        optsRow.translatesAutoresizingMaskIntoConstraints = false
+        for b in optBtns { optsRow.addArrangedSubview(b) }
+        controls.addSubview(optsRow)
+
+        func c(_ k: String, _ x: NSLayoutConstraint) -> NSLayoutConstraint { uiC[k] = x; return x }
+        var all: [NSLayoutConstraint] = [
             videoView.leadingAnchor.constraint(equalTo: root.leadingAnchor),
             videoView.trailingAnchor.constraint(equalTo: root.trailingAnchor),
             videoView.topAnchor.constraint(equalTo: root.topAnchor),
@@ -271,24 +420,103 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
             topBar.leadingAnchor.constraint(equalTo: root.leadingAnchor),
             topBar.trailingAnchor.constraint(equalTo: root.trailingAnchor),
             topBar.topAnchor.constraint(equalTo: root.topAnchor),
-            topBar.heightAnchor.constraint(equalToConstant: 64),
-            back.leadingAnchor.constraint(equalTo: topBar.leadingAnchor, constant: 84),
-            back.bottomAnchor.constraint(equalTo: topBar.bottomAnchor, constant: -12),
+            c("topH", topBar.heightAnchor.constraint(equalToConstant: 120)),
+            c("backLead", back.leadingAnchor.constraint(equalTo: topBar.leadingAnchor, constant: 28)),
+            c("backTop", back.topAnchor.constraint(equalTo: topBar.topAnchor, constant: 18)),
+            c("backW", back.widthAnchor.constraint(equalToConstant: 46)),
+            c("backH", back.heightAnchor.constraint(equalToConstant: 46)),
+            c("titleLead", titleLabel.leadingAnchor.constraint(equalTo: back.trailingAnchor, constant: 16)),
+            titleLabel.centerYAnchor.constraint(equalTo: back.centerYAnchor),
+            c("titleTrail", titleLabel.trailingAnchor.constraint(lessThanOrEqualTo: topBar.trailingAnchor, constant: -28)),
 
-            controls.leadingAnchor.constraint(equalTo: root.leadingAnchor, constant: 24),
-            controls.trailingAnchor.constraint(equalTo: root.trailingAnchor, constant: -24),
-            controls.bottomAnchor.constraint(equalTo: root.bottomAnchor, constant: -20),
-            controls.heightAnchor.constraint(equalToConstant: 56),
-            row.leadingAnchor.constraint(equalTo: controls.leadingAnchor, constant: 16),
-            row.trailingAnchor.constraint(equalTo: controls.trailingAnchor, constant: -16),
-            row.centerYAnchor.constraint(equalTo: controls.centerYAnchor),
-        ])
+            centerBox.centerXAnchor.constraint(equalTo: root.centerXAnchor),
+            centerBox.centerYAnchor.constraint(equalTo: root.centerYAnchor),
+            c("rwW", rw.widthAnchor.constraint(equalToConstant: 60)), c("rwH", rw.heightAnchor.constraint(equalToConstant: 60)),
+            c("ffW", ff.widthAnchor.constraint(equalToConstant: 60)), c("ffH", ff.heightAnchor.constraint(equalToConstant: 60)),
+            c("playW", playButton.widthAnchor.constraint(equalToConstant: 84)), c("playH", playButton.heightAnchor.constraint(equalToConstant: 84)),
+
+            controls.leadingAnchor.constraint(equalTo: root.leadingAnchor),
+            controls.trailingAnchor.constraint(equalTo: root.trailingAnchor),
+            controls.bottomAnchor.constraint(equalTo: root.bottomAnchor),
+            c("ctlH", controls.heightAnchor.constraint(equalToConstant: 150)),
+            c("seekLead", timeLabel.leadingAnchor.constraint(equalTo: controls.leadingAnchor, constant: 28)),
+            c("seekTrail", lengthLabel.trailingAnchor.constraint(equalTo: controls.trailingAnchor, constant: -28)),
+            c("timeW", timeLabel.widthAnchor.constraint(equalToConstant: 48)),
+            c("lenW", lengthLabel.widthAnchor.constraint(equalToConstant: 48)),
+            c("seekSp1", slider.leadingAnchor.constraint(equalTo: timeLabel.trailingAnchor, constant: 14)),
+            c("seekSp2", lengthLabel.leadingAnchor.constraint(equalTo: slider.trailingAnchor, constant: 14)),
+            c("seekH", slider.heightAnchor.constraint(equalToConstant: 30)),
+            c("seekGap", slider.bottomAnchor.constraint(equalTo: optsRow.topAnchor, constant: -6)),
+            timeLabel.centerYAnchor.constraint(equalTo: slider.centerYAnchor),
+            lengthLabel.centerYAnchor.constraint(equalTo: slider.centerYAnchor),
+            c("optsTrail", optsRow.trailingAnchor.constraint(equalTo: controls.trailingAnchor, constant: -28)),
+            c("optsBottom", optsRow.bottomAnchor.constraint(equalTo: controls.bottomAnchor, constant: -22)),
+            c("optsH", optsRow.heightAnchor.constraint(equalToConstant: 42)),
+        ]
+        for b in optBtns { all.append(b.heightAnchor.constraint(equalTo: optsRow.heightAnchor)) }
+        NSLayoutConstraint.activate(all)
+        applyUiScale()
 
         overlay.onMouseMove = { [weak self] in self?.showControls() }
         overlay.onDoubleClick = { [weak self] in self?.toggleFullScreen() }
         overlay.onKey = { [weak self] e in self?.handleKey(e) ?? false }
         w.makeFirstResponder(overlay)
         w.acceptsMouseMovedEvents = true
+    }
+
+    /** tamanhos de toda a barra em função da janela (referência: MacBook Air 13" em tela cheia, 1470x956 pontos): nada em pixels fixos */
+    private func applyUiScale(shrink: CGFloat = 1) {
+        let w = root.bounds.width, h = root.bounds.height
+        guard w > 0, h > 0 else { return }
+        let k = max(0.55, min(1.7, min(w / 1470, h / 956)))
+        let kb = k * 1.4 * shrink   // botões das opções e do centro: ~1,5x os do Android em relação à janela
+        if abs(k - uiK) < 0.01 && shrink == 1 { return }
+        uiK = k
+        func set(_ key: String, _ v: CGFloat) { uiC[key]?.constant = (v * k).rounded() }
+        set("topH", 120); set("backLead", 28); set("backTop", 18); set("backW", 46); set("backH", 46); set("titleLead", 16)
+        func setB(_ key: String, _ v: CGFloat) { uiC[key]?.constant = (v * kb).rounded() }
+        setB("rwW", 60); setB("rwH", 60); setB("ffW", 60); setB("ffH", 60); setB("playW", 84); setB("playH", 84); setB("optsH", 42)
+        uiC["ctlH"]?.constant = (42 * kb + 80 * k).rounded()
+        set("seekLead", 28); set("seekH", 34); set("seekGap", 6)
+        set("timeW", 64); set("lenW", 64); set("seekSp1", 14); set("seekSp2", 14)
+        uiC["seekTrail"]?.constant = -(28 * k).rounded()
+        uiC["titleTrail"]?.constant = -(28 * k).rounded()
+        uiC["optsTrail"]?.constant = -(28 * k).rounded()
+        uiC["optsBottom"]?.constant = -(22 * k).rounded()
+        centerBox.spacing = (28 * kb).rounded()
+        optsRow.spacing = (12 * kb).rounded()
+        for g in [backBtn, rwBtn, ffBtn, playButton] { g.iconPt = ((g === playButton ? 34 * kb : (g === backBtn ? 20 * k : 26 * kb))).rounded(); g.refresh() }
+        for g in optBtns { g.iconPt = (17 * kb).rounded(); g.fontPt = (15 * kb).rounded(); g.refresh() }
+        titleLabel.font = .systemFont(ofSize: (21 * k).rounded(), weight: .semibold)
+        for l in [timeLabel, lengthLabel] { l.font = .monospacedDigitSystemFont(ofSize: (16 * k).rounded(), weight: .medium) }
+        timeLabel.alignment = .left
+        lengthLabel.alignment = .right
+        timeLabel.textColor = .white
+        lengthLabel.textColor = NSColor(white: 1, alpha: 0.85)
+        // janela estreita: se a linha de opções não cabe, encolhe só os botões (nunca corta)
+        if shrink == 1 {
+            let avail = w - 56 * k
+            let fit = optsRow.fittingSize.width
+            if fit > avail && fit > 0 { uiK = 0; applyUiScale(shrink: max(0.5, avail / fit)); return }
+        }
+        root.needsLayout = true
+        log("interface: escala \(String(format: "%.2f", k)) janela=\(Int(w))x\(Int(h)) título=\"\(titleText)\"")
+    }
+
+    private func setPlayIcon(_ playing: Bool) {
+        let n = playing ? "pause.fill" : "play.fill"
+        if n != playIconName { playIconName = n; playButton.set(symbol: n) }
+    }
+
+    /** controles, título e botões do centro aparecem e somem juntos */
+    private func setChrome(alpha: CGFloat, animated: Bool, duration: Double) {
+        if !animated { controls.alphaValue = alpha; topBar.alphaValue = alpha; centerBox.alphaValue = alpha; return }
+        NSAnimationContext.runAnimationGroup { ctx in
+            ctx.duration = duration
+            controls.animator().alphaValue = alpha
+            topBar.animator().alphaValue = alpha
+            centerBox.animator().alphaValue = alpha
+        }
     }
 
     private func button(_ title: String, _ action: Selector) -> NSButton {
@@ -418,7 +646,6 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
                 startedPlaying = true
                 playingSince = Date()
                 startOverlay()
-                scaleForce = 6
                 DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) { [weak self] in self?.selectEmbeddedPortuguese() }
             }
             if !resumeDone && len > 0 {
@@ -446,21 +673,24 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
         // se a legenda ativa mudar por qualquer motivo, carrega o atraso guardado dela (sem efeito quando a chave é a mesma)
         if subsAttached && !finished { syncDelayToTrack(Int(player.currentVideoSubTitleIndex)) }
         reportProgress(force: false)
-        if scaleForce > 0 { scaleForce -= 1; applyScale(force: true) } else { applyScale() }
+        // o recorte é reenviado só quando o vout (re)nasce (antes: 6 reenvios seguidos ao começar); fora disso, só se algo mudou
+        let voutUp = player.hasVideoOut
+        if voutUp && !voutWasUp { voutWasUp = true; applyScale(force: true) }
+        else if !voutUp { voutWasUp = false; applyScale() }
+        else { applyScale() }
+        tickN += 1
+        if tickN % 5 == 0 { checkSourceSize() }
         if !noticeLabel.isHidden && Date() > noticeUntil { noticeLabel.isHidden = true }
 
-        setTitle(playButton, player.isPlaying ? "❚❚" : "▶")
+        setPlayIcon(player.isPlaying)
+        applyUiScale()
         if !userSeeking && len > 0 { slider.doubleValue = Double(t) * 1000 / Double(len) }
         timeLabel.stringValue = format(t)
         lengthLabel.stringValue = format(len)
 
-        // esconde os controles e o cursor depois de 2,5 s parado (só tocando)
+        // esconde os controles e o cursor depois de 3,5 s parado (só tocando), como no Android
         if player.isPlaying && Date() > hideAt && controls.alphaValue > 0 {
-            NSAnimationContext.runAnimationGroup { ctx in
-                ctx.duration = 0.25
-                controls.animator().alphaValue = 0
-                topBar.animator().alphaValue = 0
-            }
+            setChrome(alpha: 0, animated: true, duration: 0.25)
             NSCursor.setHiddenUntilMouseMoves(true)
         }
     }
@@ -498,14 +728,8 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
     }
 
     private func showControls() {
-        hideAt = Date().addingTimeInterval(2.5)
-        if controls.alphaValue < 1 {
-            NSAnimationContext.runAnimationGroup { ctx in
-                ctx.duration = 0.15
-                controls.animator().alphaValue = 1
-                topBar.animator().alphaValue = 1
-            }
-        }
+        hideAt = Date().addingTimeInterval(3.5)
+        if controls.alphaValue < 1 { setChrome(alpha: 1, animated: true, duration: 0.15) }
     }
 
     @objc private func togglePlay() {
@@ -1421,10 +1645,24 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
                                       context: nil, characters: "", charactersIgnoringModifiers: "", isARepeat: false, keyCode: UInt16(n))
             if let ev = ev { _ = handleKey(ev) }
         case "show": showControls()
-        case "showforce": controls.alphaValue = 1; topBar.alphaValue = 1; hideAt = Date().addingTimeInterval(30)
+        case "showforce": setChrome(alpha: 1, animated: false, duration: 0); hideAt = Date().addingTimeInterval(30)
         case "dump":
             log("dump: controls alpha=\(controls.alphaValue) hidden=\(controls.isHidden) frame=\(controls.frame) topBar alpha=\(topBar.alphaValue) tocando=\(player.isPlaying) hideEm=\(hideAt.timeIntervalSinceNow) ordem=\(root.subviews.map { NSStringFromClass(type(of: $0)).split(separator: ".").last.map(String.init) ?? "" }) videoLayer=\(String(describing: videoView.layer))")
         case "fs": toggleFullScreen()
+        case "chrome":
+            // só nos testes: fotografa a própria vista do player (controles por cima de preto; o vídeo não entra, o GitHub não tem placa gráfica) com a janela
+            // no tamanho pedido, mesmo maior do que o ecrã do computador: "chrome 2560 1600 /tmp/x.png"
+            let n2 = w.count > 2 ? Int(w[2]) ?? 0 : 0
+            guard n > 0, n2 > 0, w.count > 3, let win = window else { break }
+            win.styleMask = [.borderless, .resizable]   // sem barra de título o AppKit não limita a janela ao tamanho do ecrã
+            win.setFrame(NSRect(x: 0, y: 0, width: n, height: n2), display: true)
+            testCommand("showforce")
+            root.layoutSubtreeIfNeeded()
+            if let rep = root.bitmapImageRepForCachingDisplay(in: root.bounds) {
+                root.cacheDisplay(in: root.bounds, to: rep)
+                try? rep.representation(using: .png, properties: [:])?.write(to: URL(fileURLWithPath: w[3]))
+            }
+            log("chrome: \(Int(root.bounds.width))x\(Int(root.bounds.height)) -> \(w[3])")
         case "resize":
             let n2 = w.count > 2 ? Int(w[2]) ?? 0 : 0
             if n > 0 && n2 > 0 { window?.setContentSize(NSSize(width: n, height: n2)); window?.center() }
@@ -1500,7 +1738,7 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
         let r = win.convertToScreen(videoView.convert(videoView.bounds, to: nil))
         if o.frame != r { o.setFrame(r, display: false) }
         let controlsUp = controls.alphaValue > 0.3 && !controls.isHidden
-        v.bottomMargin = controlsUp ? controls.frame.height + 30 : max(24, (r.height * 0.06).rounded())
+        v.bottomMargin = controlsUp ? max(24, controls.frame.height - 30 * uiK) : max(24, (r.height * 0.06).rounded())
         v.text = txt
         if txt != overlayLast {
             overlayLast = txt
@@ -1519,24 +1757,66 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
     private func applyScale(force: Bool = false) {
         let w = Int(videoView.bounds.width.rounded()), h = Int(videoView.bounds.height.rounded())
         if w <= 0 || h <= 0 { return }
+        // tamanho da janela a mudar (tela cheia, arrastar): espera parar antes de mexer no recorte. Mexer no vout durante a animação deixava a
+        // imagem deslocada e uma cópia velha no canto até o próximo redimensionamento
+        if force { viewW = w; viewH = h }
+        else if w != viewW || h != viewH {
+            let first = lastScaleKey.isEmpty
+            viewW = w; viewH = h
+            if !first {
+                sizeStamp = Date()
+                resizeTimer?.invalidate()
+                let t = Timer(timeInterval: 0.35, repeats: false) { [weak self] _ in self?.applyScale() }
+                RunLoop.main.add(t, forMode: .common)
+                resizeTimer = t
+                return
+            }
+        } else if Date().timeIntervalSince(sizeStamp) < 0.3 { return }
         // tamanho do quadro (pixels do vídeo) lido enquanto ainda não há recorte, para não confundir com o quadro já recortado
         if lastCropSet == nil { let vs = player.videoSize; if vs.width > 0 && vs.height > 0 { srcSize = vs } }
         let key = "\(w)x\(h)/\(scaleMode)/\(barsKey())/\(fillPending)"
         if !force && lastScaleKey == key { return }
         lastScaleKey = key
-        videoView.fillScreen = false
-        player.videoAspectRatio = nil
+        if videoView.fillScreen { videoView.fillScreen = false }
+        if !aspectCleared { aspectCleared = true; player.videoAspectRatio = nil }   // nunca se muda a proporção: uma vez basta
         var crop: String? = nil
         var rect: (x0: Double, y0: Double, x1: Double, y1: Double)? = nil
         if scaleMode == 1, !fillPending, let c = cropGeometry(viewW: w, viewH: h) { crop = c.0; rect = c.1 }
-        if crop != lastCropSet || force {
+        // "force" só reenvia o recorte quando há recorte; Normal sem recorte não toca no vout (antes: 6 envios de "nenhum" ao começar)
+        if crop != lastCropSet || (force && crop != nil) {
+            let changed = crop != lastCropSet
             lastCropSet = crop
             cropRect = rect
-            cropGen += 1   // as amostras de barras recomeçam: eram de outro enquadramento
+            if changed { cropGen += 1 }   // as amostras de barras recomeçam: eram de outro enquadramento (reenvio igual não conta)
+            lastCropAt = Date()
             if let c = crop { vlcCropString(c).withCString { player.videoCropGeometry = UnsafeMutablePointer(mutating: $0) } }
             else { player.videoCropGeometry = nil }
+            log("vout: recorte enviado \(crop.map { vlcCropString($0) } ?? "nenhum") (mudou=\(changed))")
         }
         log("tela: \(PlayerWindowController.scaleNames[scaleMode]) \(w):\(h) recorte=\(crop ?? "nenhum") barras=\(barsKey()) vlc=\(crop.map { vlcCropString($0) } ?? "nenhum")")
+    }
+
+    /** o vídeo mudou de resolução no meio da reprodução (troca de variante HLS, outro episódio...): o recorte antigo era de outro quadro.
+        Lê o tamanho da FAIXA de vídeo (não muda com o recorte), recomeça a medida das barras e reenvia o recorte uma vez. */
+    private func checkSourceSize() {
+        guard startedPlaying, let infos = player.media?.tracksInformation as? [[String: Any]] else { return }
+        for d in infos {
+            guard (d[VLCMediaTracksInformationType] as? String) == VLCMediaTracksInformationTypeVideo,
+                  let tw = (d[VLCMediaTracksInformationVideoWidth] as? NSNumber)?.doubleValue,
+                  let th = (d[VLCMediaTracksInformationVideoHeight] as? NSNumber)?.doubleValue, tw >= 16, th >= 16 else { continue }
+            let ns = CGSize(width: tw, height: th)
+            if trackSize == .zero { trackSize = ns; return }
+            if abs(ns.width - trackSize.width) > 2 || abs(ns.height - trackSize.height) > 2 {
+                log("vídeo: resolução mudou \(Int(trackSize.width))x\(Int(trackSize.height)) -> \(Int(ns.width))x\(Int(ns.height)); recorte refeito uma vez")
+                trackSize = ns
+                srcSize = ns
+                bars = (0, 0, 0, 0); barsMeasured = false; snapWorld = 0; pixelAspect = 1; barRefineLeft = 1; barTicks = 0
+                cropGen += 1
+                applyScale(force: true)
+                if scaleMode == 1 { scheduleBarTick(after: 1.5) }
+            }
+            return
+        }
     }
 
     /** O libvlc 3.0.x (o do VLCKit 3.7.3, medido) lê "LxA+X+Y" como X até L e Y até A (L e A viram a borda de direita/baixo), não como largura e altura.
@@ -1559,9 +1839,10 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
     /** qualquer valor que não seja 1 (Preencher), incluindo o antigo "Esticar", vira Normal */
     func setScaleMode(_ m: Int) {
         scaleMode = m == 1 ? 1 : 0
-        scaleButton?.attributedTitle = NSAttributedString(string: "  Tela: \(PlayerWindowController.scaleNames[scaleMode])  ", attributes: [
-            .foregroundColor: NSColor.white, .font: NSFont.boldSystemFont(ofSize: 13)])
+        (scaleButton as? GlassButton)?.set(symbol: "aspectratio", label: "Tela: \(PlayerWindowController.scaleNames[scaleMode])")
         fillGen += 1
+        barRefineLeft = 1
+        barTicks = 0
         fillPending = scaleMode == 1 && !barsMeasured && startedPlaying
         applyScale(force: true)
         if scaleMode == 1 {
@@ -1594,7 +1875,8 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
     private func scheduleBarTick(after: TimeInterval? = nil) {
         barTimer?.invalidate()
         barTimer = nil
-        guard scaleMode == 1, !finished else { return }
+        // fotografias só enquanto servem: depois de ~20 rondas (≈ 4 min) já não há o que medir (cada fotografia é uma chamada ao vout vivo)
+        guard scaleMode == 1, !finished, barTicks <= 20 else { return }
         let delay = after ?? (fillPending ? 0.12 : (barTicks < 10 ? 2.0 : 20.0))
         let t = Timer(timeInterval: delay, repeats: false) { [weak self] _ in self?.barTick() }
         RunLoop.main.add(t, forMode: .common)
@@ -1624,6 +1906,8 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
         guard scaleMode == 1, startedPlaying, !finished, player.isPlaying, !barBusy, env["FP_NO_BARS"] == nil else { return }
         // sem o tamanho do quadro ou com um recorte que não conhecemos: não se mede
         if srcSize.width < 16 || srcSize.height < 16 || (lastCropSet != nil && cropRect == nil) { return }
+        // logo depois de mexer no recorte o vout ainda está a refazer a imagem: a fotografia espera
+        if !fillPending && Date().timeIntervalSince(lastCropAt) < 1.0 { return }
         barBusy = true
         let path = NSTemporaryDirectory() + "frameplay-barras-\(ProcessInfo.processInfo.processIdentifier).png"
         let gen = cropGen, rect = cropRect, tickNo = barTicks, cropNow = lastCropSet ?? "none"
@@ -1743,11 +2027,13 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
         // barras de cima e de baixo vêm sempre em par (a legenda "suja" a de baixo): sem a de cima não se confia na de baixo
         if t == 0 { b = 0 } else if t > b { b = t }
         let ch = abs(t - bars.t) > 0.004 || abs(b - bars.b) > 0.004 || abs(l - bars.l) > 0.004 || abs(rr - bars.r) > 0.004
-        if ch {
+        if ch && (fillPending || barRefineLeft > 0) {
+            // durante o Preencher pendente a mudança entra no recorte final (um só envio, logo abaixo); depois dele há UM ajuste fino
+            if !fillPending { barRefineLeft -= 1 }
             bars = (t, b, l, rr)
             log("barras: cima \(String(format: "%.3f", t)) baixo \(String(format: "%.3f", b)) esq \(String(format: "%.3f", l)) dir \(String(format: "%.3f", rr)) (amostras \(r.samples), fotografia \(r.w)x\(r.h), mundo \(snapWorld), vídeo \(Int(fw))x\(Int(fh)))")
-            applyScale()
-        }
+            if !fillPending { applyScale() }
+        } else if ch { log("barras: mudança ignorada (o ajuste fino já foi feito; o recorte não mexe mais)") }
         if fillPending { fillPending = false; applyScale(force: true) }   // medida pronta: aplica o recorte final de uma vez
     }
 
@@ -2017,7 +2303,7 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
     @objc func closePlayer() { window?.performClose(nil) }
 
     func windowWillClose(_ notification: Notification) { finish() }
-    func windowDidResize(_ notification: Notification) { applyScale() }
+    func windowDidResize(_ notification: Notification) { applyUiScale(); applyScale() }
 
     override func close() {
         finish()

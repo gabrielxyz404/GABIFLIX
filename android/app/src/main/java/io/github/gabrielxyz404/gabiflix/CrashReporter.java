@@ -240,6 +240,15 @@ public final class CrashReporter {
         } catch (Throwable t) { return "(sem registo: " + t + ")"; }
     }
 
+    /** relatório anônimo "MEMORIA" (só TV, a cada 15 min de reprodução; ver {@link MemTelemetry}): mesmo tópico do relatório de erros, sem migalhas nem dado pessoal. Chamar fora da thread principal. */
+    static void memoria(String body, boolean dryRun) {
+        if (app == null) return;
+        String full = header("MEMORIA", proc) + body;
+        if (dryRun) { android.util.Log.i("GFCrash", "MEMORIA (teste, não enviado):\n" + full); return; }
+        crumb("MEMORIA enviada: " + body.split("\n")[0]);
+        send("MEMORIA", full, "bar_chart");
+    }
+
     /** relatório de um fecho inesperado que não deixa rasto do sistema (por exemplo, a tela do player fechada sem o usuário pedir) */
     static void event(String kind, String detail) {
         crumb("EVENTO " + kind + ": " + detail);
@@ -513,7 +522,9 @@ public final class CrashReporter {
     static volatile String lastHttp = "";
 
     /** POST de texto simples ao tópico; divide em partes de ~3,6 KB (o ntfy transforma mensagens maiores em anexo). true se todas as partes foram aceitas */
-    private static boolean send(String kind, String text) {
+    private static boolean send(String kind, String text) { return send(kind, text, "warning"); }
+
+    private static boolean send(String kind, String text, String tag) {
         try {
             android.util.Log.i("GFCrash", "corpo de " + kind + ":\n" + text.substring(0, Math.min(text.length(), 15000)));
             byte[] all = text.getBytes(StandardCharsets.UTF_8);
@@ -530,7 +541,7 @@ public final class CrashReporter {
                 c.setRequestProperty("Content-Type", "text/plain; charset=utf-8");
                 c.setRequestProperty("User-Agent", "FramePlay-crash");
                 c.setRequestProperty("Title", "FramePlay " + BuildConfigHelper.versionName(app) + " " + kind.replaceAll("[^A-Za-z0-9_ -]", "") + (parts > 1 ? " (" + (p + 1) + "/" + parts + ")" : ""));
-                c.setRequestProperty("Tags", "warning");
+                c.setRequestProperty("Tags", tag);
                 try (OutputStream os = c.getOutputStream()) { os.write(chunk); }
                 int code = c.getResponseCode();
                 lastHttp = "HTTP " + code;

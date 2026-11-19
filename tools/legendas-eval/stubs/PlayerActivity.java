@@ -14,3 +14,8 @@ final class PlayerActivity {
     }
     static byte[] httpGet(String u) throws java.io.IOException { return null; }
 }
+
+/** só para compilar SubtitleSync na JVM: o registro de migalhas do app (CrashReporter) não existe aqui */
+final class CrashReporter {
+    static void crumb(String s) {}
+}

@@ -7,7 +7,8 @@ tmp = os.path.join(out, '_w'); os.makedirs(tmp, exist_ok=True)
 phrases = ["Não, você não está entendendo isso, eu já disse que não vai dar.", "Então porque você está aqui? Eu estou com muito medo, tá bem?",
            "Obrigado, mas isso não é tudo, ele também tem uma filha.", "Nós já fomos até lá, meu amigo, e foi muito bem, sim.",
            "Ela vai ficar aqui, minha casa é dela também, pra mim tudo bem.", "Isso são coisas que você tem que saber, porque nós não temos tempo."]
-DUR = 720
+DUR = int(os.environ.get('DUR', 720))   # segundos do filme (o teste de estresse usa 2100)
+BV = os.environ.get('BV', '8M')
 cues = []
 t = 18.0
 i = 0
@@ -36,6 +37,6 @@ with open(os.path.join(out, 'film.srt'), 'w') as f:
 print(len(cues), 'falas')
 fala = os.path.join(tmp, 'fala.wav')
 subprocess.run(['ffmpeg', '-loglevel', 'error', '-y', '-f', 'lavfi', '-i', 'testsrc2=size=1920x1080:rate=24', '-i', fala, '-i', fala,
-                '-t', str(DUR), '-map', '0:v', '-map', '1:a', '-map', '2:a', '-c:v', 'libx264', '-preset', 'ultrafast', '-b:v', '8M', '-maxrate', '8M', '-bufsize', '16M',
+                '-t', str(DUR), '-map', '0:v', '-map', '1:a', '-map', '2:a', '-c:v', 'libx264', '-preset', 'ultrafast', '-b:v', BV, '-maxrate', BV, '-bufsize', '2M' if BV != '8M' else '16M',
                 '-pix_fmt', 'yuv420p', '-c:a', 'ac3', '-ac', '6', '-ar', '48000', '-b:a', '384k', os.path.join(out, 'film.mkv')], check=True)
 subprocess.run(['rm', '-rf', tmp])

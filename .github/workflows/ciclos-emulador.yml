@@ -1,0 +1,79 @@
+name: Memoria entre filmes (emulador)
+
+# Abre e fecha o player varias vezes no MESMO processo e mede a memoria nativa depois de cada fechamento (ciclos.sh): prova se cada filme deixa
+# lixo para tras (por exemplo uma instancia do libVLC presa por um Media sem release). Nunca publica o app. Resultados no branch ciclos-out-<perna>-<sha>.
+on:
+  push:
+    branches: ['run-ciclos**']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  ciclos:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { nome: celular30, modo: phone, api: 30, target: google_apis, profile: pixel_5, ram: 3072M }
+          - { nome: tv30-vout, modo: tv, api: 30, target: android-tv, profile: tv_1080p, ram: 2048M, extra: '--es gfVlcOpt --vout=android_display' }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 17
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+      - name: APK de teste (x86)
+        env:
+          GABIFLIX_ABIS: x86,x86_64
+        run: |
+          gradle -p android assembleRelease --no-daemon -q
+          cp android/app/build/outputs/apk/release/app-release.apk /tmp/teste.apk
+      - name: Quem faz retain() no libVLC (para achar release faltando)
+        run: |
+          AAR=$(find ~/.gradle -name 'libvlc-all-3.6.0*.aar' | head -1)
+          mkdir -p /tmp/aar && unzip -o -q "$AAR" classes.jar -d /tmp/aar
+          for c in org.videolan.libvlc.MediaPlayer org.videolan.libvlc.Media org.videolan.libvlc.LibVLC org.videolan.libvlc.util.VLCVideoLayout org.videolan.libvlc.AWindow; do
+            echo "== $c"; javap -p -c -cp /tmp/aar/classes.jar "$c" 2>/dev/null | awk '/^  [a-zA-Z].*\(/{m=$0} /\.retain:/{print "  retain em: " m}' | sort -u
+          done | tee /tmp/retain.txt
+      - name: Filmes de teste (12 min)
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg espeak-ng >/dev/null
+          DUR=720 BV=2M python3 tools/player-abre-test/mk-media.py /tmp/media
+          nohup python3 tools/audio-integra/server.py /tmp/media 8000 >/tmp/server.out 2>&1 &
+          sleep 2; curl -sI http://127.0.0.1:8000/film.mkv | head -3
+      - name: KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules && sudo udevadm trigger --name-match=kvm
+      - name: Emulador (${{ matrix.nome }})
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: ${{ matrix.api }}
+          target: ${{ matrix.target }}
+          arch: x86
+          profile: ${{ matrix.profile }}
+          ram-size: ${{ matrix.ram }}
+          heap-size: 512M
+          disable-animations: true
+          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
+          script: timeout 3000 bash tools/bug-sweep/stress/ciclos.sh /tmp/teste.apk ${{ matrix.modo }} 6 100 "${{ matrix.extra }}"
+      - name: Resumo
+        if: always()
+        run: |
+          cd shots 2>/dev/null || exit 0
+          { echo '### ${{ matrix.nome }}'; echo '```'; cat aparelho.txt ciclos.csv resultado.txt 2>/dev/null; echo '```'; } >> $GITHUB_STEP_SUMMARY
+      - name: Publicar
+        if: always()
+        run: |
+          cd shots || exit 0
+          cp /tmp/retain.txt . 2>/dev/null || true
+          git init -q -b x && git add -A
+          git -c user.name=ci -c user.email=ci@x commit -qm resultados
+          git push -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" x:ciclos-out-${{ matrix.nome }}-${GITHUB_SHA::7}

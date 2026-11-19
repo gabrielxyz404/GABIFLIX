@@ -64,6 +64,48 @@ public class PlayerActivity extends Activity {
     private TextView noticeLabel;
     private final Runnable hideNotice = () -> { if (noticeLabel != null) noticeLabel.setVisibility(View.GONE); };
 
+    /** o player aberto agora (para o pedido de memória do sistema, que chega pelo App) */
+    private static volatile java.lang.ref.WeakReference<PlayerActivity> current;
+    private MemTelemetry memTel;
+
+    /** o sistema está apertado de memória (RUNNING_LOW / RUNNING_CRITICAL) com o filme aberto: solta o que o player pode soltar sem mexer na reprodução */
+    static void onMemoryPressure(int level) {
+        java.lang.ref.WeakReference<PlayerActivity> r = current;
+        final PlayerActivity a = r == null ? null : r.get();
+        if (a == null || a.player == null || a.isFinishing()) return;
+        a.ui.post(() -> a.trimCaches(level));
+    }
+
+    private void trimCaches(int level) {
+        try {
+            glog("memória: o sistema pediu memória (nível " + level + "); soltando caches. " + CrashReporter.memLine());
+            synchronized (barRowSamples) { barRowSamples.clear(); barColSamples.clear(); }   // amostras de barras pretas (bitmaps pequenos já foram soltos; aqui as listas)
+            io.github.gabrielxyz404.gabiflix.tv.TvCaches.release(this);                      // JSON do catálogo e bitmaps dos pôsteres que a navegação deixou
+            Thread gc = new Thread(() -> { Runtime.getRuntime().gc(); System.runFinalization(); }, "gf-trim-gc");
+            gc.setPriority(Thread.MIN_PRIORITY);
+            gc.start();
+        } catch (Throwable t) { glog("memória: não soltou os caches: " + t); }
+    }
+
+    /**
+     * Qual decodificador o libVLC está usando. O libVLC 3.6 não diz isso pela API Java, mas quando decodifica por MediaCodec (hardware) o processo ganha as threads
+     * do MediaCodec NDK ("CodecLooper", "NDK MediaCodec_"); na decodificação por software (ffmpeg dentro do libVLC, o que acontece no emulador sem codec de hardware aceito)
+     * essas threads não existem. Medido no emulador: celular API 30 (MediaCodec) tem "CodecLooper"; TV API 30 (ffmpeg) não tem. Lê só /proc/self/task, sem tocar no player.
+     */
+    private String decoderKind() {
+        int n = 0;
+        try {
+            java.io.File[] ts = new java.io.File("/proc/self/task").listFiles();
+            if (ts != null) for (java.io.File t : ts) {
+                try (java.io.BufferedReader r = new java.io.BufferedReader(new java.io.FileReader(new java.io.File(t, "comm")))) {
+                    String c = r.readLine();
+                    if (c != null && (c.startsWith("CodecLooper") || c.startsWith("NDK MediaCodec") || c.startsWith("MediaCodec_loop"))) n++;
+                } catch (Throwable ignored) {}
+            }
+        } catch (Throwable t) { return "?"; }
+        return n > 0 ? "hardware (MediaCodec, " + n + " threads)" : "software (ffmpeg no libVLC)";
+    }
+
     private LibVLC libVLC;
     private MediaPlayer player;
     private VLCVideoLayout videoLayout;
@@ -488,6 +530,8 @@ public class PlayerActivity extends Activity {
         metaType = getIntent().getStringExtra(EXTRA_TYPE);
         metaId = getIntent().getStringExtra(EXTRA_ID);
         startMs = getIntent().getLongExtra(EXTRA_START, 0);
+        // o sistema matou o processo com o filme em segundo plano: volta de onde estava (o ponto do Intent é o de quando abriu)
+        if (savedInstanceState != null && savedInstanceState.getLong("gfPos", 0) > 0) { startMs = savedInstanceState.getLong("gfPos"); glog("ciclo: processo recriado pelo sistema, volta do ponto " + startMs + " ms"); }
         titleText = getIntent().getStringExtra(EXTRA_TITLE);
         getSharedPreferences(LAST_PREFS, MODE_PRIVATE).edit().clear().apply();
         if (url == null) { finish(); return; }
@@ -495,6 +539,7 @@ public class PlayerActivity extends Activity {
         loadSubtitlesInBackground();
 
         tv = MainActivity.isTv(this);
+        current = new java.lang.ref.WeakReference<>(this);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         if (android.os.Build.VERSION.SDK_INT >= 28) {
             getWindow().getAttributes().layoutInDisplayCutoutMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES;
@@ -563,11 +608,17 @@ public class PlayerActivity extends Activity {
         options.add("--network-caching=3000");
         options.add("--audio-time-stretch");
         options.add("--sub-text-scale=90");
+        // só nos testes (diagnóstico de memória): log detalhado do libVLC (qual decodificador/saída de vídeo ele escolheu)
+        if (getIntent().getStringExtra("gfVlcV") != null) options.add("-vv");
+        // só nos testes: opções extras do libVLC separadas por vírgula (por exemplo "--vout=android_display,--avcodec-threads=1"), para isolar a causa do crescimento de memória
+        String gOpt = getIntent().getStringExtra("gfVlcOpt");
+        if (gOpt != null) for (String o : gOpt.trim().split("[\\s,]+")) if (o.startsWith("-")) options.add(o);
         libVLC = new LibVLC(this, options);
         player = new MediaPlayer(libVLC);
         // na TV (Fire TV) o vídeo vai por TextureView: com SurfaceView a imagem ficava preta (só som)
         // quando os controles sumiam, porque o Fire TV passa o vídeo para outra camada da tela
-        player.attachViews(videoLayout, null, true, tv);
+        String gTex = getIntent().getStringExtra("gfTexture");   // só nos testes: força TextureView (1) ou SurfaceView (0), qualquer que seja o aparelho
+        player.attachViews(videoLayout, null, true, gTex != null ? "1".equals(gTex) : tv);
         player.setEventListener(this::onPlayerEvent);
         // rotação / mudança de tamanho da tela: refaz o zoom do modo Preencher e a proporção do Esticar
         videoLayout.addOnLayoutChangeListener((v, l, t, r, b, ol, ot, or, ob) -> {
@@ -575,7 +626,8 @@ public class PlayerActivity extends Activity {
         });
 
         Media media = new Media(libVLC, Uri.parse(url));
-        media.setHWDecoderEnabled(true, false);
+        String gHw = getIntent().getStringExtra("gfHw");   // só nos testes: "0" = só software, "force" = só hardware (MediaCodec), sem recuo
+        media.setHWDecoderEnabled(!"0".equals(gHw), "force".equals(gHw));
         media.addOption(":network-caching=3000");
         player.setMedia(media);
         media.release();
@@ -604,6 +656,16 @@ public class PlayerActivity extends Activity {
             autoEngine = audioSync.chain(autoEngine);
             audioSync.start();
         } catch (Throwable t) { glog("AUDIOSYNC não iniciou: " + t); }
+        // TV: relatório anônimo MEMORIA a cada 15 min de reprodução (máx. 8 por sessão)
+        try {
+            long gMemMs = 0;
+            try { String g = getIntent().getStringExtra("gfMemTelMs"); if (g != null) gMemMs = Long.parseLong(g); } catch (Throwable ignored) {}   // só nos testes
+            if (memTel == null) memTel = MemTelemetry.startIfTv(this, tv, new MemTelemetry.Host() {
+                @Override public boolean playing() { return player != null && player.isPlaying() && !buffering; }
+                @Override public String decoder() { return decoderKind(); }
+                @Override public String surface() { View v = videoLayout == null ? null : findVideoView(videoLayout); return v == null ? "?" : v.getClass().getSimpleName(); }
+            }, gMemMs);
+        } catch (Throwable t) { glog("telemetria de memória não iniciou: " + t); }
         // só nos testes: modo de tela, atraso da legenda e registro da posição (para medir quando cada fala aparece)
         try {
             String sc = getIntent().getStringExtra("gfScale");
@@ -620,6 +682,14 @@ public class PlayerActivity extends Activity {
                             if (cmd.equals("seek")) player.setTime(Long.parseLong(val) * 1000L);
                             else if (cmd.equals("delay")) setSubDelay(Integer.parseInt(val), panelValue);
                             else if (cmd.equals("track")) { userPickedSub = true; player.setSpuTrack(Integer.parseInt(val)); syncDelayToTrack(Integer.parseInt(val)); }
+                            else if (cmd.equals("audionext")) { MediaPlayer.TrackDescription[] at = player.getAudioTracks(); if (at != null && at.length > 0) { int cur = player.getAudioTrack(), k = 0; for (int q = 0; q < at.length; q++) if (at[q].id == cur) k = q; player.setAudioTrack(at[(k + 1) % at.length].id); } }
+                            else if (cmd.equals("spunext")) { userPickedSub = true; MediaPlayer.TrackDescription[] st = player.getSpuTracks(); if (st != null && st.length > 0) { int cur = player.getSpuTrack(), k = 0; for (int q = 0; q < st.length; q++) if (st[q].id == cur) k = q; for (int q = 1; q <= st.length; q++) { int id = st[(k + q) % st.length].id; if (id != -1) { player.setSpuTrack(id); syncDelayToTrack(id); break; } } } }
+                            else if (cmd.equals("tela")) setScaleMode(Integer.parseInt(val));
+                            else if (cmd.equals("estado")) {   // só nos testes: uma linha com o que está na tela (o teste de estresse confere cada ação por ela)
+                                glog("ESTADO tempo=" + player.getTime() + " tocando=" + player.isPlaying() + " fim=" + ended + " spu=" + player.getSpuTrack() + " audio=" + player.getAudioTrack()
+                                    + " legenda=" + (subOverlay != null && subOverlay.getVisibility() == View.VISIBLE ? "visivel" : "nada") + " tela=" + SCALE_NAMES[scaleIndex]
+                                    + " video=" + player.getVideoTrack() + " mem=" + (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / 1024 + "k");
+                            }
                         } catch (Throwable t) { glog("teste: ação falhou: " + t); }
                     }
                 };
@@ -699,6 +769,12 @@ public class PlayerActivity extends Activity {
             default:
                 break;
         }
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle out) {
+        super.onSaveInstanceState(out);
+        try { if (player != null && !ended) { long t = player.getTime(); if (t > 0) out.putLong("gfPos", t); } } catch (Throwable ignored) {}
     }
 
     // ---------- continuar de onde parou ----------
@@ -1458,11 +1534,15 @@ public class PlayerActivity extends Activity {
             });
         }
         @Override public long lostFrames() {
+            // MediaPlayer.getMedia() faz retain() no Media (confirmado no bytecode do libVLC 3.6): quem chama tem de dar release(). Sem isso, a contagem do Media
+            // nunca chegava a zero ao fechar o player e ele (com a instância inteira do libVLC que ele segura) ficava na memória a cada filme.
+            IMedia m = null;
             try {
-                Object m = player == null ? null : player.getMedia();
+                m = player == null ? null : player.getMedia();
                 Object st = m == null ? null : m.getClass().getMethod("getStats").invoke(m);
                 return st == null ? -1 : ((Number) st.getClass().getField("lostPictures").get(st)).longValue();
             } catch (Throwable t) { return -1; }
+            finally { if (m != null) { try { m.release(); } catch (Throwable ignored) {} } }
         }
     };
 
@@ -2333,7 +2413,8 @@ public class PlayerActivity extends Activity {
     private void reattachViews() {
         try {
             lastScaleW = -1; lastScaleH = -1;
-            player.attachViews(videoLayout, null, true, tv);
+            String gTex = getIntent().getStringExtra("gfTexture");
+            player.attachViews(videoLayout, null, true, gTex != null ? "1".equals(gTex) : tv);
             viewsDetached = false;
             refreshFrame = true;
             applySubDelay();
@@ -2376,6 +2457,9 @@ public class PlayerActivity extends Activity {
     @Override
     protected void onDestroy() {
         ui.removeCallbacksAndMessages(null);
+        if (memTel != null) { memTel.stop(); memTel = null; }
+        java.lang.ref.WeakReference<PlayerActivity> cr = current;
+        if (cr != null && cr.get() == this) current = null;
         if (barThread != null) { barThread.quit(); barThread = null; }
         if (audioSync != null) audioSync.stop();
         if (testRx != null) { try { unregisterReceiver(testRx); } catch (Throwable ignored) {} testRx = null; }

@@ -394,7 +394,8 @@ enum SubtitleText {
     static let maxBytes = 5_000_000
 
     /// bytes baixados -> texto de legenda normalizado; nil se não for uma legenda (página de erro, arquivo vazio, outro formato)
-    static func decode(_ data: [UInt8]?) -> String? {
+    /// videoFps: quadros por segundo do vídeo, se o chamador souber (só serve para legenda MicroDVD, que marca o tempo em quadros); <= 0 = não sabe
+    static func decode(_ data: [UInt8]?, videoFps: Double = 0) -> String? {
         guard var d = data, d.count >= 20 else { return nil }
         if d.count > 4 && d[0] == 0x50 && d[1] == 0x4B && d[2] == 3 && d[3] == 4 {
             guard let z = Zip.unzipFirst(d) else { return nil }
@@ -405,7 +406,7 @@ enum SubtitleText {
         }
         if d.count < 20 { return nil }
         let text = bytesToUnits(d)
-        guard let out = normalize(text) else { return nil }
+        guard let out = normalize(text, videoFps: videoFps) else { return nil }
         return J.str(out)
     }
 
@@ -468,13 +469,74 @@ enum SubtitleText {
         return out
     }
 
-    /// 0x80...0x9F do Windows-1252 (0xFFFD = sem mapeamento: o Java troca por U+FFFD)
+    /// índice do primeiro byte que não é UTF-8 válido (sequência curta, "overlong", substituto ou > U+10FFFF); d.count se tudo é válido
+    static func utf8Valid(_ d: [UInt8]) -> Int {
+        var i = 0
+        let n = d.count
+        while i < n {
+            let b0 = d[i]
+            if b0 < 0x80 { i += 1; continue }
+            var need = 0
+            var cp: UInt32 = 0
+            var minCp: UInt32 = 0
+            if b0 >= 0xC2 && b0 <= 0xDF { need = 1; cp = UInt32(b0 & 0x1F); minCp = 0x80 }
+            else if b0 >= 0xE0 && b0 <= 0xEF { need = 2; cp = UInt32(b0 & 0x0F); minCp = 0x800 }
+            else if b0 >= 0xF0 && b0 <= 0xF4 { need = 3; cp = UInt32(b0 & 0x07); minCp = 0x10000 }
+            else { return i }
+            if i + need >= n { return i }
+            for k in 1...need {
+                let b = d[i + k]
+                if b & 0xC0 != 0x80 { return i }
+                cp = (cp << 6) | UInt32(b & 0x3F)
+            }
+            if cp < minCp || cp > 0x10FFFF || (cp >= 0xD800 && cp <= 0xDFFF) { return i }
+            i += need + 1
+        }
+        return n
+    }
+
+    /// o que sobra a partir de p é o começo (cortado) de uma sequência UTF-8: o arquivo foi truncado no meio de uma letra
+    private static func truncatedTail(_ d: [UInt8], _ p: Int) -> Bool {
+        let left = d.count - p
+        let b0 = d[p]
+        let need = b0 >= 0xC2 && b0 <= 0xDF ? 1 : (b0 >= 0xE0 && b0 <= 0xEF ? 2 : (b0 >= 0xF0 && b0 <= 0xF4 ? 3 : 0))
+        if need == 0 || left > need { return false }
+        var k = 1
+        while k < left { if d[p + k] & 0xC0 != 0x80 { return false }; k += 1 }
+        return true
+    }
+
+    /// UTF-8 estrito (tolera só o corte no meio de uma letra no fim do arquivo, como o que o limite de 5 MB faz); nil se não for UTF-8
+    static func utf8OrNil(_ d: [UInt8]) -> U16? {
+        let p = utf8Valid(d), n = d.count
+        if p == n { return utf8Strict(d) }
+        if n - p <= 3 && truncatedTail(d, p) { return utf8Strict(Array(d[0..<p])) }
+        return nil
+    }
+
+    /// 0x80...0x9F do Windows-1252; as 5 posições sem letra (0x81 0x8D 0x8F 0x90 0x9D) ficam como o caractere de controle de mesmo número (como o ISO-8859-1)
     private static let cp1252: [UInt16] = [
-        0x20AC, 0xFFFD, 0x201A, 0x0192, 0x201E, 0x2026, 0x2020, 0x2021, 0x02C6, 0x2030, 0x0160, 0x2039, 0x0152, 0xFFFD, 0x017D, 0xFFFD,
-        0xFFFD, 0x2018, 0x2019, 0x201C, 0x201D, 0x2022, 0x2013, 0x2014, 0x02DC, 0x2122, 0x0161, 0x203A, 0x0153, 0xFFFD, 0x017E, 0x0178,
+        0x20AC, 0x0081, 0x201A, 0x0192, 0x201E, 0x2026, 0x2020, 0x2021, 0x02C6, 0x2030, 0x0160, 0x2039, 0x0152, 0x008D, 0x017D, 0x008F,
+        0x0090, 0x2018, 0x2019, 0x201C, 0x201D, 0x2022, 0x2013, 0x2014, 0x02DC, 0x2122, 0x0161, 0x203A, 0x0153, 0x009D, 0x017E, 0x0178,
     ]
 
-    /// UTF-16 (com ou sem BOM), UTF-8 (com ou sem BOM) ou, se tiver bytes inválidos, Windows-1252
+    /// Sem UTF-8 válido: Windows-1252 ou ISO-8859-1 (só diferem nos bytes 0x80..0x9F; ver legacyToString no Java). Empate: Windows-1252.
+    static func legacyToUnits(_ d: [UInt8]) -> U16 {
+        var s1252 = 0, sLatin1 = 0
+        for b in d where b >= 0x80 && b < 0xA0 {
+            if b == 0x81 || b == 0x8D || b == 0x8F || b == 0x90 || b == 0x9D { sLatin1 += 1 } else { s1252 += 1 }
+        }
+        let latin1 = sLatin1 > s1252
+        var o = U16()
+        o.reserveCapacity(d.count)
+        for b in d {
+            if b >= 0x80 && b < 0xA0 && !latin1 { o.append(cp1252[Int(b) - 0x80]) } else { o.append(UInt16(b)) }
+        }
+        return o
+    }
+
+    /// UTF-16 (com BOM, ou sem BOM com byte zero a cada dois), UTF-8 (com ou sem BOM) ou, se tiver bytes inválidos, a melhor entre
+    /// Windows-1252 e ISO-8859-1. Depois desfaz UTF-8 "duplamente codificado" (mojibake).
     static func bytesToUnits(_ dd: [UInt8]) -> U16 {
         var d = dd
         var n = d.count
@@ -489,46 +551,100 @@ enum SubtitleText {
             if Double(zeroOdd) > Double(sample) * 0.4 && zeroEven == 0 { return utf16Units(d[0..<n], bigEndian: false) }
             if Double(zeroEven) > Double(sample) * 0.4 && zeroOdd == 0 { return utf16Units(d[0..<n], bigEndian: true) }
         }
-        let s: U16
-        if let u = utf8Strict(d) { s = u }
-        else {
-            var o = U16()
-            o.reserveCapacity(n)
-            for b in d {
-                if b >= 0x80 && b < 0xA0 { o.append(cp1252[Int(b) - 0x80]) } else { o.append(UInt16(b)) }
-            }
-            s = o
-        }
+        let s = utf8OrNil(d) ?? legacyToUnits(d)
         return fixMojibake(s)
     }
 
-    private static let mojiSet: Set<UInt16> = [0x0152, 0x0153, 0x0160, 0x0161, 0x0178, 0x017D, 0x017E, 0x0192, 0x02C6, 0x02DC, 0x2013, 0x2014, 0x2018, 0x2019, 0x201A, 0x201C, 0x201D, 0x201E, 0x2020, 0x2021, 0x2022, 0x2026, 0x2030, 0x2039, 0x203A, 0x20AC, 0x2122]
-    private static let goodAcc: Set<UInt16> = Set("ãõçéêáâíóôúàÃÕÇÉÊÁÂÍÓÔÚ".utf16)
+    /// byte que o caractere teria numa leitura errada de UTF-8 como Windows-1252/ISO-8859-1: 0x80..0xFF; -2 = U+FFFD (byte perdido); -1 = nenhum
+    private static func mojiByte(_ c: UInt16) -> Int {
+        if c < 0x80 { return -1 }
+        if c <= 0xFF { return Int(c) }
+        if c == 0xFFFD { return -2 }
+        if let k = cp1252.firstIndex(of: c) { return 0x80 + k }
+        return -1
+    }
 
-    /// UTF-8 lido como Windows-1252 ("nÃ£o" em vez de "não"): refaz o caminho inverso se isso der UTF-8 válido
-    static func fixMojibake(_ s: U16) -> U16 {
-        var bad = 0
-        var i = 0
+    /// "Ã" + U+FFFD em s[i]: o byte perdido foi 0x81 (Á) ou 0x8D (Í). Palpite pela letra seguinte: Í antes de a c d n t, Á no resto (ver lostByte no Java)
+    private static func lostByte(_ s: U16, _ i: Int) -> Int {
+        if i + 2 >= s.count { return 0x81 }
+        let c = J.lower(s[i + 2])
+        return c == 97 || c == 99 || c == 100 || c == 110 || c == 116 ? 0x8D : 0x81
+    }
+
+    private static func appendCodePoint(_ out: inout U16, _ cp: Int) {
+        if cp >= 0x10000 {
+            let v = cp - 0x10000
+            out.append(UInt16(0xD800 + (v >> 10)))
+            out.append(UInt16(0xDC00 + (v & 0x3FF)))
+        } else { out.append(UInt16(cp)) }
+    }
+
+    /// Uma sequência UTF-8 lida como Windows-1252 começando em s[i] ("Ã£" = ã, "â€”" = —): devolve quantos caracteres ocupa (0 se não for uma) e
+    /// acrescenta o caractere em out. lossy: aceita também "Ã" + espaço (à), "Ã" + U+FFFD (Á/Í) e "â€" + U+FFFD (”) (ver mojiSeq no Java).
+    private static func mojiSeq(_ s: U16, _ i: Int, _ lossy: Bool, _ out: inout U16) -> Int {
         let n = s.count
+        let lead = mojiByte(s[i])
+        if lead < 0xC2 || lead > 0xF4 { return 0 }
+        let need = lead <= 0xDF ? 1 : (lead <= 0xEF ? 2 : 3)
+        if i + need >= n { return 0 }
+        var cp = lead <= 0xDF ? lead & 0x1F : (lead <= 0xEF ? lead & 0x0F : lead & 0x07)
+        var prev = 0
+        for k in 1...need {
+            let c = s[i + k]
+            var b = mojiByte(c)
+            if b == -2 && lossy {
+                if need == 1 && lead == 0xC3 { b = lostByte(s, i) }
+                else if need == 2 && lead == 0xE2 && k == 2 && prev == 0x80 { b = 0x9D }
+                else { return 0 }
+            } else if c == 32 && lossy && need == 1 && (lead == 0xC3 || lead == 0xC2) { b = 0xA0 }
+            if b < 0x80 || b > 0xBF { return 0 }
+            cp = (cp << 6) | (b & 0x3F)
+            prev = b
+        }
+        let minCp = need == 1 ? 0x80 : (need == 2 ? 0x800 : 0x10000)
+        if cp < minCp || cp > 0x10FFFF || (cp >= 0xD800 && cp <= 0xDFFF) { return 0 }
+        appendCodePoint(&out, cp)
+        return need + 1
+    }
+
+    /// UTF-8 lido como Windows-1252 ("nÃ£o" em vez de "não", "â€™" em vez de "’"), às vezes duas vezes: refaz o caminho inverso, sequência por
+    /// sequência (o que não forma UTF-8 válido não é mexido). Só age se o texto é mesmo mojibake (ver fixMojibake no Java).
+    static func fixMojibake(_ s0: U16) -> U16 {
+        var s = s0
+        for _ in 0..<2 {
+            guard let r = fixMojibakeOnce(s) else { return s }
+            s = r
+        }
+        return s
+    }
+
+    private static func fixMojibakeOnce(_ s: U16) -> U16? {
+        let n = s.count
+        var seqs = 0, lone = 0
+        var any = false
+        for c in s where c >= 0xC2 && c <= 0xF4 { any = true; break }
+        if !any { return nil }
+        var tmp = U16()
+        var i = 0
         while i < n {
-            if s[i] == 0x00C3 && i + 1 < n && ((s[i + 1] >= 0x20 && s[i + 1] <= 0xBF) || mojiSet.contains(s[i + 1])) { bad += 1; i += 2 }
-            else { i += 1 }
+            tmp.removeAll(keepingCapacity: true)
+            let len = mojiSeq(s, i, false, &tmp)
+            if len > 0 { seqs += 1; i += len; continue }
+            let c = s[i]
+            if c >= 0xC0 && c <= 0xFF && c != 0xD7 && c != 0xF7 { lone += 1 }
+            i += 1
         }
-        if bad < 5 { return s }
-        var good = 0
-        for c in s where goodAcc.contains(c) { good += 1 }
-        if good > bad { return s }
-        // codificação inversa em Windows-1252: um caractere sem byte correspondente cancela tudo
-        var rev = [UInt16: UInt8]()
-        for (k, u) in cp1252.enumerated() where u != 0xFFFD { rev[u] = UInt8(0x80 + k) }
-        var raw = [UInt8]()
-        raw.reserveCapacity(n)
-        for c in s {
-            if c < 0x80 || (c >= 0xA0 && c <= 0xFF) { raw.append(UInt8(c)) }
-            else if let b = rev[c] { raw.append(b) }
-            else { return s }
+        if seqs == 0 || seqs * 2 < lone || (seqs < 3 && lone > 0) { return nil }
+        var out = U16()
+        out.reserveCapacity(n)
+        i = 0
+        while i < n {
+            let len = mojiSeq(s, i, true, &out)
+            if len > 0 { i += len; continue }
+            out.append(s[i])
+            i += 1
         }
-        return utf8Strict(raw) ?? s
+        return out
     }
 
     // ---------- normalização ----------
@@ -646,7 +762,7 @@ enum SubtitleText {
     }
 
     /// fim de linha "\n", sem BOM; ASS/SSA vira SRT; linhas de tempo fora do padrão (centésimos, sem fração) são reescritas no padrão
-    static func normalize(_ input: U16) -> U16? {
+    static func normalize(_ input: U16, videoFps: Double = 0) -> U16? {
         var t = input
         if t.contains(0xFEFF) { t = t.filter { $0 != 0xFEFF } }
         if t.contains(13) {
@@ -666,7 +782,7 @@ enum SubtitleText {
             if J.indexOf(t, J.u16("[Events]")) >= 0 && J.indexOf(t, J.u16("Dialogue:")) >= 0 {
                 return assToSrt(t)
             }
-            return nil
+            return microDvdToSrt(t, videoFps)
         }
         let len = t.count
         var i = 0
@@ -693,7 +809,8 @@ enum SubtitleText {
             if sb != nil { sb!.append(contentsOf: t[i..<min(len, e + 1)]) }
             i = e + 1
         }
-        return sb ?? t
+        let res = sb ?? t
+        return isVtt(res) ? cleanVtt(res) : res
     }
 
     // ---------- ASS/SSA -> SRT ----------
@@ -758,6 +875,28 @@ enum SubtitleText {
         return J.trim(b)
     }
 
+    /// o texto tem um bloco {...} que liga o modo de desenho do ASS (\p1, \p2...): o que vem depois são comandos de desenho, não fala
+    private static func assHasDrawing(_ f: U16) -> Bool {
+        var i = 0
+        let n = f.count
+        while i < n {
+            if f[i] == 123 {
+                var j = i + 1
+                while j < n && f[j] != 125 { j += 1 }
+                if j >= n { return false }
+                var k = i + 1
+                while k + 2 < j {
+                    if f[k] == 92 && f[k + 1] == 112 && f[k + 2] >= 49 && f[k + 2] <= 57 { return true }
+                    k += 1
+                }
+                i = j + 1
+                continue
+            }
+            i += 1
+        }
+        return false
+    }
+
     static func assToSrt(_ t: U16) -> U16? {
         var iStart = 1, iEnd = 2, iText = 9, nf = 10
         var inEvents = false
@@ -782,6 +921,7 @@ enum SubtitleText {
                 if f.count <= max(iText, max(iStart, iEnd)) { continue }
                 let a = assTime(f[iStart]), b = assTime(f[iEnd])
                 if a < 0 || b < 0 { continue }
+                if assHasDrawing(f[iText]) { continue }   // desenho vetorial ({\p1}m 0 0 l 100 0...): não é fala, aparecia como texto na tela
                 let body = assBody(f[iText])
                 if body.isEmpty { continue }
                 times.append((a, b, times.count))
@@ -789,7 +929,8 @@ enum SubtitleText {
             }
         }
         if times.count < 5 { return nil }
-        let order = times.sorted { $0.0 != $1.0 ? $0.0 < $1.0 : $0.2 < $1.2 }
+        // na ordem do arquivo, como o SRT (ver assToSrt no Java)
+        let order = times
         var out = U16()
         var n = 1
         for tm in order {
@@ -799,6 +940,254 @@ enum SubtitleText {
             n += 1
         }
         return out
+    }
+
+    // ---------- MicroDVD -> SRT ----------
+    private static let defaultFps = 23.976
+
+    /// "{inicio}{fim}" no começo da linha (depois de espaços): (inicio, fim (-1 se vazio), índice do texto); nil se a linha não é de fala MicroDVD
+    private static func mdvdHead(_ ln: U16) -> (Int64, Int64, Int)? {
+        let n = ln.count
+        var p = 0
+        while p < n && (ln[p] == 32 || ln[p] == 9) { p += 1 }
+        var v: [Int64] = [0, 0]
+        for k in 0..<2 {
+            if p >= n || ln[p] != 123 { return nil }
+            p += 1
+            var x: Int64 = 0
+            var nd = 0
+            while p < n && ln[p] >= 48 && ln[p] <= 57 { if nd < 9 { x = x * 10 + Int64(ln[p] - 48) }; nd += 1; p += 1 }
+            if nd > 9 || p >= n || ln[p] != 125 { return nil }
+            if nd == 0 && k == 0 { return nil }
+            v[k] = nd == 0 ? -1 : x
+            p += 1
+        }
+        return (v[0], v[1], p)
+    }
+
+    /// "23.976", "25", "29,97": número de quadros por segundo entre 5 e 120; 0 se não for
+    private static func parseFps(_ s0: U16) -> Double {
+        let s = J.trim(s0)
+        let n = s.count
+        var dots = 0
+        if n == 0 || n > 8 { return 0 }
+        for i in 0..<n {
+            let c = s[i]
+            if c == 46 || c == 44 { dots += 1; if i == 0 || i == n - 1 { return 0 } }
+            else if c < 48 || c > 57 { return 0 }
+        }
+        if dots > 1 { return 0 }
+        guard let f = Double(J.str(s).replacingOccurrences(of: ",", with: ".")) else { return 0 }
+        return f >= 5 && f <= 120 ? f : 0
+    }
+
+    /// texto de uma fala MicroDVD: tira {y:i}, {c:$0000FF}, {f:Arial}... e troca "|" por quebra de linha
+    private static func mdvdBody(_ s: U16) -> U16 {
+        var a = U16()
+        var i = 0
+        let n = s.count
+        while i < n {
+            let c = s[i]
+            if c == 123 {
+                let j = J.indexOf(s, 125, i + 1)
+                if j > 0 { i = j + 1; continue }
+            }
+            a.append(c == 124 ? 10 : c)
+            i += 1
+        }
+        var out = U16()
+        for ln in J.split(a, 10, limit: -1) {
+            let t = J.trim(ln)
+            if t.isEmpty { continue }
+            if !out.isEmpty { out.append(10) }
+            out += t
+        }
+        return out
+    }
+
+    /// MicroDVD ("{120}{180}Texto|segunda linha", tempos em QUADROS) -> SRT. fps: o da linha de cabeçalho "{1}{1}23.976", se houver;
+    /// senão o do vídeo (videoFps, quando o chamador sabe); senão 23.976. nil se o texto não for MicroDVD (menos de 3 falas nesse formato).
+    static func microDvdToSrt(_ t: U16, _ videoFps: Double) -> U16? {
+        var fps = 0.0
+        var first = true
+        var fr: [(Int64, Int64)] = []
+        var texts: [U16] = []
+        for ln in J.split(t, 10) {
+            guard let h = mdvdHead(ln) else { continue }
+            let rest = Array(ln[h.2..<ln.count])
+            if first {
+                first = false
+                if h.0 <= 1 && h.1 >= 0 && h.1 <= 1 {
+                    let f = parseFps(rest)
+                    if f > 0 { fps = f; continue }
+                }
+            }
+            let body = mdvdBody(rest)
+            if body.isEmpty { continue }
+            fr.append((h.0, h.1))
+            texts.append(body)
+        }
+        if fr.count < 3 { return nil }
+        if fps <= 0 { fps = videoFps >= 5 && videoFps <= 120 ? videoFps : defaultFps }
+        var out = U16()
+        for k in 0..<fr.count {
+            let a = J.round(Double(fr[k].0) * 1000.0 / fps)
+            let e = fr[k].1 > fr[k].0 ? J.round(Double(fr[k].1) * 1000.0 / fps) : a + 2000
+            out += J.u16(String(k + 1) + "\n" + fmtTime(a) + " --> " + fmtTime(e) + "\n")
+            out += texts[k]
+            out += [10, 10]
+        }
+        return out
+    }
+
+    // ---------- VTT ----------
+    static func isVtt(_ t: U16) -> Bool {
+        var p = 0
+        while p < t.count && t[p] <= 32 { p += 1 }
+        let w: [UInt16] = [87, 69, 66, 86, 84, 84]   // WEBVTT
+        if p + 6 > t.count { return false }
+        for k in 0..<6 where t[p + k] != w[k] { return false }
+        return true
+    }
+
+    /// linha "início --> fim [configurações]": (início, fim, índice onde começam as configurações); nil se não for
+    private static func timingLine(_ ln: U16) -> (Int64, Int64, Int)? {
+        let n = ln.count
+        var p = 0
+        while p < n && isTab(ln[p]) { p += 1 }
+        guard let a = timeAt(ln, p, n, canon: false) else { return nil }
+        var q = a.end
+        while q < n && isTab(ln[q]) { q += 1 }
+        if q + 3 > n || ln[q] != 45 || ln[q + 1] != 45 || ln[q + 2] != 62 { return nil }
+        q += 3
+        while q < n && isTab(ln[q]) { q += 1 }
+        guard let b = timeAt(ln, q, n, canon: false) else { return nil }
+        let ma = ((a.h &* 60 &+ a.m) &* 60 &+ a.s) &* 1000 &+ fracMs(a.f)
+        let mb = ((b.h &* 60 &+ b.m) &* 60 &+ b.s) &* 1000 &+ fracMs(b.f)
+        return (ma, mb, b.end)
+    }
+
+    /// dígito, ':', '.' ou ',' (o que cabe numa marca de tempo "<00:01.500>")
+    private static func isStampChar(_ c: UInt16) -> Bool {
+        if c >= 48 && c <= 57 { return true }
+        return c == 58 || c == 46 || c == 44
+    }
+
+    /// fim ('>') de uma marca que o navegador não mostra como texto: "<00:00:01.000>", "<c>", "</c>", "<c.cor>"; -1 se não for
+    private static func inlineTagEnd(_ s: U16, _ i: Int) -> Int {
+        let n = s.count
+        var j = i + 1
+        if j >= n { return -1 }
+        let c = s[j]
+        if c >= 48 && c <= 57 {
+            var k = j
+            while k < n && k < i + 16 && isStampChar(s[k]) { k += 1 }
+            return k < n && s[k] == 62 ? k : -1
+        }
+        if c == 47 { j += 1 }
+        if j >= n || s[j] != 99 { return -1 }
+        j += 1
+        if j < n && s[j] == 46 { while j < n && s[j] != 62 && s[j] != 60 && s[j] != 32 { j += 1 } }
+        return j < n && s[j] == 62 ? j : -1
+    }
+
+    private static func stripInlineTags(_ s: U16) -> U16 {
+        if J.indexOf(s, 60) < 0 { return s }
+        var o = U16()
+        var i = 0
+        while i < s.count {
+            if s[i] == 60 {
+                let e = inlineTagEnd(s, i)
+                if e > 0 { i = e + 1; continue }
+            }
+            o.append(s[i])
+            i += 1
+        }
+        return o
+    }
+
+    /// chave para comparar linhas: sem nenhuma tag, espaços juntados
+    private static func lineKey(_ s: U16) -> U16 {
+        var o = U16()
+        var sp = false
+        var i = 0
+        while i < s.count {
+            let c = s[i]
+            if c == 60 {
+                let e = J.indexOf(s, 62, i)
+                if e > 0 { i = e + 1; continue }
+            }
+            if c <= 32 || c == 0xA0 { sp = !o.isEmpty; i += 1; continue }
+            if sp { o.append(32); sp = false }
+            o.append(c)
+            i += 1
+        }
+        return o
+    }
+
+    /// VTT como o navegador mostra (ver cleanVtt no Java): a fala vai até uma linha VAZIA, marcas de tempo dentro da fala não são texto e a fala
+    /// que só repete o que a anterior já mostrava vira tempo da anterior. Se não sobrar nenhuma fala devolve o texto como veio.
+    static func cleanVtt(_ t: U16) -> U16 {
+        let lines = J.split(t, 10, limit: -1)
+        var rolling = false
+        var k = J.indexOf(t, 60)
+        while k >= 0 && !rolling {
+            rolling = k + 1 < t.count && t[k + 1] >= 48 && t[k + 1] <= 57 && inlineTagEnd(t, k) > 0
+            k = J.indexOf(t, 60, k + 1)
+        }
+        var tmS: [Int64] = [], tmE: [Int64] = []
+        var suffix: [U16] = []
+        var outs: [[U16]] = [], keys: [[U16]] = []
+        var i = 0
+        let n = lines.count
+        while i < n {
+            if lines[i].isEmpty { i += 1; continue }
+            let b0 = i
+            i += 1
+            while i < n && !lines[i].isEmpty && J.indexOf(lines[i], arrow) < 0 { i += 1 }
+            var ti = -1
+            var tlOpt: (Int64, Int64, Int)? = nil
+            var kk = b0
+            while kk < min(i, b0 + 2) {
+                if J.indexOf(lines[kk], arrow) >= 0 { tlOpt = timingLine(lines[kk]); ti = kk; break }
+                kk += 1
+            }
+            guard let tl = tlOpt else { continue }
+            var o: [U16] = [], ky: [U16] = []
+            var q = ti + 1
+            while q < i {
+                let c = J.trim(stripInlineTags(lines[q]))
+                q += 1
+                if c.isEmpty { continue }
+                o.append(c)
+                ky.append(lineKey(c))
+            }
+            if o.isEmpty { continue }
+            let last = tmS.count - 1
+            if last >= 0 {
+                let pk = keys[last]
+                var suffixEq = tl.0 >= tmS[last] && tl.0 - tmE[last] <= 200 && ky.count <= pk.count
+                var z = 0
+                while suffixEq && z < ky.count { if ky[z] != pk[pk.count - ky.count + z] { suffixEq = false }; z += 1 }
+                let carried = suffixEq && (tl.1 - tl.0 <= 50 || (rolling && ky.count < pk.count))
+                if carried { tmE[last] = max(tmE[last], tl.1); continue }
+            }
+            tmS.append(tl.0)
+            tmE.append(tl.1)
+            suffix.append(Array(lines[ti][tl.2..<lines[ti].count]))
+            outs.append(o)
+            keys.append(ky)
+        }
+        if tmS.isEmpty { return t }
+        var sb = J.u16("WEBVTT\n\n")
+        for z in 0..<tmS.count {
+            sb += J.u16(fmtTime(tmS[z]) + " --> " + fmtTime(tmE[z]))
+            sb += suffix[z]
+            sb.append(10)
+            for l in outs[z] { sb += l; sb.append(10) }
+            sb.append(10)
+        }
+        return sb
     }
 
     // ---------- idioma ----------

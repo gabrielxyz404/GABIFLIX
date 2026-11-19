@@ -1,0 +1,94 @@
+name: Estresse no emulador (celular e TV)
+
+# Roteiro de uso pesado no emulador, com o APK deste commit (nunca publica o app): abre o filme, espera a legenda, pula +-10 min varias vezes,
+# Preencher liga/desliga, troca faixa de legenda e de audio, casa/volta x5, gira (celular), mata o processo em segundo plano e confere que o filme volta
+# do mesmo ponto, voltar, abre outro filme e toca por 30 min medindo a memoria. Cada passo confere: sem queda/ANR, legenda visivel, video nao preto.
+# Resultados no branch estresse-out-<perfil>-<sha>.
+on:
+  push:
+    branches: ['run-estresse**']
+  workflow_dispatch:
+    inputs:
+      play:
+        description: segundos de reproducao continua
+        default: '1800'
+
+permissions:
+  contents: write
+
+jobs:
+  estresse:
+    runs-on: ubuntu-latest
+    timeout-minutes: 150
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # celular API 30: o emulador decodifica por MediaCodec e o video vai por SurfaceView (sem OpenGL no libVLC): a memoria do app fica parada (limite 20 MB)
+          - { nome: celular-api30, modo: phone, api: 30, target: google_apis, profile: pixel_5, ram: 3072M, limite: 20 }
+          # TV API 30 e celular API 28 com a saida de video OpenGL ES do libVLC (a mesma da TV de verdade): o EGL do EMULADOR vaza ~33 KB por eglMakeCurrent
+          # (heapprofd, heap-emulador.yml); aqui o crescimento so e informado, nao reprova
+          - { nome: tv-api30, modo: tv, api: 30, target: android-tv, profile: tv_1080p, ram: 2048M, info: info, extra: '--es gfMemTelMs 300000' }
+          - { nome: celular-api28, modo: phone, api: 28, target: google_apis, profile: pixel_5, ram: 3072M, info: info }
+          # as mesmas telas com a saida de video sem OpenGL (--vout=android_display): sem o vazamento do EGL do emulador, a memoria do app tem de ficar parada (limite 20 MB)
+          - { nome: tv-api30-vout, modo: tv, api: 30, target: android-tv, profile: tv_1080p, ram: 2048M, limite: 20, extra: '--es gfVlcOpt --vout=android_display --es gfMemTelMs 300000' }
+          - { nome: celular-api28-vout, modo: phone, api: 28, target: google_apis, profile: pixel_5, ram: 3072M, limite: 20, extra: '--es gfVlcOpt --vout=android_display' }
+          - { nome: celular-api28-sem-audio, modo: phone, api: 28, target: google_apis, profile: pixel_5, ram: 3072M, extra: '--es gfAudioAuto false', play: '900', info: info }
+          - { nome: tv-api30-sem-audio, modo: tv, api: 30, target: android-tv, profile: tv_1080p, ram: 2048M, extra: '--es gfAudioAuto false', play: '900', info: info }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 17
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+      - name: APK de teste (x86)
+        env:
+          GABIFLIX_ABIS: x86,x86_64
+        run: |
+          gradle -p android assembleRelease --no-daemon -q
+          cp android/app/build/outputs/apk/release/app-release.apk /tmp/teste.apk
+      - name: Filmes de teste (35 min)
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg espeak-ng >/dev/null
+          DUR=2100 BV=2M python3 tools/player-abre-test/mk-media.py /tmp/media
+          ln -s /tmp/media/film.mkv /tmp/media/film2.mkv
+          cp /tmp/media/film.srt /tmp/media/film2.srt
+          ls -la /tmp/media
+          nohup python3 tools/audio-integra/server.py /tmp/media 8000 >/tmp/server.out 2>&1 &
+          sleep 2; curl -sI http://127.0.0.1:8000/film.mkv | head -3
+      - name: KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules && sudo udevadm trigger --name-match=kvm
+      - name: Emulador (${{ matrix.nome }})
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: ${{ matrix.api }}
+          target: ${{ matrix.target }}
+          arch: x86
+          profile: ${{ matrix.profile }}
+          ram-size: ${{ matrix.ram }}
+          heap-size: 512M
+          disable-animations: true
+          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
+          script: timeout 6600 bash tools/bug-sweep/stress/run.sh /tmp/teste.apk ${{ matrix.modo }} ${{ matrix.play || github.event.inputs.play || '1800' }} "${{ matrix.extra }}" ${{ matrix.limite || 50 }} ${{ matrix.info }}
+      - name: Resumo
+        if: always()
+        run: |
+          cd shots 2>/dev/null || exit 0
+          { echo '### Estresse ${{ matrix.nome }}'; echo '```'; cat aparelho.txt resultado.txt | grep -v '^OK ' | tail -60; echo '```'; } >> $GITHUB_STEP_SUMMARY
+          grep -c '^OK' resultado.txt | sed 's/^/passos ok: /' >> $GITHUB_STEP_SUMMARY || true
+          grep -q 'FALHAS=0' resultado.txt || echo "::error::o teste de estresse teve falhas (veja o resumo)"
+      - name: Publicar
+        if: always()
+        run: |
+          cd shots || exit 0
+          cp /tmp/server.out . 2>/dev/null || true
+          git init -q -b x && git add -A
+          git -c user.name=ci -c user.email=ci@x commit -qm resultados
+          git push -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" x:estresse-out-${{ matrix.nome }}-${GITHUB_SHA::7}
+      - name: Falha se houve falhas
+        run: grep -q 'FALHAS=0' shots/resultado.txt

@@ -48,6 +48,12 @@ final class SubtitleOverlay {
                 body.append(lines[i]);
                 i++;
             }
+            // SRT sem linha em branco entre as falas: o número da fala SEGUINTE ficaria colado no fim desta ("Olá\n2"). Só se tira quando a fala
+            // tem outra linha antes (uma fala que é só um número, como "1984", fica) e a linha seguinte é um tempo ("-->")
+            if (i < lines.length && lines[i].indexOf("-->") >= 0) {
+                int nl = body.lastIndexOf("\n");
+                if (nl > 0 && isIndexLine(body.substring(nl + 1))) body.setLength(nl);
+            }
             if (a < 0 || b < 0) continue;
             if (b < a) b = a + 2000;
             String t = clean(body.toString());
@@ -63,6 +69,14 @@ final class SubtitleOverlay {
         String[] t = new String[n];
         for (int k = 0; k < n; k++) { s[k] = times.get(idx[k])[0]; e[k] = times.get(idx[k])[1]; t[k] = texts.get(idx[k]); }
         return new SubtitleOverlay(s, e, t);
+    }
+
+    /** linha só com dígitos (o número de ordem de uma fala do SRT) */
+    private static boolean isIndexLine(String s) {
+        s = s.trim();
+        if (s.isEmpty() || s.length() > 6) return false;
+        for (int k = 0; k < s.length(); k++) if (s.charAt(k) < '0' || s.charAt(k) > '9') return false;
+        return true;
     }
 
     /** o que está na tela em ms (já sem o atraso); null se nada. Falas sobrepostas ficam uma embaixo da outra. */
@@ -105,6 +119,49 @@ final class SubtitleOverlay {
         } catch (NumberFormatException e) { return -1; }
     }
 
+    /** "<00:01.500>" (marca de tempo dentro da fala, do VTT): só dígitos, ':', '.' e ',' até o '>' */
+    private static boolean isTimeTag(String s, int i) {
+        if (i + 1 >= s.length() || s.charAt(i + 1) < '0' || s.charAt(i + 1) > '9') return false;
+        for (int k = i + 1; k < s.length() && k < i + 16; k++) {
+            char c = s.charAt(k);
+            if (c == '>') return true;
+            if (!((c >= '0' && c <= '9') || c == ':' || c == '.' || c == ',')) return false;
+        }
+        return false;
+    }
+
+    private static final java.util.regex.Pattern ENTITY = java.util.regex.Pattern.compile("&(#[xX][0-9a-fA-F]{1,6}|#[0-9]{1,7}|[a-zA-Z]{2,6});");
+
+    /** entidades HTML das legendas (&amp; &quot; &#39; &nbsp;...) numa passada só: "&amp;lt;" vira "&lt;" (não "<"); o que não se conhece fica como está */
+    static String decodeEntities(String s) {
+        if (s.indexOf('&') < 0) return s;
+        java.util.regex.Matcher m = ENTITY.matcher(s);
+        StringBuilder out = new StringBuilder();
+        int last = 0;
+        while (m.find()) {
+            String g = m.group(1), rep = null;
+            if (g.charAt(0) == '#') {
+                try {
+                    int cp = g.charAt(1) == 'x' || g.charAt(1) == 'X' ? Integer.parseInt(g.substring(2), 16) : Integer.parseInt(g.substring(1));
+                    if (cp > 0 && cp <= 0x10FFFF && !(cp >= 0xD800 && cp <= 0xDFFF)) rep = new String(Character.toChars(cp));
+                } catch (NumberFormatException ignored) {}
+            } else switch (g) {
+                case "amp": rep = "&"; break;
+                case "lt": rep = "<"; break;
+                case "gt": rep = ">"; break;
+                case "quot": rep = "\""; break;
+                case "apos": rep = "'"; break;
+                case "nbsp": rep = " "; break;
+                case "lrm": case "rlm": rep = ""; break;
+                default: break;
+            }
+            if (rep == null) continue;
+            out.append(s, last, m.start()).append(rep);
+            last = m.end();
+        }
+        return out.append(s, last, s.length()).toString();
+    }
+
     /** tira {...} (ASS: {\an8}, {\i1}...), <...> (HTML do SRT/VTT), \N e \n literais do ASS; junta espaços; mantém as quebras de linha */
     static String clean(String s) {
         StringBuilder o = new StringBuilder();
@@ -115,12 +172,12 @@ final class SubtitleOverlay {
             if (depthBrace > 0) { if (c == '}') depthBrace--; continue; }
             if (tag) { if (c == '>') tag = false; continue; }
             if (c == '{') { depthBrace++; continue; }
-            if (c == '<' && i + 1 < s.length() && (Character.isLetter(s.charAt(i + 1)) || s.charAt(i + 1) == '/')) { tag = true; continue; }
+            if (c == '<' && i + 1 < s.length() && (Character.isLetter(s.charAt(i + 1)) || s.charAt(i + 1) == '/' || isTimeTag(s, i))) { tag = true; continue; }
             if (c == '\\' && i + 1 < s.length() && (s.charAt(i + 1) == 'N' || s.charAt(i + 1) == 'n')) { o.append('\n'); i++; continue; }
             if (c == '\\' && i + 1 < s.length() && s.charAt(i + 1) == 'h') { o.append(' '); i++; continue; }
             o.append(c);
         }
-        String r = o.toString().replace("&nbsp;", " ").replace("&amp;", "&").replace("&lt;", "<").replace("&gt;", ">").replace(' ', ' ');
+        String r = decodeEntities(o.toString()).replace('\u00A0', ' ');
         StringBuilder out = new StringBuilder();
         for (String ln : r.split("\n")) {
             String t = ln.trim().replaceAll("[ \\t]+", " ");
