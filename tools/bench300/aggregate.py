@@ -249,6 +249,39 @@ for eng in ENG:
     for r in sorted(bad, key=lambda r: (r["cls"], r["title"], r["var"])):
         P("\n- **%s / %s / %s** diagnostico completo: `%s`" % (r["title"], r["var"], r["cls"], (r.get("diag") or "")[:900]))
 
+# ------------------------------------------------------------------ 7b. onde falha
+P("\n## 7b. Onde o motor falha: % de variantes S corrigidas CERTAS por caracteristica do titulo\n")
+P("So variantes S (deslocadas/deformadas). `n` = variantes. Serve para achar a causa: se a taxa cai com poucas falas, com a abertura silenciosa, com filmes muito longos, etc.\n")
+
+
+def feat_rows(name, keyf):
+    P("\n**%s**\n" % name)
+    P("| classe | n (main) | main certas | main recusadas | n (deriva) | deriva certas | deriva recusadas |\n|---|---|---|---|---|---|---|")
+    keys = sorted({keyf(titles[r["title"]]) for r in V if r["type"] == "S" and r["title"] in titles}, key=str)
+    for k in keys:
+        cells = []
+        for eng in ENG:
+            rs = [r for r in V if r["engine"] == eng and r["type"] == "S" and r["title"] in titles and keyf(titles[r["title"]]) == k]
+            cells += [str(len(rs)), rate(cnt(rs, lambda r: r.get("cls") == "certo"), len(rs)), rate(cnt(rs, lambda r: r.get("cls") == "recusou"), len(rs))]
+        P("| %s | %s |" % (k, " | ".join(cells)))
+
+
+def dens(t):
+    c = (t.get("ref") or {}).get("cues") or 0
+    m = (t.get("audio_s") or 1) / 60.0
+    d = c / m
+    return "< 4 falas/min" if d < 4 else "4-8 falas/min" if d < 8 else "8-12 falas/min" if d < 12 else ">= 12 falas/min"
+
+
+feat_rows("por tipo de titulo", lambda t: {"old": "antigo (filme)", "old-tv": "antigo (TV)", "new": "novo"}.get(t["kind"], t["kind"]))
+feat_rows("por decada", lambda t: ("%ds" % t["decade"]) if t.get("decade") else "sem ano")
+feat_rows("por densidade de falas da legenda", dens)
+feat_rows("por duracao", lambda t: "< 30 min" if (t.get("audio_s") or 0) < 1800 else "30-75 min" if (t.get("audio_s") or 0) < 4500 else "75-120 min" if (t.get("audio_s") or 0) < 7200 else "> 120 min")
+feat_rows("idioma da legenda de referencia", lambda t: "PT (filtro do app)" if (t.get("ref") or {}).get("pt_app") else "outro idioma")
+feat_rows("abertura silenciosa", lambda t: ">= 60 s de silencio no inicio" if (t.get("silent_open_s") or 0) >= 60 else "sem silencio longo")
+feat_rows("nivel da referencia", lambda t: "A (so desloca)" if (t.get("ref") or {}).get("tier") == "A" else "B (alass por partes)")
+feat_rows("canais de audio da faixa 1", lambda t: "%s canais" % (((t.get("probe") or {}).get("audio") or [{}])[0].get("ch") or "?"))
+
 # ------------------------------------------------------------------ 8. bugs
 P("\n## 8. Bugs e comportamentos estranhos achados na execucao\n")
 exc = [r for r in V + V2 if r.get("kind") in ("ERROR", "TIMEOUT")]
