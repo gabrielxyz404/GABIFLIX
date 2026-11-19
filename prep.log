@@ -1,0 +1,99 @@
+filme scarlet_street legendas PT: 6
+  descartado ScarletStreet1945 (título '')
+  descartado scarlet_street_1945 (título '')
+  escolhido Scarlet.Street.194517 / ScarletStreet1945.ogv (458 MB, 6142 s)
++ curl -fL -sS --retry 6 --retry-delay 4 --retry-all-errors -C - -o media/_work/src_video https://archive.org/download/Scarlet.Street.194517/ScarletStreet1945.ogv
+fonte: {'source': 'https://archive.org/download/Scarlet.Street.194517/ScarletStreet1945.ogv', 'ia': 'Scarlet.Street.194517', 'file': 'ScarletStreet1945.ogv', 'size': 458060283, 'length': 6141.74}
++ ffmpeg -nostdin -loglevel error -y -ss 0 -t 1200 -i media/_work/src_video -map 0:v:0 -map 0:a:0 -vf scale=640:-2 -r 24 -c:v libx264 -preset veryfast -crf 30 -c:a aac -b:a 96k -ac 2 media/clip.mkv
++ ffmpeg -nostdin -loglevel error -y -i media/clip.mkv -vn -ac 1 -ar 16000 -c:a pcm_s16le media/_work/audio16k.wav
+clip: 1200.0 s, 39670384 bytes
++ curl -fL -sS --retry 6 --retry-delay 4 --retry-all-errors -C - -o media/_work/alass https://github.com/kaegi/alass/releases/download/v2.0.0/alass-linux64
+candidatas PT: 6
+{'idx': 0, 'id': '3136746', 'cues_trecho': 281, 'alass_mediana_ms': 20191, 'alass_p75_desvio_ms': 398, 'alass_p90_desvio_ms': 477}
+{'idx': 1, 'id': '6603128', 'cues_trecho': 279, 'alass_mediana_ms': 9477, 'alass_p75_desvio_ms': 0, 'alass_p90_desvio_ms': 0}
+{'idx': 2, 'id': '5844574', 'cues_trecho': 279, 'alass_mediana_ms': -144, 'alass_p75_desvio_ms': 0, 'alass_p90_desvio_ms': 0}
+{'idx': 3, 'id': '6177586', 'cues_trecho': 243, 'alass_mediana_ms': 233, 'alass_p75_desvio_ms': 0, 'alass_p90_desvio_ms': 0}
+{'idx': 4, 'id': '5814834', 'cues_trecho': 279, 'alass_mediana_ms': 477, 'alass_p75_desvio_ms': 0, 'alass_p90_desvio_ms': 0}
+{'idx': 5, 'id': '3134586', 'cues_trecho': 300, 'alass_mediana_ms': 335, 'alass_p75_desvio_ms': 0, 'alass_p90_desvio_ms': 0}
+mais3.srt PRE accepted=1 raw=-3047 scale=1.00000 z=11.7 wins=3/3 inSync=0 vad=silero-java ms=1879 margem=0.26 ncc=0.59 f1=0.76 blocos=9/9 desvioMax=26 motivo= janelas=[[275000, 90000], [710000, 90000], [1050000, 90000]]
+menos2.srt PRE accepted=1 raw=1970 scale=1.00000 z=11.7 wins=3/3 inSync=0 vad=silero-java ms=1845 margem=0.24 ncc=0.56 f1=0.75 blocos=9/9 desvioMax=29 motivo= janelas=[[270000, 90000], [705000, 90000], [1045000, 90000]]
+certa.srt PRE accepted=1 raw=-30 scale=1.00000 z=12.1 wins=3/3 inSync=1 vad=silero-java ms=1820 margem=0.24 ncc=0.56 f1=0.75 blocos=9/9 desvioMax=29 motivo= janelas=[[270000, 90000], [705000, 90000], [1045000, 90000]]
+pronto
+filme charade legendas PT: 6
+  descartado Charade1963 (título '')
+  descartado charade_1963 (título '')
+  descartado Charade_201705 (título '')
+  escolhido la35ca-Cinema_35_-_Charade_1963 / Cinema_35_-_Charade_1963.mp4 (734 MB, 7590 s)
++ curl -fL -sS --retry 6 --retry-delay 4 --retry-all-errors -C - -o media/_work/src_video https://archive.org/download/la35ca-Cinema_35_-_Charade_1963/Cinema_35_-_Charade_1963.mp4
+fonte: {'source': 'https://archive.org/download/la35ca-Cinema_35_-_Charade_1963/Cinema_35_-_Charade_1963.mp4', 'ia': 'la35ca-Cinema_35_-_Charade_1963', 'file': 'Cinema_35_-_Charade_1963.mp4', 'size': 733582201, 'length': 7590.09}
++ ffmpeg -nostdin -loglevel error -y -ss 0 -t 1200 -i media/_work/src_video -map 0:v:0 -map 0:a:0 -vf scale=640:-2 -r 24 -c:v libx264 -preset veryfast -crf 30 -c:a aac -b:a 96k -ac 2 media/clip.mkv
++ ffmpeg -nostdin -loglevel error -y -i media/clip.mkv -vn -ac 1 -ar 16000 -c:a pcm_s16le media/_work/audio16k.wav
+clip: 1200.1 s, 32671671 bytes
++ curl -fL -sS --retry 6 --retry-delay 4 --retry-all-errors -C - -o media/_work/alass https://github.com/kaegi/alass/releases/download/v2.0.0/alass-linux64
+candidatas PT: 6
+{'idx': 0, 'id': '3143477', 'cues_trecho': 216, 'alass_mediana_ms': 98237, 'alass_p75_desvio_ms': 17415, 'alass_p90_desvio_ms': 98246}
+{'idx': 1, 'id': '3736470', 'cues_trecho': 215, 'alass_mediana_ms': 91361, 'alass_p75_desvio_ms': 16181, 'alass_p90_desvio_ms': 64515}
+{'idx': 2, 'id': '3506133', 'cues_trecho': 213, 'alass_mediana_ms': 91499, 'alass_p75_desvio_ms': 16320, 'alass_p90_desvio_ms': 63676}
+{'idx': 3, 'id': '3416093', 'cues_trecho': 215, 'alass_mediana_ms': 99843, 'alass_p75_desvio_ms': 6618, 'alass_p90_desvio_ms': 98370}
+{'idx': 4, 'id': '4010478', 'cues_trecho': 195, 'alass_mediana_ms': 87672, 'alass_p75_desvio_ms': 4630, 'alass_p90_desvio_ms': 54192}
+{'idx': 5, 'id': '3968522', 'cues_trecho': 214, 'alass_mediana_ms': 90778, 'alass_p75_desvio_ms': 17220, 'alass_p90_desvio_ms': 64997}
+nenhuma legenda original confirmada pelo alass neste filme
+filme freaks legendas PT: 6
+  descartado Freaks1932 (título '')
+  descartado freaks_1932 (título '')
+  descartado LONCHANEYAThousandFaces (título 'LON CHANEY A Thousand Faces')
+  escolhido freaks-1932_202506 / FREAKS 1932.ia.mp4 (976 MB, 3704 s)
++ curl -fL -sS --retry 6 --retry-delay 4 --retry-all-errors -C - -o media/_work/src_video https://archive.org/download/freaks-1932_202506/FREAKS%201932.ia.mp4
+fonte: {'source': 'https://archive.org/download/freaks-1932_202506/FREAKS%201932.ia.mp4', 'ia': 'freaks-1932_202506', 'file': 'FREAKS 1932.ia.mp4', 'size': 976182377, 'length': 3704.4}
++ ffmpeg -nostdin -loglevel error -y -ss 0 -t 1200 -i media/_work/src_video -map 0:v:0 -map 0:a:0 -vf scale=640:-2 -r 24 -c:v libx264 -preset veryfast -crf 30 -c:a aac -b:a 96k -ac 2 media/clip.mkv
++ ffmpeg -nostdin -loglevel error -y -i media/clip.mkv -vn -ac 1 -ar 16000 -c:a pcm_s16le media/_work/audio16k.wav
+clip: 1200.1 s, 35615252 bytes
++ curl -fL -sS --retry 6 --retry-delay 4 --retry-all-errors -C - -o media/_work/alass https://github.com/kaegi/alass/releases/download/v2.0.0/alass-linux64
+candidatas PT: 6
+{'idx': 0, 'id': '3094428', 'cues_trecho': 210, 'alass_mediana_ms': -151110, 'alass_p75_desvio_ms': 0, 'alass_p90_desvio_ms': 6115}
+{'idx': 1, 'id': '5818572', 'cues_trecho': 250, 'alass_mediana_ms': 2465, 'alass_p75_desvio_ms': 19290, 'alass_p90_desvio_ms': 29198}
+{'idx': 2, 'id': '5904765', 'cues_trecho': 292, 'alass_mediana_ms': -21241, 'alass_p75_desvio_ms': 28187, 'alass_p90_desvio_ms': 28187}
+{'idx': 3, 'id': '3285304', 'cues_trecho': 206, 'alass_mediana_ms': -164699, 'alass_p75_desvio_ms': 0, 'alass_p90_desvio_ms': 14239}
+{'idx': 4, 'id': '12846886', 'cues_trecho': 243, 'alass_mediana_ms': -21388, 'alass_p75_desvio_ms': 0, 'alass_p90_desvio_ms': 28526}
+{'idx': 5, 'id': '3083555', 'cues_trecho': 210, 'alass_mediana_ms': -151110, 'alass_p75_desvio_ms': 0, 'alass_p90_desvio_ms': 6115}
+nenhuma legenda original confirmada pelo alass neste filme
+filme his_girl_friday legendas PT: 6
+  escolhido HisGirlFriday / MoviePowderPresentsHisGirlFriday_512kb.mp4 (384 MB, 5292 s)
++ curl -fL -sS --retry 6 --retry-delay 4 --retry-all-errors -C - -o media/_work/src_video https://archive.org/download/HisGirlFriday/MoviePowderPresentsHisGirlFriday_512kb.mp4
+fonte: {'source': 'https://archive.org/download/HisGirlFriday/MoviePowderPresentsHisGirlFriday_512kb.mp4', 'ia': 'HisGirlFriday', 'file': 'MoviePowderPresentsHisGirlFriday_512kb.mp4', 'size': 384258272, 'length': 5291.84}
++ ffmpeg -nostdin -loglevel error -y -ss 0 -t 1200 -i media/_work/src_video -map 0:v:0 -map 0:a:0 -vf scale=640:-2 -r 24 -c:v libx264 -preset veryfast -crf 30 -c:a aac -b:a 96k -ac 2 media/clip.mkv
++ ffmpeg -nostdin -loglevel error -y -i media/clip.mkv -vn -ac 1 -ar 16000 -c:a pcm_s16le media/_work/audio16k.wav
+clip: 1200.1 s, 61126047 bytes
++ curl -fL -sS --retry 6 --retry-delay 4 --retry-all-errors -C - -o media/_work/alass https://github.com/kaegi/alass/releases/download/v2.0.0/alass-linux64
+candidatas PT: 6
+{'idx': 0, 'id': '6890294', 'cues_trecho': 474, 'alass_mediana_ms': 11191, 'alass_p75_desvio_ms': 21925, 'alass_p90_desvio_ms': 26452}
+{'idx': 1, 'id': '3137376', 'cues_trecho': 420, 'alass_mediana_ms': 22394, 'alass_p75_desvio_ms': 23135, 'alass_p90_desvio_ms': 29899}
+{'idx': 2, 'id': '5822799', 'cues_trecho': 402, 'alass_mediana_ms': 12, 'alass_p75_desvio_ms': 0, 'alass_p90_desvio_ms': 0}
+{'idx': 3, 'id': '5702854', 'cues_trecho': 420, 'alass_mediana_ms': 22720, 'alass_p75_desvio_ms': 23068, 'alass_p90_desvio_ms': 29725}
+{'idx': 4, 'id': '8258557', 'cues_trecho': 417, 'alass_mediana_ms': 10918, 'alass_p75_desvio_ms': 22908, 'alass_p90_desvio_ms': 29423}
+{'idx': 5, 'id': '8499547', 'cues_trecho': 417, 'alass_mediana_ms': 10968, 'alass_p75_desvio_ms': 22900, 'alass_p90_desvio_ms': 29404}
+mais3.srt PRE accepted=0 raw=-2768 scale=1.00000 z=7.6 wins=3/3 inSync=0 vad=silero-java ms=1902 margem=0.23 ncc=0.34 f1=0.74 blocos=8/9 desvioMax=32 motivo=z_abaixo_do_limiar_de_aceitação_(9.0); janelas=[[60000, 90000], [400000, 90000], [990000, 90000]]
+menos2.srt PRE accepted=0 raw=2230 scale=1.00000 z=6.2 wins=3/3 inSync=0 vad=silero-java ms=1901 margem=0.20 ncc=0.29 f1=0.73 blocos=8/8 desvioMax=64 motivo=z_abaixo_do_limiar_de_aceitação_(9.0); janelas=[[55000, 90000], [395000, 90000], [990000, 90000]]
+certa.srt PRE accepted=0 raw=218 scale=1.00000 z=8.5 wins=3/3 inSync=0 vad=silero-java ms=1786 margem=0.24 ncc=0.34 f1=0.74 blocos=7/8 desvioMax=21 motivo=z_abaixo_do_limiar_de_aceitação_(9.0); janelas=[[45000, 90000], [385000, 90000], [890000, 90000]]
+o motor no PC nao aceita as deslocadas neste filme
+filme scarlet_street legendas PT: 6
+  descartado ScarletStreet1945 (título '')
+  descartado scarlet_street_1945 (título '')
+  escolhido Scarlet.Street.194517 / ScarletStreet1945.ogv (458 MB, 6142 s)
++ curl -fL -sS --retry 6 --retry-delay 4 --retry-all-errors -C - -o media/_work/src_video https://archive.org/download/Scarlet.Street.194517/ScarletStreet1945.ogv
+fonte: {'source': 'https://archive.org/download/Scarlet.Street.194517/ScarletStreet1945.ogv', 'ia': 'Scarlet.Street.194517', 'file': 'ScarletStreet1945.ogv', 'size': 458060283, 'length': 6141.74}
++ ffmpeg -nostdin -loglevel error -y -ss 0 -t 1200 -i media/_work/src_video -map 0:v:0 -map 0:a:0 -vf scale=640:-2 -r 24 -c:v libx264 -preset veryfast -crf 30 -c:a aac -b:a 96k -ac 2 media/clip.mkv
++ ffmpeg -nostdin -loglevel error -y -i media/clip.mkv -vn -ac 1 -ar 16000 -c:a pcm_s16le media/_work/audio16k.wav
+clip: 1200.0 s, 39670384 bytes
++ curl -fL -sS --retry 6 --retry-delay 4 --retry-all-errors -C - -o media/_work/alass https://github.com/kaegi/alass/releases/download/v2.0.0/alass-linux64
+candidatas PT: 6
+{'idx': 0, 'id': '3136746', 'cues_trecho': 281, 'alass_mediana_ms': 20191, 'alass_p75_desvio_ms': 398, 'alass_p90_desvio_ms': 477}
+{'idx': 1, 'id': '6603128', 'cues_trecho': 279, 'alass_mediana_ms': 9477, 'alass_p75_desvio_ms': 0, 'alass_p90_desvio_ms': 0}
+{'idx': 2, 'id': '5844574', 'cues_trecho': 279, 'alass_mediana_ms': -144, 'alass_p75_desvio_ms': 0, 'alass_p90_desvio_ms': 0}
+{'idx': 3, 'id': '6177586', 'cues_trecho': 243, 'alass_mediana_ms': 233, 'alass_p75_desvio_ms': 0, 'alass_p90_desvio_ms': 0}
+{'idx': 4, 'id': '5814834', 'cues_trecho': 279, 'alass_mediana_ms': 477, 'alass_p75_desvio_ms': 0, 'alass_p90_desvio_ms': 0}
+{'idx': 5, 'id': '3134586', 'cues_trecho': 300, 'alass_mediana_ms': 335, 'alass_p75_desvio_ms': 0, 'alass_p90_desvio_ms': 0}
+mais3.srt PRE accepted=1 raw=-3047 scale=1.00000 z=11.7 wins=3/3 inSync=0 vad=silero-java ms=1879 margem=0.26 ncc=0.59 f1=0.76 blocos=9/9 desvioMax=26 motivo= janelas=[[275000, 90000], [710000, 90000], [1050000, 90000]]
+menos2.srt PRE accepted=1 raw=1970 scale=1.00000 z=11.7 wins=3/3 inSync=0 vad=silero-java ms=1845 margem=0.24 ncc=0.56 f1=0.75 blocos=9/9 desvioMax=29 motivo= janelas=[[270000, 90000], [705000, 90000], [1045000, 90000]]
+certa.srt PRE accepted=1 raw=-30 scale=1.00000 z=12.1 wins=3/3 inSync=1 vad=silero-java ms=1820 margem=0.24 ncc=0.56 f1=0.75 blocos=9/9 desvioMax=29 motivo= janelas=[[270000, 90000], [705000, 90000], [1045000, 90000]]
+pronto
