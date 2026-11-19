@@ -26,6 +26,7 @@ jobs:
         include:
           - { nome: tv30-startup, modo: tv, api: 30, target: android-tv, profile: tv_1080p, ram: 2048M, hp: startup }
           - { nome: tv30-attach, modo: tv, api: 30, target: android-tv, profile: tv_1080p, ram: 2048M, hp: attach }
+          - { nome: tv30-vout, modo: tv, api: 30, target: android-tv, profile: tv_1080p, ram: 2048M, hp: none, extra: '--es gfVlcV 1 --es gfVlcOpt --vout=android_display' }
           - { nome: tv30-hw-vv, modo: tv, api: 30, target: android-tv, profile: tv_1080p, ram: 2048M, hp: none, extra: '--es gfVlcV 1 --es gfHw force' }
           - { nome: cel30-vv, modo: phone, api: 30, target: google_apis, profile: pixel_5, ram: 3072M, hp: none, extra: '--es gfVlcV 1' }
           - { nome: cel30-sw, modo: phone, api: 30, target: google_apis, profile: pixel_5, ram: 3072M, hp: none, extra: '--es gfVlcV 1 --es gfHw 0' }
@@ -47,7 +48,7 @@ jobs:
           # so no APK de teste (a copia de trabalho do CI, nada e commitado): depuravel, para o heapprofd e o run-as funcionarem nas imagens "user" do emulador de TV
           sed -i 's/android:largeHeap="true">/android:largeHeap="true" android:debuggable="true">/' android/app/src/main/AndroidManifest.xml
           grep -c 'android:debuggable="true"' android/app/src/main/AndroidManifest.xml
-          gradle -p android assembleRelease --no-daemon -q
+          gradle -p android assembleRelease -x lintVitalRelease --no-daemon -q
           cp android/app/build/outputs/apk/release/app-release.apk /tmp/teste.apk
           mkdir -p /tmp/libs && unzip -o -j /tmp/teste.apk 'lib/x86/*' -d /tmp/libs >/dev/null
           ls -la /tmp/libs

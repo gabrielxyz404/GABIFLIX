@@ -594,6 +594,9 @@ public class PlayerActivity extends Activity {
         options.add("--sub-text-scale=90");
         // só nos testes (diagnóstico de memória): log detalhado do libVLC (qual decodificador/saída de vídeo ele escolheu)
         if (getIntent().getStringExtra("gfVlcV") != null) options.add("-vv");
+        // só nos testes: opções extras do libVLC separadas por vírgula (por exemplo "--vout=android_display,--avcodec-threads=1"), para isolar a causa do crescimento de memória
+        String gOpt = getIntent().getStringExtra("gfVlcOpt");
+        if (gOpt != null) for (String o : gOpt.trim().split("[\\s,]+")) if (o.startsWith("-")) options.add(o);
         libVLC = new LibVLC(this, options);
         player = new MediaPlayer(libVLC);
         // na TV (Fire TV) o vídeo vai por TextureView: com SurfaceView a imagem ficava preta (só som)
