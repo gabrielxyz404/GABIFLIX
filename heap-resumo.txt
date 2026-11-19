@@ -1,0 +1,62 @@
+########                                                                  11.3%#######################################                                   54.4%######################################################################## 100.0%
+Downloading https://commondatastorage.googleapis.com/perfetto-luci-artifacts/v59.1/linux-amd64/trace_processor_shell
+== processos com amostras
+upid=132 pid=3203 io.github.gabrielxyz404.gabiflix: 6969 linhas, liquido=216.0 MB, 894 s de perfil
+
+== estatisticas do heapprofd / unwinding
+heapprofd_last_profile_timestamp = 1056148159199
+heapprofd_unwind_time_us = 281622008
+heapprofd_unwind_samples = 1777470
+
+== liquido acumulado por dump (todos os processos)
+t=    0 s  liquido acumulado=   165.3 MB   (neste intervalo: alocou 1059.6 MB, liberou 894.3 MB)
+t=   60 s  liquido acumulado=   168.4 MB   (neste intervalo: alocou 400.4 MB, liberou 397.3 MB)
+t=  120 s  liquido acumulado=   171.8 MB   (neste intervalo: alocou 390.4 MB, liberou 387.0 MB)
+t=  180 s  liquido acumulado=   175.9 MB   (neste intervalo: alocou 401.9 MB, liberou 397.8 MB)
+t=  240 s  liquido acumulado=   179.9 MB   (neste intervalo: alocou 398.5 MB, liberou 394.5 MB)
+t=  300 s  liquido acumulado=   182.9 MB   (neste intervalo: alocou 394.5 MB, liberou 391.5 MB)
+t=  360 s  liquido acumulado=   186.3 MB   (neste intervalo: alocou 396.8 MB, liberou 393.5 MB)
+t=  420 s  liquido acumulado=   189.7 MB   (neste intervalo: alocou 394.3 MB, liberou 390.9 MB)
+t=  480 s  liquido acumulado=   193.3 MB   (neste intervalo: alocou 391.7 MB, liberou 388.2 MB)
+t=  540 s  liquido acumulado=   197.2 MB   (neste intervalo: alocou 393.9 MB, liberou 389.9 MB)
+t=  600 s  liquido acumulado=   200.3 MB   (neste intervalo: alocou 396.1 MB, liberou 392.9 MB)
+t=  660 s  liquido acumulado=   203.3 MB   (neste intervalo: alocou 391.2 MB, liberou 388.3 MB)
+t=  720 s  liquido acumulado=   206.5 MB   (neste intervalo: alocou 395.0 MB, liberou 391.7 MB)
+t=  780 s  liquido acumulado=   209.8 MB   (neste intervalo: alocou 389.1 MB, liberou 385.8 MB)
+t=  840 s  liquido acumulado=   212.6 MB   (neste intervalo: alocou 395.6 MB, liberou 392.8 MB)
+t=  894 s  liquido acumulado=   216.0 MB   (neste intervalo: alocou 347.5 MB, liberou 344.0 MB)
+Traceback (most recent call last):
+  File "/home/runner/work/GABIFLIX/GABIFLIX/tools/bug-sweep/stress/heap_analyze.py", line 32, in <module>
+    for r in q("select f.id, f.name, f.rel_pc, m.name mname, m.build_id from stack_profile_frame f left join stack_profile_mapping m on f.mapping = m.id"):
+             ~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/work/GABIFLIX/GABIFLIX/tools/bug-sweep/stress/heap_analyze.py", line 13, in q
+    return list(tp.query(sql))
+                ~~~~~~~~^^^^^
+  File "/home/runner/.local/lib/python3.14/site-packages/perfetto/trace_processor/api.py", line 234, in query
+    response = self._backend.execute_query(sql)
+  File "/home/runner/.local/lib/python3.14/site-packages/perfetto/trace_processor/http.py", line 40, in execute_query
+    result.ParseFromString(f.read())
+    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^
+  File "/usr/lib/python3/dist-packages/google/protobuf/message.py", line 202, in ParseFromString
+    return self.MergeFromString(serialized)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+  File "/usr/lib/python3/dist-packages/google/protobuf/internal/python_message.py", line 1128, in MergeFromString
+    if self._InternalParse(serialized, 0, length) != length:
+       ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3/dist-packages/google/protobuf/internal/python_message.py", line 1196, in InternalParse
+    pos = field_decoder(
+        buffer, new_pos, end, self, field_dict, current_depth
+    )
+  File "/usr/lib/python3/dist-packages/google/protobuf/internal/decoder.py", line 764, in DecodeRepeatedField
+    value.add()._InternalParse(buffer, pos, new_pos, current_depth)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3/dist-packages/google/protobuf/internal/python_message.py", line 1196, in InternalParse
+    pos = field_decoder(
+        buffer, new_pos, end, self, field_dict, current_depth
+    )
+  File "/usr/lib/python3/dist-packages/google/protobuf/internal/decoder.py", line 619, in DecodeField
+    field_dict[key] = _ConvertToUnicode(buffer[pos:new_pos])
+                      ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3/dist-packages/google/protobuf/internal/decoder.py", line 575, in _ConvertToUnicode
+    value = str(byte_str, 'utf-8')
+UnicodeDecodeError: 'utf-8' codec can't decode byte 0xde in position 106597: 'utf-8' codec can't decode byte 0xde in position 106597: invalid continuation byte in field: perfetto.protos.QueryResult.CellsBatch.string_cells
