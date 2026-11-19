@@ -29,15 +29,30 @@ NEW_CURATED = [
     ("Wing It!", 2023, "Wing It Blender", None), ("Big Buck Bunny", 2008, "Big Buck Bunny", "tt1254207"), ("Caminandes 3: Llamigos", 2016, "Caminandes Llamigos", None),
     ("Sita Sings the Blues", 2008, "Sita Sings the Blues", "tt1172991"), ("Valkaama", 2010, "Valkaama", None), ("Star Wreck: In the Pirkinning", 2005, "Star Wreck Pirkinning", "tt0449994"),
     ("The Internet's Own Boy", 2014, "The Internet's Own Boy", "tt3268458"), ("RiP: A Remix Manifesto", 2008, "RiP A Remix Manifesto", "tt1138527"),
-    ("Pioneer One", 2010, "Pioneer One", None),
+    ("Pioneer One", 2010, "Pioneer One", None), ("Steal This Film", 2006, "Steal This Film", None), ("TPB AFK: The Pirate Bay Away From Keyboard", 2013, "TPB AFK Pirate Bay Away From Keyboard", None),
+    ("BBS: The Documentary", 2005, "BBS The Documentary", None), ("Terms and Conditions May Apply", 2013, "Terms and Conditions May Apply", None),
 ]
 
-NOT_FILM = re.compile(r"\b(lecture|lectures|course|opencourseware|tutorial|webinar|conference|symposium|workshop|class|seminar|keynote|podcast|livestream|gameplay|walkthrough|trailer|clip|compilation)\b", re.I)
+NOT_FILM = re.compile(r"\b(lecture|lectures|course|opencourseware|tutorial|webinar|conference|symposium|workshop|seminar|keynote|podcast|livestream|gameplay|walkthrough|trailer|compilation|b-?roll|raw footage|raw video|time-?lapse)\b", re.I)
+# o IA aceita qualquer licenca marcada pelo enviante (apareceram filmes comerciais como "CC"): para o material novo so entram a lista curada (verificada por titulo/criador)
+# e os videos da NASA/governo dos EUA (obra do governo federal = dominio publico)
 NEW_QUERIES = [
-    ("cc-srt", "mediatype:movies AND format:SubRip AND year:[2003 TO 2025] AND (licenseurl:*creativecommons* OR licenseurl:*publicdomain*) AND -creator:(MIT OpenCourseWare)"),
-    ("cc-vtt", "mediatype:movies AND format:WebVTT AND year:[2003 TO 2025] AND (licenseurl:*creativecommons* OR licenseurl:*publicdomain*) AND -creator:(MIT OpenCourseWare)"),
     ("nasa", "mediatype:movies AND (format:SubRip OR format:WebVTT) AND collection:nasa AND year:[2000 TO 2025]"),
 ]
+GOV_CREATORS = re.compile(r"nasa|national aeronautics|national institute of aerospace|jsc|johnson space|marshall space|goddard|jet propulsion|nist|noaa|usgs", re.I)
+FREE_LIC = re.compile(r"publicdomain|/zero/|/by/|/by-sa/|/by-nc/|/by-nc-sa/|/by-nd/|/by-nc-nd/", re.I)
+PD_LIC = re.compile(r"publicdomain|/zero/", re.I)
+BLOCK_TV = re.compile(r"bonanza|outer limits|monty python|family matters|adam.?12|on the buses|star trek|twilight zone|i love lucy|gunsmoke|simpsons|seinfeld|friends|cheers|m\*a\*s\*h|get smart|green acres|beverly hillbillies|andy griffith|dick van dyke|brady bunch|happy days|taxi|sanford|all in the family|three.?s company|love boat|dallas|dynasty|columbo|kojak|rockford|wonder woman|hulk|doctor who|dr\.? who|benny hill|fawlty|steptoe|dad.?s army|lost in space|batman|munsters|addams|gilligan|bewitched|jeannie|mission impossible|hogan|mash", re.I)
+
+
+def legal_basis(lic, year, kind):
+    """base legal declarada p/ usar o titulo: licenca livre/PD marcada no item OU (antigos) obra de 1927-1963 numa colecao de dominio publico do IA (renovacao de direitos nao verificada titulo a titulo)"""
+    if lic and PD_LIC.search(lic):
+        return "licenca no item: " + lic
+    if kind in ("old", "old-tv") and year and year <= 1963:
+        return "antes de 1964 em colecao de dominio publico do IA (sem licenca declarada no item; renovacao nao verificada)"
+    return None
+
 
 DECADE_SHARE = {1920: 0.04, 1930: 0.15, 1940: 0.26, 1950: 0.26, 1960: 0.20, 1970: 0.09}
 FL = ("identifier", "title", "year", "downloads", "runtime", "licenseurl", "creator", "date")
@@ -292,17 +307,26 @@ def resolve_old(d):
     feat = [s for s in stems if s["length"] >= 40 * 60]
     if not feat:
         return None, "nenhum arquivo >= 40 min"
+    basis = legal_basis(meta.get("license", ""), year, "old")
+    if not basis:
+        return None, "sem base legal clara (1964+ sem licenca PD)"
     if not subs:
         return None, "sem legenda"
     e = base_entry(ident, title, year, "old", None, meta, subs, imdb=imdb)
     e["media"] = feat[0]
+    e["legal"] = basis
     return e, "ok"
 
 
 def resolve_tv(d):
     """item de classic_tv -> lista de entradas (episodios) ou ([], motivo)"""
     ident, title = d["identifier"], first(d.get("title")) or d["identifier"]
+    if BLOCK_TV.search(title) or BLOCK_TV.search(ident):
+        return [], "serie comercial conhecida (fora)"
     stems, isubs, meta = ia_item(ident)
+    basis = legal_basis(meta.get("license", ""), year_of(d), "old-tv")
+    if not basis:
+        return [], "sem base legal clara (TV sem licenca PD e sem ano <= 1963)"
     eps = [s for s in stems if 8 * 60 <= s["length"] <= 100 * 60]
     if not eps:
         return [], "sem episodio de 8-100 min"
@@ -324,6 +348,7 @@ def resolve_tv(d):
             continue
         e = base_entry(ident, title, year_of(d), "old-tv", s["stem"], meta, subs, imdb=imdb, series={"name": sname, "season": se[0] if se else None, "episode": se[1] if se else None})
         e["media"] = s
+        e["legal"] = basis
         out.append(e)
         if len(out) >= 2:
             break
@@ -342,13 +367,13 @@ def resolve_new_ia(d, tag):
     stems, isubs, meta = ia_item(ident)
     if not stems:
         return None, "sem derivado de video"
-    lic = meta.get("license", "")
-    if not ("creativecommons" in lic or "publicdomain" in lic or tag == "nasa"):
-        return None, "licenca nao livre"
+    if not GOV_CREATORS.search(first(d.get("creator")) + " " + ident):
+        return None, "nao e obra do governo dos EUA"
     if not isubs:
         return None, "sem legenda"
     e = base_entry(ident, title, year_of(d), "new", None, meta, isubs, tag=tag)
     e["media"] = stems[0]
+    e["legal"] = "obra do governo federal dos EUA (NASA): dominio publico"
     return e, "ok"
 
 
@@ -394,7 +419,11 @@ def resolve_curated(item):
         subs = commons_subs(title)
     if not subs:
         return None, "sem legenda"
+    lic = meta.get("license", "")
+    if not FREE_LIC.search(lic):
+        return None, "item sem licenca livre declarada (%s)" % lic[:40]
     e = base_entry(d["identifier"], title, year, "new", None, meta, subs, imdb=imdb, tag="curado")
+    e["legal"] = "licenca no item: " + lic
     e["id"] = slugify(title)
     e["media"] = stems[0]
     return e, "ok"
@@ -499,6 +528,20 @@ def main():
         rnd.shuffle(lst)
         return lst[:n]
 
+    def dedupe(lst):
+        seen, out = set(), []
+        for e in lst:
+            k = (slugify(clean_title(e["title"])), e.get("year"), e["kind"], (e.get("series") or {}).get("episode"))
+            if e["kind"] == "old-tv":
+                k = (e["id"],)
+            if k in seen:
+                continue
+            seen.add(k)
+            out.append(e)
+        return out
+
+    for k in results:
+        results[k] = dedupe(results[k])
     sel_old = []
     bd = {}
     for e in results["old"]:
