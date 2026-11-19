@@ -48,7 +48,7 @@ public class PreCheck {
                 r = AudioSyncSession.analyze(cues, dur, 6, 90000, (st, ln, i, total) -> analisa(vv, pc, new long[]{st, ln}), P, true, 3, used);
                 StringBuilder js = new StringBuilder();
                 for (Window w : used[0]) js.append("[").append(w.startMs).append("],");
-                System.out.printf(Locale.ROOT, "SPREAD accepted=%d scale=%.6f raw=%.0f drift=%d confiaveis=%d janelas=%d inSync=%d z=%.1f res=%.0f unitRes=%.0f at=%s%n", r.accepted ? 1 : 0, r.scale, r.rawOffsetMs, r.driftScale ? 1 : 0, r.driftConfident, used[0].length, r.inSync ? 1 : 0, r.z, r.driftResMs, r.unitResMs, js);
+                System.out.printf(Locale.ROOT, "SPREAD accepted=%d scale=%.6f raw=%.0f drift=%d confiaveis=%d janelas=%d inSync=%d z=%.1f res=%.0f unitRes=%.0f planB=%d consenso=%d motivo=%s at=%s%n", r.accepted ? 1 : 0, r.scale, r.rawOffsetMs, r.driftScale ? 1 : 0, r.driftConfident, used[0].length, r.inSync ? 1 : 0, r.z, r.driftResMs, r.unitResMs, r.planB ? 1 : 0, r.winConsensus ? 1 : 0, r.reason.trim().replace(' ', '_'), js);
                 return;
             }
             for (long[] w : plan) ses.addWindow(analisa(v, pcm, w));
