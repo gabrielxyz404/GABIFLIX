@@ -488,6 +488,8 @@ public class PlayerActivity extends Activity {
         metaType = getIntent().getStringExtra(EXTRA_TYPE);
         metaId = getIntent().getStringExtra(EXTRA_ID);
         startMs = getIntent().getLongExtra(EXTRA_START, 0);
+        // o sistema matou o processo com o filme em segundo plano: volta de onde estava (o ponto do Intent é o de quando abriu)
+        if (savedInstanceState != null && savedInstanceState.getLong("gfPos", 0) > 0) startMs = savedInstanceState.getLong("gfPos");
         titleText = getIntent().getStringExtra(EXTRA_TITLE);
         getSharedPreferences(LAST_PREFS, MODE_PRIVATE).edit().clear().apply();
         if (url == null) { finish(); return; }
@@ -699,6 +701,12 @@ public class PlayerActivity extends Activity {
             default:
                 break;
         }
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle out) {
+        super.onSaveInstanceState(out);
+        try { if (player != null && !ended) { long t = player.getTime(); if (t > 0) out.putLong("gfPos", t); } } catch (Throwable ignored) {}
     }
 
     // ---------- continuar de onde parou ----------

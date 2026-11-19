@@ -149,6 +149,8 @@ public class MainActivity extends Activity {
             if (scheme.equals("intent")) i = Intent.parseUri(url, Intent.URI_INTENT_SCHEME);
             else i = new Intent(Intent.ACTION_VIEW, uri);
             i.addCategory(Intent.CATEGORY_BROWSABLE);
+            i.setComponent(null);   // link de página não escolhe a Activity (nem de outro app, nem nossa)
+            i.setSelector(null);
             startActivity(i);
         } catch (Exception e) {
             // sem app para abrir: ignora
