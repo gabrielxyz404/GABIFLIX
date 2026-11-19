@@ -1,0 +1,56 @@
+         1795106643.462  5080  5080 E VLC     : [e6841c60/13d8] libvlc audio output: GetStaticFieldID(AudioFormat.ENCODING_PCM_32BIT) failed
+         1795106643.490  5080  5114 I GabiFlixPlayer: hash=c5b0d9c536a60ca2 tamanho=790315179 arquivo=film.mkv
+         1795106643.490  5080  5114 I GabiFlixPlayer: Hash calculado, mas a busca de legendas falhou
+         1795106643.490  5080  5114 I GabiFlixPlayer: candidatas para baixar: 1 (do site: 1)
+         1795106643.537  5080  5114 I GabiFlixPlayer: legendas PT válidas: 1 de 1; referências baixadas: 0
+         1795106643.540  5080  5114 I GabiFlixPlayer: alinhamento com 0 referência(s):
+         1795106643.540  5080  5114 I GabiFlixPlayer:   sem referência (nem outro idioma, nem PT do hash) e menos de 2 PT para comparar: ranking antigo
+         1795106643.540  5080  5114 I GabiFlixPlayer:   alinhadas: 0
+         1795106643.692  5080  5123 E VLC     : [e6841c60/1403] libvlc audio output: too low audio sample frequency (0)
+         1795106643.692  5080  5123 E VLC     : [eca85440/1403] libvlc decoder: failed to create audio output
+         1795106643.696  5080  5131 E VLC     : [e6841c60/140b] libvlc audio output: module not functional
+         1795106643.696  5080  5131 E VLC     : [eca85440/140b] libvlc decoder: failed to create audio output
+         1795106643.710  5080  5134 E VLC     : [ecd344b0/140e] libvlc window: request 1 not implemented
+         1795106643.953  5080  5134 E VLC     : [ecd344b0/140e] libvlc window: request 0 not implemented
+         1795106643.953  5080  5134 E VLC     : [ecd344b0/140e] libvlc window: request 0 not implemented
+         1795106643.978  5080  5134 E VLC     : [ecd344b0/140e] libvlc window: request 1 not implemented
+         1795106643.991  5080  5080 I GabiFlixPlayer: vistas do vídeo: TextureView(vídeo)
+         1795106643.992  5080  5080 I GabiFlixPlayer: AUDIOSYNC pronto (sem limite de dados; automático=true, começa 5 s depois de a legenda ficar ativa, reverifica a cada 600 s)
+         1795106644.359  5080  5134 E VLC     : [ecd344b0/140e] libvlc window: request 1 not implemented
+         1795106644.736  5080  5134 E VLC     : [ecd344b0/140e] libvlc window: request 3 not implemented
+         1795106644.996  5080  5080 I GabiFlixPlayer: AUDIOSYNC estado: st=0 executando=false tocando=true carregando=false faixa=-1 baixadas=0 addedSubs=0 embeddedKnown=false faixas=[] cand=false
+         1795106645.363  5080  5080 I GabiFlixPlayer: legenda PT embutida: não há
+         1795106645.363  5080  5080 I GabiFlixPlayer: ranking das legendas:
+         1795106645.363  5080  5080 I GabiFlixPlayer:   referência de fim=0ms (sem referência), duração=720000ms
+         1795106645.363  5080  5080 I GabiFlixPlayer:   #0 fim=705471ms hash=false corrigida=false nota=0.0448
+         1795106645.364  5080  5080 I GabiFlixPlayer: escolhida: candidata #0; melhor baixada: #0 alinhada=false nota=0.00 deslocamento=0ms hash=false corrigida=false; 1 no menu
+         1795106645.364  5080  5080 I GabiFlixPlayer: atraso da legenda ativa (nenhuma): 0 ms
+         1795106645.998  5080  5080 I GabiFlixPlayer: AUDIOSYNC legenda ativa: d3:u|h:c5b0d9c536a60ca2|http://10.0.2.2:8000/film.srt#raw
+         1795106646.874  5080  5080 I GabiFlixPlayer: atraso da legenda ativa (d3:u|h:c5b0d9c536a60ca2|http://10.0.2.2:8000/film.srt#raw): 0 ms
+         1795106651.229  5080  5080 I GabiFlixPlayer: AUDIOSYNC antes da análise: saúde da reprodução: amostras=6 paradas=0 razão_mínima=0.94 carregando=0 quadros_perdidos=20
+         1795106651.230  5080  5080 I GabiFlixPlayer: AUDIOSYNC começando: posição 7 s, duração 720 s, atraso atual 0 ms, faixa de áudio 1
+         1795106652.479  5080  5152 E VLC     : [ecb8a860/1420] libvlc mux: cannot add this stream
+         1795106652.479  5080  5152 E VLC     : [eca8b560/1420] libvlc decoder: cannot create packetizer output (h264)
+         1795106652.593  5080  5149 E VLC     : [eca8b560/141d] libvlc decoder: buffer deadlock prevented
+         1795106652.644  5080  5154 E VLC     : [ecb8a860/1422] libvlc mux: cannot add this stream
+         1795106652.644  5080  5154 E VLC     : [eca8b2c0/1422] libvlc decoder: cannot continue streaming due to errors with codec a52 
+         1795106665.412  5080  5080 I GabiFlixPlayer: AUDIOSYNC estado: st=0 executando=true tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/1](baixada); ] cand=true
+         1795106666.103  5080  5147 I GabiFlixPlayer: AUDIOSYNC captura 63 s +90 s: 90.08 s de PCM em 14.35 s (fim) leitura=98 MB | usou a faixa 2 (pedida 1) de [1:Track 1; 2:Track 2; ]
+         1795106669.087  5080  5188 E VLC     : [aa600fe0/1444] libvlc mux: cannot add this stream
+         1795106669.087  5080  5188 E VLC     : [eca9ac20/1444] libvlc decoder: cannot create packetizer output (h264)
+         1795106669.179  5080  5186 E VLC     : [eca9ac20/1442] libvlc decoder: buffer deadlock prevented
+         1795106669.180  5080  5190 E VLC     : [aa600fe0/1446] libvlc mux: cannot add this stream
+         1795106669.180  5080  5190 E VLC     : [eca9b400/1446] libvlc decoder: cannot continue streaming due to errors with codec a52 
+         1795106682.573  5080  5147 I GabiFlixPlayer: AUDIOSYNC captura 315 s +90 s: 90.08 s de PCM em 13.58 s (fim) leitura=99 MB | usou a faixa 2 (pedida 1) de [1:Track 1; 2:Track 2; ]
+         1795106685.576  5080  5080 I GabiFlixPlayer: AUDIOSYNC estado: st=0 executando=true tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/1](baixada); ] cand=true
+         1795106685.786  5080  5225 E VLC     : [aa600d60/1469] libvlc mux: cannot add this stream
+         1795106685.786  5080  5225 E VLC     : [eca991e0/1469] libvlc decoder: cannot create packetizer output (h264)
+         1795106685.846  5080  5223 E VLC     : [eca991e0/1467] libvlc decoder: buffer deadlock prevented
+         1795106685.849  5080  5227 E VLC     : [aa600d60/146b] libvlc mux: cannot add this stream
+         1795106685.849  5080  5227 E VLC     : [eca98220/146b] libvlc decoder: cannot continue streaming due to errors with codec a52 
+         1795106698.855  5080  5147 I GabiFlixPlayer: AUDIOSYNC captura 567 s +90 s: 90.08 s de PCM em 13.92 s (fim) leitura=103 MB | usou a faixa 2 (pedida 1) de [1:Track 1; 2:Track 2; ]
+         1795106702.170  5080  5080 I GabiFlixPlayer: AUDIOSYNC resultado: recusada z=4.2 janelas=3/3 (z baixo; pico ambíguo;) | vad=silero janelas=3 captura=49999 ms vad=6124 ms (cpu 1995) solve=814 ms (cpu 215) cpu_thread=2258 ms total=50868 ms leitura_estimada=282 MB leitura_real=301 MB pss=173->218 MB java=5->17 MB
+         1795106702.170  5080  5080 I GabiFlixPlayer: AUDIOSYNC saúde da reprodução: amostras=50 paradas=0 razão_mínima=0.77 carregando=0 quadros_perdidos=44
+         1795106702.170  5080  5080 I GabiFlixPlayer: AUDIOSYNC o áudio não tem certeza: legenda deixada como estava
+         1795106705.780  5080  5080 I GabiFlixPlayer: AUDIOSYNC estado: st=3 executando=false tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/1](baixada); ] cand=true
+         1795106725.968  5080  5080 I GabiFlixPlayer: AUDIOSYNC estado: st=3 executando=false tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/1](baixada); ] cand=true
