@@ -25,7 +25,8 @@ mainpid() { adb shell pidof $PKG | tr -d '\r' | awk '{print $1}'; }
 harvest() {
   adb logcat -d 2>/dev/null > /tmp/lc.txt
   grep -E "GabiFlixPlayer|AUDIOSYNC|ESTADO" /tmp/lc.txt >> $OUT/log-all.txt
-  grep -E "FATAL EXCEPTION|Fatal signal|ANR in|am_crash|am_anr|has died" /tmp/lc.txt | grep -v "adbd" >> $OUT/fatal.txt
+  # so o que e do app: queda/ANR dele, ou a morte do processo principal (a do :audiocap, que acaba ao fim da analise, e normal; as dos apps do sistema nao contam)
+  grep -E "FATAL EXCEPTION|Fatal signal|ANR in io.github|am_crash|am_anr|Process io.github.gabrielxyz404.gabiflix \(pid [0-9]+\) has died" /tmp/lc.txt | grep -v "audiocap" >> $OUT/fatal.txt
   adb logcat -c
 }
 tell() { adb shell am broadcast -a io.github.gabrielxyz404.gabiflix.TEST --es cmd "$1" --es val "${2:-0}" >/dev/null 2>&1; }
@@ -41,6 +42,7 @@ black_check() {  # $1 = nome do passo; passa se o meio da tela tem imagem
   for i in 1 2 3 4; do
     v=$(adb exec-out screencap 2>/dev/null | python3 -I $HERE/pixels.py)
     awk "BEGIN{exit !(${v%% *} >= 0.30)}" && { ok "$1" "video com imagem ($v)"; return 0; }
+    [ $i = 1 ] && snap "preto-$1-a"
     sleep 2
   done
   snap "preto-$1"; fail "$1" "VIDEO PRETO ($v)"; return 1
@@ -81,6 +83,10 @@ open_film() {  # $1 = arquivo do filme, $2 = numero (id do filme no celular)
 volta() {  # traz o player de volta (como o seletor de apps)
   local i
   for i in 1 2 3; do adb shell am start -n $PKG/.PlayerActivity -f 0x20000 >/dev/null 2>&1; sleep 2; resumed | grep -q PlayerActivity && return 0; done
+  # a TV nem sempre traz o player por esse caminho: o icone do app (leanback) traz a tarefa de volta
+  echo "AVISO   volta: am start nao trouxe o player ($(resumed)); tenta o icone" >> $R
+  if [ $MODE = tv ]; then adb shell monkey -p $PKG -c android.intent.category.LEANBACK_LAUNCHER 1 >/dev/null 2>&1; else adb shell monkey -p $PKG -c android.intent.category.LAUNCHER 1 >/dev/null 2>&1; fi
+  sleep 4; resumed | grep -q PlayerActivity && return 0
   return 1
 }
 
@@ -145,6 +151,7 @@ fi
 tell seek 420; sleep 5; estado >/dev/null; TP=$(field tempo); PIDA=$(mainpid)
 adb shell input keyevent KEYCODE_HOME; sleep 4
 adb shell am kill $PKG; sleep 2
+harvest; FATAL_SEEN=$(wc -l < $OUT/fatal.txt)   # a morte do processo e de proposito
 if [ -z "$(mainpid)" ] || [ "$(mainpid)" != "$PIDA" ]; then
   PID0=""
   volta; sleep 15; PID0=$(mainpid)
@@ -173,7 +180,7 @@ while [ $(date +%s) -lt $END ]; do
   sleep 30
   MS=$(mem_sample play); k=$((k+1))
   if [ $((k % 4)) = 0 ]; then { estado; echo "  pss=${MS}k"; } >> $R; fi
-  alive_check "10-play-$k" || break
+  alive_check "10-play-$k" || { resumed | grep -q PlayerActivity || break; }
   if [ $(date +%s) -ge $nextblack ]; then black_check "10-play-video-$k"; sub_check "10-play-legenda-$k"; nextblack=$(( $(date +%s) + 300 )); fi
 done
 if alive_check "10-play-fim"; then sub_check "10-play-fim-legenda"; black_check "10-play-fim-video"; fi
