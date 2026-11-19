@@ -1,0 +1,63 @@
+OK      01-abre player aberto, pid 3236
+OK      01-legenda-inicial legenda visivel (tempo 20484, faixa 3)
+OK      01-video video com imagem (1.000 1920x1080)
+OK      02-seek-1-630 legenda visivel (tempo 670197, faixa 3)
+OK      02-seek-1-630 video com imagem (1.000 1920x1080)
+FALHOU  02-seek-2-30 queda/ANR no log: 11-19 16:57:22.379   472  1224 I ActivityManager: Process com.google.android.gms.persistent (pid 1046) has died: fg  FGS |11-19 16:57:22.709   472  1162 I ActivityManager: Process com.google.android.gms (pid 1274) has died: fg  BFGS|
+FALHOU  02-seek-3-600 queda/ANR no log: 11-19 16:57:22.709   472  1162 I ActivityManager: Process com.google.android.gms (pid 1274) has died: fg  BFGS|11-19 16:57:57.624   472  1226 I ActivityManager: Process io.github.gabrielxyz404.gabiflix:audiocap (pid 3885) has died: cch+5 CEM |
+FALHOU  02-seek-4-25 queda/ANR no log: 11-19 16:57:57.624   472  1226 I ActivityManager: Process io.github.gabrielxyz404.gabiflix:audiocap (pid 3885) has died: cch+5 CEM |11-19 16:57:57.624   472  1226 I ActivityManager: Process io.github.gabrielxyz404.gabiflix:audiocap (pid 3885) has died: cch+5 CEM |
+OK      02-seek-5-560 legenda visivel (tempo 564228, faixa 3)
+OK      02-seek-5-560 video com imagem (1.000 1920x1080)
+OK      02-seek-6-40 legenda visivel (tempo 49426, faixa 3)
+OK      02-seek-6-40 video com imagem (1.000 1920x1080)
+OK      02-seek-7-610 legenda visivel (tempo 619033, faixa 3)
+OK      02-seek-7-610 video com imagem (1.000 1920x1080)
+OK      02-seek-8-20 legenda visivel (tempo 29798, faixa 3)
+OK      02-seek-8-20 video com imagem (1.000 1920x1080)
+OK      03-tela-1 legenda visivel (tempo 41697, faixa 3)
+OK      03-tela-1 video com imagem (1.000 1920x1080)
+OK      03-tela-0 legenda visivel (tempo 51784, faixa 3)
+OK      03-tela-0 video com imagem (1.000 1920x1080)
+OK      03-tela-1 legenda visivel (tempo 61028, faixa 3)
+OK      03-tela-1 video com imagem (1.000 1920x1080)
+OK      03-tela-0 legenda visivel (tempo 70308, faixa 3)
+OK      03-tela-0 video com imagem (1.000 1920x1080)
+OK      03-preencher-com-seek legenda visivel (tempo 305488, faixa 3)
+OK      03-preencher-com-seek video com imagem (1.000 1920x1080)
+OK      04-faixa-legenda-1 legenda visivel (tempo 323399, faixa 3)
+OK      04-faixa-legenda-2 legenda visivel (tempo 333444, faixa 3)
+OK      05-faixa-audio-1 legenda visivel (tempo 346052, faixa 3)
+OK      05-faixa-audio-1 video com imagem (1.000 1920x1080)
+OK      05-faixa-audio-2 legenda visivel (tempo 365947, faixa 3)
+OK      05-faixa-audio-2 video com imagem (1.000 1920x1080)
+OK      05-faixa-audio-3 legenda visivel (tempo 375334, faixa 3)
+OK      05-faixa-audio-3 video com imagem (1.000 1920x1080)
+FALHOU  06-casa-1 nao voltou ao player:     mResumedActivity: ActivityRecord{7bed829 u0 com.google.android.tvlauncher/.MainActivity t4}
+FALHOU  06-casa-volta-1 saiu do player:     mResumedActivity: ActivityRecord{7bed829 u0 com.google.android.tvlauncher/.MainActivity t4}
+OK      06-casa-volta-1-tempo o filme andou (377900 -> 380516)
+FALHOU  06-casa-2 nao voltou ao player:     mResumedActivity: ActivityRecord{7bed829 u0 com.google.android.tvlauncher/.MainActivity t4}
+FALHOU  06-casa-volta-2 saiu do player:     mResumedActivity: ActivityRecord{7bed829 u0 com.google.android.tvlauncher/.MainActivity t4}
+FALHOU  06-casa-volta-2-tempo o filme nao andou (380516 -> 380516)
+FALHOU  06-casa-3 nao voltou ao player:     mResumedActivity: ActivityRecord{7bed829 u0 com.google.android.tvlauncher/.MainActivity t4}
+FALHOU  06-casa-volta-3 saiu do player:     mResumedActivity: ActivityRecord{7bed829 u0 com.google.android.tvlauncher/.MainActivity t4}
+FALHOU  06-casa-volta-3-tempo o filme nao andou (380516 -> 380516)
+FALHOU  06-casa-4 nao voltou ao player:     mResumedActivity: ActivityRecord{7bed829 u0 com.google.android.tvlauncher/.MainActivity t4}
+FALHOU  06-casa-volta-4 saiu do player:     mResumedActivity: ActivityRecord{7bed829 u0 com.google.android.tvlauncher/.MainActivity t4}
+FALHOU  06-casa-volta-4-tempo o filme nao andou (380516 -> 380516)
+FALHOU  06-casa-5 nao voltou ao player:     mResumedActivity: ActivityRecord{7bed829 u0 com.google.android.tvlauncher/.MainActivity t4}
+FALHOU  06-casa-volta-5 saiu do player:     mResumedActivity: ActivityRecord{7bed829 u0 com.google.android.tvlauncher/.MainActivity t4}
+FALHOU  06-casa-volta-5-tempo o filme nao andou (380516 -> 380516)
+AVISO   08 sem a linha de restauracao no log (o sistema pode ter recriado sem estado)
+FALHOU  08-morte-processo-ponto VOLTOU DO COMECO ou sem filme: antes 420000 ms, depois '' ()
+FALHOU  08-morte-processo-legenda SEM LEGENDA em 30 s: 
+FALHOU  08-morte-processo-video VIDEO PRETO (0.284 1920x1080)
+back:     mResumedActivity: ActivityRecord{7bed829 u0 com.google.android.tvlauncher/.MainActivity t4}
+OK      09-outro-legenda legenda visivel (tempo 397636, faixa 3)
+OK      09-outro-video video com imagem (1.000 1920x1080)
+OK      10-play-inicio legenda visivel (tempo 28516, faixa 3)
+FALHOU  10-play-1 queda/ANR no log: 11-19 17:06:17.713   472  3147 I ActivityManager: Process com.google.android.katniss:search (pid 1998) has died: cch+25 CEM |11-19 17:06:17.940   472  1254 I ActivityManager: Process com.google.android.katniss:interactor (pid 1142) has died: vis BFGS|
+OK      10-play-fim-legenda legenda visivel (tempo 155173, faixa 3)
+OK      10-play-fim-video video com imagem (1.000 1920x1080)
+MEMORIA pss do app: inicio=176 MB, depois do aquecimento=184 MB, fim=175 MB; crescimento na reproducao continua=-9 MB; desde o inicio=-1 MB
+OK      11-memoria crescimento -9 MB (limite 50)
+FALHAS=21
