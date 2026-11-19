@@ -919,6 +919,10 @@ public final class AudioAligner {
         // família 1,001: só com a prova de deriva (driftCheck); um valor assim sem prova é ruído de ajuste
         boolean nearUnit = !R.driftScale && Math.abs(R.scale - 1.0) > 1e-9 && Math.abs(R.scale - 1.0) < P.nearUnitEps;
         if (nearUnit) ok = false;
+        // escala 1,0 aceita, mas as janelas confiáveis não ficam numa reta de atraso constante (resíduo acima de driftSafeResMs): é um ajuste inseguro (a legenda
+        // tem uma deriva pequena que o deslocamento único não cobre): recusa em vez de aplicar uma legenda ~0,5 s fora
+        boolean unsafeRes = !P.legacy && !R.driftScale && Math.abs(R.scale - 1.0) < 1e-9 && R.driftConfident >= 3 && R.unitResMs > P.driftSafeResMs;
+        if (unsafeRes) ok = false;
         boolean gateDev = P.gateWinDevMs > 0 && R.winsValid >= 2
                 && (P.legacy ? R.winMaxDev > P.gateWinDevMs : R.driftScale ? R.winMaxDev > P.driftGateDevMs : !R.winConsensus);
         boolean gateWin = P.gateMinWinsAgree > 0 && R.winsAgree < P.gateMinWinsAgree;
@@ -936,6 +940,7 @@ public final class AudioAligner {
             if (R.f1 < P.minF1) sb.append("cobertura baixa; ");
             if (!R.scaleKnown && (R.z < P.minZFree || R.nccMean < P.minNccFree)) sb.append("escala fora das razões de fps; ");
             if (nearUnit) sb.append("escala 0,999/1,001 sem prova de deriva; ");
+            if (unsafeRes) sb.append("ajuste inseguro: janelas fora de uma reta de atraso constante (" + Math.round(R.unitResMs) + " ms); ");
             if (R.driftSuspect) sb.append("possível deriva: janelas discordam entre si; ");
             if (gateDev || gateWin) sb.append("janelas discordam; ");
             R.reason = sb.toString();

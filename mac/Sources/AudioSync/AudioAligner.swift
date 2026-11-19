@@ -895,6 +895,9 @@ enum AudioAligner {
         // família 1,001: só com a prova de deriva (driftCheck); um valor assim sem prova é ruído de ajuste
         let nearUnit = !R.driftScale && abs(R.scale - 1.0) > 1e-9 && abs(R.scale - 1.0) < P.nearUnitEps
         if nearUnit { ok = false }
+        // escala 1,0 aceita, mas as janelas confiáveis não ficam numa reta de atraso constante (resíduo acima de driftSafeResMs): ajuste inseguro: recusa
+        let unsafeRes = !P.legacy && !R.driftScale && abs(R.scale - 1.0) < 1e-9 && R.driftConfident >= 3 && R.unitResMs > P.driftSafeResMs
+        if unsafeRes { ok = false }
         let gateDev = P.gateWinDevMs > 0 && R.winsValid >= 2
             && (P.legacy ? R.winMaxDev > P.gateWinDevMs : R.driftScale ? R.winMaxDev > P.driftGateDevMs : !R.winConsensus)
         let gateWin = P.gateMinWinsAgree > 0 && R.winsAgree < P.gateMinWinsAgree
@@ -914,6 +917,7 @@ enum AudioAligner {
             if R.f1 < P.minF1 { sb += "cobertura baixa; " }
             if !R.scaleKnown && (R.z < P.minZFree || R.nccMean < P.minNccFree) { sb += "escala fora das razões de fps; " }
             if nearUnit { sb += "escala 0,999/1,001 sem prova de deriva; " }
+            if unsafeRes { sb += "ajuste inseguro: janelas fora de uma reta de atraso constante (\(jround(R.unitResMs)) ms); " }
             if R.driftSuspect { sb += "possível deriva: janelas discordam entre si; " }
             if gateDev || gateWin { sb += "janelas discordam; " }
             R.reason = sb
