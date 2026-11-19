@@ -1,0 +1,1358 @@
+--------- beginning of main
+11-19 19:24:45.625  2738  2789 I Icing   : Not sending global search app notification. Search app not installed or not signed properly.
+11-19 19:24:45.636  2738  2838 W Conscrypt: Could not set socket write timeout: java.net.SocketException: Socket closed
+11-19 19:24:45.636  2738  2838 W Conscrypt: 	at com.google.android.gms.org.conscrypt.Platform.setSocketWriteTimeout(:com.google.android.gms@223616104@22.36.16 (180706-476895098):2)
+11-19 19:24:45.636  2738  2838 W Conscrypt: 	at com.google.android.gms.org.conscrypt.ConscryptFileDescriptorSocket.setSoWriteTimeout(:com.google.android.gms@223616104@22.36.16 (180706-476895098):0)
+11-19 19:24:45.661  2738  2838 W Conscrypt: Could not set socket write timeout: java.net.SocketException: Socket closed
+11-19 19:24:45.661  2738  2838 W Conscrypt: 	at com.google.android.gms.org.conscrypt.Platform.setSocketWriteTimeout(:com.google.android.gms@223616104@22.36.16 (180706-476895098):2)
+11-19 19:24:45.661  2738  2838 W Conscrypt: 	at com.google.android.gms.org.conscrypt.ConscryptFileDescriptorSocket.setSoWriteTimeout(:com.google.android.gms@223616104@22.36.16 (180706-476895098):0)
+11-19 19:24:45.670  2738  2789 I Icing   : Indexing com.google.android.gms-internal.3p:MobileApplication from com.google.android.gms
+11-19 19:24:45.719  2738  2789 I Icing   : Indexing done com.google.android.gms-internal.3p:MobileApplication
+11-19 19:24:45.722   394   394 I keystore: del USRPKEY_unstable.c7202ece89390c490b1b94d5b71225e1.A-6913016045934928063 10050
+11-19 19:24:45.722   394   394 I keystore: del USRSKEY_unstable.c7202ece89390c490b1b94d5b71225e1.A-6913016045934928063 10050
+11-19 19:24:45.722   394   394 I keystore: del USRCERT_unstable.c7202ece89390c490b1b94d5b71225e1.A-6913016045934928063 10050
+11-19 19:24:45.722   394   394 I keystore: del CACERT_unstable.c7202ece89390c490b1b94d5b71225e1.A-6913016045934928063 10050
+11-19 19:24:45.734   394   394 I keystore: del USRPKEY_unstable.c7202ece89390c490b1b94d5b71225e1.A-6913016045934928063 10050
+11-19 19:24:45.734   394   394 I keystore: del USRCERT_unstable.c7202ece89390c490b1b94d5b71225e1.A-6913016045934928063 10050
+11-19 19:24:45.735   394   394 I keystore: del CACERT_unstable.c7202ece89390c490b1b94d5b71225e1.A-6913016045934928063 10050
+11-19 19:24:45.735   394   394 I keystore: del USRPKEY_unstable.c7202ece89390c490b1b94d5b71225e1.B-6913016045934928063 10050
+11-19 19:24:45.735   394   394 I keystore: del USRSKEY_unstable.c7202ece89390c490b1b94d5b71225e1.B-6913016045934928063 10050
+11-19 19:24:45.735   394   394 I keystore: del USRCERT_unstable.c7202ece89390c490b1b94d5b71225e1.B-6913016045934928063 10050
+11-19 19:24:45.735   394   394 I keystore: del CACERT_unstable.c7202ece89390c490b1b94d5b71225e1.B-6913016045934928063 10050
+11-19 19:24:45.778  1051  1905 I NetworkScheduler.Stats: Task com.google.android.gms/com.google.android.gms.gass.chimera.SchedulePeriodicTasksService finished executing. cause:5 result: 1 elapsed_millis: 287 uptime_millis: 287 exec_start_elapsed_seconds: 51 [CONTEXT service_id=218 ]
+11-19 19:24:45.838  1051  1905 I NetworkScheduler.Stats: Task com.google.android.gms/com.google.android.gms.gcm.gmsproc.GcmInGmsTaskService started execution. cause:5 exec_start_elapsed_seconds: 51 [CONTEXT service_id=218 ]
+11-19 19:24:45.852  1997  2256 D EGL_emulation: eglCreateContext: 0xf62e4740: maj 3 min 0 rcv 3
+11-19 19:24:45.857  1051  3087 I NetworkScheduler.Stats: Task com.google.android.gms/com.google.android.gms.gcm.gmsproc.GcmInGmsTaskService finished executing. cause:5 result: 1 elapsed_millis: 26 uptime_millis: 26 exec_start_elapsed_seconds: 51 [CONTEXT service_id=218 ]
+11-19 19:24:45.874  2738  2751 I gle.android.gm: Background concurrent copying GC freed 195027(10MB) AllocSpace objects, 181(12MB) LOS objects, 49% free, 8479KB/16MB, paused 20us total 123.739ms
+11-19 19:24:46.086  2222  2333 I Finsky  : [216] mar.accept(5): SCH: Scheduling phonesky job Id: 12-1, CT: 1795116285359, Constraints: [{ L: 15000, D: 86400000, C: 1, I: 1, N: 1 }]
+11-19 19:24:46.121  1997  2256 E libc    : Access denied finding property "persist.adb.tls_server.enable"
+11-19 19:24:46.121  1997  2256 E libc    : Access denied finding property "service.adb.tls.port"
+11-19 19:24:46.116  1997  1997 W Binder:1997_5: type=1400 audit(0.0:39): avc: denied { read } for name="u:object_r:system_adbd_prop:s0" dev="tmpfs" ino=8325 scontext=u:r:gmscore_app:s0:c512,c768 tcontext=u:object_r:system_adbd_prop:s0 tclass=file permissive=0 app=com.google.android.gms
+11-19 19:24:46.137  1997  2256 W SystemServiceRegistry: No service published for: persistent_data_block
+11-19 19:24:46.116  1997  1997 W Binder:1997_5: type=1400 audit(0.0:40): avc: denied { read } for name="u:object_r:adbd_prop:s0" dev="tmpfs" ino=8183 scontext=u:r:gmscore_app:s0:c512,c768 tcontext=u:object_r:adbd_prop:s0 tclass=file permissive=0 app=com.google.android.gms
+11-19 19:24:46.217  2447  2447 I chromium: [2447:2447:INFO:debug_endpoint_manager_grpc_client.cc(365)] gRPC client channel state changed to GRPC_CHANNEL_TRANSIENT_FAILURE
+11-19 19:24:46.272  2222  2311 I Finsky  : [207] qlg.b(2): Device wide non work profile PHA is changed
+11-19 19:24:46.275  2222  2333 I Finsky  : [216] mqf.apply(81): SCH: Scheduling 1 system job(s)
+11-19 19:24:46.275  2222  2333 I Finsky  : [216] mqf.apply(87): SCH: Scheduling system job Id: 9058, L: 14084, D: 68498596, C: false, I: false, N: 1
+11-19 19:24:46.283  2222  2317 I Finsky  : [212] tl.invoke(11): [ContentSync] finished, scheduled=true
+11-19 19:24:46.283  2222  2444 I Finsky  : [240] qhg.a(4): Cleaning the verify apps datastore
+11-19 19:24:46.337  2222  2444 I Finsky  : [240] qhg.a(51): Finished cleaning the verify apps datastore
+11-19 19:24:46.339  2222  2222 I Finsky  : [2] qgy.accept(6): VerifyApps: Done verifying installed packages
+11-19 19:24:46.346  2222  2477 I Finsky  : [249] mqw.r(4): SCH: jobFinished: 10-8. TimeElapsed: 5737ms.
+11-19 19:24:46.359  2222  2311 I Finsky  : [207] mar.accept(5): SCH: Scheduling phonesky job Id: 10-4, CT: 1795116280265, Constraints: [{ L: 1200000, D: 86400000, C: 1, I: 1, N: 0 }]
+11-19 19:24:46.359  2222  2311 I Finsky  : [207] mar.accept(5): SCH: Scheduling phonesky job Id: 10-11, CT: 1795116280265, Constraints: [{ L: 600000, D: 86400000, C: 1, I: 1, N: 0 }]
+11-19 19:24:46.359  2222  2311 I Finsky  : [207] mar.accept(5): SCH: Scheduling phonesky job Id: 10-101, CT: 1795116280266, Constraints: [{ L: 60000, D: 86400000, C: 1, I: 1, N: 0 }]
+11-19 19:24:46.359  2222  2311 I Finsky  : [207] mar.accept(5): SCH: Scheduling phonesky job Id: 26-1414141414, CT: 1795116281503, Constraints: [{ L: 900000, D: 1800000, C: 1, I: 1, N: 0 }]
+11-19 19:24:46.360  2222  2311 I Finsky  : [207] mar.accept(5): SCH: Scheduling phonesky job Id: 29-29, CT: 1795116273827, Constraints: [{ L: 30000, D: 60000, C: 1, I: 1, N: 0 }]
+11-19 19:24:46.362  2222  2311 I Finsky  : [207] mqf.apply(81): SCH: Scheduling 1 system job(s)
+11-19 19:24:46.362  2222  2311 I Finsky  : [207] mqf.apply(87): SCH: Scheduling system job Id: 9061, L: 17465, D: 47465, C: false, I: false, N: 0
+11-19 19:24:46.364  2222  2684 I Finsky  : [254] msm.a(16): SCH: job service finished with id 9001.
+11-19 19:24:46.503  2738  2838 I Icing   : Indexing com.google.android.gms-apps from com.google.android.gms
+11-19 19:24:46.510  2738  2838 I Icing   : Indexing done com.google.android.gms-apps
+11-19 19:24:46.544  2618  2676 W GnpSdk  : [PhenotypeManagerImpl] Phenotype registration timed out [com.google.android.libraries.notifications.platform#com.google.android.play.games].
+11-19 19:24:46.569  2618  3178 W DynamiteModule: Local module descriptor class for com.google.android.gms.providerinstaller.dynamite not found.
+11-19 19:24:46.570  1051  1771 W ProviderHelper: Unknown dynamite feature providerinstaller.dynamite
+11-19 19:24:46.570  2618  3178 W ProviderInstaller: Failed to load providerinstaller module: No acceptable module found. Local version is 0 and remote version is 0.
+11-19 19:24:46.574  2618  3178 I roid.play.game: The ClassLoaderContext is a special shared library.
+11-19 19:24:46.589  2618  3178 I roid.play.game: The ClassLoaderContext is a special shared library.
+11-19 19:24:46.589  2618  3178 D nativeloader: classloader namespace configured for unbundled vendor apk. library_path=/product/priv-app/PrebuiltGmsCore/lib/x86:/product/priv-app/PrebuiltGmsCore/PrebuiltGmsCorePano.apk!/lib/x86:/vendor/lib
+11-19 19:24:46.590  2618  3178 I roid.play.game: The ClassLoaderContext is a special shared library.
+11-19 19:24:46.590  2618  3178 D nativeloader: classloader namespace configured for unbundled product apk. library_path=/product/priv-app/PrebuiltGmsCore/lib/x86:/product/priv-app/PrebuiltGmsCore/PrebuiltGmsCorePano.apk!/lib/x86:/product/lib:/system/product/lib
+11-19 19:24:46.598  2618  3178 V NativeCrypto: Registering com/google/android/gms/org/conscrypt/NativeCrypto's 295 native methods...
+11-19 19:24:46.606  2618  3178 I ProviderInstaller: Installed default security provider GmsCore_OpenSSL
+11-19 19:24:46.676  2618  2669 W GnpSdk  : [PhenotypeManagerImpl] Phenotype registration timed out [com.google.android.libraries.notifications.platform#com.google.android.play.games].
+11-19 19:24:46.687  2618  3176 W DynamiteModule: Local module descriptor class for com.google.android.gms.providerinstaller.dynamite not found.
+11-19 19:24:46.690  1051  1771 W ProviderHelper: Unknown dynamite feature providerinstaller.dynamite
+11-19 19:24:46.692  2618  3176 W ProviderInstaller: Failed to load providerinstaller module: No acceptable module found. Local version is 0 and remote version is 0.
+11-19 19:24:46.709  2738  2838 I Icing   : Indexing com.google.android.gms-internal.3p:MobileApplication from com.google.android.gms
+11-19 19:24:46.712  2738  2838 I Icing   : Indexing done com.google.android.gms-internal.3p:MobileApplication
+11-19 19:24:46.948  1051  1623 I akwz    : Scheduling Phenotype for a PhenotypeSyncImmediately(7, com.google.android.libraries.consentverifier#com.google.android.gms) one off with window [1, 2] in seconds [CONTEXT service_id=51 ]
+11-19 19:24:47.021  1051  1623 I akwz    : Scheduling Phenotype for a PhenotypeSyncImmediately(16, com.google.android.gms.icing.mdd) one off with window [1, 2] in seconds [CONTEXT service_id=51 ]
+11-19 19:24:47.034  1940  2239 I katniss_search_KatnissReaper: Reap scheduled in non-Interactor process. Ignoring.
+11-19 19:24:47.034  1940  2220 I katniss_search_KatnissReaper: Reap scheduled in non-Interactor process. Ignoring.
+11-19 19:24:47.078  1940  2239 I katniss_search_KatnissReaper: Reap scheduled in non-Interactor process. Ignoring.
+11-19 19:24:47.228  1342  1342 E Clearcut-EventLogger: Unexpected log parameter shown_channel_count
+11-19 19:24:47.243  1342  1342 E Clearcut-EventLogger: Unexpected log parameter tray_notification_count
+11-19 19:24:47.243  1342  1342 E Clearcut-EventLogger: Unexpected log parameter notification_indicator_total
+11-19 19:24:47.253  1342  1342 E Clearcut-EventLogger: Unexpected log parameter shown_channel_count
+11-19 19:24:47.279  1342  1342 E Clearcut-EventLogger: Unexpected log parameter tray_notification_count
+11-19 19:24:47.279  1342  1342 E Clearcut-EventLogger: Unexpected log parameter notification_indicator_total
+11-19 19:24:47.287  1051  1774 I FontLog : Received query Google Sans:500, URI content://com.google.android.gms.fonts [CONTEXT service_id=132 ]
+11-19 19:24:47.287  1051  1774 I FontLog : Query [Google Sans:500] resolved to {Google Sans, wdth 100.0, wght 500, ital 0.0, bestEffort false} [CONTEXT service_id=132 ]
+11-19 19:24:47.288  1051  1774 I FontLog : Font PFD returned from cache for {Google Sans, wdth 100.0, wght 500, ital 0.0, bestEffort false} [CONTEXT service_id=132 ]
+11-19 19:24:47.289  1051  1774 I FontLog : Fetch {Google Sans, wdth 100.0, wght 500, ital 0.0, bestEffort false} end status Status{statusCode=SUCCESS, resolution=null} [CONTEXT service_id=132 ]
+11-19 19:24:47.311  1342  1342 W Glide   : Load failed for [null] with dimensions [0x0]
+11-19 19:24:47.311  1342  1342 W Glide   : class byq: Received null model
+11-19 19:24:47.314  1051  1619 I FontLog : Pulling font file for id = 2, cache size = 2 [CONTEXT service_id=132 ]
+11-19 19:24:47.508  1051  1619 I FontLog : Received query Google Sans Display, URI content://com.google.android.gms.fonts [CONTEXT service_id=132 ]
+11-19 19:24:47.508  1051  1619 I FontLog : Query [Google Sans Display] resolved to {Google Sans Display, wdth 100.0, wght 400, ital 0.0, bestEffort false} [CONTEXT service_id=132 ]
+11-19 19:24:47.510  1051  1619 I FontLog : Font PFD returned from cache for {Google Sans Display, wdth 100.0, wght 400, ital 0.0, bestEffort false} [CONTEXT service_id=132 ]
+11-19 19:24:47.519  1051  1619 I FontLog : Fetch {Google Sans Display, wdth 100.0, wght 400, ital 0.0, bestEffort false} end status Status{statusCode=SUCCESS, resolution=null} [CONTEXT service_id=132 ]
+11-19 19:24:47.569  1051  1619 I FontLog : Pulling font file for id = 3, cache size = 3 [CONTEXT service_id=132 ]
+11-19 19:24:47.613  1051  1065 I .gms.persisten: Background young concurrent copying GC freed 52588(3772KB) AllocSpace objects, 7(1068KB) LOS objects, 19% free, 13MB/16MB, paused 22us total 160.956ms
+11-19 19:24:47.871  1051  1051 D BoundBrokerSvc: onUnbind: Intent { act=com.google.android.gms.clearcut.bootcount.service.START dat=chimera-action:com.google.android.gms.clearcut.bootcount.service.START cmp=com.google.android.gms/.chimera.PersistentBoundBrokerService }
+11-19 19:24:48.426  2738  2813 W PeopleGmsPhenoRgstrIntentOp: Google Api connection failed
+11-19 19:24:48.440  2738  2816 W PhenotypeRegOp: Phenotype bulk registration failed [CONTEXT service_id=231 ]
+11-19 19:24:48.440  2738  2816 W PhenotypeRegOp: java.util.concurrent.TimeoutException: Timed out waiting for Task
+11-19 19:24:48.440  2738  2816 W PhenotypeRegOp: 	at apym.l(:com.google.android.gms@223616104@22.36.16 (180706-476895098):7)
+11-19 19:24:48.440  2738  2816 W PhenotypeRegOp: 	at com.google.android.gms.common.config.PhenotypeRegistrationOperation.a(:com.google.android.gms@223616104@22.36.16 (180706-476895098):4)
+11-19 19:24:48.440  2738  2816 W PhenotypeRegOp: 	at com.google.android.gms.common.config.PhenotypeRegistrationOperation.onHandleIntent(:com.google.android.gms@223616104@22.36.16 (180706-476895098):17)
+11-19 19:24:48.440  2738  2816 W PhenotypeRegOp: 	at com.google.android.chimera.IntentOperation.onHandleIntent(:com.google.android.gms@223616104@22.36.16 (180706-476895098):2)
+11-19 19:24:48.440  2738  2816 W PhenotypeRegOp: 	at lvp.onHandleIntent(:com.google.android.gms@223616104@22.36.16 (180706-476895098):4)
+11-19 19:24:48.440  2738  2816 W PhenotypeRegOp: 	at duq.run(:com.google.android.gms@223616104@22.36.16 (180706-476895098):3)
+11-19 19:24:48.440  2738  2816 W PhenotypeRegOp: 	at dup.run(:com.google.android.gms@223616104@22.36.16 (180706-476895098):11)
+11-19 19:24:48.440  2738  2816 W PhenotypeRegOp: 	at bcuy.run(:com.google.android.gms@223616104@22.36.16 (180706-476895098):2)
+11-19 19:24:48.440  2738  2816 W PhenotypeRegOp: 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1167)
+11-19 19:24:48.440  2738  2816 W PhenotypeRegOp: 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:641)
+11-19 19:24:48.440  2738  2816 W PhenotypeRegOp: 	at java.lang.Thread.run(Thread.java:923)
+11-19 19:24:48.463  2738  2825 E PhenotypeRegOp: Attempting to overwrite config package for com.google.android.gms.games [CONTEXT service_id=231 ]
+11-19 19:24:48.464  2738  2825 E PhenotypeRegOp: Attempting to overwrite config package for com.google.android.gms.maps#com.google.android.gms [CONTEXT service_id=231 ]
+11-19 19:24:48.469  2738  2825 E PhenotypeRegOp: Attempting to overwrite config package for com.google.android.gms.udc [CONTEXT service_id=231 ]
+11-19 19:24:48.480  3208  3208 W ls      : type=1400 audit(0.0:41): avc: denied { getattr } for path="/system/bin/heapprofd" dev="dm-4" ino=266 scontext=u:r:shell:s0 tcontext=u:object_r:heapprofd_exec:s0 tclass=file permissive=0
+--------- beginning of system
+11-19 19:24:48.523   469   497 I ActivityManager: Force stopping io.github.gabrielxyz404.gabiflix appid=10076 user=0: from pid 3212
+11-19 19:24:48.527  3212  3214 I cmd     : oneway function results will be dropped but finished with status OK and parcel size 4
+11-19 19:24:48.566  2222  2222 I Finsky  : [2] mps.run(40): Detected restoreservicev2://recovery not needed, will not run
+11-19 19:24:48.577   469   942 I ActivityManager: Force stopping io.github.gabrielxyz404.gabiflix appid=10076 user=0: clear data
+11-19 19:24:48.578   469   507 I ActivityManager: Force stopping io.github.gabrielxyz404.gabiflix appid=10076 user=-1: clearApplicationUserData
+11-19 19:24:48.583   394   394 I keystore: clear_uid 10076
+11-19 19:24:48.588   665   665 V AvrcpMediaPlayerList: mPackageChangedBroadcastReceiver: action: android.intent.action.PACKAGE_DATA_CLEARED
+11-19 19:24:48.598  2738  2816 I PackageIntentOperation: Feature flags not enabled, skipping. [CONTEXT service_id=258 ]
+11-19 19:24:48.605  2738  2838 I Icing   : doRemovePackageData io.github.gabrielxyz404.gabiflix
+11-19 19:24:48.615  1118  1767 I MediaProvider: Begin Intent { act=android.intent.action.PACKAGE_DATA_CLEARED dat=package:io.github.gabrielxyz404.gabiflix flg=0x1000010 cmp=com.google.android.providers.media.module/com.android.providers.media.MediaService (has extras) }
+11-19 19:24:48.623  1118  1767 I MediaProvider: End Intent { act=android.intent.action.PACKAGE_DATA_CLEARED dat=package:io.github.gabrielxyz404.gabiflix flg=0x1000010 cmp=com.google.android.providers.media.module/com.android.providers.media.MediaService (has extras) }
+11-19 19:24:48.666   469  1142 I ActivityTaskManager: START u0 {flg=0x10000000 cmp=io.github.gabrielxyz404.gabiflix/.tv.TvHomeActivity (has extras)} from uid 2000
+11-19 19:24:48.667  1051  3087 I LockboxService: Completed task: true [CONTEXT service_id=26 ]
+11-19 19:24:48.673   469   501 D CompatibilityChangeReporter: Compat change id reported: 135634846; UID 10076; state: DISABLED
+11-19 19:24:48.673   469   508 D CompatibilityChangeReporter: Compat change id reported: 143937733; UID 10076; state: ENABLED
+11-19 19:24:48.678   263   263 D Zygote  : Forked child process 3233
+11-19 19:24:48.679   469   508 I ActivityManager: Start proc 3233:io.github.gabrielxyz404.gabiflix/u0a76 for pre-top-activity {io.github.gabrielxyz404.gabiflix/io.github.gabrielxyz404.gabiflix.tv.TvHomeActivity}
+11-19 19:24:48.743  3233  3233 W xyz404.gabifli: Unexpected CPU variant for X86 using defaults: x86
+11-19 19:24:48.756   282  1510 D goldfish-address-space: claimShared: Ask to claim region [0x3fc7ea000 0x3fcfd3000]
+11-19 19:24:48.768  2222  3021 I Finsky  : [326] vbw.c(2): registerListener
+11-19 19:24:48.768  2222  3021 I Finsky  : [326] heg.g(1): getDownloads()
+11-19 19:24:48.774  2222  3021 I Finsky  : [326] ph.run(14): Initialized AssetModuleDownloader.
+11-19 19:24:48.776  2651  2714 I Finsky:background: [234] hbv.f(1): getDownloads()
+11-19 19:24:48.820  3233  3233 E xyz404.gabifli: Not starting debugger since process cannot load the jdwp agent.
+11-19 19:24:48.824   469   874 W InputReader: Device virtio_input_multi_touch_8 is associated with display ADISPLAY_ID_NONE.
+11-19 19:24:48.824   469   874 W InputReader: Device virtio_input_multi_touch_10 is associated with display ADISPLAY_ID_NONE.
+11-19 19:24:48.824   469   874 W InputReader: Device virtio_input_multi_touch_7 is associated with display ADISPLAY_ID_NONE.
+11-19 19:24:48.824   469   874 W InputReader: Device virtio_input_multi_touch_4 is associated with display ADISPLAY_ID_NONE.
+11-19 19:24:48.824   469   874 W InputReader: Device virtio_input_multi_touch_9 is associated with display ADISPLAY_ID_NONE.
+11-19 19:24:48.824   469   874 W InputReader: Device virtio_input_multi_touch_11 is associated with display ADISPLAY_ID_NONE.
+11-19 19:24:48.824   469   874 W InputReader: Device virtio_input_multi_touch_5 is associated with display ADISPLAY_ID_NONE.
+11-19 19:24:48.824   469   874 W InputReader: Device virtio_input_multi_touch_6 is associated with display ADISPLAY_ID_NONE.
+11-19 19:24:48.824   469   874 W InputReader: Device virtio_input_multi_touch_3 is associated with display ADISPLAY_ID_NONE.
+11-19 19:24:48.824   469   874 W InputReader: Device virtio_input_multi_touch_2 is associated with display ADISPLAY_ID_NONE.
+11-19 19:24:48.824   469   874 W InputReader: Device virtio_input_multi_touch_8 is associated with display ADISPLAY_ID_NONE.
+11-19 19:24:48.824   469   874 W InputReader: Device virtio_input_multi_touch_10 is associated with display ADISPLAY_ID_NONE.
+11-19 19:24:48.824   469   874 W InputReader: Device virtio_input_multi_touch_7 is associated with display ADISPLAY_ID_NONE.
+11-19 19:24:48.824   469   874 W InputReader: Device virtio_input_multi_touch_4 is associated with display ADISPLAY_ID_NONE.
+11-19 19:24:48.824   469   874 W InputReader: Device virtio_input_multi_touch_9 is associated with display ADISPLAY_ID_NONE.
+11-19 19:24:48.824   469   874 W InputReader: Device virtio_input_multi_touch_11 is associated with display ADISPLAY_ID_NONE.
+11-19 19:24:48.824   469   874 W InputReader: Device virtio_input_multi_touch_5 is associated with display ADISPLAY_ID_NONE.
+11-19 19:24:48.824   469   874 W InputReader: Device virtio_input_multi_touch_6 is associated with display ADISPLAY_ID_NONE.
+11-19 19:24:48.824   469   874 W InputReader: Device virtio_input_multi_touch_3 is associated with display ADISPLAY_ID_NONE.
+11-19 19:24:48.824   469   874 W InputReader: Device virtio_input_multi_touch_2 is associated with display ADISPLAY_ID_NONE.
+11-19 19:24:48.839  3233  3233 D NetworkSecurityConfig: No Network Security Config specified, using platform default
+11-19 19:24:48.839  3233  3233 D NetworkSecurityConfig: No Network Security Config specified, using platform default
+11-19 19:24:48.886  3233  3254 D libEGL  : loaded /vendor/lib/egl/libEGL_emulation.so
+11-19 19:24:48.886  3233  3254 D libEGL  : loaded /vendor/lib/egl/libGLESv1_CM_emulation.so
+11-19 19:24:48.903   282  1510 D goldfish-address-space: claimShared: Ask to claim region [0x3fe78e000 0x3fef77000]
+11-19 19:24:48.948  3233  3254 D libEGL  : loaded /vendor/lib/egl/libGLESv2_emulation.so
+11-19 19:24:48.975   469   496 I ActivityTaskManager: START u0 {cmp=io.github.gabrielxyz404.gabiflix/.PlayerActivity (has extras)} from uid 10076
+11-19 19:24:48.985   469   497 W ActivityTaskManager: Tried to set launchTime (0) < mLastActivityLaunchTime (54353)
+11-19 19:24:48.985   469   497 W InputReader: Device virtio_input_multi_touch_8 is associated with display ADISPLAY_ID_NONE.
+11-19 19:24:48.985   469   497 W InputReader: Device virtio_input_multi_touch_10 is associated with display ADISPLAY_ID_NONE.
+11-19 19:24:48.985   469   497 W InputReader: Device virtio_input_multi_touch_7 is associated with display ADISPLAY_ID_NONE.
+11-19 19:24:48.985   469   497 W InputReader: Device virtio_input_multi_touch_4 is associated with display ADISPLAY_ID_NONE.
+11-19 19:24:48.985   469   497 W InputReader: Device virtio_input_multi_touch_9 is associated with display ADISPLAY_ID_NONE.
+11-19 19:24:48.985   469   497 W InputReader: Device virtio_input_multi_touch_11 is associated with display ADISPLAY_ID_NONE.
+11-19 19:24:48.985   469   497 W InputReader: Device virtio_input_multi_touch_5 is associated with display ADISPLAY_ID_NONE.
+11-19 19:24:48.985   469   497 W InputReader: Device virtio_input_multi_touch_6 is associated with display ADISPLAY_ID_NONE.
+11-19 19:24:48.985   469   497 W InputReader: Device virtio_input_multi_touch_3 is associated with display ADISPLAY_ID_NONE.
+11-19 19:24:48.985   469   497 W InputReader: Device virtio_input_multi_touch_2 is associated with display ADISPLAY_ID_NONE.
+11-19 19:24:48.985   469   497 W InputReader: Device virtio_input_multi_touch_8 is associated with display ADISPLAY_ID_NONE.
+11-19 19:24:48.985   469   497 W InputReader: Device virtio_input_multi_touch_10 is associated with display ADISPLAY_ID_NONE.
+11-19 19:24:48.985   469   497 W InputReader: Device virtio_input_multi_touch_7 is associated with display ADISPLAY_ID_NONE.
+11-19 19:24:48.985   469   497 W InputReader: Device virtio_input_multi_touch_4 is associated with display ADISPLAY_ID_NONE.
+11-19 19:24:48.985   469   497 W InputReader: Device virtio_input_multi_touch_9 is associated with display ADISPLAY_ID_NONE.
+11-19 19:24:48.985   469   497 W InputReader: Device virtio_input_multi_touch_11 is associated with display ADISPLAY_ID_NONE.
+11-19 19:24:48.985   469   497 W InputReader: Device virtio_input_multi_touch_5 is associated with display ADISPLAY_ID_NONE.
+11-19 19:24:48.985   469   497 W InputReader: Device virtio_input_multi_touch_6 is associated with display ADISPLAY_ID_NONE.
+11-19 19:24:48.985   469   497 W InputReader: Device virtio_input_multi_touch_3 is associated with display ADISPLAY_ID_NONE.
+11-19 19:24:48.985   469   497 W InputReader: Device virtio_input_multi_touch_2 is associated with display ADISPLAY_ID_NONE.
+11-19 19:24:49.138  3233  3278 I GabiFlixPlayer: hash=ab670d90868a9b39 tamanho=727918178 arquivo=film.mkv
+11-19 19:24:49.138  3233  3278 I GabiFlixPlayer: Hash calculado, mas a busca de legendas falhou
+11-19 19:24:49.138  3233  3278 I GabiFlixPlayer: candidatas para baixar: 1 (do site: 1)
+11-19 19:24:49.170  3233  3233 D VLC/JNI/VLCObject: JNI interface loaded.
+11-19 19:24:49.191  3233  3233 E VLC     : [f0003a10/ca1] libvlc audio output: GetStaticFieldID(AudioFormat.ENCODING_PCM_32BIT) failed
+11-19 19:24:49.196  3233  3233 I GabiFlixPlayer: ciclo: onStart, tocando=false, tempo=-1, escala=0, atraso=0, vista=TextureView 0x0, vout=true
+11-19 19:24:49.196  3233  3233 I GabiFlixPlayer: ciclo: onResume, tocando=false, tempo=-1, escala=0, atraso=0, vista=TextureView 0x0, vout=true
+11-19 19:24:49.204  3233  3253 D HostConnection: HostConnection::get() New Host Connection established 0xf62f53e0, tid 3253
+11-19 19:24:49.208  3233  3253 D HostConnection: HostComposition ext ANDROID_EMU_CHECKSUM_HELPER_v1 ANDROID_EMU_native_sync_v2 ANDROID_EMU_dma_v1 ANDROID_EMU_direct_mem ANDROID_EMU_host_composition_v1 ANDROID_EMU_host_composition_v2 ANDROID_EMU_vulkan ANDROID_EMU_deferred_vulkan_commands ANDROID_EMU_vulkan_null_optional_strings ANDROID_EMU_vulkan_create_resources_with_requirements ANDROID_EMU_YUV_Cache ANDROID_EMU_vulkan_ignored_handles ANDROID_EMU_has_shared_slots_host_memory_allocator ANDROID_EMU_vulkan_free_memory_sync ANDROID_EMU_vulkan_shader_float16_int8 ANDROID_EMU_vulkan_async_queue_submit ANDROID_EMU_sync_buffer_data ANDROID_EMU_vulkan_async_qsri ANDROID_EMU_read_color_buffer_dma ANDROID_EMU_hwc_color_transform GL_OES_EGL_image_external_essl3 GL_OES_vertex_array_object GL_KHR_texture_compression_astc_ldr ANDROID_EMU_host_side_tracing ANDROID_EMU_gles_max_version_3_0 
+11-19 19:24:49.209   159   159 I hwservicemanager: getTransport: Cannot find entry android.hardware.configstore@1.0::ISurfaceFlingerConfigs/default in either framework or device manifest.
+11-19 19:24:49.218  3233  3253 D EGL_emulation: eglCreateContext: 0xf62f5610: maj 3 min 0 rcv 3
+11-19 19:24:49.226  3233  3253 D EGL_emulation: eglMakeCurrent: 0xf62f5610: ver 3 0 (tinfo 0xc6ecf230) (first time)
+11-19 19:24:49.249   282  1510 D goldfish-address-space: claimShared: Ask to claim region [0x3fef77000 0x3ff760000]
+11-19 19:24:49.250  3233  3278 I GabiFlixPlayer: legendas PT válidas: 1 de 1; referências baixadas: 0
+11-19 19:24:49.250   159   159 I hwservicemanager: getTransport: Cannot find entry android.hardware.graphics.mapper@4.0::IMapper/default in either framework or device manifest.
+11-19 19:24:49.250  3233  3253 I Gralloc4: mapper 4.x is not supported
+11-19 19:24:49.251  3233  3253 D HostConnection: createUnique: call
+11-19 19:24:49.252  3233  3253 D HostConnection: HostConnection::get() New Host Connection established 0xf62f4180, tid 3253
+11-19 19:24:49.252  3233  3253 D goldfish-address-space: allocate: Ask for block of size 0x100
+11-19 19:24:49.252  3233  3253 D goldfish-address-space: allocate: ioctl allocate returned offset 0x3fbffe000 size 0x2000
+11-19 19:24:49.262  3233  3253 D HostConnection: HostComposition ext ANDROID_EMU_CHECKSUM_HELPER_v1 ANDROID_EMU_native_sync_v2 ANDROID_EMU_dma_v1 ANDROID_EMU_direct_mem ANDROID_EMU_host_composition_v1 ANDROID_EMU_host_composition_v2 ANDROID_EMU_vulkan ANDROID_EMU_deferred_vulkan_commands ANDROID_EMU_vulkan_null_optional_strings ANDROID_EMU_vulkan_create_resources_with_requirements ANDROID_EMU_YUV_Cache ANDROID_EMU_vulkan_ignored_handles ANDROID_EMU_has_shared_slots_host_memory_allocator ANDROID_EMU_vulkan_free_memory_sync ANDROID_EMU_vulkan_shader_float16_int8 ANDROID_EMU_vulkan_async_queue_submit ANDROID_EMU_sync_buffer_data ANDROID_EMU_vulkan_async_qsri ANDROID_EMU_read_color_buffer_dma ANDROID_EMU_hwc_color_transform GL_OES_EGL_image_external_essl3 GL_OES_vertex_array_object GL_KHR_texture_compression_astc_ldr ANDROID_EMU_host_side_tracing ANDROID_EMU_gles_max_version_3_0 
+11-19 19:24:49.264   282  1510 D goldfish-address-space: claimShared: Ask to claim region [0x3ff760000 0x3fff49000]
+11-19 19:24:49.267   282  1510 D goldfish-address-space: claimShared: Ask to claim region [0x3fcfd3000 0x3fd7bc000]
+11-19 19:24:49.280  3233  3278 I GabiFlixPlayer: alinhamento com 0 referência(s):
+11-19 19:24:49.280  3233  3278 I GabiFlixPlayer:   sem referência (nem outro idioma, nem PT do hash) e menos de 2 PT para comparar: ranking antigo
+11-19 19:24:49.280  3233  3278 I GabiFlixPlayer:   alinhadas: 0
+11-19 19:24:49.397  1940  1940 W katniss_search_MutableApplctnProcess: Mismatched process initialization: [com.google.android.googlequicksearchbox:interactor] vs [com.google.android.googlequicksearchbox:search]
+11-19 19:24:49.406  1940  1940 I katniss_search_BgTaskExecutorImpl: Starting EXCLUSIVE background task FETCH_CONFIGS_FROM_PHENOTYPE.
+11-19 19:24:49.437  1940  2086 I katniss_search_jpo: Util.isLowRamDevice: false, canUsePreemptibleAudioSource: true
+11-19 19:24:49.441  1940  3289 I katniss_search_EventBusThread: Event Bus thread starting with TID 3289
+11-19 19:24:49.450  1940  2220 I PhenotypeBackgroundRecv: Successfully updated snapshot for com.google.android.libraries.consentverifier#com.google.android.katniss
+11-19 19:24:49.475  3233  3285 I VideoCapabilities: Unsupported profile 4 for video/mp4v-es
+11-19 19:24:49.513  3233  3285 E VLC     : [f0003a10/cd5] libvlc audio output: too low audio sample frequency (0)
+11-19 19:24:49.513  3233  3285 E VLC     : [f61cd240/cd5] libvlc decoder: failed to create audio output
+11-19 19:24:49.522  1940  1940 I katniss_search_BgTaskExecutorImpl: Starting NONEXCLUSIVE background task UPDATE_GSERVICES_CONFIG.
+11-19 19:24:49.535  1940  1940 I katniss_search_BgTaskExecutorImpl: Starting EXCLUSIVE background task FETCH_OPT_IN_STATUSES.
+11-19 19:24:49.536  1940  1940 I katniss_search_BgTaskExecutorImpl: Starting EXCLUSIVE background task FETCH_LOCATION_REPORTING_STATE.
+11-19 19:24:49.549  1940  3289 I katniss_search_BgTaskExecutorImpl: Starting NONEXCLUSIVE background task REFRESH_AUTH_TOKENS.
+11-19 19:24:49.551  1940  1940 W katniss_search_ThreadPoolDumper: Queue length for executor EventBus is now 11. Perhaps some tasks are too long, or the pool is too small.
+11-19 19:24:49.554  3233  3296 E VLC     : [f0003a10/ce0] libvlc audio output: module not functional
+11-19 19:24:49.554  3233  3296 E VLC     : [f61cd240/ce0] libvlc decoder: failed to create audio output
+11-19 19:24:49.563   469   497 I system_server: oneway function results will be dropped but finished with status OK and parcel size 4
+11-19 19:24:49.565   469   497 I chatty  : uid=1000(system) Binder:469_2 identical 2 lines
+11-19 19:24:49.565   469   497 I system_server: oneway function results will be dropped but finished with status OK and parcel size 4
+11-19 19:24:49.574   323   631 D AudioFlinger: Client defaulted notificationFrames to 1956 for frameCount 3912
+11-19 19:24:49.575   323   631 D AF::TrackHandle: OpPlayAudio: track:56 usage:1 not muted
+11-19 19:24:49.583  3233  3296 W AudioTrack: Use of stream types is deprecated for operations other than volume control
+11-19 19:24:49.583  3233  3296 W AudioTrack: See the documentation of AudioTrack() for what to use instead with android.media.AudioAttributes to qualify your playback use case
+11-19 19:24:49.586   323   631 W APM::AudioPolicyEngine: getDevicesForStrategy() unknown strategy: -1
+11-19 19:24:49.586   323   631 W APM::AudioPolicyEngine: getDevicesForStrategy() unknown strategy: -1
+11-19 19:24:49.588   469   496 I system_server: oneway function results will be dropped but finished with status OK and parcel size 4
+11-19 19:24:49.593  3233  3302 E VLC     : [c6d17890/ce6] libvlc window: request 1 not implemented
+11-19 19:24:49.594  3233  3302 D HostConnection: HostConnection::get() New Host Connection established 0xf62f0600, tid 3302
+11-19 19:24:49.600  2738  2738 D BoundBrokerSvc: onUnbind: Intent { act=com.google.android.gms.measurement.START pkg=com.google.android.gms }
+11-19 19:24:49.699  3233  3302 D HostConnection: HostComposition ext ANDROID_EMU_CHECKSUM_HELPER_v1 ANDROID_EMU_native_sync_v2 ANDROID_EMU_dma_v1 ANDROID_EMU_direct_mem ANDROID_EMU_host_composition_v1 ANDROID_EMU_host_composition_v2 ANDROID_EMU_vulkan ANDROID_EMU_deferred_vulkan_commands ANDROID_EMU_vulkan_null_optional_strings ANDROID_EMU_vulkan_create_resources_with_requirements ANDROID_EMU_YUV_Cache ANDROID_EMU_vulkan_ignored_handles ANDROID_EMU_has_shared_slots_host_memory_allocator ANDROID_EMU_vulkan_free_memory_sync ANDROID_EMU_vulkan_shader_float16_int8 ANDROID_EMU_vulkan_async_queue_submit ANDROID_EMU_sync_buffer_data ANDROID_EMU_vulkan_async_qsri ANDROID_EMU_read_color_buffer_dma ANDROID_EMU_hwc_color_transform GL_OES_EGL_image_external_essl3 GL_OES_vertex_array_object GL_KHR_texture_compression_astc_ldr ANDROID_EMU_host_side_tracing ANDROID_EMU_gles_max_version_3_0 
+11-19 19:24:49.702   159   159 I hwservicemanager: getTransport: Cannot find entry android.hardware.graphics.allocator@4.0::IAllocator/default in either framework or device manifest.
+11-19 19:24:49.704  3233  3302 W Gralloc4: allocator 3.x is not supported
+11-19 19:24:49.707   282  1510 D goldfish-address-space: claimShared: Ask to claim region [0x3fd7bc000 0x3fdfa5000]
+11-19 19:24:49.708  3233  3302 D EGL_emulation: eglCreateContext: 0xf62f0bb0: maj 3 min 0 rcv 3
+11-19 19:24:49.710  3233  3302 D EGL_emulation: eglMakeCurrent: 0xf62f0bb0: ver 3 0 (tinfo 0xc6efb410) (first time)
+11-19 19:24:49.931  1940  3289 W katniss_search_SearchServiceCore: Abort, client detached.
+11-19 19:24:49.931  3233  3253 I OpenGLRenderer: Davey! duration=888ms; Flags=1, IntendedVsync=54571969465, Vsync=54721969459, OldestInputEvent=9223372036854775807, NewestInputEvent=0, HandleInputStart=54727345120, AnimationStart=54727345751, PerformTraversalsStart=54727346032, DrawStart=54792688248, SyncQueued=54795272195, SyncStart=54795952173, IssueDrawCommandsStart=54795978001, SwapBuffers=55356701361, FrameCompleted=55460823035, DequeueBufferDuration=31589, QueueBufferDuration=1886668, GpuCompleted=0, 
+11-19 19:24:49.931  1940  3289 W katniss_search_SearchServiceCore: Abort, client detached.
+11-19 19:24:49.932  1940  3289 I chatty  : uid=10053(com.google.android.katniss) EventBus0 identical 1 line
+11-19 19:24:49.932  1940  3289 W katniss_search_SearchServiceCore: Abort, client detached.
+11-19 19:24:49.932  1940  2239 I katniss_search_GservicesUpdateTask: Updating Gservices keys
+11-19 19:24:49.934  3233  3233 W Glide   : Failed to find GeneratedAppGlideModule. You should include an annotationProcessor compile dependency on com.github.bumptech.glide:compiler in your application and a @GlideModule annotated AppGlideModule implementation or LibraryGlideModules will be silently ignored
+11-19 19:24:49.939  3233  3233 I TetheringManager: registerTetheringEventCallback:io.github.gabrielxyz404.gabiflix
+11-19 19:24:49.955   469  1142 D ConnectivityService: requestNetwork for uid/pid:10076/3233 NetworkRequest [ TRACK_DEFAULT id=28, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED Uid: 10076 AdministratorUids: [] RequestorUid: 10076 RequestorPackageName: io.github.gabrielxyz404.gabiflix] ]
+11-19 19:24:49.955   469   618 D ConnectivityService: NetReassign [28 : null → 100]
+11-19 19:24:49.956   469   648 D Ethernet: got request NetworkRequest [ TRACK_DEFAULT id=28, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED Uid: 10076 AdministratorUids: [] RequestorUid: 10076 RequestorPackageName: io.github.gabrielxyz404.gabiflix] ] with score 60 and providerId 2
+11-19 19:24:49.966   469   614 D WifiNetworkFactory: got request NetworkRequest [ TRACK_DEFAULT id=28, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED Uid: 10076 AdministratorUids: [] RequestorUid: 10076 RequestorPackageName: io.github.gabrielxyz404.gabiflix] ] with score 60 and providerId 2
+11-19 19:24:49.966   469   614 D UntrustedWifiNetworkFactory: got request NetworkRequest [ TRACK_DEFAULT id=28, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED Uid: 10076 AdministratorUids: [] RequestorUid: 10076 RequestorPackageName: io.github.gabrielxyz404.gabiflix] ] with score 60 and providerId 2
+11-19 19:24:49.967   469   506 D ArtManagerInternalImpl: /data/misc/iorapd/io.github.gabrielxyz404.gabiflix/1/io.github.gabrielxyz404.gabiflix.PlayerActivity/compiled_traces/compiled_trace.pb doesn't exist
+11-19 19:24:49.967   469   506 I ActivityTaskManager: Displayed io.github.gabrielxyz404.gabiflix/.PlayerActivity: +1s274ms
+11-19 19:24:50.006  3233  3233 I Choreographer: Skipped 47 frames!  The application may be doing too much work on its main thread.
+11-19 19:24:50.020  3233  3302 E VLC     : [c6d17890/ce6] libvlc window: request 0 not implemented
+11-19 19:24:50.020  3233  3302 E VLC     : [c6d17890/ce6] libvlc window: request 0 not implemented
+11-19 19:24:50.025  3233  3302 E VLC     : [c6d17890/ce6] libvlc window: request 1 not implemented
+11-19 19:24:50.041  1940  3289 W katniss_search_SearchServiceCore: Abort, client detached.
+11-19 19:24:50.042  1940  3289 I chatty  : uid=10053(com.google.android.katniss) EventBus0 identical 3 lines
+11-19 19:24:50.042  1940  3289 W katniss_search_SearchServiceCore: Abort, client detached.
+11-19 19:24:50.050  3233  3253 I OpenGLRenderer: Davey! duration=838ms; Flags=0, IntendedVsync=54738654888, Vsync=55521988190, OldestInputEvent=9223372036854775807, NewestInputEvent=0, HandleInputStart=55535763311, AnimationStart=55535764302, PerformTraversalsStart=55535797544, DrawStart=55535963364, SyncQueued=55536186168, SyncStart=55538337246, IssueDrawCommandsStart=55538370538, SwapBuffers=55572066244, FrameCompleted=55579311856, DequeueBufferDuration=36638, QueueBufferDuration=581915, GpuCompleted=0, 
+11-19 19:24:50.050  1940  1940 I katniss_search_BgTaskExecutorImpl: Starting EXCLUSIVE background task REFRESH_NOW_CONFIGURATION.
+11-19 19:24:50.062  3233  3233 I GabiFlixPlayer: ciclo: evento Vout, saídas=1
+11-19 19:24:50.076  3233  3233 I GabiFlixPlayer: vistas do vídeo: TextureView(vídeo)
+11-19 19:24:50.090  1940  1940 I katniss_search_BgTaskExecutorImpl: Starting EXCLUSIVE background task PREDICTIVE_CARD_PREFERENCES_SYNC.
+11-19 19:24:50.152  1006  1006 I GoogleInputMethodService: GoogleInputMethodService.onFinishInput():3466 
+11-19 19:24:50.152  1006  1006 I GoogleInputMethodService: GoogleInputMethodService.onStartInput():2045 
+11-19 19:24:50.152  1006  1006 I DeviceUnlockedTag: DeviceUnlockedTag.notifyDeviceLockStatusChanged():38 Notify device unlocked.
+11-19 19:24:50.163   268  1688 W android.hardware.audio.service.ranchu: TinyalsaSink::write:125 pcm_write was late reading frames, dropping 22131 us of audio
+11-19 19:24:50.180   469   507 I ActivityManager: Waited long enough for: ServiceRecord{d9910ef u0 com.google.android.apps.mediashell/.MediaShellCastReceiverService}
+11-19 19:24:50.185  3233  3233 I GabiFlixPlayer: AUDIOSYNC pronto (sem limite de dados; automático=true, começa 25 s depois de a legenda ficar ativa; resultado confiante vale 30 dias e não se reverifica; sem confiança: 1 nova tentativa em 1200 s; salto grande = 600 s)
+11-19 19:24:50.197  1940  3289 W katniss_search_SearchServiceCore: Abort, client detached.
+11-19 19:24:50.226  1940  3289 I chatty  : uid=10053(com.google.android.katniss) EventBus0 identical 6 lines
+11-19 19:24:50.226  1940  3289 W katniss_search_SearchServiceCore: Abort, client detached.
+11-19 19:24:50.226  1051  1065 I .gms.persisten: ThreadFlipBegin blocked for 24.181ms
+11-19 19:24:50.232  1940  1940 I katniss_search_BgTaskExecutorImpl: Starting EXCLUSIVE background task SEND_GSA_HOME_REQUEST.
+11-19 19:24:50.242  1940  1940 I katniss_search_BgTaskExecutorImpl: Starting EXCLUSIVE background task REFRESH_SEARCH_COOKIES.
+11-19 19:24:50.243  1940  2239 I katniss_search_BgTaskExecutorImpl: Starting NONEXCLUSIVE background task REFRESH_AUTH_TOKENS.
+11-19 19:24:50.250  1940  3289 W katniss_search_SearchServiceCore: Abort, client detached.
+11-19 19:24:50.250  1940  3289 I chatty  : uid=10053(com.google.android.katniss) EventBus0 identical 4 lines
+11-19 19:24:50.250  1940  3289 W katniss_search_SearchServiceCore: Abort, client detached.
+11-19 19:24:50.252  1051  1637 I .gms.persisten: IncrementDisableThreadFlip blocked for 25.931ms
+11-19 19:24:50.261  1051  1905 I .gms.persisten: IncrementDisableThreadFlip blocked for 58.879ms
+11-19 19:24:50.269  1940  3289 W katniss_search_SearchServiceCore: Abort, client detached.
+11-19 19:24:50.270  1940  3289 I chatty  : uid=10053(com.google.android.katniss) EventBus0 identical 2 lines
+11-19 19:24:50.270  1940  3289 W katniss_search_SearchServiceCore: Abort, client detached.
+11-19 19:24:50.270  1940  1940 I katniss_search_BgTaskExecutorImpl: Starting EXCLUSIVE background task SYNC_GEL_SHARED_PREFS.
+11-19 19:24:50.270  1940  3289 W katniss_search_SearchServiceCore: Abort, client detached.
+11-19 19:24:50.291  1051  1617 I akwz    : Scheduling Phenotype for a PhenotypeSyncImmediately(12, com.google.android.gms) one off with window [1, 2] in seconds [CONTEXT service_id=51 ]
+11-19 19:24:50.378  1940  3289 W katniss_search_SearchServiceCore: Abort, client detached.
+11-19 19:24:50.378  1940  3289 I chatty  : uid=10053(com.google.android.katniss) EventBus0 identical 3 lines
+11-19 19:24:50.378  1940  3289 W katniss_search_SearchServiceCore: Abort, client detached.
+11-19 19:24:50.448  1940  1940 I katniss_search_BgTaskExecutorImpl: Starting EXCLUSIVE background task SPEAKERID_SILENT_ENROLLMENT.
+11-19 19:24:50.450  1940  3289 W katniss_search_SearchServiceCore: Abort, client detached.
+11-19 19:24:50.450  1940  3289 I chatty  : uid=10053(com.google.android.katniss) EventBus0 identical 3 lines
+11-19 19:24:50.450  1940  3289 W katniss_search_SearchServiceCore: Abort, client detached.
+11-19 19:24:50.480  2738  2814 W ConfiguratorPhenotypeUt: Phenotype platform registration failed for com.google.android.platform.app_hibernation [CONTEXT service_id=204 ]
+11-19 19:24:50.480  2738  2814 W ConfiguratorPhenotypeUt: java.util.concurrent.TimeoutException: Timed out waiting for Task
+11-19 19:24:50.480  2738  2814 W ConfiguratorPhenotypeUt: 	at apym.l(:com.google.android.gms@223616104@22.36.16 (180706-476895098):7)
+11-19 19:24:50.480  2738  2814 W ConfiguratorPhenotypeUt: 	at akya.g(:com.google.android.gms@223616104@22.36.16 (180706-476895098):4)
+11-19 19:24:50.480  2738  2814 W ConfiguratorPhenotypeUt: 	at com.google.android.gms.platformconfigurator.PackageUpdateIntentOperation.b(:com.google.android.gms@223616104@22.36.16 (180706-476895098):0)
+11-19 19:24:50.480  2738  2814 W ConfiguratorPhenotypeUt: 	at lrh.onHandleIntent(:com.google.android.gms@223616104@22.36.16 (180706-476895098):7)
+11-19 19:24:50.480  2738  2814 W ConfiguratorPhenotypeUt: 	at com.google.android.gms.platformconfigurator.PackageUpdateIntentOperation.onHandleIntent(:com.google.android.gms@223616104@22.36.16 (180706-476895098):8)
+11-19 19:24:50.480  2738  2814 W ConfiguratorPhenotypeUt: 	at com.google.android.chimera.IntentOperation.onHandleIntent(:com.google.android.gms@223616104@22.36.16 (180706-476895098):2)
+11-19 19:24:50.480  2738  2814 W ConfiguratorPhenotypeUt: 	at lvp.onHandleIntent(:com.google.android.gms@223616104@22.36.16 (180706-476895098):4)
+11-19 19:24:50.480  2738  2814 W ConfiguratorPhenotypeUt: 	at duq.run(:com.google.android.gms@223616104@22.36.16 (180706-476895098):3)
+11-19 19:24:50.480  2738  2814 W ConfiguratorPhenotypeUt: 	at dup.run(:com.google.android.gms@223616104@22.36.16 (180706-476895098):11)
+11-19 19:24:50.480  2738  2814 W ConfiguratorPhenotypeUt: 	at bcuy.run(:com.google.android.gms@223616104@22.36.16 (180706-476895098):2)
+11-19 19:24:50.480  2738  2814 W ConfiguratorPhenotypeUt: 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1167)
+11-19 19:24:50.480  2738  2814 W ConfiguratorPhenotypeUt: 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:641)
+11-19 19:24:50.480  2738  2814 W ConfiguratorPhenotypeUt: 	at java.lang.Thread.run(Thread.java:923)
+11-19 19:24:50.616   282  1510 D goldfish-address-space: claimShared: Ask to claim region [0x3fc7ea000 0x3fcfd3000]
+11-19 19:24:50.624  3233  3302 E VLC     : [c6d17890/ce6] libvlc window: request 3 not implemented
+11-19 19:24:50.627  3233  3302 E VLC     : [c6d17890/ce6] libvlc window: request 1 not implemented
+11-19 19:24:50.638   329   952 W ServiceManager: Permission failure: android.permission.ACCESS_SURFACE_FLINGER from uid=10076 pid=3233
+11-19 19:24:50.639   329   952 D PermissionCache: checking android.permission.ACCESS_SURFACE_FLINGER for uid=10076 => denied (5717 us)
+11-19 19:24:50.769  2738  2789 I Icing   : updateResources: need to parse wls{com.google.android.gms}
+11-19 19:24:50.871  2537  3334 I ConfigUpdater: Update started
+11-19 19:24:50.956  3233  3244 I xyz404.gabifli: Background young concurrent copying GC freed 226282(8816KB) AllocSpace objects, 96(6132KB) LOS objects, 82% free, 5270KB/29MB, paused 97us total 213.336ms
+11-19 19:24:50.985  1940  2239 D SharedPreferencesImpl: Time required to fsync /data/user/0/com.google.android.katniss/shared_prefs/GEL.GSAPrefs.xml: [<1: 0, <2: 0, <4: 0, <8: 0, <16: 0, <32: 0, <64: 0, <128: 0, <256: 0, <512: 0, <1024: 1, <2048: 0, <4096: 0, <8192: 0, <16384: 0, >=16384: 0]
+11-19 19:24:50.985  1940  1979 D SharedPreferencesImpl: Time required to fsync /data/user/0/com.google.android.katniss/shared_prefs/uncaught_exception_handler_stats.xml: [<1: 0, <2: 0, <4: 0, <8: 0, <16: 0, <32: 0, <64: 0, <128: 0, <256: 0, <512: 0, <1024: 1, <2048: 0, <4096: 0, <8192: 0, <16384: 0, >=16384: 0]
+11-19 19:24:50.987  1940  3289 W katniss_search_SearchServiceCore: Abort, client detached.
+11-19 19:24:50.988  1940  3289 I chatty  : uid=10053(com.google.android.katniss) EventBus0 identical 2 lines
+11-19 19:24:50.988  1940  3289 W katniss_search_SearchServiceCore: Abort, client detached.
+11-19 19:24:51.016  1051  1065 I .gms.persisten: Background young concurrent copying GC freed 137020(9692KB) AllocSpace objects, 0(0B) LOS objects, 43% free, 10MB/19MB, paused 25.109ms total 1.372s
+11-19 19:24:51.072   469  2092 E WifiService: Permission violation - getConfiguredNetworks not allowed for uid=10049, packageName=com.google.android.tvrecommendations, reason=java.lang.SecurityException: UID 10049 has no location permission
+11-19 19:24:51.076   469  2092 I chatty  : uid=1000(system) Binder:469_11 identical 1 line
+11-19 19:24:51.077   469  2092 E WifiService: Permission violation - getConfiguredNetworks not allowed for uid=10049, packageName=com.google.android.tvrecommendations, reason=java.lang.SecurityException: UID 10049 has no location permission
+11-19 19:24:51.094  1940  3305 W katniss_search_BgTaskExecutorImpl: NONEXCLUSIVE background task REFRESH_AUTH_TOKENS was not found.
+11-19 19:24:51.094  1940  3305 W katniss_search_BgTaskExecutorImpl: lhl: Could not find background task: 63
+11-19 19:24:51.094  1940  3305 W katniss_search_BgTaskExecutorImpl: 	at lkc.f(PG:14)
+11-19 19:24:51.094  1940  3305 W katniss_search_BgTaskExecutorImpl: 	at fzp.k(PG:3)
+11-19 19:24:51.094  1940  3305 W katniss_search_BgTaskExecutorImpl: 	at fza.run(PG:46)
+11-19 19:24:51.094  1940  3305 W katniss_search_BgTaskExecutorImpl: 	at vhs.run(PG:2)
+11-19 19:24:51.094  1940  3305 W katniss_search_BgTaskExecutorImpl: 	at jdc.b(PG:1)
+11-19 19:24:51.094  1940  3305 W katniss_search_BgTaskExecutorImpl: 	at jdf.run(PG:1)
+11-19 19:24:51.094  1940  3305 W katniss_search_BgTaskExecutorImpl: 	at jbi.run(PG:2)
+11-19 19:24:51.094  1940  3305 W katniss_search_BgTaskExecutorImpl: 	at jbr.c(PG:1)
+11-19 19:24:51.094  1940  3305 W katniss_search_BgTaskExecutorImpl: 	at jbo.run(Unknown Source:2)
+11-19 19:24:51.094  1940  3305 W katniss_search_BgTaskExecutorImpl: 	at jaj.run(PG:2)
+11-19 19:24:51.094  1940  3305 W katniss_search_BgTaskExecutorImpl: 	at java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:462)
+11-19 19:24:51.094  1940  3305 W katniss_search_BgTaskExecutorImpl: 	at java.util.concurrent.FutureTask.run(FutureTask.java:266)
+11-19 19:24:51.094  1940  3305 W katniss_search_BgTaskExecutorImpl: 	at java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.run(ScheduledThreadPoolExecutor.java:301)
+11-19 19:24:51.094  1940  3305 W katniss_search_BgTaskExecutorImpl: 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1167)
+11-19 19:24:51.094  1940  3305 W katniss_search_BgTaskExecutorImpl: 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:641)
+11-19 19:24:51.094  1940  3305 W katniss_search_BgTaskExecutorImpl: 	at java.lang.Thread.run(Thread.java:923)
+11-19 19:24:51.094  1940  3305 W katniss_search_BgTaskExecutorImpl: 	at jam.run(PG:5)
+11-19 19:24:51.096  1940  3316 W katniss_search_BgTaskExecutorImpl: EXCLUSIVE background task PREDICTIVE_CARD_PREFERENCES_SYNC was not found.
+11-19 19:24:51.096  1940  3316 W katniss_search_BgTaskExecutorImpl: lhl: Could not find background task: 55
+11-19 19:24:51.096  1940  3316 W katniss_search_BgTaskExecutorImpl: 	at lkc.f(PG:14)
+11-19 19:24:51.096  1940  3316 W katniss_search_BgTaskExecutorImpl: 	at fzp.k(PG:3)
+11-19 19:24:51.096  1940  3316 W katniss_search_BgTaskExecutorImpl: 	at fza.run(PG:46)
+11-19 19:24:51.096  1940  3316 W katniss_search_BgTaskExecutorImpl: 	at vhs.run(PG:2)
+11-19 19:24:51.096  1940  3316 W katniss_search_BgTaskExecutorImpl: 	at jdc.b(PG:1)
+11-19 19:24:51.096  1940  3316 W katniss_search_BgTaskExecutorImpl: 	at jdf.run(PG:1)
+11-19 19:24:51.096  1940  3316 W katniss_search_BgTaskExecutorImpl: 	at jbi.run(PG:2)
+11-19 19:24:51.096  1940  3316 W katniss_search_BgTaskExecutorImpl: 	at jbr.c(PG:1)
+11-19 19:24:51.096  1940  3316 W katniss_search_BgTaskExecutorImpl: 	at jbo.run(Unknown Source:2)
+11-19 19:24:51.096  1940  3316 W katniss_search_BgTaskExecutorImpl: 	at jaj.run(PG:2)
+11-19 19:24:51.096  1940  3316 W katniss_search_BgTaskExecutorImpl: 	at java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:462)
+11-19 19:24:51.096  1940  3316 W katniss_search_BgTaskExecutorImpl: 	at java.util.concurrent.FutureTask.run(FutureTask.java:266)
+11-19 19:24:51.096  1940  3316 W katniss_search_BgTaskExecutorImpl: 	at java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.run(ScheduledThreadPoolExecutor.java:301)
+11-19 19:24:51.096  1940  3316 W katniss_search_BgTaskExecutorImpl: 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1167)
+11-19 19:24:51.096  1940  3316 W katniss_search_BgTaskExecutorImpl: 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:641)
+11-19 19:24:51.096  1940  3316 W katniss_search_BgTaskExecutorImpl: 	at java.lang.Thread.run(Thread.java:923)
+11-19 19:24:51.096  1940  3316 W katniss_search_BgTaskExecutorImpl: 	at jam.run(PG:5)
+11-19 19:24:51.098  1940  3309 W katniss_search_BgTaskExecutorImpl: EXCLUSIVE background task REFRESH_NOW_CONFIGURATION was not found.
+11-19 19:24:51.098  1940  3309 W katniss_search_BgTaskExecutorImpl: lhl: Could not find background task: 65
+11-19 19:24:51.098  1940  3309 W katniss_search_BgTaskExecutorImpl: 	at lkc.f(PG:14)
+11-19 19:24:51.098  1940  3309 W katniss_search_BgTaskExecutorImpl: 	at fzp.k(PG:3)
+11-19 19:24:51.098  1940  3309 W katniss_search_BgTaskExecutorImpl: 	at fza.run(PG:46)
+11-19 19:24:51.098  1940  3309 W katniss_search_BgTaskExecutorImpl: 	at vhs.run(PG:2)
+11-19 19:24:51.098  1940  3309 W katniss_search_BgTaskExecutorImpl: 	at jdc.b(PG:1)
+11-19 19:24:51.098  1940  3309 W katniss_search_BgTaskExecutorImpl: 	at jdf.run(PG:1)
+11-19 19:24:51.098  1940  3309 W katniss_search_BgTaskExecutorImpl: 	at jbi.run(PG:2)
+11-19 19:24:51.098  1940  3309 W katniss_search_BgTaskExecutorImpl: 	at jbr.c(PG:1)
+11-19 19:24:51.098  1940  3309 W katniss_search_BgTaskExecutorImpl: 	at jbo.run(Unknown Source:2)
+11-19 19:24:51.098  1940  3309 W katniss_search_BgTaskExecutorImpl: 	at jaj.run(PG:2)
+11-19 19:24:51.098  1940  3309 W katniss_search_BgTaskExecutorImpl: 	at java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:462)
+11-19 19:24:51.098  1940  3309 W katniss_search_BgTaskExecutorImpl: 	at java.util.concurrent.FutureTask.run(FutureTask.java:266)
+11-19 19:24:51.098  1940  3309 W katniss_search_BgTaskExecutorImpl: 	at java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.run(ScheduledThreadPoolExecutor.java:301)
+11-19 19:24:51.098  1940  3309 W katniss_search_BgTaskExecutorImpl: 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1167)
+11-19 19:24:51.098  1940  3309 W katniss_search_BgTaskExecutorImpl: 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:641)
+11-19 19:24:51.098  1940  3309 W katniss_search_BgTaskExecutorImpl: 	at java.lang.Thread.run(Thread.java:923)
+11-19 19:24:51.098  1940  3309 W katniss_search_BgTaskExecutorImpl: 	at jam.run(PG:5)
+11-19 19:24:51.111  1940  3315 W katniss_search_BgTaskExecutorImpl: EXCLUSIVE background task REFRESH_SEARCH_COOKIES was not found.
+11-19 19:24:51.111  1940  3315 W katniss_search_BgTaskExecutorImpl: lhl: Could not find background task: 66
+11-19 19:24:51.111  1940  3315 W katniss_search_BgTaskExecutorImpl: 	at lkc.f(PG:14)
+11-19 19:24:51.111  1940  3315 W katniss_search_BgTaskExecutorImpl: 	at fzp.k(PG:3)
+11-19 19:24:51.111  1940  3315 W katniss_search_BgTaskExecutorImpl: 	at fza.run(PG:46)
+11-19 19:24:51.111  1940  3315 W katniss_search_BgTaskExecutorImpl: 	at vhs.run(PG:2)
+11-19 19:24:51.111  1940  3315 W katniss_search_BgTaskExecutorImpl: 	at jdc.b(PG:1)
+11-19 19:24:51.111  1940  3315 W katniss_search_BgTaskExecutorImpl: 	at jdf.run(PG:1)
+11-19 19:24:51.111  1940  3315 W katniss_search_BgTaskExecutorImpl: 	at jbi.run(PG:2)
+11-19 19:24:51.111  1940  3315 W katniss_search_BgTaskExecutorImpl: 	at jbr.c(PG:1)
+11-19 19:24:51.111  1940  3315 W katniss_search_BgTaskExecutorImpl: 	at jbo.run(Unknown Source:2)
+11-19 19:24:51.111  1940  3315 W katniss_search_BgTaskExecutorImpl: 	at jaj.run(PG:2)
+11-19 19:24:51.111  1940  3315 W katniss_search_BgTaskExecutorImpl: 	at java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:462)
+11-19 19:24:51.111  1940  3315 W katniss_search_BgTaskExecutorImpl: 	at java.util.concurrent.FutureTask.run(FutureTask.java:266)
+11-19 19:24:51.111  1940  3315 W katniss_search_BgTaskExecutorImpl: 	at java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.run(ScheduledThreadPoolExecutor.java:301)
+11-19 19:24:51.111  1940  3315 W katniss_search_BgTaskExecutorImpl: 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1167)
+11-19 19:24:51.111  1940  3315 W katniss_search_BgTaskExecutorImpl: 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:641)
+11-19 19:24:51.111  1940  3315 W katniss_search_BgTaskExecutorImpl: 	at java.lang.Thread.run(Thread.java:923)
+11-19 19:24:51.111  1940  3315 W katniss_search_BgTaskExecutorImpl: 	at jam.run(PG:5)
+11-19 19:24:51.113   323   416 D AudioFlinger: mixer(0xe91d7030) throttle end: throttle time(12)
+11-19 19:24:51.114   469   469 D NotificationService: 0|com.android.providers.downloads|0|1:com.android.vending|10030: granting content://settings/system/notification_sound
+11-19 19:24:51.114   469   469 D NotificationService: 0|com.android.providers.downloads|0|1:com.android.vending|10030: granting content://settings/system/notification_sound
+11-19 19:24:51.116   469   469 W NotificationHistory: Attempted to add notif for locked/gone/disabled user 0
+11-19 19:24:51.120  1940  3317 W katniss_search_BgTaskExecutorImpl: NONEXCLUSIVE background task REFRESH_AUTH_TOKENS was not found.
+11-19 19:24:51.120  1940  3317 W katniss_search_BgTaskExecutorImpl: lhl: Could not find background task: 63
+11-19 19:24:51.120  1940  3317 W katniss_search_BgTaskExecutorImpl: 	at lkc.f(PG:14)
+11-19 19:24:51.120  1940  3317 W katniss_search_BgTaskExecutorImpl: 	at fzp.k(PG:3)
+11-19 19:24:51.120  1940  3317 W katniss_search_BgTaskExecutorImpl: 	at fza.run(PG:46)
+11-19 19:24:51.120  1940  3317 W katniss_search_BgTaskExecutorImpl: 	at vhs.run(PG:2)
+11-19 19:24:51.120  1940  3317 W katniss_search_BgTaskExecutorImpl: 	at jdc.b(PG:1)
+11-19 19:24:51.120  1940  3317 W katniss_search_BgTaskExecutorImpl: 	at jdf.run(PG:1)
+11-19 19:24:51.120  1940  3317 W katniss_search_BgTaskExecutorImpl: 	at jbi.run(PG:2)
+11-19 19:24:51.120  1940  3317 W katniss_search_BgTaskExecutorImpl: 	at jbr.c(PG:1)
+11-19 19:24:51.120  1940  3317 W katniss_search_BgTaskExecutorImpl: 	at jbo.run(Unknown Source:2)
+11-19 19:24:51.120  1940  3317 W katniss_search_BgTaskExecutorImpl: 	at jaj.run(PG:2)
+11-19 19:24:51.120  1940  3317 W katniss_search_BgTaskExecutorImpl: 	at java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:462)
+11-19 19:24:51.120  1940  3317 W katniss_search_BgTaskExecutorImpl: 	at java.util.concurrent.FutureTask.run(FutureTask.java:266)
+11-19 19:24:51.120  1940  3317 W katniss_search_BgTaskExecutorImpl: 	at java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.run(ScheduledThreadPoolExecutor.java:301)
+11-19 19:24:51.120  1940  3317 W katniss_search_BgTaskExecutorImpl: 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1167)
+11-19 19:24:51.120  1940  3317 W katniss_search_BgTaskExecutorImpl: 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:641)
+11-19 19:24:51.120  1940  3317 W katniss_search_BgTaskExecutorImpl: 	at java.lang.Thread.run(Thread.java:923)
+11-19 19:24:51.120  1940  3317 W katniss_search_BgTaskExecutorImpl: 	at jam.run(PG:5)
+11-19 19:24:51.123  1940  2039 E katniss_search_ApplicationPropertiesBu: Date 2021-12-06T00:00:00Z is out of expected range.
+11-19 19:24:51.123  1940  2039 E katniss_search_ApplicationPropertiesBu: Date 2022-02-15T00:00:00Z is out of expected range.
+11-19 19:24:51.124  1940  2039 E katniss_search_ApplicationPropertiesBu: Date 2022-02-22T00:00:00Z is out of expected range.
+11-19 19:24:51.125  1940  3297 W katniss_search_BgTaskExecutorImpl: EXCLUSIVE background task FETCH_LOCATION_REPORTING_STATE was not found.
+11-19 19:24:51.125  1940  3297 W katniss_search_BgTaskExecutorImpl: lhl: Could not find background task: 22
+11-19 19:24:51.125  1940  3297 W katniss_search_BgTaskExecutorImpl: 	at lkc.f(PG:14)
+11-19 19:24:51.125  1940  3297 W katniss_search_BgTaskExecutorImpl: 	at fzp.k(PG:3)
+11-19 19:24:51.125  1940  3297 W katniss_search_BgTaskExecutorImpl: 	at fza.run(PG:46)
+11-19 19:24:51.125  1940  3297 W katniss_search_BgTaskExecutorImpl: 	at vhs.run(PG:2)
+11-19 19:24:51.125  1940  3297 W katniss_search_BgTaskExecutorImpl: 	at jdc.b(PG:1)
+11-19 19:24:51.125  1940  3297 W katniss_search_BgTaskExecutorImpl: 	at jdf.run(PG:1)
+11-19 19:24:51.125  1940  3297 W katniss_search_BgTaskExecutorImpl: 	at jbi.run(PG:2)
+11-19 19:24:51.125  1940  3297 W katniss_search_BgTaskExecutorImpl: 	at jbr.c(PG:1)
+11-19 19:24:51.125  1940  3297 W katniss_search_BgTaskExecutorImpl: 	at jbo.run(Unknown Source:2)
+11-19 19:24:51.125  1940  3297 W katniss_search_BgTaskExecutorImpl: 	at jaj.run(PG:2)
+11-19 19:24:51.125  1940  3297 W katniss_search_BgTaskExecutorImpl: 	at java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:462)
+11-19 19:24:51.125  1940  3297 W katniss_search_BgTaskExecutorImpl: 	at java.util.concurrent.FutureTask.run(FutureTask.java:266)
+11-19 19:24:51.125  1940  3297 W katniss_search_BgTaskExecutorImpl: 	at java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.run(ScheduledThreadPoolExecutor.java:301)
+11-19 19:24:51.125  1940  3297 W katniss_search_BgTaskExecutorImpl: 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1167)
+11-19 19:24:51.125  1940  3297 W katniss_search_BgTaskExecutorImpl: 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:641)
+11-19 19:24:51.125  1940  3297 W katniss_search_BgTaskExecutorImpl: 	at java.lang.Thread.run(Thread.java:923)
+11-19 19:24:51.125  1940  3297 W katniss_search_BgTaskExecutorImpl: 	at jam.run(PG:5)
+11-19 19:24:51.131  1940  3323 W katniss_search_BgTaskExecutorImpl: EXCLUSIVE background task SYNC_GEL_SHARED_PREFS was not found.
+11-19 19:24:51.131  1940  3323 W katniss_search_BgTaskExecutorImpl: lhl: Could not find background task: 83
+11-19 19:24:51.131  1940  3323 W katniss_search_BgTaskExecutorImpl: 	at lkc.f(PG:14)
+11-19 19:24:51.131  1940  3323 W katniss_search_BgTaskExecutorImpl: 	at fzp.k(PG:3)
+11-19 19:24:51.131  1940  3323 W katniss_search_BgTaskExecutorImpl: 	at fza.run(PG:46)
+11-19 19:24:51.131  1940  3323 W katniss_search_BgTaskExecutorImpl: 	at vhs.run(PG:2)
+11-19 19:24:51.131  1940  3323 W katniss_search_BgTaskExecutorImpl: 	at jdc.b(PG:1)
+11-19 19:24:51.131  1940  3323 W katniss_search_BgTaskExecutorImpl: 	at jdf.run(PG:1)
+11-19 19:24:51.131  1940  3323 W katniss_search_BgTaskExecutorImpl: 	at jbi.run(PG:2)
+11-19 19:24:51.131  1940  3323 W katniss_search_BgTaskExecutorImpl: 	at jbr.c(PG:1)
+11-19 19:24:51.131  1940  3323 W katniss_search_BgTaskExecutorImpl: 	at jbo.run(Unknown Source:2)
+11-19 19:24:51.131  1940  3323 W katniss_search_BgTaskExecutorImpl: 	at jaj.run(PG:2)
+11-19 19:24:51.131  1940  3323 W katniss_search_BgTaskExecutorImpl: 	at java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:462)
+11-19 19:24:51.131  1940  3323 W katniss_search_BgTaskExecutorImpl: 	at java.util.concurrent.FutureTask.run(FutureTask.java:266)
+11-19 19:24:51.131  1940  3323 W katniss_search_BgTaskExecutorImpl: 	at java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.run(ScheduledThreadPoolExecutor.java:301)
+11-19 19:24:51.131  1940  3323 W katniss_search_BgTaskExecutorImpl: 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1167)
+11-19 19:24:51.131  1940  3323 W katniss_search_BgTaskExecutorImpl: 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:641)
+11-19 19:24:51.131  1940  3323 W katniss_search_BgTaskExecutorImpl: 	at java.lang.Thread.run(Thread.java:923)
+11-19 19:24:51.131  1940  3323 W katniss_search_BgTaskExecutorImpl: 	at jam.run(PG:5)
+11-19 19:24:51.137  1940  3326 W katniss_search_BgTaskExecutorImpl: EXCLUSIVE background task SPEAKERID_SILENT_ENROLLMENT was not found.
+11-19 19:24:51.137  1940  3326 W katniss_search_BgTaskExecutorImpl: lhl: Could not find background task: 81
+11-19 19:24:51.137  1940  3326 W katniss_search_BgTaskExecutorImpl: 	at lkc.f(PG:14)
+11-19 19:24:51.137  1940  3326 W katniss_search_BgTaskExecutorImpl: 	at fzp.k(PG:3)
+11-19 19:24:51.137  1940  3326 W katniss_search_BgTaskExecutorImpl: 	at fza.run(PG:46)
+11-19 19:24:51.137  1940  3326 W katniss_search_BgTaskExecutorImpl: 	at vhs.run(PG:2)
+11-19 19:24:51.137  1940  3326 W katniss_search_BgTaskExecutorImpl: 	at jdc.b(PG:1)
+11-19 19:24:51.137  1940  3326 W katniss_search_BgTaskExecutorImpl: 	at jdf.run(PG:1)
+11-19 19:24:51.137  1940  3326 W katniss_search_BgTaskExecutorImpl: 	at jbi.run(PG:2)
+11-19 19:24:51.137  1940  3326 W katniss_search_BgTaskExecutorImpl: 	at jbr.c(PG:1)
+11-19 19:24:51.137  1940  3326 W katniss_search_BgTaskExecutorImpl: 	at jbo.run(Unknown Source:2)
+11-19 19:24:51.137  1940  3326 W katniss_search_BgTaskExecutorImpl: 	at jaj.run(PG:2)
+11-19 19:24:51.137  1940  3326 W katniss_search_BgTaskExecutorImpl: 	at java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:462)
+11-19 19:24:51.137  1940  3326 W katniss_search_BgTaskExecutorImpl: 	at java.util.concurrent.FutureTask.run(FutureTask.java:266)
+11-19 19:24:51.137  1940  3326 W katniss_search_BgTaskExecutorImpl: 	at java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.run(ScheduledThreadPoolExecutor.java:301)
+11-19 19:24:51.137  1940  3326 W katniss_search_BgTaskExecutorImpl: 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1167)
+11-19 19:24:51.137  1940  3326 W katniss_search_BgTaskExecutorImpl: 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:641)
+11-19 19:24:51.137  1940  3326 W katniss_search_BgTaskExecutorImpl: 	at java.lang.Thread.run(Thread.java:923)
+11-19 19:24:51.137  1940  3326 W katniss_search_BgTaskExecutorImpl: 	at jam.run(PG:5)
+11-19 19:24:51.140   469   478 I system_server: Background young concurrent copying GC freed 265383(6950KB) AllocSpace objects, 13(452KB) LOS objects, 35% free, 12MB/19MB, paused 22us total 146.545ms
+11-19 19:24:51.141   469   480 W System  : A resource failed to call release. 
+11-19 19:24:51.141   469   480 W System  : A resource failed to call release. 
+11-19 19:24:51.148  1940  2039 W katniss_search_ExternalAppsUtil: Exception while fetching versionCode for package[com.google.android.apps.tv.dreamx].
+11-19 19:24:51.148  1940  2039 W katniss_search_ExternalAppsUtil: android.content.pm.PackageManager$NameNotFoundException: com.google.android.apps.tv.dreamx
+11-19 19:24:51.148  1940  2039 W katniss_search_ExternalAppsUtil: 	at android.app.ApplicationPackageManager.getPackageInfoAsUser(ApplicationPackageManager.java:206)
+11-19 19:24:51.148  1940  2039 W katniss_search_ExternalAppsUtil: 	at android.app.ApplicationPackageManager.getPackageInfo(ApplicationPackageManager.java:178)
+11-19 19:24:51.148  1940  2039 W katniss_search_ExternalAppsUtil: 	at jyi.d(PG:4)
+11-19 19:24:51.148  1940  2039 W katniss_search_ExternalAppsUtil: 	at jyi.h(PG:286)
+11-19 19:24:51.148  1940  2039 W katniss_search_ExternalAppsUtil: 	at jyi.a(PG:38)
+11-19 19:24:51.148  1940  2039 W katniss_search_ExternalAppsUtil: 	at jyp.a(PG:1)
+11-19 19:24:51.148  1940  2039 W katniss_search_ExternalAppsUtil: 	at vhq.a(PG:2)
+11-19 19:24:51.148  1940  2039 W katniss_search_ExternalAppsUtil: 	at agro.a(PG:1)
+11-19 19:24:51.148  1940  2039 W katniss_search_ExternalAppsUtil: 	at agqq.run(PG:4)
+11-19 19:24:51.148  1940  2039 W katniss_search_ExternalAppsUtil: 	at agrq.run(PG:1)
+11-19 19:24:51.148  1940  2039 W katniss_search_ExternalAppsUtil: 	at tjh.run(PG:1)
+11-19 19:24:51.148  1940  2039 W katniss_search_ExternalAppsUtil: 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1167)
+11-19 19:24:51.148  1940  2039 W katniss_search_ExternalAppsUtil: 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:641)
+11-19 19:24:51.148  1940  2039 W katniss_search_ExternalAppsUtil: 	at tin.run(PG:2)
+11-19 19:24:51.148  1940  2039 W katniss_search_ExternalAppsUtil: 	at tit.run(PG:3)
+11-19 19:24:51.148  1940  2039 W katniss_search_ExternalAppsUtil: 	at java.lang.Thread.run(Thread.java:923)
+11-19 19:24:51.148  1940  2039 W katniss_search_ExternalAppsUtil: Failed to fetch versionCode for package[com.google.android.apps.tv.dreamx].
+11-19 19:24:51.162  1940  2039 W katniss_search_ExternalAppsUtil: Exception while fetching versionCode for package[com.google.android.apps.tv.launcherx].
+11-19 19:24:51.162  1940  2039 W katniss_search_ExternalAppsUtil: android.content.pm.PackageManager$NameNotFoundException: com.google.android.apps.tv.launcherx
+11-19 19:24:51.162  1940  2039 W katniss_search_ExternalAppsUtil: 	at android.app.ApplicationPackageManager.getPackageInfoAsUser(ApplicationPackageManager.java:206)
+11-19 19:24:51.162  1940  2039 W katniss_search_ExternalAppsUtil: 	at android.app.ApplicationPackageManager.getPackageInfo(ApplicationPackageManager.java:178)
+11-19 19:24:51.162  1940  2039 W katniss_search_ExternalAppsUtil: 	at jyi.d(PG:4)
+11-19 19:24:51.162  1940  2039 W katniss_search_ExternalAppsUtil: 	at jyi.h(PG:286)
+11-19 19:24:51.162  1940  2039 W katniss_search_ExternalAppsUtil: 	at jyi.a(PG:38)
+11-19 19:24:51.162  1940  2039 W katniss_search_ExternalAppsUtil: 	at jyp.a(PG:1)
+11-19 19:24:51.162  1940  2039 W katniss_search_ExternalAppsUtil: 	at vhq.a(PG:2)
+11-19 19:24:51.162  1940  2039 W katniss_search_ExternalAppsUtil: 	at agro.a(PG:1)
+11-19 19:24:51.162  1940  2039 W katniss_search_ExternalAppsUtil: 	at agqq.run(PG:4)
+11-19 19:24:51.162  1940  2039 W katniss_search_ExternalAppsUtil: 	at agrq.run(PG:1)
+11-19 19:24:51.162  1940  2039 W katniss_search_ExternalAppsUtil: 	at tjh.run(PG:1)
+11-19 19:24:51.162  1940  2039 W katniss_search_ExternalAppsUtil: 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1167)
+11-19 19:24:51.162  1940  2039 W katniss_search_ExternalAppsUtil: 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:641)
+11-19 19:24:51.162  1940  2039 W katniss_search_ExternalAppsUtil: 	at tin.run(PG:2)
+11-19 19:24:51.162  1940  2039 W katniss_search_ExternalAppsUtil: 	at tit.run(PG:3)
+11-19 19:24:51.162  1940  2039 W katniss_search_ExternalAppsUtil: 	at java.lang.Thread.run(Thread.java:923)
+11-19 19:24:51.163  1940  2039 W katniss_search_ExternalAppsUtil: Failed to fetch versionCode for package[com.google.android.apps.tv.launcherx].
+11-19 19:24:51.187   159   159 E SELinux : avc:  denied  { find } for interface=android.hardware.memtrack::IMemtrack sid=u:r:untrusted_app:s0:c76,c256,c512,c768 pid=3233 scontext=u:r:untrusted_app:s0:c76,c256,c512,c768 tcontext=u:object_r:hal_memtrack_hwservice:s0 tclass=hwservice_manager permissive=0
+11-19 19:24:51.187  3233  3233 E memtrack: Couldn't load memtrack module
+11-19 19:24:51.188  3233  3233 I xyz404.gabifli: Using smaps_rollup for pss collection
+11-19 19:24:51.191  3233  3233 I GabiFlixPlayer: AUDIOSYNC estado: st=- executando=false tocando=true carregando=false faixa=-1 baixadas=0 addedSubs=0 embeddedKnown=false faixas=[] cand=false | pss=172MB java=5/512MB nativo=153MB livre=1063MB limiar=144MB poucaMemoria=false
+11-19 19:24:51.206  2738  2789 I Icing   : updateResources: need to parse wls{com.google.android.gms}
+11-19 19:24:51.209  2738  2738 D BoundBrokerSvc: onBind: Intent { act=com.google.android.gms.languageprofile.service.START pkg=com.google.android.gms }
+11-19 19:24:51.209  2738  2738 D BoundBrokerSvc: Loading bound service for intent: Intent { act=com.google.android.gms.languageprofile.service.START pkg=com.google.android.gms }
+11-19 19:24:51.209  2738  2738 I BndSvcConfigHelper: No bound-service is registered for action: com.google.android.gms.languageprofile.service.START
+11-19 19:24:51.209  2738  2738 I BoundBrokerSvc: Bound service not available for: Intent { act=com.google.android.gms.languageprofile.service.START pkg=com.google.android.gms }
+11-19 19:24:51.209  2738  2738 I ChimeraSrvcProxy: com.google.android.gms.chimera.GmsBoundBrokerService returning NullBinder for action com.google.android.gms.languageprofile.service.START
+11-19 19:24:51.212  2738  3328 W ChimeraSrvcProxy: Failed to read the buffer size file. Using default NullBinder reply size. java.io.FileNotFoundException: /data/user_de/0/com.google.android.gms/files/binder_buffer_size.txt: open failed: ENOENT (No such file or directory)
+11-19 19:24:51.232  2738  3328 I ChimeraSrvcProxy: NullBinder for com.google.android.gms.languageprofile.service.START triggering remote TransactionTooLargeException due to Service without Chimera impl
+11-19 19:24:51.241  1302  3336 D DownloadManager: [2] Starting
+11-19 19:24:51.241  2537  3334 I ConfigUpdater: Update started
+11-19 19:24:51.258  1302  3336 D NetworkSecurityConfig: No Network Security Config specified, using platform default
+11-19 19:24:51.259  1302  3336 D NetworkSecurityConfig: No Network Security Config specified, using platform default
+11-19 19:24:51.283  1940  1980 E JavaBinder: !!! FAILED BINDER TRANSACTION !!!  (parcel size = 556)
+11-19 19:24:51.284  1940  1980 W GmsClient: IGmsServiceBroker.getService failed
+11-19 19:24:51.284  1940  1980 W GmsClient: android.os.DeadObjectException: Transaction failed on small parcel; remote process probably died
+11-19 19:24:51.284  1940  1980 W GmsClient: 	at android.os.BinderProxy.transactNative(Native Method)
+11-19 19:24:51.284  1940  1980 W GmsClient: 	at android.os.BinderProxy.transact(BinderProxy.java:540)
+11-19 19:24:51.284  1940  1980 W GmsClient: 	at qjo.v(PG:14)
+11-19 19:24:51.284  1940  1980 W GmsClient: 	at qhf.run(PG:5)
+11-19 19:24:51.284  1940  1980 W GmsClient: 	at android.os.Handler.handleCallback(Handler.java:938)
+11-19 19:24:51.284  1940  1980 W GmsClient: 	at android.os.Handler.dispatchMessage(Handler.java:99)
+11-19 19:24:51.284  1940  1980 W GmsClient: 	at android.os.Looper.loop(Looper.java:223)
+11-19 19:24:51.284  1940  1980 W GmsClient: 	at android.os.HandlerThread.run(HandlerThread.java:67)
+11-19 19:24:51.288  1302  3339 D DownloadManager: [3] Starting
+11-19 19:24:51.296  2537  3334 I ConfigUpdater: Update started
+11-19 19:24:51.301  1302  3339 D NetworkSecurityConfig: No Network Security Config specified, using platform default
+11-19 19:24:51.302  1302  3339 D NetworkSecurityConfig: No Network Security Config specified, using platform default
+11-19 19:24:51.318  1302  1302 D DownloadManager: onStopJob id=1, reason=cancelled due to preemption
+11-19 19:24:51.328  2537  3334 I ConfigUpdater: Update started
+11-19 19:24:51.337  1302  3341 D DownloadManager: [4] Starting
+11-19 19:24:51.354  2222  3329 I android.vendin: oneway function results will be dropped but finished with status UNKNOWN_TRANSACTION and parcel size 0
+11-19 19:24:51.367  1302  3341 D NetworkSecurityConfig: No Network Security Config specified, using platform default
+11-19 19:24:51.370  1302  3341 D NetworkSecurityConfig: No Network Security Config specified, using platform default
+11-19 19:24:51.384  2537  3334 I ConfigUpdater: Update started
+11-19 19:24:51.436  1302  3151 W DownloadManager: [1] Stop requested with status HTTP_DATA_ERROR: Local halt requested; job probably timed out
+11-19 19:24:51.436  1302  3151 D DownloadManager: [1] Finished with status WAITING_TO_RETRY
+11-19 19:24:51.472   282  1510 D goldfish-address-space: claimShared: Ask to claim region [0x3fdfa5000 0x3fe78e000]
+11-19 19:24:51.528  1051  3156 E PhenotypeFlagCommitter: Retrieving snapshot for com.google.android.gms failed
+11-19 19:24:51.528  1051  3156 E PhenotypeFlagCommitter: java.util.concurrent.TimeoutException: Timed out waiting for Task
+11-19 19:24:51.528  1051  3156 E PhenotypeFlagCommitter: 	at apym.l(:com.google.android.gms@223616104@22.36.16 (180706-476895098):7)
+11-19 19:24:51.528  1051  3156 E PhenotypeFlagCommitter: 	at aksg.g(:com.google.android.gms@223616104@22.36.16 (180706-476895098):2)
+11-19 19:24:51.528  1051  3156 E PhenotypeFlagCommitter: 	at aksg.i(:com.google.android.gms@223616104@22.36.16 (180706-476895098):2)
+11-19 19:24:51.528  1051  3156 E PhenotypeFlagCommitter: 	at aksg.f(:com.google.android.gms@223616104@22.36.16 (180706-476895098):0)
+11-19 19:24:51.528  1051  3156 E PhenotypeFlagCommitter: 	at nlw.d(:com.google.android.gms@223616104@22.36.16 (180706-476895098):5)
+11-19 19:24:51.528  1051  3156 E PhenotypeFlagCommitter: 	at com.google.android.gms.common.config.PhenotypeUpdateOperation.onHandleIntent(:com.google.android.gms@223616104@22.36.16 (180706-476895098):10)
+11-19 19:24:51.528  1051  3156 E PhenotypeFlagCommitter: 	at com.google.android.chimera.IntentOperation.onHandleIntent(:com.google.android.gms@223616104@22.36.16 (180706-476895098):2)
+11-19 19:24:51.528  1051  3156 E PhenotypeFlagCommitter: 	at lvp.onHandleIntent(:com.google.android.gms@223616104@22.36.16 (180706-476895098):4)
+11-19 19:24:51.528  1051  3156 E PhenotypeFlagCommitter: 	at duq.run(:com.google.android.gms@223616104@22.36.16 (180706-476895098):3)
+11-19 19:24:51.528  1051  3156 E PhenotypeFlagCommitter: 	at dup.run(:com.google.android.gms@223616104@22.36.16 (180706-476895098):11)
+11-19 19:24:51.528  1051  3156 E PhenotypeFlagCommitter: 	at bcuy.run(:com.google.android.gms@223616104@22.36.16 (180706-476895098):2)
+11-19 19:24:51.528  1051  3156 E PhenotypeFlagCommitter: 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1167)
+11-19 19:24:51.528  1051  3156 E PhenotypeFlagCommitter: 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:641)
+11-19 19:24:51.528  1051  3156 E PhenotypeFlagCommitter: 	at java.lang.Thread.run(Thread.java:923)
+11-19 19:24:51.529  1051  1807 W ConfiguratorPhenotypeUt: Phenotype bulk platform registration failed. [CONTEXT service_id=204 ]
+11-19 19:24:51.529  1051  1807 W ConfiguratorPhenotypeUt: java.util.concurrent.TimeoutException: Timed out waiting for Task
+11-19 19:24:51.529  1051  1807 W ConfiguratorPhenotypeUt: 	at apym.l(:com.google.android.gms@223616104@22.36.16 (180706-476895098):7)
+11-19 19:24:51.529  1051  1807 W ConfiguratorPhenotypeUt: 	at akya.f(:com.google.android.gms@223616104@22.36.16 (180706-476895098):9)
+11-19 19:24:51.529  1051  1807 W ConfiguratorPhenotypeUt: 	at com.google.android.gms.platformconfigurator.PhenotypeConfigurationUpdateListener.b(:com.google.android.gms@223616104@22.36.16 (180706-476895098):3)
+11-19 19:24:51.529  1051  1807 W ConfiguratorPhenotypeUt: 	at com.google.android.gms.platformconfigurator.PhenotypeConfigurationUpdateListener.c(:com.google.android.gms@223616104@22.36.16 (180706-476895098):0)
+11-19 19:24:51.529  1051  1807 W ConfiguratorPhenotypeUt: 	at com.google.android.gms.platformconfigurator.PhenotypeConfigurationUpdateListener.onHandleIntent(:com.google.android.gms@223616104@22.36.16 (180706-476895098):15)
+11-19 19:24:51.529  1051  1807 W ConfiguratorPhenotypeUt: 	at com.google.android.chimera.IntentOperation.onHandleIntent(:com.google.android.gms@223616104@22.36.16 (180706-476895098):2)
+11-19 19:24:51.529  1051  1807 W ConfiguratorPhenotypeUt: 	at lvp.onHandleIntent(:com.google.android.gms@223616104@22.36.16 (180706-476895098):4)
+11-19 19:24:51.529  1051  1807 W ConfiguratorPhenotypeUt: 	at duq.run(:com.google.android.gms@223616104@22.36.16 (180706-476895098):3)
+11-19 19:24:51.529  1051  1807 W ConfiguratorPhenotypeUt: 	at dup.run(:com.google.android.gms@223616104@22.36.16 (180706-476895098):11)
+11-19 19:24:51.529  1051  1807 W ConfiguratorPhenotypeUt: 	at bcuy.run(:com.google.android.gms@223616104@22.36.16 (180706-476895098):2)
+11-19 19:24:51.529  1051  1807 W ConfiguratorPhenotypeUt: 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1167)
+11-19 19:24:51.529  1051  1807 W ConfiguratorPhenotypeUt: 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:641)
+11-19 19:24:51.529  1051  1807 W ConfiguratorPhenotypeUt: 	at java.lang.Thread.run(Thread.java:923)
+11-19 19:24:51.534  1051  3090 I ExperimentPackageManage: Package com.google.android.as name not found! Using module version.
+11-19 19:24:51.534  1051  3090 I ExperimentPackageManage: Package com.android.refreshratecontrol name not found! Using module version.
+11-19 19:24:51.535  1051  3090 I ExperimentPackageManage: Package com.google.android.as name not found! Using module version.
+11-19 19:24:51.535  1051  3090 I ExperimentPackageManage: Package com.google.android.apps.nexuslauncher name not found! Using module version.
+11-19 19:24:51.535  1051  3090 I ExperimentPackageManage: Package com.google.oslo name not found! Using module version.
+11-19 19:24:51.539  1051  3090 I ExperimentPackageManage: Package com.google.android.art name not found! Using module version.
+11-19 19:24:51.539  1051  3090 I ExperimentPackageManage: Package com.google.android.art name not found! Using module version.
+11-19 19:24:51.540  1051  3090 I ExperimentPackageManage: Package com.android.media name not found! Using module version.
+11-19 19:24:51.540  1051  3090 I ExperimentPackageManage: Package com.android.media.swcodec name not found! Using module version.
+11-19 19:24:51.541  1051  3090 I ExperimentPackageManage: Package com.android.appsearch name not found! Using module version.
+11-19 19:24:51.541  1051  3090 I ExperimentPackageManage: Package com.android.neuralnetworks name not found! Using module version.
+11-19 19:24:51.541  1051  3090 I ExperimentPackageManage: Package com.google.android.odad name not found! Using module version.
+11-19 19:24:51.542  1051  3090 I ExperimentPackageManage: Package com.android.media name not found! Using module version.
+11-19 19:24:51.554  1051  3090 I ExperimentPackageManage: Package com.google.android.adservices.api name not found! Using module version.
+11-19 19:24:51.555  1051  3090 I ExperimentPackageManage: Package com.google.android.as.oss name not found! Using module version.
+11-19 19:24:51.562  1051  3090 I ExperimentPackageManage: Package 1 name not found! Using module version.
+11-19 19:24:51.587  1051  3090 W ConfiguratorPhenotypeUt: Package com.google.android.odad name not found! Using module version. [CONTEXT service_id=204 ]
+11-19 19:24:51.587  1051  3090 W ConfiguratorPhenotypeUt: Package com.google.android.as name not found! Using module version. [CONTEXT service_id=204 ]
+11-19 19:24:51.588  1051  3090 W ConfiguratorPhenotypeUt: Package com.android.media.swcodec name not found! Using module version. [CONTEXT service_id=204 ]
+11-19 19:24:51.589  1051  3090 W ConfiguratorPhenotypeUt: Package com.google.android.art name not found! Using module version. [CONTEXT service_id=204 ]
+11-19 19:24:51.589  1051  3090 W ConfiguratorPhenotypeUt: Package com.android.appsearch name not found! Using module version. [CONTEXT service_id=204 ]
+11-19 19:24:51.589  3233  3233 I GabiFlixPlayer: legenda PT embutida: não há
+11-19 19:24:51.589  1051  3090 W ConfiguratorPhenotypeUt: Package com.google.android.art name not found! Using module version. [CONTEXT service_id=204 ]
+11-19 19:24:51.589  1051  3090 W ConfiguratorPhenotypeUt: Package com.google.android.apps.nexuslauncher name not found! Using module version. [CONTEXT service_id=204 ]
+11-19 19:24:51.590  3233  3233 I GabiFlixPlayer: ranking das legendas:
+11-19 19:24:51.590  3233  3233 I GabiFlixPlayer:   referência de fim=0ms (sem referência), duração=2100000ms
+11-19 19:24:51.590  3233  3233 I GabiFlixPlayer:   #0 fim=2081395ms hash=false corrigida=false nota=0.0561
+11-19 19:24:51.590  1051  3090 W ConfiguratorPhenotypeUt: Package com.google.android.adservices.api name not found! Using module version. [CONTEXT service_id=204 ]
+11-19 19:24:51.594  3233  3233 I GabiFlixPlayer: escolhida: candidata #0; melhor baixada: #0 alinhada=false nota=0.00 deslocamento=0ms hash=false corrigida=false; 1 no menu
+11-19 19:24:51.595  3233  3233 I GabiFlixPlayer: atraso da legenda ativa (nenhuma): 0 ms
+11-19 19:24:51.596  1051  3090 W ConfiguratorPhenotypeUt: Package com.google.android.as name not found! Using module version. [CONTEXT service_id=204 ]
+11-19 19:24:51.601  1051  3090 W ConfiguratorPhenotypeUt: Package com.android.media name not found! Using module version. [CONTEXT service_id=204 ]
+11-19 19:24:51.602  1051  3090 W ConfiguratorPhenotypeUt: Package com.google.android.as.oss name not found! Using module version. [CONTEXT service_id=204 ]
+11-19 19:24:51.603  1051  3090 W ConfiguratorPhenotypeUt: Package com.google.oslo name not found! Using module version. [CONTEXT service_id=204 ]
+11-19 19:24:51.613  1051  3090 W ConfiguratorPhenotypeUt: Package com.android.refreshratecontrol name not found! Using module version. [CONTEXT service_id=204 ]
+11-19 19:24:51.615  1051  3090 W ConfiguratorPhenotypeUt: Package com.android.media name not found! Using module version. [CONTEXT service_id=204 ]
+11-19 19:24:51.616  1051  3090 W ConfiguratorPhenotypeUt: Package com.android.neuralnetworks name not found! Using module version. [CONTEXT service_id=204 ]
+11-19 19:24:51.616  1051  3090 W ConfiguratorPhenotypeUt: Package 1 name not found! Using module version. [CONTEXT service_id=204 ]
+11-19 19:24:51.734  1051  1051 D BoundBrokerSvc: onUnbind: Intent { act=com.google.android.gms.instantapps.START pkg=com.google.android.gms }
+11-19 19:24:51.814  3233  3233 I GabiFlixPlayer: legenda do app: 197 falas da faixa ativa
+11-19 19:24:51.814  3233  3233 I GabiFlixPlayer: legenda do app: ligada
+11-19 19:24:51.901  2222  3329 I android.vendin: oneway function results will be dropped but finished with status UNKNOWN_TRANSACTION and parcel size 0
+11-19 19:24:51.902  2964  2964 I Finsky:quick_launch: [2] jjo.onDestroy(8): IPC-SERVER: Stopping gRPC host service...
+11-19 19:24:51.975  1302  3336 D DownloadManager: [2] Finished with status SUCCESS
+11-19 19:24:52.040   323   416 D AudioFlinger: mixer(0xe91d7030) throttle end: throttle time(121)
+11-19 19:24:52.064   323   416 D AudioFlinger: mixer(0xe91d7030) throttle end: throttle time(8)
+11-19 19:24:52.105   469   469 W TelecomManager: Telecom Service not found.
+11-19 19:24:52.199  1302  3339 D DownloadManager: [3] Finished with status SUCCESS
+11-19 19:24:52.211  3233  3233 I GabiFlixPlayer: AUDIOSYNC legenda ativa: 670d90868a9b39|http://10.0.2.2:8000/film.srt#raw (nova nesta sessão)
+11-19 19:24:52.212  3233  3233 I GabiFlixPlayer: AUDIOSYNC GATILHO motivo=troca-de-legenda legenda=670d90868a9b39|http://10.0.2.2:8000/film.srt#raw decisão=avaliar (espera 25 s tocando; se há resultado guardado, não analisa) [análises=0 sem_confiança=0 estado=nova]
+11-19 19:24:52.241   323   416 D AudioFlinger: mixer(0xe91d7030) throttle end: throttle time(6)
+11-19 19:24:52.309   323   416 D AudioFlinger: mixer(0xe91d7030) throttle end: throttle time(7)
+11-19 19:24:52.316  1302  3341 D DownloadManager: [4] Finished with status SUCCESS
+11-19 19:24:52.336  2738  2789 I Icing   : Indexing com.google.android.gms-apps from com.google.android.gms
+11-19 19:24:51.263   469   469 W NotificationHistory: Attempted to add notif for locked/gone/disabled user 0
+11-19 19:24:52.393   469  1112 E TaskPersister: File error accessing recents directory (directory doesn't exist?).
+11-19 19:24:52.521  2447  2447 I chromium: [2447:2447:INFO:debug_endpoint_manager_grpc_client.cc(365)] gRPC client channel state changed to GRPC_CHANNEL_TRANSIENT_FAILURE
+11-19 19:24:52.550  1302  3350 D DownloadManager: [5] Starting
+11-19 19:24:52.566   469   497 I system_server: oneway function results will be dropped but finished with status OK and parcel size 4
+11-19 19:24:52.633  2738  2789 I Icing   : Indexing com.google.android.gms-internal.3p:MobileApplication from com.google.android.gms
+11-19 19:24:52.695  2738  2789 I Icing   : Indexing done com.google.android.gms-apps
+11-19 19:24:52.699  2738  2789 I Icing   : Indexing done com.google.android.gms-internal.3p:MobileApplication
+11-19 19:24:52.728  1302  3350 D NetworkSecurityConfig: No Network Security Config specified, using platform default
+11-19 19:24:52.728  1302  3350 D NetworkSecurityConfig: No Network Security Config specified, using platform default
+11-19 19:24:52.740  1302  3351 D DownloadManager: [6] Starting
+11-19 19:24:52.752  1302  3351 D NetworkSecurityConfig: No Network Security Config specified, using platform default
+11-19 19:24:52.752  1302  3351 D NetworkSecurityConfig: No Network Security Config specified, using platform default
+11-19 19:24:52.794   323   416 D AudioFlinger: mixer(0xe91d7030) throttle end: throttle time(10)
+11-19 19:24:52.812  1302  3353 D DownloadManager: [7] Starting
+11-19 19:24:52.907  2222  3329 I android.vendin: oneway function results will be dropped but finished with status UNKNOWN_TRANSACTION and parcel size 0
+11-19 19:24:52.928   323   416 D AudioFlinger: mixer(0xe91d7030) throttle end: throttle time(10)
+11-19 19:24:53.117  3233  3233 I GabiFlixPlayer: atraso da legenda ativa (d3:u|h:ab670d90868a9b39|http://10.0.2.2:8000/film.srt#raw): 0 ms
+11-19 19:24:53.146  1302  3353 D NetworkSecurityConfig: No Network Security Config specified, using platform default
+11-19 19:24:53.146  1302  3353 D NetworkSecurityConfig: No Network Security Config specified, using platform default
+11-19 19:24:53.148   323   416 D AudioFlinger: mixer(0xe91d7030) throttle end: throttle time(56)
+11-19 19:24:53.210  1051  1623 I akwz    : Scheduling Phenotype for a PhenotypeSyncImmediately(6, com.google.android.gms.people) one off with window [1, 2] in seconds [CONTEXT service_id=51 ]
+11-19 19:24:53.365  1051  1617 I akwz    : Scheduling Phenotype for a PhenotypeSyncImmediately(6, com.google.android.gms.lockbox) one off with window [1, 2] in seconds [CONTEXT service_id=51 ]
+11-19 19:24:53.548   323   416 D AudioFlinger: mixer(0xe91d7030) throttle end: throttle time(4)
+11-19 19:24:53.557  1302  3351 D DownloadManager: [6] Finished with status SUCCESS
+11-19 19:24:53.558  1302  3350 D DownloadManager: [5] Finished with status SUCCESS
+11-19 19:24:53.691  1006  1006 I PhenotypeModule: PhenotypeModule.receiveBroadcast():388 onReceive() urgent = false
+11-19 19:24:53.695  1006  1006 I PhenotypeModule: PhenotypeModule.maybeFetchAndUpdate():169 maybeFetchAndUpdate: forceRefresh=true
+11-19 19:24:53.713   323   416 D AudioFlinger: mixer(0xe91d7030) throttle end: throttle time(3)
+11-19 19:24:53.742  1006  1006 I PhenotypeModule: PhenotypeModule.receiveBroadcast():388 onReceive() urgent = false
+11-19 19:24:53.742  1006  1006 I chatty  : uid=10063(com.google.android.inputmethod.latin) identical 2 lines
+11-19 19:24:53.742  1006  1006 I PhenotypeModule: PhenotypeModule.receiveBroadcast():388 onReceive() urgent = false
+11-19 19:24:53.823   323   416 D AudioFlinger: mixer(0xe91d7030) throttle end: throttle time(18)
+11-19 19:24:53.870  1051  1617 I akwz    : Scheduling Phenotype for a PhenotypeSyncImmediately(6, com.google.android.westworld) one off with window [1, 2] in seconds [CONTEXT service_id=51 ]
+11-19 19:24:54.055   323   416 D AudioFlinger: mixer(0xe91d7030) throttle end: throttle time(3)
+11-19 19:24:54.188   323   416 D AudioFlinger: mixer(0xe91d7030) throttle end: throttle time(8)
+11-19 19:24:54.307  1302  3353 D DownloadManager: [7] Finished with status SUCCESS
+11-19 19:24:54.363  1778  1778 W PhenotypeBackgroundRecv: #setContext not called in #onCreate, creating new ExecutorService.
+11-19 19:24:54.395  1051  1623 I akxk    : Removed 0 invalid users [CONTEXT service_id=51 ]
+11-19 19:24:54.396  1302  3362 D DownloadManager: [8] Starting
+11-19 19:24:54.490  1302  3362 D NetworkSecurityConfig: No Network Security Config specified, using platform default
+11-19 19:24:54.490  1302  3362 D NetworkSecurityConfig: No Network Security Config specified, using platform default
+11-19 19:24:54.491  1302  3365 D DownloadManager: [9] Starting
+11-19 19:24:54.499   323   416 D AudioFlinger: mixer(0xe91d7030) throttle end: throttle time(4)
+11-19 19:24:54.669  2738  2738 D BoundBrokerSvc: onUnbind: Intent { act=com.google.android.gms.feedback.internal.IFeedbackService dat=chimera-action:com.google.android.gms.feedback.internal.IFeedbackService cmp=com.google.android.gms/.chimera.GmsBoundBrokerService }
+11-19 19:24:54.675   323   416 D AudioFlinger: mixer(0xe91d7030) throttle end: throttle time(32)
+11-19 19:24:54.726  1302  3365 D NetworkSecurityConfig: No Network Security Config specified, using platform default
+11-19 19:24:54.726  1302  3365 D NetworkSecurityConfig: No Network Security Config specified, using platform default
+11-19 19:24:54.735  1051  1637 I PackageUpdateTaskChimer: Scheduling Phenotype config package catchup updates to be 86400 seconds from now (1795116294735) [CONTEXT service_id=51 ]
+11-19 19:24:55.049  1051  1065 I .gms.persisten: Background concurrent copying GC freed 221908(11MB) AllocSpace objects, 0(0B) LOS objects, 49% free, 8645KB/16MB, paused 96us total 306.526ms
+11-19 19:24:55.120   323   416 D AudioFlinger: mixer(0xe91d7030) throttle end: throttle time(25)
+11-19 19:24:55.127  1302  3362 D DownloadManager: [8] Finished with status SUCCESS
+11-19 19:24:55.151  1051  1617 I akwz    : Scheduling Phenotype for a PhenotypeSyncImmediately(6, com.google.android.libraries.internal.growth.growthkit#com.google.android.play.games) one off with window [1, 2] in seconds [CONTEXT service_id=51 ]
+11-19 19:24:55.177  1051  1637 I akwz    : Scheduling a periodic sync task every 14400 seconds, with flex of 1800 seconds [CONTEXT service_id=51 ]
+11-19 19:24:55.190  1051  1637 I akwz    : Scheduling adaptive one off task with window [14400, 604800] in seconds [CONTEXT service_id=51 ]
+11-19 19:24:55.237  1302  1320 D CompatibilityChangeReporter: Compat change id reported: 150939131; UID 10030; state: ENABLED
+11-19 19:24:55.262  1051  1617 I akwz    : Scheduling Phenotype for a PhenotypeSyncImmediately(6, com.google.android.libraries.notifications#com.google.android.play.games) one off with window [1, 2] in seconds [CONTEXT service_id=51 ]
+11-19 19:24:55.319  2222  2222 I Finsky  : [2] hab.run(13): com.android.vending: onProgress 45244080/53284597 Status: 194 URI: content://downloads/my_downloads/1.
+11-19 19:24:55.320  2222  2222 I Finsky  : [2] moe.d(6): RM: receive resource status onProgress com.android.vending reason:  isis: , 1, 194
+11-19 19:24:55.473   323   416 D AudioFlinger: mixer(0xe91d7030) throttle end: throttle time(3)
+11-19 19:24:55.701  1302  3365 D DownloadManager: [9] Finished with status SUCCESS
+11-19 19:24:55.771  1051  1617 I akwz    : Scheduling Phenotype for a PhenotypeSyncImmediately(6, com.google.android.gms.phenotype) one off with window [1, 2] in seconds [CONTEXT service_id=51 ]
+11-19 19:24:56.286  2738  2738 D BoundBrokerSvc: onUnbind: Intent { act=com.google.android.gms.languageprofile.service.START pkg=com.google.android.gms }
+11-19 19:24:56.291   323   416 D AudioFlinger: mixer(0xe91d7030) throttle end: throttle time(2)
+11-19 19:24:56.363  2738  3328 I ChimeraSrvcProxy: NullBinder for com.google.android.gms.languageprofile.service.START triggering remote TransactionTooLargeException due to Service without Chimera impl
+11-19 19:24:56.424  1940  1980 E JavaBinder: !!! FAILED BINDER TRANSACTION !!!  (parcel size = 556)
+11-19 19:24:56.424  1940  1980 W GmsClient: IGmsServiceBroker.getService failed
+11-19 19:24:56.424  1940  1980 W GmsClient: android.os.DeadObjectException: Transaction failed on small parcel; remote process probably died
+11-19 19:24:56.424  1940  1980 W GmsClient: 	at android.os.BinderProxy.transactNative(Native Method)
+11-19 19:24:56.424  1940  1980 W GmsClient: 	at android.os.BinderProxy.transact(BinderProxy.java:540)
+11-19 19:24:56.424  1940  1980 W GmsClient: 	at qjo.v(PG:14)
+11-19 19:24:56.424  1940  1980 W GmsClient: 	at qhf.run(PG:5)
+11-19 19:24:56.424  1940  1980 W GmsClient: 	at android.os.Handler.handleCallback(Handler.java:938)
+11-19 19:24:56.424  1940  1980 W GmsClient: 	at android.os.Handler.dispatchMessage(Handler.java:99)
+11-19 19:24:56.424  1940  1980 W GmsClient: 	at android.os.Looper.loop(Looper.java:223)
+11-19 19:24:56.424  1940  1980 W GmsClient: 	at android.os.HandlerThread.run(HandlerThread.java:67)
+11-19 19:24:56.567   469   478 I system_server: Background concurrent copying GC freed 251087(8422KB) AllocSpace objects, 20(1076KB) LOS objects, 49% free, 10MB/21MB, paused 32us total 175.785ms
+11-19 19:24:56.607   323   416 D AudioFlinger: mixer(0xe91d7030) throttle end: throttle time(22)
+11-19 19:24:56.645   323   416 D AudioFlinger: mixer(0xe91d7030) throttle end: throttle time(6)
+11-19 19:24:56.810   469  1142 I ActivityManager: Killing 1559:com.android.localtransport/1000 (adj 985): empty #17
+11-19 19:24:56.812   469  1142 I ActivityManager: Killing 1378:com.android.keychain/1000 (adj 985): empty #18
+11-19 19:24:56.867   323   416 D AudioFlinger: mixer(0xe91d7030) throttle end: throttle time(10)
+11-19 19:24:56.876  2447  2511 I chromium: [2447:2511:INFO:structure_info_from_trusted_devices.cc(311)] Getting trusted devices from HDS, num_in_flight_requests = 1
+11-19 19:24:56.876  2447  2447 W chromium: [2447:2447:WARNING:client_auth_signer.cc(168)] No private key, hence empty signature.
+11-19 19:24:56.876  2447  2447 I chromium: [2447:2447:INFO:application_identification_settings.cc(1437)] CreateJwt completed; running all done signing callbacks.
+11-19 19:24:56.876  2447  2447 I chromium: [2447:2447:INFO:application_identification_settings.cc(1442)] Missing signature, return empty JWT
+11-19 19:24:56.876  2447  2447 E chromium: [2447:2447:ERROR:ccs_transport_https.cc(1198)] CreateAndSignJwtAsync() returned invalid JWT. Not attaching to headers.
+11-19 19:24:56.876  2447  2447 E chromium: [2447:2447:ERROR:cast_auth_headers.cc(169)] Unable to update signature header
+11-19 19:24:56.876  2447  2447 I chromium: [2447:2447:INFO:metrics_recorder.cc(188)] cast event: Cloud.Transport.Https.GetTrustedDevices.Out
+11-19 19:24:56.912  2447  2447 E chromium: [2447:2447:ERROR:ccs_transport_https.cc(1846)] Received response code 401 for message_id = 685c8f5c-66b0-48ed-a07d-bcd84778d556 - 
+11-19 19:24:56.912  2447  2447 I chromium: [2447:2447:INFO:metrics_recorder.cc(188)] cast event: Cloud.Transport.Https.GetTrustedDevices.Out.Error
+11-19 19:24:56.912  2447  2511 E chromium: [2447:2511:ERROR:structure_info_from_trusted_devices.cc(379)] Failed to get trusted devices from HDS.
+11-19 19:24:56.965   263   263 I Zygote  : Process 1559 exited due to signal 9 (Killed)
+11-19 19:24:56.971   469   509 I libprocessgroup: Successfully killed process cgroup uid 1000 pid 1559 in 142ms
+11-19 19:24:57.025   323   416 D AudioFlinger: mixer(0xe91d7030) throttle end: throttle time(20)
+11-19 19:24:57.085   263   263 I Zygote  : Process 1378 exited due to signal 9 (Killed)
+11-19 19:24:57.113   469   509 I libprocessgroup: Successfully killed process cgroup uid 1000 pid 1378 in 141ms
+11-19 19:24:57.199   323   416 D AudioFlinger: mixer(0xe91d7030) throttle end: throttle time(9)
+11-19 19:24:57.284  2738  2738 D BoundBrokerSvc: onUnbind: Intent { act=com.google.android.gms.checkin.START pkg=com.google.android.gms }
+11-19 19:24:57.364  1051  1637 E PhenotypeFlagCommitter: Retrieving snapshot for com.google.android.gms.phenotype failed
+11-19 19:24:57.364  1051  1637 E PhenotypeFlagCommitter: java.util.concurrent.TimeoutException: Timed out waiting for Task
+11-19 19:24:57.364  1051  1637 E PhenotypeFlagCommitter: 	at apym.l(:com.google.android.gms@223616104@22.36.16 (180706-476895098):7)
+11-19 19:24:57.364  1051  1637 E PhenotypeFlagCommitter: 	at aksg.g(:com.google.android.gms@223616104@22.36.16 (180706-476895098):2)
+11-19 19:24:57.364  1051  1637 E PhenotypeFlagCommitter: 	at aksg.i(:com.google.android.gms@223616104@22.36.16 (180706-476895098):2)
+11-19 19:24:57.364  1051  1637 E PhenotypeFlagCommitter: 	at aksg.f(:com.google.android.gms@223616104@22.36.16 (180706-476895098):0)
+11-19 19:24:57.364  1051  1637 E PhenotypeFlagCommitter: 	at akuh.c(:com.google.android.gms@223616104@22.36.16 (180706-476895098):4)
+11-19 19:24:57.364  1051  1637 E PhenotypeFlagCommitter: 	at com.google.android.gms.phenotype.sync.HeterodyneSyncTaskChimeraService.f(:com.google.android.gms@223616104@22.36.16 (180706-476895098):61)
+11-19 19:24:57.364  1051  1637 E PhenotypeFlagCommitter: 	at com.google.android.gms.phenotype.sync.HeterodyneSyncTaskChimeraService.a(:com.google.android.gms@223616104@22.36.16 (180706-476895098):4)
+11-19 19:24:57.364  1051  1637 E PhenotypeFlagCommitter: 	at zmm.call(:com.google.android.gms@223616104@22.36.16 (180706-476895098):4)
+11-19 19:24:57.364  1051  1637 E PhenotypeFlagCommitter: 	at java.util.concurrent.FutureTask.run(FutureTask.java:266)
+11-19 19:24:57.364  1051  1637 E PhenotypeFlagCommitter: 	at oiz.c(:com.google.android.gms@223616104@22.36.16 (180706-476895098):6)
+11-19 19:24:57.364  1051  1637 E PhenotypeFlagCommitter: 	at oiz.run(:com.google.android.gms@223616104@22.36.16 (180706-476895098):7)
+11-19 19:24:57.364  1051  1637 E PhenotypeFlagCommitter: 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1167)
+11-19 19:24:57.364  1051  1637 E PhenotypeFlagCommitter: 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:641)
+11-19 19:24:57.364  1051  1637 E PhenotypeFlagCommitter: 	at ooc.run(:com.google.android.gms@223616104@22.36.16 (180706-476895098):0)
+11-19 19:24:57.364  1051  1637 E PhenotypeFlagCommitter: 	at java.lang.Thread.run(Thread.java:923)
+11-19 19:24:57.627  1051  3090 W ConfiguratorPhenotypeUt: Phenotype bulk platform registration failed. [CONTEXT service_id=204 ]
+11-19 19:24:57.627  1051  3090 W ConfiguratorPhenotypeUt: java.util.concurrent.TimeoutException: Timed out waiting for Task
+11-19 19:24:57.627  1051  3090 W ConfiguratorPhenotypeUt: 	at apym.l(:com.google.android.gms@223616104@22.36.16 (180706-476895098):7)
+11-19 19:24:57.627  1051  3090 W ConfiguratorPhenotypeUt: 	at akya.f(:com.google.android.gms@223616104@22.36.16 (180706-476895098):9)
+11-19 19:24:57.627  1051  3090 W ConfiguratorPhenotypeUt: 	at com.google.android.gms.platformconfigurator.PhenotypeConfigurationUpdateListener.b(:com.google.android.gms@223616104@22.36.16 (180706-476895098):3)
+11-19 19:24:57.627  1051  3090 W ConfiguratorPhenotypeUt: 	at com.google.android.gms.platformconfigurator.PhenotypeConfigurationUpdateListener.c(:com.google.android.gms@223616104@22.36.16 (180706-476895098):0)
+11-19 19:24:57.627  1051  3090 W ConfiguratorPhenotypeUt: 	at com.google.android.gms.platformconfigurator.PhenotypeConfigurationUpdateListener.onHandleIntent(:com.google.android.gms@223616104@22.36.16 (180706-476895098):3)
+11-19 19:24:57.627  1051  3090 W ConfiguratorPhenotypeUt: 	at com.google.android.chimera.IntentOperation.onHandleIntent(:com.google.android.gms@223616104@22.36.16 (180706-476895098):2)
+11-19 19:24:57.627  1051  3090 W ConfiguratorPhenotypeUt: 	at lvp.onHandleIntent(:com.google.android.gms@223616104@22.36.16 (180706-476895098):4)
+11-19 19:24:57.627  1051  3090 W ConfiguratorPhenotypeUt: 	at duq.run(:com.google.android.gms@223616104@22.36.16 (180706-476895098):3)
+11-19 19:24:57.627  1051  3090 W ConfiguratorPhenotypeUt: 	at dup.run(:com.google.android.gms@223616104@22.36.16 (180706-476895098):11)
+11-19 19:24:57.627  1051  3090 W ConfiguratorPhenotypeUt: 	at bcuy.run(:com.google.android.gms@223616104@22.36.16 (180706-476895098):2)
+11-19 19:24:57.627  1051  3090 W ConfiguratorPhenotypeUt: 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1167)
+11-19 19:24:57.627  1051  3090 W ConfiguratorPhenotypeUt: 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:641)
+11-19 19:24:57.627  1051  3090 W ConfiguratorPhenotypeUt: 	at java.lang.Thread.run(Thread.java:923)
+11-19 19:24:57.627   323   416 D AudioFlinger: mixer(0xe91d7030) throttle end: throttle time(24)
+11-19 19:24:57.818   323   416 D AudioFlinger: mixer(0xe91d7030) throttle end: throttle time(4)
+11-19 19:24:57.886   323   416 D AudioFlinger: mixer(0xe91d7030) throttle end: throttle time(4)
+11-19 19:24:58.290   323   416 D AudioFlinger: mixer(0xe91d7030) throttle end: throttle time(1)
+11-19 19:24:58.358   323   416 D AudioFlinger: mixer(0xe91d7030) throttle end: throttle time(18)
+11-19 19:24:58.395   323   416 D AudioFlinger: mixer(0xe91d7030) throttle end: throttle time(21)
+11-19 19:24:58.448  2738  2822 E WorkSourceUtil: Could not find package: com.google.android.gms.westworld
+11-19 19:24:58.449  2738  2822 E WorkSourceUtil: Could not find package: com.google.android.gms.westworld
+11-19 19:24:58.470  2738  2825 W PhenotypeRegOp: Phenotype bulk registration failed [CONTEXT service_id=231 ]
+11-19 19:24:58.470  2738  2825 W PhenotypeRegOp: java.util.concurrent.TimeoutException: Timed out waiting for Task
+11-19 19:24:58.470  2738  2825 W PhenotypeRegOp: 	at apym.l(:com.google.android.gms@223616104@22.36.16 (180706-476895098):7)
+11-19 19:24:58.470  2738  2825 W PhenotypeRegOp: 	at com.google.android.gms.common.config.PhenotypeRegistrationOperation.a(:com.google.android.gms@223616104@22.36.16 (180706-476895098):4)
+11-19 19:24:58.470  2738  2825 W PhenotypeRegOp: 	at com.google.android.gms.common.config.PhenotypeRegistrationOperation.onHandleIntent(:com.google.android.gms@223616104@22.36.16 (180706-476895098):17)
+11-19 19:24:58.470  2738  2825 W PhenotypeRegOp: 	at com.google.android.chimera.IntentOperation.onHandleIntent(:com.google.android.gms@223616104@22.36.16 (180706-476895098):2)
+11-19 19:24:58.470  2738  2825 W PhenotypeRegOp: 	at lvp.onHandleIntent(:com.google.android.gms@223616104@22.36.16 (180706-476895098):4)
+11-19 19:24:58.470  2738  2825 W PhenotypeRegOp: 	at duq.run(:com.google.android.gms@223616104@22.36.16 (180706-476895098):3)
+11-19 19:24:58.470  2738  2825 W PhenotypeRegOp: 	at dup.run(:com.google.android.gms@223616104@22.36.16 (180706-476895098):11)
+11-19 19:24:58.470  2738  2825 W PhenotypeRegOp: 	at bcuy.run(:com.google.android.gms@223616104@22.36.16 (180706-476895098):2)
+11-19 19:24:58.470  2738  2825 W PhenotypeRegOp: 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1167)
+11-19 19:24:58.470  2738  2825 W PhenotypeRegOp: 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:641)
+11-19 19:24:58.470  2738  2825 W PhenotypeRegOp: 	at java.lang.Thread.run(Thread.java:923)
+11-19 19:24:58.478  2738  2822 I Auth    : [WorkAccount] update authenticator enabled for boot or update
+11-19 19:24:58.482   323   416 D AudioFlinger: mixer(0xe91d7030) throttle end: throttle time(8)
+11-19 19:24:58.484  2738  2825 W SystemServiceRegistry: No service published for: persistent_data_block
+11-19 19:24:58.486  2738  2813 E PhenotypeRegOp: Attempting to overwrite config package for com.google.android.gms.games [CONTEXT service_id=231 ]
+11-19 19:24:58.487  2738  2813 E PhenotypeRegOp: Attempting to overwrite config package for com.google.android.gms.maps#com.google.android.gms [CONTEXT service_id=231 ]
+11-19 19:24:58.490  2738  2813 E PhenotypeRegOp: Attempting to overwrite config package for com.google.android.gms.udc [CONTEXT service_id=231 ]
+11-19 19:24:58.496  2738  2825 I Auth    : [FRP,FrpUpdateIntentOperation] Frp is not supported for this device / user
+11-19 19:24:58.505  2738  2827 I SystemUpdate: [Installation,ReceiverIntentOperation] Received intent: Intent { act=com.google.android.gms.update.BASE_MODULE_INIT cat=[targeted_intent_op_prefix:.update.control.ReceiverIntentOperation] cmp=com.google.android.gms/.chimera.GmsIntentOperationService }.
+11-19 19:24:58.506  2738  3373 I NewModuleComplete: Received com.google.android.chimera.IntentOperation.NEW_MODULE(com.google.android.gms.chimera.GmsIntentOperationService,1,true)
+11-19 19:24:58.507  2738  3374 I NewModuleHelper: Received com.google.android.chimera.container.NEW_MODULE_FINALIZE(1/0): com.google.android.gms.chimera.GmsIntentOperationService,1,true
+11-19 19:24:58.508  2738  3374 I NewModuleHelper: Completed all new module init intents for all processes.
+11-19 19:24:58.535  2738  3382 I SystemUpdate: [Execution,InstallationEventIntentOperation] Handling event of type 1.
+11-19 19:24:58.538  2738  3382 I SystemUpdate: [Execution,InstallationIntentOperation] Received intent: Intent { act=com.google.android.gms.update.INSTALL_UPDATE cat=[targeted_intent_op_prefix:.update.execution.InstallationIntentOperation] cmp=com.google.android.gms/.chimera.GmsIntentOperationService }.
+11-19 19:24:58.538  2738  3382 I SystemUpdate: [Execution,ExecutionManager] Action finished-execution executed for 0.00 seconds.
+11-19 19:24:58.550  1051  3386 W SystemServiceRegistry: No service published for: contexthub
+11-19 19:24:58.571  1051  3088 I GCoreUlr: DispatchingService ignoring Intent { act=android.net.wifi.WIFI_STATE_CHANGED flg=0x4000010 (has extras) } because ULR inactive
+11-19 19:24:58.608  1051  3088 I GCoreUlr: WorldUpdater received intent Intent { act=com.google.android.location.reporting.ACTION_UPDATE_WORLD cmp=com.google.android.gms/com.google.android.location.reporting.service.DispatchingService (has extras) } with receiverAction init
+11-19 19:24:58.638  1051  1771 I Auth    : [WorkAccountServiceImpl] init work authenticator
+11-19 19:24:58.687  1051  3088 I GCoreUlr: WorldUpdater:init: Ensuring that reporting is stopped because of reasons: (no Google accounts)
+11-19 19:24:58.690  2738  3375 I Auth    : [SupervisedAccountIntentOperation] onHandleIntent(): android.intent.action.BOOT_COMPLETED
+11-19 19:24:58.690  2738  3375 I Auth    : [SupervisedAccountIntentOperation] This operation is disabled
+11-19 19:24:58.690  2738  3375 W Auth    : [PubsubPeriodicSyncherRuntimeInit] Initializing periodic tasks, IntentAction=android.intent.action.BOOT_COMPLETED, InitRuntimeState=2
+11-19 19:24:58.703   323   416 D AudioFlinger: mixer(0xe91d7030) throttle end: throttle time(2)
+11-19 19:24:58.716  2738  3384 I RecoverableKeyStoreGms: [RecoverableKeyStoreGmsInitOperation] Initializing auth_folsom
+11-19 19:24:58.723  2738  3384 I RecoverableKeyStoreGms: [RecoverableKeyStoreGmsInitOperation] Enabling com.google.android.gms.auth.folsom.service.FolsomPublicKeyUpdateService.
+11-19 19:24:58.725  2738  3384 I RecoverableKeyStoreGms: [RecoverableKeyStoreGmsInitOperation] Enabling com.google.android.gms.auth.folsom.service.GcmReceiverService.
+11-19 19:24:58.790  2738  3383 I Auth    : [AuthManaged, PasswordComplexityHelperImpl] Updating password complexity components state.
+11-19 19:24:58.790  2738  3383 I Auth    : [AuthManaged, PasswordComplexityHelperImpl] Disabling com.google.android.gms.auth.managed.admin.DeviceAdminReceiver
+11-19 19:24:58.790  2738  3383 I Auth    : [AuthManaged, PasswordComplexityHelperImpl] Disabling com.google.android.gms.auth.managed.ui.SetNewPasswordActivity
+11-19 19:24:58.790  2738  3383 I Auth    : [AuthManaged, AuthManagedModuleInitIntentOperation] enabling com.google.android.gms.auth.managed.ui.EmmActivity
+11-19 19:24:58.790  2738  3383 I Auth    : [AuthManaged, AuthManagedModuleInitIntentOperation] enabling com.google.android.gms.auth.managed.ui.PhoneskyDpcInstallActivity
+11-19 19:24:58.795  1051  3088 I GCoreUlr: Unbound from all signal providers.
+11-19 19:24:58.821  2738  3383 W Auth    : [AuthManaged, SettingsSecurityDeviceOwnerChimeraActivity] device owner: n/a
+11-19 19:24:58.822  2738  3383 I Auth    : [AuthManaged, AuthManagedModuleInitIntentOperation] disabling com.google.android.gms.auth.managed.ui.SettingsSecurityDeviceOwnerActivity
+11-19 19:24:58.849  2222  2722 I android.vendin: oneway function results will be dropped but finished with status UNKNOWN_TRANSACTION and parcel size 0
+11-19 19:24:58.850  2651  2651 I Finsky:background: [2] jjo.onDestroy(8): IPC-SERVER: Stopping gRPC host service...
+11-19 19:24:58.866  2738  3383 I Auth    : [AuthManaged, PasswordComplexityHelperImpl] Updating password complexity components state.
+11-19 19:24:58.866  2738  3383 I Auth    : [AuthManaged, PasswordComplexityHelperImpl] Disabling com.google.android.gms.auth.managed.admin.DeviceAdminReceiver
+11-19 19:24:58.866  2738  3383 I Auth    : [AuthManaged, PasswordComplexityHelperImpl] Disabling com.google.android.gms.auth.managed.ui.SetNewPasswordActivity
+11-19 19:24:58.867  2738  3383 I SyncIntentOperation: Handling the intent: Intent { act=android.intent.action.BOOT_COMPLETED flg=0x89000010 pkg=com.google.android.gms cmp=com.google.android.gms/.chimera.GmsIntentOperationService (has extras) }. [CONTEXT service_id=80 ]
+11-19 19:24:58.968  1051  1051 D BoundBrokerSvc: onBind: Intent { act=com.google.android.gms.chimera.container.BIND_FIND_BUFFER_SIZE dat=chimera-action:com.google.android.gms.chimera.container.BIND_FIND_BUFFER_SIZE cmp=com.google.android.gms/.chimera.PersistentInternalBoundBrokerService }
+11-19 19:24:58.968  1051  1051 D BoundBrokerSvc: Loading bound service for intent: Intent { act=com.google.android.gms.chimera.container.BIND_FIND_BUFFER_SIZE dat=chimera-action:com.google.android.gms.chimera.container.BIND_FIND_BUFFER_SIZE cmp=com.google.android.gms/.chimera.PersistentInternalBoundBrokerService }
+11-19 19:24:59.016  2738  3375 I AppDoctorManager: Updating appdoctor Uri Permissions.
+11-19 19:24:59.043  2738  3384 I Checkin : [EventLogChimeraService] Opted in for usage reporting: false
+11-19 19:24:59.145  2738  2827 E JavaBinder: !!! FAILED BINDER TRANSACTION !!!  (parcel size = 1056768)
+11-19 19:24:59.214  2738  2751 I gle.android.gm: Background young concurrent copying GC freed 89581(4942KB) AllocSpace objects, 58(2556KB) LOS objects, 43% free, 9511KB/16MB, paused 6.312ms total 409.081ms
+11-19 19:24:59.220  1051  1051 D BoundBrokerSvc: onUnbind: Intent { act=com.google.android.gms.chimera.container.BIND_FIND_BUFFER_SIZE dat=chimera-action:com.google.android.gms.chimera.container.BIND_FIND_BUFFER_SIZE cmp=com.google.android.gms/.chimera.PersistentInternalBoundBrokerService }
+11-19 19:24:59.241  1173  1200 I ocess.gservice: Background concurrent copying GC freed 50102(1953KB) AllocSpace objects, 0(0B) LOS objects, 49% free, 2403KB/4807KB, paused 14us total 395.089ms
+11-19 19:24:59.245  2738  3382 W gle.android.gm: Accessing hidden method Landroid/net/ConnectivityManager;->isNetworkSupported(I)Z (greylist-max-p, reflection, denied)
+11-19 19:24:59.260  2738  3375 I Fido    : [FidoInitIntentOperation] Initializing Fido module, InitRuntimeState=2
+11-19 19:24:59.266  2738  3375 I Fido    : [FidoInitIntentOperation] Unable to enable the component com.google.android.gms.fido.authenticator.ui.AuthenticatorActivity
+11-19 19:24:59.266  2738  3375 I Fido    : [FidoInitIntentOperation] Unable to enable the component com.google.android.gms.fido.client.ui.FidoClientActivity
+11-19 19:24:59.266  2738  3375 I Fido    : [FidoInitIntentOperation] Unable to enable the component com.google.android.gms.fido.fido2.ui.Fido2FullScreenActivity
+11-19 19:24:59.267  2738  3375 I Fido    : [FidoInitIntentOperation] Unable to enable the component com.google.android.gms.fido.u2f.U2fService
+11-19 19:24:59.267  2738  3375 I Fido    : [FidoInitIntentOperation] Unable to enable the component com.google.android.gms.fido.u2f.ui.AuthenticateActivity
+11-19 19:24:59.290  2738  3384 W GmsTaskScheduler: ScheduledCheckinGmsTaskService is not available. This may cause the task to be lost.
+11-19 19:24:59.292  1051  1051 I GCoreUlr: Unbound from all signal providers.
+11-19 19:24:59.292  1051  1051 I GCoreUlr: Stopping handler for UlrDispSvcFast
+11-19 19:24:59.319  2738  3375 I Fido    : [FidoInitIntentOperation] Unable to enable the component com.google.android.gms.fido.authenticator.service.cablev2.GcmReceiverService
+11-19 19:24:59.320  2738  3375 I Fido    : [FidoInitIntentOperation] Unable to enable the component com.google.android.gms.fido.authenticator.service.AuthenticatorService
+11-19 19:24:59.320   469   656 W ActivityManager: Unable to start service Intent { cmp=com.google.android.gms/.fido.authenticator.service.AuthenticatorService } U=0: not found
+11-19 19:24:59.345  2738  3384 I Checkin : [EventLogChimeraService] Accumulating logs since 1795116278663
+11-19 19:24:59.349  2738  2738 D BoundBrokerSvc: onBind: Intent { act=com.google.android.gms.auth.cryptauth.cryptauthservice.START pkg=com.google.android.gms }
+11-19 19:24:59.349  2738  2738 D BoundBrokerSvc: Loading bound service for intent: Intent { act=com.google.android.gms.auth.cryptauth.cryptauthservice.START pkg=com.google.android.gms }
+11-19 19:24:59.349  2738  2738 I BndSvcConfigHelper: No bound-service is registered for action: com.google.android.gms.auth.cryptauth.cryptauthservice.START
+11-19 19:24:59.349  2738  2738 I BoundBrokerSvc: Bound service not available for: Intent { act=com.google.android.gms.auth.cryptauth.cryptauthservice.START pkg=com.google.android.gms }
+11-19 19:24:59.349  2738  2738 I ChimeraSrvcProxy: com.google.android.gms.chimera.GmsBoundBrokerService returning NullBinder for action com.google.android.gms.auth.cryptauth.cryptauthservice.START
+11-19 19:24:59.364  2738  2827 I MobileDataHub: Scheduling periodic tasks
+11-19 19:24:59.445  2738  3382 I SnapshotHandler: Unable to retrieve flag snapshot for com.google.android.gms.maps#com.google.android.gms, using defaults.
+11-19 19:24:59.445  2738  3382 I Google Maps Android API: Validating conditions for requesting maps_core feature. [CONTEXT service_id=71 ]
+11-19 19:24:59.446  2738  3382 I Google Maps Android API: Is maps_core feature installed? 1 [CONTEXT service_id=71 ]
+11-19 19:24:59.539  2738  3382 I Google Maps Android API: cutoffSize=2147483648, internalFreeBytes=5754114048
+11-19 19:24:59.539  2738  3382 I Google Maps Android API: Eligible to request maps_core feature. [CONTEXT service_id=71 ]
+11-19 19:24:59.549  2738  3382 I Google Maps Android API: maps_core feature request succeeded. [CONTEXT service_id=71 ]
+11-19 19:24:59.549  2738  3382 I MdiSyncModule: initializing module...
+11-19 19:24:59.612  2738  3382 I MdiSyncModule: module initialization completed
+11-19 19:24:59.616  2738  2794 I ChimeraSrvcProxy: NullBinder for com.google.android.gms.auth.cryptauth.cryptauthservice.START throwing RemoteException due to Service without Chimera impl
+11-19 19:24:59.616  2738  2794 W GmsClient: IGmsServiceBroker.getService failed
+11-19 19:24:59.616  2738  2794 W GmsClient: android.os.RemoteException: Service without Chimera impl
+11-19 19:24:59.616  2738  2794 W GmsClient: 	at dth.onTransact(:com.google.android.gms@223616104@22.36.16 (180706-476895098):2)
+11-19 19:24:59.616  2738  2794 W GmsClient: 	at android.os.Binder.transact(Binder.java:1043)
+11-19 19:24:59.616  2738  2794 W GmsClient: 	at nut.fj(:com.google.android.gms@223616104@22.36.16 (180706-476895098):5)
+11-19 19:24:59.616  2738  2794 W GmsClient: 	at nsz.s(:com.google.android.gms@223616104@22.36.16 (180706-476895098):13)
+11-19 19:24:59.616  2738  2794 W GmsClient: 	at ncr.run(:com.google.android.gms@223616104@22.36.16 (180706-476895098):5)
+11-19 19:24:59.616  2738  2794 W GmsClient: 	at android.os.Handler.handleCallback(Handler.java:938)
+11-19 19:24:59.616  2738  2794 W GmsClient: 	at android.os.Handler.dispatchMessage(Handler.java:99)
+11-19 19:24:59.616  2738  2794 W GmsClient: 	at zla.hP(:com.google.android.gms@223616104@22.36.16 (180706-476895098):0)
+11-19 19:24:59.616  2738  2794 W GmsClient: 	at zla.dispatchMessage(:com.google.android.gms@223616104@22.36.16 (180706-476895098):11)
+11-19 19:24:59.616  2738  2794 W GmsClient: 	at android.os.Looper.loop(Looper.java:223)
+11-19 19:24:59.616  2738  2794 W GmsClient: 	at android.os.HandlerThread.run(HandlerThread.java:67)
+11-19 19:24:59.621  2738  3381 I NearbyDiscovery: Trigger rescan contextual cards [CONTEXT service_id=265 ]
+11-19 19:24:59.621   469  1486 W ActivityManager: Unable to start service Intent { act=com.google.android.gms.nearby.discovery:ACTION_INIT_MESSAGES_PATH cmp=com.google.android.gms/.nearby.discovery.service.DiscoveryService } U=0: not found
+11-19 19:24:59.622  2738  3381 I NearbyDiscovery: FastPair: HeadsetPieceImage, grant permission files:0 [CONTEXT service_id=265 ]
+11-19 19:24:59.624  2738  3381 I NearbyFastPair: onInitRuntimeState isEnableWearableListener: false [CONTEXT service_id=265 ]
+11-19 19:24:59.680  2738  3382 W MDM     : [371] abpy.p: Q+ devices does not need device admin.
+11-19 19:24:59.687  2738  2827 I NearbySharing: Runtime state initialization complete. Sharing is disabled for reason UNSUPPORTED_DEVICE_TYPE_TV. [CONTEXT service_id=194 ]
+11-19 19:24:59.689   394   394 I keystore: del USRPKEY_unstable.c7202ece89390c490b1b94d5b71225e1.A-1102390638534510746 10050
+11-19 19:24:59.693  2738  2822 W ChimeraUtils: Module com.google.android.gms.phonesky_recovery has empty metadata display_name_string_id
+11-19 19:24:59.694   394   394 I keystore: del USRSKEY_unstable.c7202ece89390c490b1b94d5b71225e1.A-1102390638534510746 10050
+11-19 19:24:59.694   394   394 I keystore: del USRCERT_unstable.c7202ece89390c490b1b94d5b71225e1.A-1102390638534510746 10050
+11-19 19:24:59.694   394   394 I keystore: del CACERT_unstable.c7202ece89390c490b1b94d5b71225e1.A-1102390638534510746 10050
+11-19 19:24:59.701  2738  2822 I SnapshotHandler: Unable to retrieve flag snapshot for com.google.android.gms.phonesky_recovery, using defaults.
+11-19 19:24:59.703  2738  2738 D BoundBrokerSvc: onBind: Intent { act=com.google.android.gms.common.BIND_SHARED_PREFS pkg=com.google.android.gms }
+11-19 19:24:59.703  2738  2738 D BoundBrokerSvc: Loading bound service for intent: Intent { act=com.google.android.gms.common.BIND_SHARED_PREFS pkg=com.google.android.gms }
+11-19 19:24:59.715  2738  2738 D BoundBrokerSvc: onUnbind: Intent { act=com.google.android.gms.common.BIND_SHARED_PREFS pkg=com.google.android.gms }
+11-19 19:24:59.718  2738  2738 D BoundBrokerSvc: onBind: Intent { act=com.google.android.gms.common.BIND_SHARED_PREFS pkg=com.google.android.gms }
+11-19 19:24:59.718  2738  2738 D BoundBrokerSvc: Loading bound service for intent: Intent { act=com.google.android.gms.common.BIND_SHARED_PREFS pkg=com.google.android.gms }
+11-19 19:24:59.747  2738  3375 W PeoplePU: getComponentEnabledSetting failed.
+11-19 19:24:59.747  2738  3375 W PeoplePU: java.lang.IllegalArgumentException: Unknown component: ComponentInfo{com.google.android.syncadapters.contacts/com.google.android.syncadapters.contacts.ProxyGalProvider}
+11-19 19:24:59.747  2738  3375 W PeoplePU: 	at android.os.Parcel.createExceptionOrNull(Parcel.java:2378)
+11-19 19:24:59.747  2738  3375 W PeoplePU: 	at android.os.Parcel.createException(Parcel.java:2358)
+11-19 19:24:59.747  2738  3375 W PeoplePU: 	at android.os.Parcel.readException(Parcel.java:2341)
+11-19 19:24:59.747  2738  3375 W PeoplePU: 	at android.os.Parcel.readException(Parcel.java:2283)
+11-19 19:24:59.747  2738  3375 W PeoplePU: 	at android.content.pm.IPackageManager$Stub$Proxy.getComponentEnabledSetting(IPackageManager.java:6804)
+11-19 19:24:59.747  2738  3375 W PeoplePU: 	at android.app.ApplicationPackageManager.getComponentEnabledSetting(ApplicationPackageManager.java:2723)
+11-19 19:24:59.747  2738  3375 W PeoplePU: 	at akjg.b(:com.google.android.gms@223616104@22.36.16 (180706-476895098):1)
+11-19 19:24:59.747  2738  3375 W PeoplePU: 	at ajpf.a(:com.google.android.gms@223616104@22.36.16 (180706-476895098):2)
+11-19 19:24:59.747  2738  3375 W PeoplePU: 	at com.google.android.gms.people.api.init.PeopleModuleInitIntentOperation.b(:com.google.android.gms@223616104@22.36.16 (180706-476895098):5)
+11-19 19:24:59.747  2738  3375 W PeoplePU: 	at lrf.onHandleIntent(:com.google.android.gms@223616104@22.36.16 (180706-476895098):2)
+11-19 19:24:59.747  2738  3375 W PeoplePU: 	at com.google.android.chimera.IntentOperation.onHandleIntent(:com.google.android.gms@223616104@22.36.16 (180706-476895098):2)
+11-19 19:24:59.747  2738  3375 W PeoplePU: 	at lvp.onHandleIntent(:com.google.android.gms@223616104@22.36.16 (180706-476895098):4)
+11-19 19:24:59.747  2738  3375 W PeoplePU: 	at duq.run(:com.google.android.gms@223616104@22.36.16 (180706-476895098):3)
+11-19 19:24:59.747  2738  3375 W PeoplePU: 	at dup.run(:com.google.android.gms@223616104@22.36.16 (180706-476895098):11)
+11-19 19:24:59.747  2738  3375 W PeoplePU: 	at bcuy.run(:com.google.android.gms@223616104@22.36.16 (180706-476895098):2)
+11-19 19:24:59.747  2738  3375 W PeoplePU: 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1167)
+11-19 19:24:59.747  2738  3375 W PeoplePU: 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:641)
+11-19 19:24:59.747  2738  3375 W PeoplePU: 	at java.lang.Thread.run(Thread.java:923)
+11-19 19:24:59.747  2738  3375 W PeoplePU: getComponentEnabledSetting failed.
+11-19 19:24:59.747  2738  3375 W PeoplePU: java.lang.IllegalArgumentException: Unknown component: ComponentInfo{com.google.android.syncadapters.contacts/com.google.android.syncadapters.contacts.ProxyGalProvider}
+11-19 19:24:59.747  2738  3375 W PeoplePU: 	at android.os.Parcel.createExceptionOrNull(Parcel.java:2378)
+11-19 19:24:59.747  2738  3375 W PeoplePU: 	at android.os.Parcel.createException(Parcel.java:2358)
+11-19 19:24:59.747  2738  3375 W PeoplePU: 	at android.os.Parcel.readException(Parcel.java:2341)
+11-19 19:24:59.747  2738  3375 W PeoplePU: 	at android.os.Parcel.readException(Parcel.java:2283)
+11-19 19:24:59.747  2738  3375 W PeoplePU: 	at android.content.pm.IPackageManager$Stub$Proxy.getComponentEnabledSetting(IPackageManager.java:6804)
+11-19 19:24:59.747  2738  3375 W PeoplePU: 	at android.app.ApplicationPackageManager.getComponentEnabledSetting(ApplicationPackageManager.java:2723)
+11-19 19:24:59.747  2738  3375 W PeoplePU: 	at akjg.b(:com.google.android.gms@223616104@22.36.16 (180706-476895098):1)
+11-19 19:24:59.747  2738  3375 W PeoplePU: 	at ajpf.g(:com.google.android.gms@223616104@22.36.16 (180706-476895098):1)
+11-19 19:24:59.747  2738  3375 W PeoplePU: 	at ajpf.a(:com.google.android.gms@223616104@22.36.16 (180706-476895098):4)
+11-19 19:24:59.747  2738  3375 W PeoplePU: 	at com.google.android.gms.people.api.init.PeopleModuleInitIntentOperation.b(:com.google.android.gms@223616104@22.36.16 (180706-476895098):5)
+11-19 19:24:59.747  2738  3375 W PeoplePU: 	at lrf.onHandleIntent(:com.google.android.gms@223616104@22.36.16 (180706-476895098):2)
+11-19 19:24:59.747  2738  3375 W PeoplePU: 	at com.google.android.chimera.IntentOperation.onHandleIntent(:com.google.android.gms@223616104@22.36.16 (180706-476895098):2)
+11-19 19:24:59.747  2738  3375 W PeoplePU: 	at lvp.onHandleIntent(:com.google.android.gms@223616104@22.36.16 (180706-476895098):4)
+11-19 19:24:59.747  2738  3375 W PeoplePU: 	at duq.run(:com.google.android.gms@223616104@22.36.16 (180706-476895098):3)
+11-19 19:24:59.747  2738  3375 W PeoplePU: 	at dup.run(:com.google.android.gms@223616104@22.36.16 (180706-476895098):11)
+11-19 19:24:59.747  2738  3375 W PeoplePU: 	at bcuy.run(:com.google.android.gms@223616104@22.36.16 (180706-476895098):2)
+11-19 19:24:59.747  2738  3375 W PeoplePU: 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1167)
+11-19 19:24:59.747  2738  3375 W PeoplePU: 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:641)
+11-19 19:24:59.747  2738  3375 W PeoplePU: 	at java.lang.Thread.run(Thread.java:923)
+11-19 19:24:59.800  2738  2738 D BoundBrokerSvc: onUnbind: Intent { act=com.google.android.gms.common.BIND_SHARED_PREFS pkg=com.google.android.gms }
+11-19 19:24:59.814   469  1486 D BiometricService: Authenticator ID(0) OEMStrength: 15 updatedStrength: 15 modality 2 authenticator: com.android.server.biometrics.fingerprint.FingerprintAuthenticator@5894901, authenticatorID 0 cannot participate in Keystore operations
+11-19 19:24:59.819  2738  3375 W PeoplePU: Exceptions when checking package
+11-19 19:24:59.819  2738  3375 W PeoplePU: android.content.pm.PackageManager$NameNotFoundException: com.google.android.syncadapters.contacts
+11-19 19:24:59.819  2738  3375 W PeoplePU: 	at android.app.ApplicationPackageManager.getApplicationInfoAsUser(ApplicationPackageManager.java:423)
+11-19 19:24:59.819  2738  3375 W PeoplePU: 	at android.app.ApplicationPackageManager.getApplicationInfo(ApplicationPackageManager.java:412)
+11-19 19:24:59.819  2738  3375 W PeoplePU: 	at akjg.a(:com.google.android.gms@223616104@22.36.16 (180706-476895098):1)
+11-19 19:24:59.819  2738  3375 W PeoplePU: 	at ajpf.g(:com.google.android.gms@223616104@22.36.16 (180706-476895098):2)
+11-19 19:24:59.819  2738  3375 W PeoplePU: 	at ajpf.a(:com.google.android.gms@223616104@22.36.16 (180706-476895098):4)
+11-19 19:24:59.819  2738  3375 W PeoplePU: 	at com.google.android.gms.people.api.init.PeopleModuleInitIntentOperation.b(:com.google.android.gms@223616104@22.36.16 (180706-476895098):5)
+11-19 19:24:59.819  2738  3375 W PeoplePU: 	at lrf.onHandleIntent(:com.google.android.gms@223616104@22.36.16 (180706-476895098):2)
+11-19 19:24:59.819  2738  3375 W PeoplePU: 	at com.google.android.chimera.IntentOperation.onHandleIntent(:com.google.android.gms@223616104@22.36.16 (180706-476895098):2)
+11-19 19:24:59.819  2738  3375 W PeoplePU: 	at lvp.onHandleIntent(:com.google.android.gms@223616104@22.36.16 (180706-476895098):4)
+11-19 19:24:59.819  2738  3375 W PeoplePU: 	at duq.run(:com.google.android.gms@223616104@22.36.16 (180706-476895098):3)
+11-19 19:24:59.819  2738  3375 W PeoplePU: 	at dup.run(:com.google.android.gms@223616104@22.36.16 (180706-476895098):11)
+11-19 19:24:59.819  2738  3375 W PeoplePU: 	at bcuy.run(:com.google.android.gms@223616104@22.36.16 (180706-476895098):2)
+11-19 19:24:59.819  2738  3375 W PeoplePU: 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1167)
+11-19 19:24:59.819  2738  3375 W PeoplePU: 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:641)
+11-19 19:24:59.819  2738  3375 W PeoplePU: 	at java.lang.Thread.run(Thread.java:923)
+11-19 19:24:59.819  2738  3375 W GalProviderController: GAL1 package doesn't exist or disabled.
+11-19 19:24:59.869   394   394 I keystore: del USRPKEY_unstable.c7202ece89390c490b1b94d5b71225e1.A-1102390638534510746 10050
+11-19 19:24:59.869   394   394 I keystore: del USRCERT_unstable.c7202ece89390c490b1b94d5b71225e1.A-1102390638534510746 10050
+11-19 19:24:59.869   394   394 I keystore: del CACERT_unstable.c7202ece89390c490b1b94d5b71225e1.A-1102390638534510746 10050
+11-19 19:24:59.869   394   394 I keystore: del USRPKEY_unstable.c7202ece89390c490b1b94d5b71225e1.B-1102390638534510746 10050
+11-19 19:24:59.869   394   394 I keystore: del USRSKEY_unstable.c7202ece89390c490b1b94d5b71225e1.B-1102390638534510746 10050
+11-19 19:24:59.869   394   394 I keystore: del USRCERT_unstable.c7202ece89390c490b1b94d5b71225e1.B-1102390638534510746 10050
+11-19 19:24:59.869   394   394 I keystore: del CACERT_unstable.c7202ece89390c490b1b94d5b71225e1.B-1102390638534510746 10050
+11-19 19:24:59.882  1051  3088 I LockboxService: Completed task: true [CONTEXT service_id=26 ]
+11-19 19:24:59.885  2738  3375 I DeletedNullContactsCleanup: Scheduling the service.
+11-19 19:24:59.930   394   394 I keystore: del USRPKEY_unstable.c7202ece89390c490b1b94d5b71225e1.A-8158802236878399971 10050
+11-19 19:24:59.930   394   394 I keystore: del USRSKEY_unstable.c7202ece89390c490b1b94d5b71225e1.A-8158802236878399971 10050
+11-19 19:24:59.930   394   394 I keystore: del USRCERT_unstable.c7202ece89390c490b1b94d5b71225e1.A-8158802236878399971 10050
+11-19 19:24:59.930   394   394 I keystore: del CACERT_unstable.c7202ece89390c490b1b94d5b71225e1.A-8158802236878399971 10050
+11-19 19:24:59.947  2738  2822 W ChimeraUtils: Module com.google.android.gms.smartdevice has empty metadata display_name_string_id
+11-19 19:24:59.953  2738  3375 I BackupAndSyncValidation: Scheduling the service.
+11-19 19:25:00.041   394   394 I keystore: del USRPKEY_unstable.c7202ece89390c490b1b94d5b71225e1.A-8158802236878399971 10050
+11-19 19:25:00.041   394   394 I keystore: del USRCERT_unstable.c7202ece89390c490b1b94d5b71225e1.A-8158802236878399971 10050
+11-19 19:25:00.041   394   394 I keystore: del CACERT_unstable.c7202ece89390c490b1b94d5b71225e1.A-8158802236878399971 10050
+11-19 19:25:00.042   394   394 I keystore: del USRPKEY_unstable.c7202ece89390c490b1b94d5b71225e1.B-8158802236878399971 10050
+11-19 19:25:00.042   394   394 I keystore: del USRSKEY_unstable.c7202ece89390c490b1b94d5b71225e1.B-8158802236878399971 10050
+11-19 19:25:00.042   394   394 I keystore: del USRCERT_unstable.c7202ece89390c490b1b94d5b71225e1.B-8158802236878399971 10050
+11-19 19:25:00.061   394   394 I keystore: del CACERT_unstable.c7202ece89390c490b1b94d5b71225e1.B-8158802236878399971 10050
+11-19 19:25:00.097   323   416 D AudioFlinger: mixer(0xe91d7030) throttle end: throttle time(34)
+11-19 19:25:00.115  2738  3375 I PeopleInitIntentOp: Not initializing debuggability [CONTEXT service_id=5 ]
+11-19 19:25:00.116  2738  3375 I SnapshotHandler: Unable to retrieve flag snapshot for com.google.android.gms.subscribedfeeds, using defaults.
+11-19 19:25:00.119  2738  3375 I SubscribedFeeds: Collected 10 certs in 1ms [CONTEXT service_id=250 ]
+11-19 19:25:00.127  1997  2256 E libc    : Access denied finding property "persist.adb.tls_server.enable"
+11-19 19:25:00.138  1997  2256 E libc    : Access denied finding property "service.adb.tls.port"
+11-19 19:25:00.108  1997  1997 W Binder:1997_5: type=1400 audit(0.0:42): avc: denied { read } for name="u:object_r:system_adbd_prop:s0" dev="tmpfs" ino=8325 scontext=u:r:gmscore_app:s0:c512,c768 tcontext=u:object_r:system_adbd_prop:s0 tclass=file permissive=0 app=com.google.android.gms
+11-19 19:25:00.124  1997  1997 W Binder:1997_5: type=1400 audit(0.0:43): avc: denied { read } for name="u:object_r:adbd_prop:s0" dev="tmpfs" ino=8183 scontext=u:r:gmscore_app:s0:c512,c768 tcontext=u:object_r:adbd_prop:s0 tclass=file permissive=0 app=com.google.android.gms
+11-19 19:25:00.188  1997  2256 W SystemServiceRegistry: No service published for: persistent_data_block
+11-19 19:25:00.272  2738  2859 E WakeLock: DG:service ** IS FORCE-RELEASED ON TIMEOUT **
+11-19 19:25:00.392  1051  3087 I GCoreUlr: DispatchingService ignoring Intent { act=android.net.wifi.WIFI_STATE_CHANGED flg=0x4000010 (has extras) } because ULR inactive
+11-19 19:25:00.531  1051  3087 I GCoreUlr: WorldUpdater received intent Intent { act=com.google.android.location.reporting.ACTION_UPDATE_WORLD cmp=com.google.android.gms/com.google.android.location.reporting.service.DispatchingService (has extras) } with receiverAction init
+11-19 19:25:00.372   329   329 W Binder:329_5: type=1400 audit(0.0:44): avc: denied { search } for name="283" dev="proc" ino=66768 scontext=u:r:surfaceflinger:s0 tcontext=u:r:hal_graphics_composer_default:s0 tclass=dir permissive=0
+11-19 19:25:00.846  1997  3400 D HostConnection: HostConnection::get() New Host Connection established 0xf62e3da0, tid 3400
+11-19 19:25:00.852  1997  3400 D HostConnection: HostComposition ext ANDROID_EMU_CHECKSUM_HELPER_v1 ANDROID_EMU_native_sync_v2 ANDROID_EMU_dma_v1 ANDROID_EMU_direct_mem ANDROID_EMU_host_composition_v1 ANDROID_EMU_host_composition_v2 ANDROID_EMU_vulkan ANDROID_EMU_deferred_vulkan_commands ANDROID_EMU_vulkan_null_optional_strings ANDROID_EMU_vulkan_create_resources_with_requirements ANDROID_EMU_YUV_Cache ANDROID_EMU_vulkan_ignored_handles ANDROID_EMU_has_shared_slots_host_memory_allocator ANDROID_EMU_vulkan_free_memory_sync ANDROID_EMU_vulkan_shader_float16_int8 ANDROID_EMU_vulkan_async_queue_submit ANDROID_EMU_sync_buffer_data ANDROID_EMU_vulkan_async_qsri ANDROID_EMU_read_color_buffer_dma ANDROID_EMU_hwc_color_transform GL_OES_EGL_image_external_essl3 GL_OES_vertex_array_object GL_KHR_texture_compression_astc_ldr ANDROID_EMU_host_side_tracing ANDROID_EMU_gles_max_version_3_0 
+11-19 19:25:00.894  2738  3383 E PhenotypeFlagCommitter: Retrieving snapshot for com.google.android.gms.playlog.uploader failed
+11-19 19:25:00.894  2738  3383 E PhenotypeFlagCommitter: java.util.concurrent.TimeoutException: Timed out waiting for Task
+11-19 19:25:00.894  2738  3383 E PhenotypeFlagCommitter: 	at apym.l(:com.google.android.gms@223616104@22.36.16 (180706-476895098):7)
+11-19 19:25:00.894  2738  3383 E PhenotypeFlagCommitter: 	at aksg.g(:com.google.android.gms@223616104@22.36.16 (180706-476895098):2)
+11-19 19:25:00.894  2738  3383 E PhenotypeFlagCommitter: 	at aksg.i(:com.google.android.gms@223616104@22.36.16 (180706-476895098):2)
+11-19 19:25:00.894  2738  3383 E PhenotypeFlagCommitter: 	at aksg.f(:com.google.android.gms@223616104@22.36.16 (180706-476895098):0)
+11-19 19:25:00.894  2738  3383 E PhenotypeFlagCommitter: 	at com.google.android.gms.clearcut.init.ClearcutInitChimeraIntentService.b(:com.google.android.gms@223616104@22.36.16 (180706-476895098):5)
+11-19 19:25:00.894  2738  3383 E PhenotypeFlagCommitter: 	at lrf.onHandleIntent(:com.google.android.gms@223616104@22.36.16 (180706-476895098):2)
+11-19 19:25:00.894  2738  3383 E PhenotypeFlagCommitter: 	at com.google.android.gms.clearcut.init.DefaultPriorityClearcutInitChimeraIntentService.onHandleIntent(:com.google.android.gms@223616104@22.36.16 (180706-476895098):2)
+11-19 19:25:00.894  2738  3383 E PhenotypeFlagCommitter: 	at com.google.android.chimera.IntentOperation.onHandleIntent(:com.google.android.gms@223616104@22.36.16 (180706-476895098):2)
+11-19 19:25:00.894  2738  3383 E PhenotypeFlagCommitter: 	at lvp.onHandleIntent(:com.google.android.gms@223616104@22.36.16 (180706-476895098):4)
+11-19 19:25:00.894  2738  3383 E PhenotypeFlagCommitter: 	at duq.run(:com.google.android.gms@223616104@22.36.16 (180706-476895098):3)
+11-19 19:25:00.894  2738  3383 E PhenotypeFlagCommitter: 	at dup.run(:com.google.android.gms@223616104@22.36.16 (180706-476895098):11)
+11-19 19:25:00.894  2738  3383 E PhenotypeFlagCommitter: 	at bcuy.run(:com.google.android.gms@223616104@22.36.16 (180706-476895098):2)
+11-19 19:25:00.894  2738  3383 E PhenotypeFlagCommitter: 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1167)
+11-19 19:25:00.894  2738  3383 E PhenotypeFlagCommitter: 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:641)
+11-19 19:25:00.894  2738  3383 E PhenotypeFlagCommitter: 	at java.lang.Thread.run(Thread.java:923)
+11-19 19:25:00.945  1997  3400 D EGL_emulation: eglCreateContext: 0xf62e35c0: maj 3 min 0 rcv 3
+11-19 19:25:00.994  1997  3400 D EGL_emulation: eglMakeCurrent: 0xf62e35c0: ver 3 0 (tinfo 0xf66177d0) (first time)
+11-19 19:25:01.058  1051  3087 I GCoreUlr: WorldUpdater:init: Ensuring that reporting is stopped because of reasons: (no Google accounts)
+11-19 19:25:01.093  1051  3087 I GCoreUlr: Unbound from all signal providers.
+11-19 19:25:01.186  1051  1051 I GCoreUlr: Unbound from all signal providers.
+11-19 19:25:01.186  1051  1051 I GCoreUlr: Stopping handler for UlrDispSvcFast
+11-19 19:25:01.219  1051  1065 I .gms.persisten: Background concurrent copying GC freed 170238(9610KB) AllocSpace objects, 6(312KB) LOS objects, 49% free, 9150KB/17MB, paused 4.057ms total 1.534s
+11-19 19:25:01.315   323   416 D AudioFlinger: mixer(0xe91d7030) throttle end: throttle time(15)
+11-19 19:25:01.419  2738  2738 D BoundBrokerSvc: onUnbind: Intent { act=com.google.android.gms.safetynet.service.START pkg=com.google.android.gms }
+11-19 19:25:01.425   323   416 D AudioFlinger: mixer(0xe91d7030) throttle end: throttle time(8)
+11-19 19:25:01.523  2738  3425 I ChimeraSrvcProxy: NullBinder for com.google.android.gms.languageprofile.service.START triggering remote TransactionTooLargeException due to Service without Chimera impl
+11-19 19:25:01.609  1940  1980 E JavaBinder: !!! FAILED BINDER TRANSACTION !!!  (parcel size = 556)
+11-19 19:25:01.609  1940  1980 W GmsClient: IGmsServiceBroker.getService failed
+11-19 19:25:01.609  1940  1980 W GmsClient: android.os.DeadObjectException: Transaction failed on small parcel; remote process probably died
+11-19 19:25:01.609  1940  1980 W GmsClient: 	at android.os.BinderProxy.transactNative(Native Method)
+11-19 19:25:01.609  1940  1980 W GmsClient: 	at android.os.BinderProxy.transact(BinderProxy.java:540)
+11-19 19:25:01.609  1940  1980 W GmsClient: 	at qjo.v(PG:14)
+11-19 19:25:01.609  1940  1980 W GmsClient: 	at qhf.run(PG:5)
+11-19 19:25:01.609  1940  1980 W GmsClient: 	at android.os.Handler.handleCallback(Handler.java:938)
+11-19 19:25:01.609  1940  1980 W GmsClient: 	at android.os.Handler.dispatchMessage(Handler.java:99)
+11-19 19:25:01.609  1940  1980 W GmsClient: 	at android.os.Looper.loop(Looper.java:223)
+11-19 19:25:01.609  1940  1980 W GmsClient: 	at android.os.HandlerThread.run(HandlerThread.java:67)
+11-19 19:25:01.686  1997  3400 E libc    : Access denied finding property "persist.adb.tls_server.enable"
+11-19 19:25:01.686  1997  3400 E libc    : Access denied finding property "service.adb.tls.port"
+11-19 19:25:01.684  1997  1997 W IntentService[D: type=1400 audit(0.0:45): avc: denied { read } for name="u:object_r:system_adbd_prop:s0" dev="tmpfs" ino=8325 scontext=u:r:gmscore_app:s0:c512,c768 tcontext=u:object_r:system_adbd_prop:s0 tclass=file permissive=0 app=com.google.android.gms
+11-19 19:25:01.684  1997  1997 W IntentService[D: type=1400 audit(0.0:46): avc: denied { read } for name="u:object_r:adbd_prop:s0" dev="tmpfs" ino=8183 scontext=u:r:gmscore_app:s0:c512,c768 tcontext=u:object_r:adbd_prop:s0 tclass=file permissive=0 app=com.google.android.gms
+11-19 19:25:01.802   323   416 D AudioFlinger: mixer(0xe91d7030) throttle end: throttle time(3)
+11-19 19:25:02.023   323   416 D AudioFlinger: mixer(0xe91d7030) throttle end: throttle time(2)
+11-19 19:25:02.775   323   416 D AudioFlinger: mixer(0xe91d7030) throttle end: throttle time(2)
+11-19 19:25:03.120  2447  2447 I chromium: [2447:2447:INFO:debug_endpoint_manager_grpc_client.cc(365)] gRPC client channel state changed to GRPC_CHANNEL_TRANSIENT_FAILURE
+11-19 19:25:03.387  1997  2256 D EGL_emulation: eglCreateContext: 0xf62e0760: maj 3 min 0 rcv 3
+11-19 19:25:03.664  1051  3090 I ExperimentPackageManage: Package com.google.android.as name not found! Using module version.
+11-19 19:25:03.664  1051  3090 I ExperimentPackageManage: Package com.android.refreshratecontrol name not found! Using module version.
+11-19 19:25:03.664  1051  3090 I ExperimentPackageManage: Package com.google.android.as name not found! Using module version.
+11-19 19:25:03.664  1051  3090 I ExperimentPackageManage: Package com.google.android.apps.nexuslauncher name not found! Using module version.
+11-19 19:25:03.682  1051  3090 I ExperimentPackageManage: Package com.google.oslo name not found! Using module version.
+11-19 19:25:03.682  1051  3090 I ExperimentPackageManage: Package com.google.android.art name not found! Using module version.
+11-19 19:25:03.685  1051  3090 I ExperimentPackageManage: Package com.google.android.art name not found! Using module version.
+11-19 19:25:03.692  1051  3090 I ExperimentPackageManage: Package com.android.media name not found! Using module version.
+11-19 19:25:03.695  1051  3090 I ExperimentPackageManage: Package com.android.media.swcodec name not found! Using module version.
+11-19 19:25:03.697  1051  3090 I ExperimentPackageManage: Package com.android.appsearch name not found! Using module version.
+11-19 19:25:03.704  1051  3090 I ExperimentPackageManage: Package com.android.neuralnetworks name not found! Using module version.
+11-19 19:25:03.704  1051  3090 I ExperimentPackageManage: Package com.google.android.odad name not found! Using module version.
+11-19 19:25:03.704  1051  3090 I ExperimentPackageManage: Package com.android.media name not found! Using module version.
+11-19 19:25:03.715  1051  3090 I ExperimentPackageManage: Package com.google.android.adservices.api name not found! Using module version.
+11-19 19:25:03.726  1051  3090 I ExperimentPackageManage: Package com.google.android.as.oss name not found! Using module version.
+11-19 19:25:03.726  1051  3090 I ExperimentPackageManage: Package 1 name not found! Using module version.
+11-19 19:25:04.104  1997  3400 W SystemServiceRegistry: No service published for: persistent_data_block
+11-19 19:25:03.968   329   329 W Binder:329_5: type=1400 audit(0.0:47): avc: denied { search } for name="283" dev="proc" ino=66768 scontext=u:r:surfaceflinger:s0 tcontext=u:r:hal_graphics_composer_default:s0 tclass=dir permissive=0
+11-19 19:25:04.313  2738  3384 I Checkin : [CheckinOperation] Starting Checkin: Default Task Reason : 1 Force : false UserId : 0 Start time : 69842
+11-19 19:25:04.314  2738  3384 I CheckinUtil: Classify the device as TV. [CONTEXT service_id=130 ]
+11-19 19:25:04.457   323   416 D AudioFlinger: mixer(0xe91d7030) throttle end: throttle time(10)
+11-19 19:25:04.619  2738  2738 D BoundBrokerSvc: onUnbind: Intent { act=com.google.android.gms.auth.cryptauth.cryptauthservice.START pkg=com.google.android.gms }
+11-19 19:25:04.724   323   416 D AudioFlinger: mixer(0xe91d7030) throttle end: throttle time(29)
+11-19 19:25:04.858   323   416 D AudioFlinger: mixer(0xe91d7030) throttle end: throttle time(30)
+11-19 19:25:04.859   469   478 I system_server: Background young concurrent copying GC freed 386414(10096KB) AllocSpace objects, 8(224KB) LOS objects, 48% free, 10MB/21MB, paused 30us total 383.746ms
+11-19 19:25:05.003  1051  1617 I akwz    : Scheduling Phenotype for a PhenotypeSyncImmediately(7, com.google.android.gms.games) one off with window [1, 2] in seconds [CONTEXT service_id=51 ]
+11-19 19:25:05.028  2738  3384 I Checkin : [AndroidCheckinProtoModule] Checkin reason type: 1 attempt count: 1.
+11-19 19:25:05.029  2738  3384 I Checkin : [ConnectivityPropertiesModule] Unknown state of subscriptions on the device
+11-19 19:25:05.145  2738  3384 W Conscrypt: Could not set socket write timeout: java.net.SocketException: Socket closed
+11-19 19:25:05.145  2738  3384 W Conscrypt: 	at com.google.android.gms.org.conscrypt.Platform.setSocketWriteTimeout(:com.google.android.gms@223616104@22.36.16 (180706-476895098):2)
+11-19 19:25:05.145  2738  3384 W Conscrypt: 	at com.google.android.gms.org.conscrypt.ConscryptFileDescriptorSocket.setSoWriteTimeout(:com.google.android.gms@223616104@22.36.16 (180706-476895098):0)
+11-19 19:25:05.154  1006  1006 I PhenotypeModule: PhenotypeModule.receiveBroadcast():388 onReceive() urgent = false
+11-19 19:25:05.155  1006  1006 I chatty  : uid=10063(com.google.android.inputmethod.latin) identical 1 line
+11-19 19:25:05.155  1006  1006 I PhenotypeModule: PhenotypeModule.receiveBroadcast():388 onReceive() urgent = false
+11-19 19:25:05.323   323   416 D AudioFlinger: mixer(0xe91d7030) throttle end: throttle time(5)
+11-19 19:25:05.406  1051  1623 I akwz    : Scheduling Phenotype for a PhenotypeSyncImmediately(13, com.google.android.finsky.instantapps) one off with window [1, 2] in seconds [CONTEXT service_id=51 ]
+11-19 19:25:05.497  2447  2447 W chromium: [2447:2447:WARNING:debug_endpoint_manager_grpc_client.cc(393)] Giving up queueing debug endpoint manager gRPC client RPC requests, discarding 4 RPC calls.
+11-19 19:25:05.499  2338  2338 D CompatibilityChangeReporter: Compat change id reported: 119147584; UID 10056; state: ENABLED
+11-19 19:25:05.674  2738  3384 W Conscrypt: Could not set socket write timeout: java.net.SocketException: Socket closed
+11-19 19:25:05.674  2738  3384 W Conscrypt: 	at com.google.android.gms.org.conscrypt.Platform.setSocketWriteTimeout(:com.google.android.gms@223616104@22.36.16 (180706-476895098):2)
+11-19 19:25:05.675  2738  3384 W Conscrypt: 	at com.google.android.gms.org.conscrypt.ConscryptFileDescriptorSocket.setSoWriteTimeout(:com.google.android.gms@223616104@22.36.16 (180706-476895098):0)
+11-19 19:25:05.719   323   416 D AudioFlinger: mixer(0xe91d7030) throttle end: throttle time(4)
+11-19 19:25:05.863   323   416 D AudioFlinger: mixer(0xe91d7030) throttle end: throttle time(22)
+11-19 19:25:05.899   323   416 D AudioFlinger: mixer(0xe91d7030) throttle end: throttle time(22)
+11-19 19:25:06.139   323   416 D AudioFlinger: mixer(0xe91d7030) throttle end: throttle time(2)
+11-19 19:25:06.316   323   416 D AudioFlinger: mixer(0xe91d7030) throttle end: throttle time(41)
+11-19 19:25:06.405   323   416 D AudioFlinger: mixer(0xe91d7030) throttle end: throttle time(4)
+11-19 19:25:06.432  2738  3384 I Checkin : [CheckinRequestProcessor] updateCheckinIdTokenFileFromResponse, Reading existing AID
+11-19 19:25:06.433  2738  3384 I Checkin : [CheckinRequestProcessor] Default Task : Checkin Succeeded: https://android.googleapis.com/checkin (fragment #1).
+11-19 19:25:06.489  2738  3384 I Checkin : [CheckinOperation] Checkin Operation finished with result: SUCCESS finish time: 72018.
+11-19 19:25:06.635  1051  1065 I .gms.persisten: Background young concurrent copying GC freed 121965(8855KB) AllocSpace objects, 12(568KB) LOS objects, 51% free, 8824KB/17MB, paused 21us total 156.132ms
+11-19 19:25:06.960  2738  2959 I ChimeraSrvcProxy: NullBinder for com.google.android.gms.languageprofile.service.START triggering remote TransactionTooLargeException due to Service without Chimera impl
+11-19 19:25:07.095   268  1688 W android.hardware.audio.service.ranchu: TinyalsaSink::write:125 pcm_write was late reading frames, dropping 22131 us of audio
+11-19 19:25:07.142  1940  1980 E JavaBinder: !!! FAILED BINDER TRANSACTION !!!  (parcel size = 556)
+11-19 19:25:07.187  1940  1980 W GmsClient: IGmsServiceBroker.getService failed
+11-19 19:25:07.187  1940  1980 W GmsClient: android.os.DeadObjectException: Transaction failed on small parcel; remote process probably died
+11-19 19:25:07.187  1940  1980 W GmsClient: 	at android.os.BinderProxy.transactNative(Native Method)
+11-19 19:25:07.187  1940  1980 W GmsClient: 	at android.os.BinderProxy.transact(BinderProxy.java:540)
+11-19 19:25:07.187  1940  1980 W GmsClient: 	at qjo.v(PG:14)
+11-19 19:25:07.187  1940  1980 W GmsClient: 	at qhf.run(PG:5)
+11-19 19:25:07.187  1940  1980 W GmsClient: 	at android.os.Handler.handleCallback(Handler.java:938)
+11-19 19:25:07.187  1940  1980 W GmsClient: 	at android.os.Handler.dispatchMessage(Handler.java:99)
+11-19 19:25:07.187  1940  1980 W GmsClient: 	at android.os.Looper.loop(Looper.java:223)
+11-19 19:25:07.187  1940  1980 W GmsClient: 	at android.os.HandlerThread.run(HandlerThread.java:67)
+11-19 19:25:07.339   268  1688 W android.hardware.audio.service.ranchu: TinyalsaSink::write:125 pcm_write was late reading frames, dropping 22131 us of audio
+11-19 19:25:07.600   323   416 D AudioFlinger: mixer(0xe91d7030) throttle end: throttle time(10)
+11-19 19:25:07.715   449   449 E netmgr  : qemu_pipe_open_ns:62: Could not connect to the 'pipe:qemud:network' service: Invalid argument
+11-19 19:25:07.715   449   449 E netmgr  : Failed to open QEMU pipe 'qemud:network': Invalid argument
+11-19 19:25:07.738   455   455 E wifi_forwarder: qemu_pipe_open_ns:62: Could not connect to the 'pipe:qemud:wififorward' service: Invalid argument
+11-19 19:25:07.738   455   455 E wifi_forwarder: RemoteConnection failed to initialize: RemoteConnection failed to open pipe
+11-19 19:25:08.122  3233  3233 I GabiFlixPlayer: legenda do app: tempo 17989 ms, atraso 0 ms -> "Não, você não está entendendo isso, eu já disse que não vai dar."
+11-19 19:25:08.275   323   416 D AudioFlinger: mixer(0xe91d7030) throttle end: throttle time(22)
+11-19 19:25:08.308   323   416 D AudioFlinger: mixer(0xe91d7030) throttle end: throttle time(1)
+11-19 19:25:08.480   323   416 D AudioFlinger: mixer(0xe91d7030) throttle end: throttle time(25)
+11-19 19:25:08.505  2738  2813 W PhenotypeRegOp: Phenotype bulk registration failed [CONTEXT service_id=231 ]
+11-19 19:25:08.505  2738  2813 W PhenotypeRegOp: java.util.concurrent.TimeoutException: Timed out waiting for Task
+11-19 19:25:08.505  2738  2813 W PhenotypeRegOp: 	at apym.l(:com.google.android.gms@223616104@22.36.16 (180706-476895098):7)
+11-19 19:25:08.505  2738  2813 W PhenotypeRegOp: 	at com.google.android.gms.common.config.PhenotypeRegistrationOperation.a(:com.google.android.gms@223616104@22.36.16 (180706-476895098):4)
+11-19 19:25:08.505  2738  2813 W PhenotypeRegOp: 	at com.google.android.gms.common.config.PhenotypeRegistrationOperation.onHandleIntent(:com.google.android.gms@223616104@22.36.16 (180706-476895098):17)
+11-19 19:25:08.505  2738  2813 W PhenotypeRegOp: 	at com.google.android.chimera.IntentOperation.onHandleIntent(:com.google.android.gms@223616104@22.36.16 (180706-476895098):2)
+11-19 19:25:08.505  2738  2813 W PhenotypeRegOp: 	at lvp.onHandleIntent(:com.google.android.gms@223616104@22.36.16 (180706-476895098):4)
+11-19 19:25:08.505  2738  2813 W PhenotypeRegOp: 	at duq.run(:com.google.android.gms@223616104@22.36.16 (180706-476895098):3)
+11-19 19:25:08.505  2738  2813 W PhenotypeRegOp: 	at dup.run(:com.google.android.gms@223616104@22.36.16 (180706-476895098):11)
+11-19 19:25:08.505  2738  2813 W PhenotypeRegOp: 	at bcuy.run(:com.google.android.gms@223616104@22.36.16 (180706-476895098):2)
+11-19 19:25:08.505  2738  2813 W PhenotypeRegOp: 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1167)
+11-19 19:25:08.505  2738  2813 W PhenotypeRegOp: 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:641)
+11-19 19:25:08.505  2738  2813 W PhenotypeRegOp: 	at java.lang.Thread.run(Thread.java:923)
+11-19 19:25:08.588   469   554 I InputReader: Reconfiguring input devices, changes=KEYBOARD_LAYOUTS | 
+11-19 19:25:08.592   665   665 V AvrcpMediaPlayerList: mPackageChangedBroadcastReceiver: action: android.intent.action.PACKAGE_CHANGED
+11-19 19:25:08.592   665   665 D AvrcpMediaPlayerList: Name of package changed: com.google.android.gms
+11-19 19:25:08.596   323   416 D AudioFlinger: mixer(0xe91d7030) throttle end: throttle time(59)
+11-19 19:25:08.610  2738  2959 W PeoplePU: getComponentEnabledSetting failed.
+11-19 19:25:08.610  2738  2959 W PeoplePU: java.lang.IllegalArgumentException: Unknown component: ComponentInfo{com.google.android.syncadapters.contacts/com.google.android.syncadapters.contacts.ProxyGalProvider}
+11-19 19:25:08.610  2738  2959 W PeoplePU: 	at android.os.Parcel.createExceptionOrNull(Parcel.java:2378)
+11-19 19:25:08.610  2738  2959 W PeoplePU: 	at android.os.Parcel.createException(Parcel.java:2358)
+11-19 19:25:08.610  2738  2959 W PeoplePU: 	at android.os.Parcel.readException(Parcel.java:2341)
+11-19 19:25:08.610  2738  2959 W PeoplePU: 	at android.os.Parcel.readException(Parcel.java:2283)
+11-19 19:25:08.610  2738  2959 W PeoplePU: 	at android.content.pm.IPackageManager$Stub$Proxy.getComponentEnabledSetting(IPackageManager.java:6804)
+11-19 19:25:08.610  2738  2959 W PeoplePU: 	at android.app.ApplicationPackageManager.getComponentEnabledSetting(ApplicationPackageManager.java:2723)
+11-19 19:25:08.610  2738  2959 W PeoplePU: 	at akjg.b(:com.google.android.gms@223616104@22.36.16 (180706-476895098):1)
+11-19 19:25:08.610  2738  2959 W PeoplePU: 	at ajpf.b(:com.google.android.gms@223616104@22.36.16 (180706-476895098):3)
+11-19 19:25:08.610  2738  2959 W PeoplePU: 	at com.google.android.gms.people.service.galprovider.PeopleGalChimeraProvider.query(:com.google.android.gms@223616104@22.36.16 (180706-476895098):8)
+11-19 19:25:08.610  2738  2959 W PeoplePU: 	at lqx.query(:com.google.android.gms@223616104@22.36.16 (180706-476895098):3)
+11-19 19:25:08.610  2738  2959 W PeoplePU: 	at android.content.ContentProvider.query(ContentProvider.java:1379)
+11-19 19:25:08.610  2738  2959 W PeoplePU: 	at dro.superQuery(:com.google.android.gms@223616104@22.36.16 (180706-476895098):2)
+11-19 19:25:08.610  2738  2959 W PeoplePU: 	at com.google.android.chimera.ContentProvider.query(:com.google.android.gms@223616104@22.36.16 (180706-476895098):2)
+11-19 19:25:08.610  2738  2959 W PeoplePU: 	at lqx.query(:com.google.android.gms@223616104@22.36.16 (180706-476895098):8)
+11-19 19:25:08.610  2738  2959 W PeoplePU: 	at android.content.ContentProvider.query(ContentProvider.java:1475)
+11-19 19:25:08.610  2738  2959 W PeoplePU: 	at dro.superQuery(:com.google.android.gms@223616104@22.36.16 (180706-476895098):1)
+11-19 19:25:08.610  2738  2959 W PeoplePU: 	at com.google.android.chimera.ContentProvider.query(:com.google.android.gms@223616104@22.36.16 (180706-476895098):1)
+11-19 19:25:08.610  2738  2959 W PeoplePU: 	at dro.query(:com.google.android.gms@223616104@22.36.16 (180706-476895098):2)
+11-19 19:25:08.610  2738  2959 W PeoplePU: 	at android.content.ContentProvider$Transport.query(ContentProvider.java:278)
+11-19 19:25:08.610  2738  2959 W PeoplePU: 	at android.content.ContentProviderNative.onTransact(ContentProviderNative.java:106)
+11-19 19:25:08.610  2738  2959 W PeoplePU: 	at android.os.Binder.execTransactInternal(Binder.java:1154)
+11-19 19:25:08.610  2738  2959 W PeoplePU: 	at android.os.Binder.execTransact(Binder.java:1123)
+11-19 19:25:08.610  2738  2959 W PeoplePU: Caused by: android.os.RemoteException: Remote stack trace:
+11-19 19:25:08.610  2738  2959 W PeoplePU: 	at com.android.server.pm.PackageManagerService.getComponentEnabledSetting(PackageManagerService.java:21515)
+11-19 19:25:08.610  2738  2959 W PeoplePU: 	at android.content.pm.IPackageManager$Stub.onTransact(IPackageManager.java:3216)
+11-19 19:25:08.610  2738  2959 W PeoplePU: 	at com.android.server.pm.PackageManagerService.onTransact(PackageManagerService.java:4349)
+11-19 19:25:08.610  2738  2959 W PeoplePU: 	at android.os.Binder.execTransactInternal(Binder.java:1154)
+11-19 19:25:08.610  2738  2959 W PeoplePU: 	at android.os.Binder.execTransact(Binder.java:1123)
+11-19 19:25:08.610  2738  2959 W PeoplePU: 
+11-19 19:25:08.610  2738  2959 W PeoplePU: getComponentEnabledSetting failed.
+11-19 19:25:08.610  2738  2959 W PeoplePU: java.lang.IllegalArgumentException: Unknown component: ComponentInfo{com.google.android.syncadapters.contacts/com.google.android.syncadapters.contacts.ProxyGalProvider}
+11-19 19:25:08.610  2738  2959 W PeoplePU: 	at android.os.Parcel.createExceptionOrNull(Parcel.java:2378)
+11-19 19:25:08.610  2738  2959 W PeoplePU: 	at android.os.Parcel.createException(Parcel.java:2358)
+11-19 19:25:08.610  2738  2959 W PeoplePU: 	at android.os.Parcel.readException(Parcel.java:2341)
+11-19 19:25:08.610  2738  2959 W PeoplePU: 	at android.os.Parcel.readException(Parcel.java:2283)
+11-19 19:25:08.610  2738  2959 W PeoplePU: 	at android.content.pm.IPackageManager$Stub$Proxy.getComponentEnabledSetting(IPackageManager.java:6804)
+11-19 19:25:08.610  2738  2959 W PeoplePU: 	at android.app.ApplicationPackageManager.getComponentEnabledSetting(ApplicationPackageManager.java:2723)
+11-19 19:25:08.610  2738  2959 W PeoplePU: 	at akjg.b(:com.google.android.gms@223616104@22.36.16 (180706-476895098):1)
+11-19 19:25:08.610  2738  2959 W PeoplePU: 	at ajpf.g(:com.google.android.gms@223616104@22.36.16 (180706-476895098):1)
+11-19 19:25:08.610  2738  2959 W PeoplePU: 	at ajpf.b(:com.google.android.gms@223616104@22.36.16 (180706-476895098):4)
+11-19 19:25:08.610  2738  2959 W PeoplePU: 	at com.google.android.gms.people.service.galprovider.PeopleGalChimeraProvider.query(:com.google.android.gms@223616104@22.36.16 (180706-476895098):8)
+11-19 19:25:08.610  2738  2959 W PeoplePU: 	at lqx.query(:com.google.android.gms@223616104@22.36.16 (180706-476895098):3)
+11-19 19:25:08.610  2738  2959 W PeoplePU: 	at android.content.ContentProvider.query(ContentProvider.java:1379)
+11-19 19:25:08.610  2738  2959 W PeoplePU: 	at dro.superQuery(:com.google.android.gms@223616104@22.36.16 (180706-476895098):2)
+11-19 19:25:08.610  2738  2959 W PeoplePU: 	at com.google.android.chimera.ContentProvider.query(:com.google.android.gms@223616104@22.36.16 (180706-476895098):2)
+11-19 19:25:08.610  2738  2959 W PeoplePU: 	at lqx.query(:com.google.android.gms@223616104@22.36.16 (180706-476895098):8)
+11-19 19:25:08.610  2738  2959 W PeoplePU: 	at android.content.ContentProvider.query(ContentProvider.java:1475)
+11-19 19:25:08.610  2738  2959 W PeoplePU: 	at dro.superQuery(:com.google.android.gms@223616104@22.36.16 (180706-476895098):1)
+11-19 19:25:08.610  2738  2959 W PeoplePU: 	at com.google.android.chimera.ContentProvider.query(:com.google.android.gms@223616104@22.36.16 (180706-476895098):1)
+11-19 19:25:08.610  2738  2959 W PeoplePU: 	at dro.query(:com.google.android.gms@223616104@22.36.16 (180706-476895098):2)
+11-19 19:25:08.610  2738  2959 W PeoplePU: 	at android.content.ContentProvider$Transport.query(ContentProvider.java:278)
+11-19 19:25:08.610  2738  2959 W PeoplePU: 	at android.content.ContentProviderNative.onTransact(ContentProviderNative.java:106)
+11-19 19:25:08.610  2738  2959 W PeoplePU: 	at android.os.Binder.execTransactInternal(Binder.java:1154)
+11-19 19:25:08.610  2738  2959 W PeoplePU: 	at android.os.Binder.execTransact(Binder.java:1123)
+11-19 19:25:08.611  2738  2959 W PeoplePU: Exceptions when checking package
+11-19 19:25:08.611  2738  2959 W PeoplePU: android.content.pm.PackageManager$NameNotFoundException: com.google.android.syncadapters.contacts
+11-19 19:25:08.611  2738  2959 W PeoplePU: 	at android.app.ApplicationPackageManager.getApplicationInfoAsUser(ApplicationPackageManager.java:423)
+11-19 19:25:08.611  2738  2959 W PeoplePU: 	at android.app.ApplicationPackageManager.getApplicationInfo(ApplicationPackageManager.java:412)
+11-19 19:25:08.611  2738  2959 W PeoplePU: 	at akjg.a(:com.google.android.gms@223616104@22.36.16 (180706-476895098):1)
+11-19 19:25:08.611  2738  2959 W PeoplePU: 	at ajpf.g(:com.google.android.gms@223616104@22.36.16 (180706-476895098):2)
+11-19 19:25:08.611  2738  2959 W PeoplePU: 	at ajpf.b(:com.google.android.gms@223616104@22.36.16 (180706-476895098):4)
+11-19 19:25:08.611  2738  2959 W PeoplePU: 	at com.google.android.gms.people.service.galprovider.PeopleGalChimeraProvider.query(:com.google.android.gms@223616104@22.36.16 (180706-476895098):8)
+11-19 19:25:08.611  2738  2959 W PeoplePU: 	at lqx.query(:com.google.android.gms@223616104@22.36.16 (180706-476895098):3)
+11-19 19:25:08.611  2738  2959 W PeoplePU: 	at android.content.ContentProvider.query(ContentProvider.java:1379)
+11-19 19:25:08.611  2738  2959 W PeoplePU: 	at dro.superQuery(:com.google.android.gms@223616104@22.36.16 (180706-476895098):2)
+11-19 19:25:08.611  2738  2959 W PeoplePU: 	at com.google.android.chimera.ContentProvider.query(:com.google.android.gms@223616104@22.36.16 (180706-476895098):2)
+11-19 19:25:08.611  2738  2959 W PeoplePU: 	at lqx.query(:com.google.android.gms@223616104@22.36.16 (180706-476895098):8)
+11-19 19:25:08.611  2738  2959 W PeoplePU: 	at android.content.ContentProvider.query(ContentProvider.java:1475)
+11-19 19:25:08.611  2738  2959 W PeoplePU: 	at dro.superQuery(:com.google.android.gms@223616104@22.36.16 (180706-476895098):1)
+11-19 19:25:08.611  2738  2959 W PeoplePU: 	at com.google.android.chimera.ContentProvider.query(:com.google.android.gms@223616104@22.36.16 (180706-476895098):1)
+11-19 19:25:08.611  2738  2959 W PeoplePU: 	at dro.query(:com.google.android.gms@223616104@22.36.16 (180706-476895098):2)
+11-19 19:25:08.611  2738  2959 W PeoplePU: 	at android.content.ContentProvider$Transport.query(ContentProvider.java:278)
+11-19 19:25:08.611  2738  2959 W PeoplePU: 	at android.content.ContentProviderNative.onTransact(ContentProviderNative.java:106)
+11-19 19:25:08.611  2738  2959 W PeoplePU: 	at android.os.Binder.execTransactInternal(Binder.java:1154)
+11-19 19:25:08.611  2738  2959 W PeoplePU: 	at android.os.Binder.execTransact(Binder.java:1123)
+11-19 19:25:08.611  2738  2959 W GalProviderController: Should not enable GmsCore GAL when Proxy doesn't exist at all
+11-19 19:25:08.611  2738  2959 W PeopleGalProvider: Not support GmsCore GAL because of GAL1 non-existence
+11-19 19:25:08.611  2738  2959 I PeopleGalProvider: Method 0 completed.
+11-19 19:25:08.612  1322  1867 I ContactDirectoryManager: Directory provider com.google.android.gms(com.google.android.gms.people.gal.provider) returned a NULL cursor.
+11-19 19:25:08.625   469   469 V ConditionProviders: enabling condition provider for 0: ComponentInfo{com.google.android.gms/com.google.android.location.settings.DrivingConditionProvider}
+11-19 19:25:08.625   469   469 V ConditionProviders: binding: Intent { act=android.service.notification.ConditionProviderService cmp=com.google.android.gms/com.google.android.location.settings.DrivingConditionProvider (has extras) }
+11-19 19:25:08.638   469   498 I RoleManagerService: Granting default roles...
+11-19 19:25:08.663  2222  2222 I Finsky  : [2] msm.onStartJob(3): SCH: job service start with id 9058.
+11-19 19:25:08.664  2222  2222 I Finsky  : [2] msm.onStartJob(3): SCH: job service start with id 9061.
+11-19 19:25:08.666   701   728 I PermissionControllerServiceImpl: Updating user sensitive for uid 10050
+11-19 19:25:08.681   469   469 V ConditionProviders: 0 condition provider service connected: ComponentInfo{com.google.android.gms/com.google.android.location.settings.DrivingConditionProvider}
+11-19 19:25:08.684  1051  1051 E .gms.persisten: Invalid ID 0x00000000.
+11-19 19:25:08.684  1051  1051 W ChimeraUtils: Module com.google.android.gms.location__nonwearable missing resource location_module_display_name(0)
+11-19 19:25:08.685   469  3148 D ConditionProviders: Disabling component com.google.android.gms/com.google.android.location.settings.DrivingConditionProvider
+11-19 19:25:08.703   323   323 D AF::TrackHandle: OpPlayAudio: track:56 usage:1 not muted
+11-19 19:25:08.704   323   323 I chatty  : uid=1041(audioserver) /system/bin/audioserver identical 7 lines
+11-19 19:25:08.704   323   323 D AF::TrackHandle: OpPlayAudio: track:56 usage:1 not muted
+11-19 19:25:08.704   323   414 D AF::TrackHandle: OpPlayAudio: track:55 usage:13 not muted
+11-19 19:25:08.704   323   323 D AF::TrackHandle: OpPlayAudio: track:56 usage:1 not muted
+11-19 19:25:08.704   323   323 I chatty  : uid=1041(audioserver) /system/bin/audioserver identical 1 line
+11-19 19:25:08.705   323   323 D AF::TrackHandle: OpPlayAudio: track:56 usage:1 not muted
+11-19 19:25:08.708   323   414 D AF::TrackHandle: OpPlayAudio: track:55 usage:13 not muted
+11-19 19:25:08.713   323   414 I chatty  : uid=1041(audioserver) Binder:323_1 identical 11 lines
+11-19 19:25:08.714   323   414 D AF::TrackHandle: OpPlayAudio: track:55 usage:13 not muted
+11-19 19:25:08.714   323   323 D AF::TrackHandle: OpPlayAudio: track:56 usage:1 not muted
+11-19 19:25:08.714   323   323 D AF::TrackHandle: OpPlayAudio: track:56 usage:1 not muted
+11-19 19:25:08.714   323   631 D AF::TrackHandle: OpPlayAudio: track:56 usage:1 not muted
+11-19 19:25:08.714   323   631 D AF::TrackHandle: OpPlayAudio: track:56 usage:1 not muted
+11-19 19:25:08.715   323   414 D AF::TrackHandle: OpPlayAudio: track:55 usage:13 not muted
+11-19 19:25:08.715   323   414 D AF::TrackHandle: OpPlayAudio: track:55 usage:13 not muted
+11-19 19:25:08.729   323   416 D AudioFlinger: mixer(0xe91d7030) throttle end: throttle time(1)
+11-19 19:25:08.744   701  3440 W Role    : Cannot get ApplicationInfo for default holder: com.android.messaging
+11-19 19:25:08.771  2222  2313 I Finsky  : [209] mnx.a(27): SCH: Satisfied jobs for 9058 are: 12-1
+11-19 19:25:08.772  2222  2684 I Finsky  : [254] mrk.accept(52): SCH: Job 12-1 starting
+11-19 19:25:08.772  2222  2222 I Finsky  : [2] ContentSyncJob.v(1): [ContentSync] job started
+11-19 19:25:08.798   268  1688 W android.hardware.audio.service.ranchu: TinyalsaSink::write:125 pcm_write was late reading frames, dropping 22131 us of audio
+11-19 19:25:08.805  2222  2313 I Finsky  : [209] mnx.a(27): SCH: Satisfied jobs for 9061 are: 29-29
+11-19 19:25:08.806  2222  2684 I Finsky  : [254] mrk.accept(52): SCH: Job 29-29 starting
+11-19 19:25:08.814  2222  3448 I Finsky  : [344] pqs.F(0): ProcessRecoveryLogsUtil: No files in recovery directory
+11-19 19:25:08.814  2222  3448 I Finsky  : [344] mqw.r(4): SCH: jobFinished: 29-29. TimeElapsed: 8ms.
+11-19 19:25:08.841   701  3440 W Role    : Cannot get ApplicationInfo for default holder: com.android.gallery3d
+11-19 19:25:08.906   323   416 D AudioFlinger: mixer(0xe91d7030) throttle end: throttle time(8)
+11-19 19:25:09.010   469   506 W Searchables: No web search activity found
+11-19 19:25:09.018  2738  2838 I Icing   : updateResources: need to parse wls{com.google.android.gms}
+11-19 19:25:09.068  2738  2859 I Icing   : IndexChimeraService.getServiceInterface callingPackage=com.google.android.gms componentName=AppsCorpus serviceId=36
+11-19 19:25:09.088  2222  2317 I Finsky  : [212] mar.accept(5): SCH: Scheduling phonesky job Id: 10-4, CT: 1795116280265, Constraints: [{ L: 1200000, D: 86400000, C: 1, I: 1, N: 0 }]
+11-19 19:25:09.088  2222  2317 I Finsky  : [212] mar.accept(5): SCH: Scheduling phonesky job Id: 10-11, CT: 1795116280265, Constraints: [{ L: 600000, D: 86400000, C: 1, I: 1, N: 0 }]
+11-19 19:25:09.088  2222  2317 I Finsky  : [212] mar.accept(5): SCH: Scheduling phonesky job Id: 10-101, CT: 1795116280266, Constraints: [{ L: 60000, D: 86400000, C: 1, I: 1, N: 0 }]
+11-19 19:25:09.088  2222  2317 I Finsky  : [212] mar.accept(5): SCH: Scheduling phonesky job Id: 26-1414141414, CT: 1795116281503, Constraints: [{ L: 900000, D: 1800000, C: 1, I: 1, N: 0 }]
+11-19 19:25:09.105   323   416 D AudioFlinger: mixer(0xe91d7030) throttle end: throttle time(12)
+11-19 19:25:09.113  2222  2317 I Finsky  : [212] mqf.apply(81): SCH: Scheduling 1 system job(s)
+11-19 19:25:09.113  2222  2317 I Finsky  : [212] mqf.apply(87): SCH: Scheduling system job Id: 9066, L: 31153, D: 1772390, C: false, I: false, N: 0
+11-19 19:25:09.146  2222  2684 I Finsky  : [254] msm.a(16): SCH: job service finished with id 9061.
+11-19 19:25:09.238   323   416 D AudioFlinger: mixer(0xe91d7030) throttle end: throttle time(4)
+11-19 19:25:09.327  2738  2838 W Icing   : No valid account for uploading user actions
+11-19 19:25:09.397  2222  2906 I Finsky  : [302] hgw.run(46): Wrote 94 rows to frosting DB
+11-19 19:25:09.415   323   416 D AudioFlinger: mixer(0xe91d7030) throttle end: throttle time(19)
+11-19 19:25:09.497  2738  2853 I Icing   : IndexChimeraService.getServiceInterface callingPackage=com.google.android.gms componentName=null serviceId=30
+11-19 19:25:09.675  2738  2838 I Icing   : Usage reports ok 1, Failed Usage reports 0, indexed 0, rejected 0
+11-19 19:25:09.777  1051  3090 W akyh    : Retrieving snapshot for com.google.android.platform.statsd_java_boot failed [CONTEXT service_id=204 ]
+11-19 19:25:09.777  1051  3090 W akyh    : java.util.concurrent.TimeoutException: Timed out waiting for Task
+11-19 19:25:09.777  1051  3090 W akyh    : 	at apym.l(:com.google.android.gms@223616104@22.36.16 (180706-476895098):7)
+11-19 19:25:09.777  1051  3090 W akyh    : 	at akyh.g(:com.google.android.gms@223616104@22.36.16 (180706-476895098):2)
+11-19 19:25:09.777  1051  3090 W akyh    : 	at akyh.k(:com.google.android.gms@223616104@22.36.16 (180706-476895098):2)
+11-19 19:25:09.777  1051  3090 W akyh    : 	at akyh.d(:com.google.android.gms@223616104@22.36.16 (180706-476895098):7)
+11-19 19:25:09.777  1051  3090 W akyh    : 	at com.google.android.gms.platformconfigurator.PhenotypeConfigurationUpdateListener.e(:com.google.android.gms@223616104@22.36.16 (180706-476895098):2)
+11-19 19:25:09.777  1051  3090 W akyh    : 	at com.google.android.gms.platformconfigurator.PhenotypeConfigurationUpdateListener.g(:com.google.android.gms@223616104@22.36.16 (180706-476895098):9)
+11-19 19:25:09.777  1051  3090 W akyh    : 	at com.google.android.gms.platformconfigurator.PhenotypeConfigurationUpdateListener.onHandleIntent(:com.google.android.gms@223616104@22.36.16 (180706-476895098):4)
+11-19 19:25:09.777  1051  3090 W akyh    : 	at com.google.android.chimera.IntentOperation.onHandleIntent(:com.google.android.gms@223616104@22.36.16 (180706-476895098):2)
+11-19 19:25:09.777  1051  3090 W akyh    : 	at lvp.onHandleIntent(:com.google.android.gms@223616104@22.36.16 (180706-476895098):4)
+11-19 19:25:09.777  1051  3090 W akyh    : 	at duq.run(:com.google.android.gms@223616104@22.36.16 (180706-476895098):3)
+11-19 19:25:09.777  1051  3090 W akyh    : 	at dup.run(:com.google.android.gms@223616104@22.36.16 (180706-476895098):11)
+11-19 19:25:09.777  1051  3090 W akyh    : 	at bcuy.run(:com.google.android.gms@223616104@22.36.16 (180706-476895098):2)
+11-19 19:25:09.777  1051  3090 W akyh    : 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1167)
+11-19 19:25:09.777  1051  3090 W akyh    : 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:641)
+11-19 19:25:09.777  1051  3090 W akyh    : 	at java.lang.Thread.run(Thread.java:923)
+11-19 19:25:09.795  2738  2838 W Icing   : No valid account for uploading user actions
+11-19 19:25:09.894  2738  2838 I Icing   : Usage reports ok 0, Failed Usage reports 0, indexed 0, rejected 0
+11-19 19:25:10.071  1051  1065 I .gms.persisten: Background young concurrent copying GC freed 111790(8891KB) AllocSpace objects, 0(0B) LOS objects, 47% free, 9599KB/17MB, paused 21us total 563.680ms
+11-19 19:25:10.128  2738  2822 W PeopleGmsPhenoRgstrIntentOp: Google Api connection failed
+11-19 19:25:10.358  2738  2838 I Icing   : Indexing com.google.android.gms-apps from com.google.android.gms
+11-19 19:25:10.480  2738  2838 I Icing   : Indexing done com.google.android.gms-apps
+11-19 19:25:10.621   323   416 D AudioFlinger: mixer(0xe91d7030) throttle end: throttle time(10)
+11-19 19:25:10.680   268  1688 W android.hardware.audio.service.ranchu: TinyalsaSink::write:125 pcm_write was late reading frames, dropping 22131 us of audio
+11-19 19:25:10.722   323   416 D AudioFlinger: mixer(0xe91d7030) throttle end: throttle time(21)
+11-19 19:25:10.789   469   478 I system_server: Background concurrent copying GC freed 397722(10MB) AllocSpace objects, 11(700KB) LOS objects, 49% free, 10235KB/19MB, paused 33us total 498.583ms
+11-19 19:25:10.825  2222  3449 I Finsky  : [345] etn.i(1): Completed 0 account content syncs with 0 successful.
+11-19 19:25:10.826  2222  2222 I Finsky  : [2] ContentSyncJob.a(1): [ContentSync] Installation state replication succeeded.
+11-19 19:25:10.826  2222  2222 I Finsky  : [2] mqw.r(4): SCH: jobFinished: 12-1. TimeElapsed: 2054ms.
+11-19 19:25:10.966   323   416 D AudioFlinger: mixer(0xe91d7030) throttle end: throttle time(2)
+11-19 19:25:10.996  2222  2316 I Finsky  : [211] mar.accept(5): SCH: Scheduling phonesky job Id: 1-1337, CT: 1795116280450, Constraints: [{ L: 25304421, D: 68504421, C: 1, I: 1, N: 1 }]
+11-19 19:25:10.996  2222  2316 I Finsky  : [211] mar.accept(5): SCH: Scheduling phonesky job Id: 10-26, CT: 1795116280265, Constraints: [{ L: 600000, D: 86400000, C: 1, I: 1, N: 1 }]
+11-19 19:25:11.007  2222  2316 I Finsky  : [211] mqf.apply(81): SCH: Scheduling 1 system job(s)
+11-19 19:25:11.008  2222  2316 I Finsky  : [211] mqf.apply(87): SCH: Scheduling system job Id: 9070, L: 569258, D: 68473864, C: false, I: false, N: 1
+11-19 19:25:11.008   323   416 D AudioFlinger: mixer(0xe91d7030) throttle end: throttle time(14)
+11-19 19:25:11.061  2222  2684 I Finsky  : [254] msm.a(16): SCH: job service finished with id 9058.
+11-19 19:25:11.163   323   416 D AudioFlinger: mixer(0xe91d7030) throttle end: throttle time(4)
+11-19 19:25:11.785  3233  3233 I GabiFlixPlayer: AUDIOSYNC estado: st=nova executando=false tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=179MB java=9/512MB nativo=168MB livre=1063MB limiar=144MB poucaMemoria=false
+11-19 19:25:11.871   323   416 D AudioFlinger: mixer(0xe91d7030) throttle end: throttle time(6)
+11-19 19:25:11.983   323   416 D AudioFlinger: mixer(0xe91d7030) throttle end: throttle time(7)
+11-19 19:25:12.081  1051  1623 I akwz    : Scheduling Phenotype for a PhenotypeSyncImmediately(6, com.google.android.libraries.notifications.platform#com.google.android.play.games) one off with window [1, 2] in seconds [CONTEXT service_id=51 ]
+11-19 19:25:12.093   323   416 D AudioFlinger: mixer(0xe91d7030) throttle end: throttle time(18)
+11-19 19:25:12.159   323   416 D AudioFlinger: mixer(0xe91d7030) throttle end: throttle time(3)
+11-19 19:25:12.259  1051  1065 I .gms.persisten: Background concurrent copying GC freed 149779(10MB) AllocSpace objects, 0(0B) LOS objects, 49% free, 8392KB/16MB, paused 31us total 403.264ms
+11-19 19:25:12.270  2738  3398 I ChimeraSrvcProxy: NullBinder for com.google.android.gms.languageprofile.service.START triggering remote TransactionTooLargeException due to Service without Chimera impl
+11-19 19:25:12.296  1051  1617 I akwz    : Scheduling Phenotype for a PhenotypeSyncImmediately(6, com.google.android.gms.checkin.binary) one off with window [1, 2] in seconds [CONTEXT service_id=51 ]
+11-19 19:25:12.361  1940  1980 E JavaBinder: !!! FAILED BINDER TRANSACTION !!!  (parcel size = 556)
+11-19 19:25:12.361  1940  1980 W GmsClient: IGmsServiceBroker.getService failed
+11-19 19:25:12.361  1940  1980 W GmsClient: android.os.DeadObjectException: Transaction failed on small parcel; remote process probably died
+11-19 19:25:12.361  1940  1980 W GmsClient: 	at android.os.BinderProxy.transactNative(Native Method)
+11-19 19:25:12.361  1940  1980 W GmsClient: 	at android.os.BinderProxy.transact(BinderProxy.java:540)
+11-19 19:25:12.361  1940  1980 W GmsClient: 	at qjo.v(PG:14)
+11-19 19:25:12.361  1940  1980 W GmsClient: 	at qhf.run(PG:5)
+11-19 19:25:12.361  1940  1980 W GmsClient: 	at android.os.Handler.handleCallback(Handler.java:938)
+11-19 19:25:12.361  1940  1980 W GmsClient: 	at android.os.Handler.dispatchMessage(Handler.java:99)
+11-19 19:25:12.361  1940  1980 W GmsClient: 	at android.os.Looper.loop(Looper.java:223)
+11-19 19:25:12.361  1940  1980 W GmsClient: 	at android.os.HandlerThread.run(HandlerThread.java:67)
+11-19 19:25:12.584   323   416 D AudioFlinger: mixer(0xe91d7030) throttle end: throttle time(21)
+11-19 19:25:12.908   323   416 D AudioFlinger: mixer(0xe91d7030) throttle end: throttle time(22)
+11-19 19:25:12.936   323   416 D AudioFlinger: mixer(0xe91d7030) throttle end: throttle time(6)
+11-19 19:25:13.100   323   416 D AudioFlinger: mixer(0xe91d7030) throttle end: throttle time(11)
+11-19 19:25:13.157   323   416 D AudioFlinger: mixer(0xe91d7030) throttle end: throttle time(23)
+11-19 19:25:13.238  3233  3233 I GabiFlixPlayer: legenda do app: tempo 22916 ms, atraso 0 ms -> (nada)
+11-19 19:25:13.246   323   416 D AudioFlinger: mixer(0xe91d7030) throttle end: throttle time(6)
+11-19 19:25:13.400   323   416 D AudioFlinger: mixer(0xe91d7030) throttle end: throttle time(33)
