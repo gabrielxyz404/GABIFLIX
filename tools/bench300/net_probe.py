@@ -22,17 +22,31 @@ def get(url, binary=False, timeout=60, rng=None):
 def show(tag, r, n=700):
     b, st, dt, h = r
     print("=== %s: status=%s %.1fs bytes=%s" % (tag, st, dt, len(b) if b else None))
+    if b and isinstance(b, str) and '"docs"' in b:
+        try:
+            j = json.loads(b)
+            print("numFound=%s" % j["response"]["numFound"])
+            for d in j["response"]["docs"]:
+                print("   ", json.dumps(d, ensure_ascii=False)[:300])
+            return
+        except Exception as e:
+            print("json?", e)
     if b:
         print((b if isinstance(b, str) else repr(b[:200]))[:n])
 
 
-def ia_search(q, rows=5, sort="downloads desc", fl=("identifier", "title", "year", "downloads", "runtime", "licenseurl", "collection", "format")):
+def ia_search(q, rows=5, sort="downloads desc", fl=("identifier", "title", "year", "downloads", "runtime", "licenseurl", "creator")):
     p = [("q", q), ("rows", str(rows)), ("page", "1"), ("output", "json"), ("sort[]", sort)] + [("fl[]", f) for f in fl]
     return get("https://archive.org/advancedsearch.php?" + urllib.parse.urlencode(p))
 
 
 show("IA feature_films top", ia_search("collection:feature_films AND mediatype:movies"))
-show("IA film_noir", ia_search("collection:film_noir AND mediatype:movies", 3))
+for col in ("film_noir", "Film_Noir", "filmnoir", "Comedy_Films", "silent_films", "Action_Adventure", "Horror", "Drama", "classic_tv_1950s", "prelinger", "opensource_movies"):
+    b, st, dt, h = ia_search("collection:%s AND mediatype:movies" % col, 1)
+    try:
+        print("colecao %s: numFound=%s" % (col, json.loads(b)["response"]["numFound"]))
+    except Exception:
+        print("colecao", col, st)
 show("IA classic_tv", ia_search("collection:classic_tv AND mediatype:movies", 5))
 show("IA SciFi_Horror", ia_search("collection:SciFi_Horror AND mediatype:movies", 3))
 show("IA modern com SRT", ia_search("mediatype:movies AND format:SubRip AND year:[2005 TO 2025] AND (licenseurl:*creativecommons* OR licenseurl:*publicdomain*)", 8), 1500)
@@ -40,14 +54,21 @@ show("IA nasa com SRT/VTT", ia_search("mediatype:movies AND (format:SubRip OR fo
 r = ia_search("collection:feature_films AND mediatype:movies AND format:SubRip", 5)
 show("IA feature_films com SRT", r, 1200)
 
-b, st, dt, h = get("https://archive.org/metadata/night_of_the_living_dead")
-if b:
-    md = json.loads(b)
+b, st, dt, h = ia_search("collection:feature_films AND mediatype:movies AND title:(night of the living dead)", 5)
+show("IA NOTLD", (b, st, dt, h))
+ident = "night_of_the_living_dead"
+try:
+    ident = json.loads(b)["response"]["docs"][0]["identifier"]
+except Exception:
+    pass
+b, st, dt, h = get("https://archive.org/metadata/" + ident)
+md = json.loads(b) if b else {}
+if md.get("metadata"):
     print("=== metadata night_of_the_living_dead: files=%d keys=%s" % (len(md.get("files", [])), list(md.get("metadata", {}).keys())[:25]))
-    print("license:", md["metadata"].get("licenseurl"), "| collection:", md["metadata"].get("collection"))
+    print("license:", md["metadata"].get("licenseurl"), "| collection:", str(md["metadata"].get("collection"))[:150])
     for f in md["files"]:
         if re.search(r"\.(mp4|ogv|mkv|avi|mpg|m4v|webm|srt|vtt)$", f["name"], re.I):
-            print("  ", f["name"], f.get("format"), f.get("size"), f.get("length"))
+            print("  ", f["name"], f.get("format"), f.get("size"), f.get("length"), f.get("source"))
 else:
     print("metadata falhou", st)
 
@@ -75,6 +96,6 @@ show("blender HEAD-ish (range 0-1)", get("https://download.blender.org/durian/su
 show("alass release", get("https://github.com/kaegi/alass/releases/download/v2.0.0/alass-linux64", binary=True, rng="bytes=0-100"), 100)
 
 # velocidade de download do archive.org (50 MB do Night of the Living Dead)
-b, st, dt, h = get("https://archive.org/download/night_of_the_living_dead/night_of_the_living_dead_512kb.mp4", binary=True, timeout=120, rng="bytes=0-52428799")
+b, st, dt, h = get("https://archive.org/download/%s/%s_512kb.mp4" % (ident, ident), binary=True, timeout=120, rng="bytes=0-52428799")
 print("=== velocidade IA: status=%s bytes=%s %.1fs -> %.1f MB/s" % (st, len(b) if b else None, dt, (len(b) / 1e6 / dt) if b else 0))
 print("headers:", {k: v for k, v in h.items() if k.lower() in ("content-range", "content-length", "server", "x-ratelimit-remaining", "retry-after")})

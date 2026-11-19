@@ -132,21 +132,38 @@ public class SubFmt {
     static String mojibake(String s) { return new String(s.getBytes(StandardCharsets.UTF_8), Charset.forName("windows-1252")); }
 
     public static void main(String[] a) throws Exception {
-        if (a[0].equals("real")) {
-            for (int i = 1; i < a.length; i++) {
+        if (a[0].equals("real") || a[0].equals("dec")) {
+            boolean dec = a[0].equals("dec");   // dec ENTRADA SAIDA: grava o texto que o app teria (UTF-8, SRT/VTT normalizado) e imprime a mesma linha F
+            int end = dec ? 2 : a.length;
+            for (int i = 1; i < end; i++) {
                 byte[] d = Files.readAllBytes(Paths.get(a[i]));
                 long t0 = System.nanoTime();
-                String t = SubtitleText.decode(d);
+                String t;
+                String exc = "";
+                try { t = SubtitleText.decode(d); } catch (Throwable x) { t = null; exc = x.toString(); }
                 long ms = (System.nanoTime() - t0) / 1_000_000;
                 StringBuilder j = new StringBuilder("F {\"file\":" + esc(Paths.get(a[i]).getFileName().toString()) + ",\"bytes\":" + d.length + ",\"decode_ms\":" + ms);
+                if (!exc.isEmpty()) j.append(",\"exc\":").append(esc(exc));
                 if (t == null) j.append(",\"decoded\":0");
                 else {
                     Cue[] cs = Cue.parseSrt(t);
                     long first = cs.length > 0 ? cs[0].startMs : -1, last = 0;
-                    int speech = 0;
-                    for (Cue c : cs) { last = Math.max(last, c.endMs); if (c.speech) speech++; }
+                    int speech = 0, unsorted = 0, nodur = 0, overlap = 0;
+                    long prevS = -1, prevE = -1;
+                    for (Cue c : cs) {
+                        last = Math.max(last, c.endMs);
+                        if (c.speech) speech++;
+                        if (c.startMs < prevS) unsorted++;
+                        else if (c.startMs < prevE - 200) overlap++;
+                        if (c.endMs <= c.startMs) nodur++;
+                        prevS = Math.max(prevS, c.startMs);
+                        prevE = c.endMs;
+                    }
+                    boolean moji = t.indexOf('Ã') >= 0 && t.matches("(?s).*Ã[\u0080-¿].*");
                     j.append(",\"decoded\":1,\"vtt\":").append(t.startsWith("WEBVTT") ? 1 : 0).append(",\"cues\":").append(cs.length).append(",\"speech\":").append(speech).append(",\"first\":").append(first).append(",\"last\":").append(last)
+                            .append(",\"unsorted\":").append(unsorted).append(",\"overlap\":").append(overlap).append(",\"nodur\":").append(nodur).append(",\"mojibake\":").append(moji ? 1 : 0)
                             .append(",\"pt\":").append(SubtitleText.looksPortuguese(t) ? 1 : 0).append(",\"lastCueEnd\":").append(SubtitleText.lastCueEnd(t));
+                    if (dec) Files.write(Paths.get(a[2]), t.getBytes(StandardCharsets.UTF_8));
                 }
                 System.out.println(j.append("}"));
             }
