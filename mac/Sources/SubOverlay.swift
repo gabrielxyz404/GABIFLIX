@@ -27,6 +27,9 @@ final class OverlayCues {
             i += 1
             var body: [String] = []
             while i < lines.count && !lines[i].trimmingCharacters(in: .whitespaces).isEmpty && !lines[i].contains("-->") { body.append(lines[i]); i += 1 }
+            // SRT sem linha em branco entre as falas: o número da fala SEGUINTE ficaria colado no fim desta ("Olá\n2"). Só se tira quando a fala
+            // tem outra linha antes (uma fala que é só um número, como "1984", fica) e a linha seguinte é um tempo ("-->")
+            if i < lines.count, lines[i].contains("-->"), body.count > 1, isIndexLine(body[body.count - 1]) { body.removeLast() }
             if a < 0 || b < 0 { continue }
             if b < a { b = a + 2000 }
             let t = clean(body.joined(separator: "\n"))
@@ -73,6 +76,60 @@ final class OverlayCues {
         return -1
     }
 
+    /** linha só com dígitos (o número de ordem de uma fala do SRT) */
+    private static func isIndexLine(_ str: String) -> Bool {
+        let s = str.trimmingCharacters(in: .whitespaces)
+        return !s.isEmpty && s.count <= 6 && s.allSatisfy { $0.isASCII && $0.isNumber }
+    }
+
+    /** "<00:01.500>" (marca de tempo dentro da fala, do VTT): só dígitos, ':', '.' e ',' até o '>' */
+    private static func isTimeTag(_ c: [Character], _ i: Int) -> Bool {
+        guard i + 1 < c.count, c[i + 1].isASCII, c[i + 1].isNumber else { return false }
+        var k = i + 1
+        while k < c.count && k < i + 16 {
+            let ch = c[k]
+            if ch == ">" { return true }
+            if !((ch.isASCII && ch.isNumber) || ch == ":" || ch == "." || ch == ",") { return false }
+            k += 1
+        }
+        return false
+    }
+
+    private static let entityRe = try? NSRegularExpression(pattern: "&(#[xX][0-9a-fA-F]{1,6}|#[0-9]{1,7}|[a-zA-Z]{2,6});")
+
+    /** entidades HTML das legendas (&amp; &quot; &#39; &nbsp;...) numa passada só: "&amp;lt;" vira "&lt;" (não "<"); o que não se conhece fica como está */
+    static func decodeEntities(_ s: String) -> String {
+        guard s.contains("&"), let re = entityRe else { return s }
+        let ns = s as NSString
+        var out = ""
+        var last = 0
+        for m in re.matches(in: s, range: NSRange(location: 0, length: ns.length)) {
+            let g = ns.substring(with: m.range(at: 1))
+            var rep: String? = nil
+            if g.hasPrefix("#") {
+                let hex = g.hasPrefix("#x") || g.hasPrefix("#X")
+                if let cp = UInt32(String(g.dropFirst(hex ? 2 : 1)), radix: hex ? 16 : 10), cp > 0, cp <= 0x10FFFF,
+                   !(cp >= 0xD800 && cp <= 0xDFFF), let u = Unicode.Scalar(cp) { rep = String(Character(u)) }
+            } else {
+                switch g {
+                case "amp": rep = "&"
+                case "lt": rep = "<"
+                case "gt": rep = ">"
+                case "quot": rep = "\""
+                case "apos": rep = "'"
+                case "nbsp": rep = " "
+                case "lrm", "rlm": rep = ""
+                default: break
+                }
+            }
+            guard let r = rep else { continue }
+            out += ns.substring(with: NSRange(location: last, length: m.range.location - last)) + r
+            last = m.range.location + m.range.length
+        }
+        out += ns.substring(from: last)
+        return out
+    }
+
     /** tira {...} (ASS), <...> (HTML do SRT/VTT), \N e \n literais do ASS; junta espaços; mantém as quebras de linha */
     static func clean(_ s: String) -> String {
         let c = Array(s)
@@ -85,13 +142,12 @@ final class OverlayCues {
             if brace > 0 { if ch == "}" { brace -= 1 }; i += 1; continue }
             if tag { if ch == ">" { tag = false }; i += 1; continue }
             if ch == "{" { brace += 1; i += 1; continue }
-            if ch == "<", i + 1 < c.count, c[i + 1].isLetter || c[i + 1] == "/" { tag = true; i += 1; continue }
+            if ch == "<", i + 1 < c.count, c[i + 1].isLetter || c[i + 1] == "/" || isTimeTag(c, i) { tag = true; i += 1; continue }
             if ch == "\\", i + 1 < c.count, c[i + 1] == "N" || c[i + 1] == "n" { o.append("\n"); i += 2; continue }
             if ch == "\\", i + 1 < c.count, c[i + 1] == "h" { o.append(" "); i += 2; continue }
             o.append(ch); i += 1
         }
-        let r = o.replacingOccurrences(of: "&nbsp;", with: " ").replacingOccurrences(of: "&amp;", with: "&")
-            .replacingOccurrences(of: "&lt;", with: "<").replacingOccurrences(of: "&gt;", with: ">").replacingOccurrences(of: "\u{00A0}", with: " ")
+        let r = decodeEntities(o).replacingOccurrences(of: "\u{00A0}", with: " ")
         var out: [String] = []
         for ln in r.components(separatedBy: "\n") {
             let t = ln.split(whereSeparator: { $0 == " " || $0 == "\t" }).joined(separator: " ")

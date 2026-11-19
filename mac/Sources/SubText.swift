@@ -758,6 +758,28 @@ enum SubtitleText {
         return J.trim(b)
     }
 
+    /// o texto tem um bloco {...} que liga o modo de desenho do ASS (\p1, \p2...): o que vem depois são comandos de desenho, não fala
+    private static func assHasDrawing(_ f: U16) -> Bool {
+        var i = 0
+        let n = f.count
+        while i < n {
+            if f[i] == 123 {
+                var j = i + 1
+                while j < n && f[j] != 125 { j += 1 }
+                if j >= n { return false }
+                var k = i + 1
+                while k + 2 < j {
+                    if f[k] == 92 && f[k + 1] == 112 && f[k + 2] >= 49 && f[k + 2] <= 57 { return true }
+                    k += 1
+                }
+                i = j + 1
+                continue
+            }
+            i += 1
+        }
+        return false
+    }
+
     static func assToSrt(_ t: U16) -> U16? {
         var iStart = 1, iEnd = 2, iText = 9, nf = 10
         var inEvents = false
@@ -782,6 +804,7 @@ enum SubtitleText {
                 if f.count <= max(iText, max(iStart, iEnd)) { continue }
                 let a = assTime(f[iStart]), b = assTime(f[iEnd])
                 if a < 0 || b < 0 { continue }
+                if assHasDrawing(f[iText]) { continue }   // desenho vetorial ({\p1}m 0 0 l 100 0...): não é fala, aparecia como texto na tela
                 let body = assBody(f[iText])
                 if body.isEmpty { continue }
                 times.append((a, b, times.count))

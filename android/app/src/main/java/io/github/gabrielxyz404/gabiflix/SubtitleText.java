@@ -180,6 +180,9 @@ final class SubtitleText {
         return ((Long.parseLong(m.group(1)) * 60 + Long.parseLong(m.group(2))) * 60 + Long.parseLong(m.group(3))) * 1000 + ms;
     }
 
+    /** bloco de efeitos do ASS que liga o modo de desenho (\p1, \p2...): o "texto" que vem depois são comandos de desenho */
+    private static final Pattern ASS_DRAWING = Pattern.compile("\\{[^}]*\\\\p[1-9][^}]*\\}");
+
     static String assToSrt(String t) {
         int iStart = 1, iEnd = 2, iText = 9, nf = 10;
         boolean inEvents = false;
@@ -201,6 +204,7 @@ final class SubtitleText {
                 if (f.length <= Math.max(iText, Math.max(iStart, iEnd))) continue;
                 long a = assTime(f[iStart]), b = assTime(f[iEnd]);
                 if (a < 0 || b < 0) continue;
+                if (ASS_DRAWING.matcher(f[iText]).find()) continue;   // desenho vetorial ({\p1}m 0 0 l 100 0...): não é fala, aparecia como texto na tela
                 String body = f[iText].replaceAll("\\{[^}]*\\}", "").replace("\\N", "\n").replace("\\n", "\n").replace("\\h", " ").trim();
                 if (body.isEmpty()) continue;
                 times.add(new long[]{a, b, times.size()});

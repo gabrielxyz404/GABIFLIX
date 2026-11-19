@@ -1,0 +1,47 @@
+name: Teste do texto das legendas
+
+# Testes rápidos (sem emulador): o que o app faz com o TEXTO das legendas (SRT sem linhas em branco, entidades HTML, marcas de tempo do VTT, ASS com desenho,
+# BOM, CP1252/ISO-8859-1, UTF-16, zip/gzip). Android/TV: os arquivos Java de verdade na JVM. Mac: os arquivos Swift de verdade compilados e rodados.
+# Roda sozinho quando mudam os arquivos de legenda e à mão. Nunca publica o app.
+on:
+  workflow_dispatch:
+  push:
+    branches: [main, 'sweep-**']
+    paths:
+      - android/app/src/main/java/io/github/gabrielxyz404/gabiflix/SubtitleOverlay.java
+      - android/app/src/main/java/io/github/gabrielxyz404/gabiflix/SubtitleText.java
+      - mac/Sources/SubOverlay.swift
+      - mac/Sources/SubText.swift
+      - tools/bug-sweep/**
+      - .github/workflows/legendas-texto-test.yml
+
+permissions:
+  contents: read
+
+jobs:
+  java:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 17
+      - name: Android/TV (SubtitleOverlay + SubtitleText na JVM)
+        run: ./tools/bug-sweep/run-jvm.sh
+
+  swift:
+    runs-on: macos-15-intel
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Mac (SubOverlay + SubText compilados e rodados)
+        run: |
+          set -o pipefail
+          swiftc --version
+          swiftc -O -o /tmp/legendas-texto mac/Sources/SubText.swift mac/Sources/SubOverlay.swift tools/bug-sweep/mac/main.swift 2>&1 | tee /tmp/swiftc.log || {
+            grep -E "error:" /tmp/swiftc.log | head -30 | while IFS= read -r l; do echo "::error::$(echo "$l" | cut -c1-500)"; done
+            exit 1
+          }
+          /tmp/legendas-texto
