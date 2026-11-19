@@ -5,7 +5,7 @@
 #          -> abre outro filme -> reproducao continua com registro de memoria.
 # Em cada passo: sem queda/ANR, legenda visivel, o video nao esta preto. No fim: crescimento de memoria < 50 MB. Nunca publica o app.
 PKG=io.github.gabrielxyz404.gabiflix
-APK=$1; MODE=${2:-phone}; PLAY=${3:-1800}
+APK=$1; MODE=${2:-phone}; PLAY=${3:-1800}; EXTRA=${4:-}   # EXTRA: extras da intent (ex.: "--es gfAudioAuto false" para isolar a sincronizacao pelo audio)
 OUT=shots; mkdir -p $OUT
 BASE=http://10.0.2.2:8000
 HERE=$(dirname "$0")
@@ -39,7 +39,7 @@ estado() {  # guarda e imprime a ultima linha ESTADO
 field() { echo "$LAST" | grep -o "$1=[^ ]*" | head -1 | cut -d= -f2; }
 black_check() {  # $1 = nome do passo; passa se o meio da tela tem imagem
   local v i
-  for i in 1 2 3 4; do
+  for i in 1 2 3 4 5 6; do
     v=$(adb exec-out screencap 2>/dev/null | python3 -I $HERE/pixels.py)
     awk "BEGIN{exit !(${v%% *} >= 0.30)}" && { ok "$1" "video com imagem ($v)"; return 0; }
     [ $i = 1 ] && snap "preto-$1-a"
@@ -75,9 +75,9 @@ mem_sample() {  # $1 = rotulo; imprime o PSS (KB) do processo do app
 open_film() {  # $1 = arquivo do filme, $2 = numero (id do filme no celular)
   adb logcat -c
   if [ $MODE = tv ]; then
-    adb shell am start -n $PKG/.tv.TvHomeActivity --es gfTestUrl "$BASE/$1.mkv" --es gfTestSubs "$BASE/$1.srt" --es gfRx 1 > $OUT/am-$1.txt 2>&1
+    adb shell am start -n $PKG/.tv.TvHomeActivity --es gfTestUrl "$BASE/$1.mkv" --es gfTestSubs "$BASE/$1.srt" --es gfRx 1 $EXTRA > $OUT/am-$1.txt 2>&1
   else
-    adb shell am start -n $PKG/.PlayerActivity --es url "$BASE/$1.mkv" --esa subs "$BASE/$1.srt" --es type movie --es id tt000000$2 --es gfRx 1 > $OUT/am-$1.txt 2>&1
+    adb shell am start -n $PKG/.PlayerActivity --es url "$BASE/$1.mkv" --esa subs "$BASE/$1.srt" --es type movie --es id tt000000$2 --es gfRx 1 $EXTRA > $OUT/am-$1.txt 2>&1
   fi
 }
 volta() {  # traz o player de volta (como o seletor de apps)
@@ -175,6 +175,7 @@ tell seek 20; sleep 10
 alive_check "10-play-inicio" && sub_check "10-play-inicio"
 sleep 90   # aquecimento: a memoria so conta daqui
 MA=$(mem_sample play-0)
+adb shell dumpsys meminfo $(mainpid) > $OUT/meminfo-play-0.txt 2>&1
 END=$(( $(date +%s) + PLAY )); k=0; nextblack=$(( $(date +%s) + 300 ))
 while [ $(date +%s) -lt $END ]; do
   sleep 30
@@ -185,6 +186,7 @@ while [ $(date +%s) -lt $END ]; do
 done
 if alive_check "10-play-fim"; then sub_check "10-play-fim-legenda"; black_check "10-play-fim-video"; fi
 MB=$(mem_sample play-fim); snap 10-fim
+adb shell dumpsys meminfo $(mainpid) > $OUT/meminfo-play-fim.txt 2>&1
 GROW=$(( (MB - MA) / 1024 )); TOT=$(( (MB - M0) / 1024 ))
 echo "MEMORIA pss do app: inicio=$((M0/1024)) MB, depois do aquecimento=$((MA/1024)) MB, fim=$((MB/1024)) MB; crescimento na reproducao continua=${GROW} MB; desde o inicio=${TOT} MB" | tee -a $R
 if [ "$GROW" -lt 50 ] 2>/dev/null; then ok "11-memoria" "crescimento ${GROW} MB (limite 50)"; else fail "11-memoria" "CRESCEU ${GROW} MB (limite 50)"; fi
