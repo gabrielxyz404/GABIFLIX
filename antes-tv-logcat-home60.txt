@@ -1,0 +1,80 @@
+11-19 21:54:54.922  3290  3312 D libEGL  : loaded /vendor/lib/egl/libEGL_emulation.so
+11-19 21:54:54.933  3290  3312 D libEGL  : loaded /vendor/lib/egl/libGLESv1_CM_emulation.so
+11-19 21:54:54.935  3290  3312 D libEGL  : loaded /vendor/lib/egl/libGLESv2_emulation.so
+11-19 21:54:55.114  3290  3310 D HostConnection: HostComposition ext ANDROID_EMU_CHECKSUM_HELPER_v1 ANDROID_EMU_native_sync_v2 ANDROID_EMU_dma_v1 ANDROID_EMU_direct_mem ANDROID_EMU_host_composition_v1 ANDROID_EMU_host_composition_v2 ANDROID_EMU_vulkan ANDROID_EMU_deferred_vulkan_commands ANDROID_EMU_vulkan_null_optional_strings ANDROID_EMU_vulkan_create_resources_with_requirements ANDROID_EMU_YUV_Cache ANDROID_EMU_vulkan_ignored_handles ANDROID_EMU_has_shared_slots_host_memory_allocator ANDROID_EMU_vulkan_free_memory_sync ANDROID_EMU_vulkan_shader_float16_int8 ANDROID_EMU_vulkan_async_queue_submit ANDROID_EMU_sync_buffer_data ANDROID_EMU_vulkan_async_qsri ANDROID_EMU_read_color_buffer_dma ANDROID_EMU_hwc_color_transform ANDROID_EMU_hwc_display_power_mode GL_OES_EGL_image_external_essl3 GL_OES_vertex_array_object GL_KHR_texture_compression_astc_ldr ANDROID_EMU_host_side_tracing ANDROID_EMU_gles_max_version_3_0 
+11-19 21:54:55.140   156   156 I hwservicemanager: getTransport: Cannot find entry android.hardware.configstore@1.0::ISurfaceFlingerConfigs/default in either framework or device manifest.
+11-19 21:54:55.142  3290  3310 D EGL_emulation: eglCreateContext: 0xeb3e69d0: maj 3 min 0 rcv 3
+11-19 21:54:55.162  3290  3310 D EGL_emulation: eglMakeCurrent: 0xeb3e69d0: ver 3 0 (tinfo 0xeb736b10) (first time)
+11-19 21:54:55.257  3290  3310 D HostConnection: HostComposition ext ANDROID_EMU_CHECKSUM_HELPER_v1 ANDROID_EMU_native_sync_v2 ANDROID_EMU_dma_v1 ANDROID_EMU_direct_mem ANDROID_EMU_host_composition_v1 ANDROID_EMU_host_composition_v2 ANDROID_EMU_vulkan ANDROID_EMU_deferred_vulkan_commands ANDROID_EMU_vulkan_null_optional_strings ANDROID_EMU_vulkan_create_resources_with_requirements ANDROID_EMU_YUV_Cache ANDROID_EMU_vulkan_ignored_handles ANDROID_EMU_has_shared_slots_host_memory_allocator ANDROID_EMU_vulkan_free_memory_sync ANDROID_EMU_vulkan_shader_float16_int8 ANDROID_EMU_vulkan_async_queue_submit ANDROID_EMU_sync_buffer_data ANDROID_EMU_vulkan_async_qsri ANDROID_EMU_read_color_buffer_dma ANDROID_EMU_hwc_color_transform ANDROID_EMU_hwc_display_power_mode GL_OES_EGL_image_external_essl3 GL_OES_vertex_array_object GL_KHR_texture_compression_astc_ldr ANDROID_EMU_host_side_tracing ANDROID_EMU_gles_max_version_3_0 
+11-19 21:54:56.627  3290  3290 I GabiFlixPlayer: ciclo: onStart, tocando=false, tempo=-1, escala=0, atraso=0, vista=TextureView 0x0, vout=true
+11-19 21:54:56.627  3290  3290 I GabiFlixPlayer: ciclo: onResume, tocando=false, tempo=-1, escala=0, atraso=0, vista=TextureView 0x0, vout=true
+11-19 21:54:57.212  3290  3354 D HostConnection: HostComposition ext ANDROID_EMU_CHECKSUM_HELPER_v1 ANDROID_EMU_native_sync_v2 ANDROID_EMU_dma_v1 ANDROID_EMU_direct_mem ANDROID_EMU_host_composition_v1 ANDROID_EMU_host_composition_v2 ANDROID_EMU_vulkan ANDROID_EMU_deferred_vulkan_commands ANDROID_EMU_vulkan_null_optional_strings ANDROID_EMU_vulkan_create_resources_with_requirements ANDROID_EMU_YUV_Cache ANDROID_EMU_vulkan_ignored_handles ANDROID_EMU_has_shared_slots_host_memory_allocator ANDROID_EMU_vulkan_free_memory_sync ANDROID_EMU_vulkan_shader_float16_int8 ANDROID_EMU_vulkan_async_queue_submit ANDROID_EMU_sync_buffer_data ANDROID_EMU_vulkan_async_qsri ANDROID_EMU_read_color_buffer_dma ANDROID_EMU_hwc_color_transform ANDROID_EMU_hwc_display_power_mode GL_OES_EGL_image_external_essl3 GL_OES_vertex_array_object GL_KHR_texture_compression_astc_ldr ANDROID_EMU_host_side_tracing ANDROID_EMU_gles_max_version_3_0 
+11-19 21:54:57.222  3290  3354 D EGL_emulation: eglCreateContext: 0xeb3f4ff0: maj 3 min 0 rcv 3
+11-19 21:54:57.224  3290  3354 D EGL_emulation: eglMakeCurrent: 0xeb3f4ff0: ver 3 0 (tinfo 0xbbfaa270) (first time)
+11-19 21:54:57.511   317   339 W ServiceManager: Permission failure: android.permission.ACCESS_SURFACE_FLINGER from uid=10076 pid=3290
+11-19 21:54:57.511   317   339 D PermissionCache: checking android.permission.ACCESS_SURFACE_FLINGER for uid=10076 => denied (136 us)
+11-19 21:54:57.575  3290  3290 I GabiFlixPlayer: ciclo: evento Vout, saídas=1
+11-19 21:55:06.532   317   317 W Binder:317_5: type=1400 audit(0.0:45): avc: denied { search } for name="283" dev="proc" ino=68452 scontext=u:r:surfaceflinger:s0 tcontext=u:r:hal_graphics_composer_default:s0 tclass=dir permissive=0
+11-19 21:55:06.620   317   317 W Binder:317_1: type=1400 audit(0.0:46): avc: denied { search } for name="283" dev="proc" ino=68452 scontext=u:r:surfaceflinger:s0 tcontext=u:r:hal_graphics_composer_default:s0 tclass=dir permissive=0
+11-19 21:55:41.872  2472  2582 D cr_ClientAuthCredsWidevine: [ClientAuthCredsWidevine.java:276] PostRequest:https://www.googleapis.com/certificateprovisioning/v1/devicecertificates/create?key=AIzaSyB-5OLKTx2iU5mko18DfdwK5611JIjbUhE&signedRequest=CugYEgRX6o8_GhMIARIPY2FzdC5nb29nbGUuY29tKqgYCgx3aWRldmluZS5jb20SEFFDT-KkTHY7zCyCai1u-aca8BUYnehjfgWWCdmgioqLURc82oFQNLnPTyOvRFlevTsm0vcN3VvCMZwNXyUTvkNVmGl3WUQ8YkdlWpZt8hOnt0JN3sFuTvJPjlkHoQ6VuhaALOmPSjLcMnAN6z-8pvmkS8RoavPEWw_4Zk8cbZRStTQPEcoILWWhSxzJ1BDx868AsdiGMGoWRXzLRus1_ITnemqVQqh0QKWVMBhzoyzHRW4eK_SV1AKVgEB8dGhFsYmprg9ZgLatahAwR6IC-NCdNHM9Wr85l41R1pAj0aUow9-3Xk81SH9LF2p3yHFP9larzMaQIuZqIjK8X2tdrwtFQissf2bMLta4w3LHHhwLsBLgtrfbDhYUQSCA6S6c2j3e6BsVO13UfKgoVgdQyhGUvUaZ037lPtXgyJkyOW3qW6ANTQZCi7YgBTurqjeJUH2lKTaBwb45jzhfaBC87mgdyGgIZho-1I9Ad2ferrQhMx4mGQQlry8d9Pcwpgq5LuexauzxhfXKRDZEFdd_AcbJ5U8HLM3asKMOsK9HfoMV4WGJuhR0S0_6WXMIu2wUT7lfcenishLueVTIkspwC-uXrU4o0jaC995jZoqCBahtyM0EonQubJZd0BXOsDBwt4LvFy3hxkFKlrSakwJHwEGLYFtVsKpxij4UZTWk1v5EdnypqmHLrLUwkZ7-zrVM9Piq-nJmYipExFRjEmSTnpNORZunOafzcNWw7CLOSkspt1eIH27esvrcvi5r75238_74eJsbMg0oYUawjgCo70WSLAdBbbF75Jpd9n4Rp1hcHxUaDwMJdnjK2DLZZg7rjZHPRLmLBhi9CRyvY4x0vC1cc2-IK1qh8vB6UkuiWj18rzD644JyVnc-vYeN0CuPQsgaMlNRdyXpJr2T47a4mnQQY588NE3WwkTJF-7a2vr8f2VtXD5v794TZU0uMUC97KqQGtwIsGk61e5IzvyEfZK6G2SvKAVHzu8LmHqGEY3uh_zRv_F4wbBc9FwcpHsu_K1ZU1i75llCClVdvL4v9kqwxTzjHtiLQCn5bVj82QT5sPKYYJZZS6JJuqHmeor68HSianXByNNMv5MttGOkJ4fW_zRFxYac_nGWJPMrDHrY_jelYySQ-mUEkEm9PUF5DMF2EOd89biNuPPfX5Uyol5TfYQ9ldDDtBS3VujmxLkojjlXG2uQMykEv0R33ewWWH5Z0HUbKlZ0V-jljBObhdsTRVcMflSmL-7eG2NbBMThreggWF_lEj8HY-z68qxk3ROU-FOK7KvOHq8JVbQs7Z3UD-nh0eU4w-4qv7zAN8uc9ZA1ocElK3F3vzk8FBoda7Cy9OBoHY9LnkR34uwWOs-9rztbe0XZ1waL324PAOJ9FWcu_ArjKVHpA3NKU76R4qiflMmUCRiJR4wTQoOZsca3oswgyTPVHdJkM0g55UicKZt9_Ac0lcySiTQQ1IrVTCIdu7CWHLmXQ5XenIrwu536YrxLmJgZ2fvAjnygZIlRMxh45qSZ9GMQCoaZ1sGaiSWfbureWF-ngfZAOH_SbqOOj174euvUk-ffB6MT5eE-mWnJioqYBqXrqyotCol0FaFntxqJntx-Zwb-rlKr_9QAtvqVBpYDj7LS6CUf5EM9w31mshMycJZzRZC5zWhvYawL1f36-mYKKAI4__m7mf5ey1OcAxSDjItQSlmS99ejzOOQACNXuqmRUjkNMpDTKtxZhFuq8SUEpYYegvcqI8hbOBURUOJtRwfuABvUm-fTOcupleuEUvziGoBtlaAfq13_zz2andwJqnATn4xuSVQ7u28Rl2rzyaOL3K8DQfW_juYEFSvpSyd_ud0BzDSnJ_PDTLCb5Rl_6vHhLqlC_vVgqzHUbdtkTrcUM1DbwuuyrsMnkDCfUDaKiLzeouen51Ddz6NRgZ2jhYgeIo52Jnr1kWpms3LOhlS8JIkglBSxpYdH1e73AttvLK681aYYsT1yjfTIT-QEH9MWx_FW9jpUMefsmtJbcH9eG_2WbNrg0gs981ybqQrmU2IY4gs8de29jKQ8JwZUp_Jy2LD7b3XiG-QEpO7RqBOxKey5Fwtu3kZn05FfjUO8QwIDAEcDMZ4gxiq9yvDDBC-1hU4lwpzt_LNIzkp6-6t92vJyTuV-XUSIs8b8cbZo53dlAw3oBHp4n0ru2a4TW2W9FF5f04WVUktrJQCboOgVwN6GHHYwohMWZ0cdl5gVpUqkNyN1noU8irc7sZyQfH0ZgI_RdrDrzUl0GkTM-sFizEFiylzmkWKbISotW7AkH9ejdxSMtT7vT6-sdWUd9A1DVbpkyfjusDoMGCGBrZvL9d5vHeavaYyEbYf7YswMOtlyd2tUupSeGjO0qFVwhXDtb8C1_By_m4NyA1Fq7diHQWRHF80twOC7HmmhAGRJb5sPFwPrdcpcB9iYBooEkqptRzSDFHAQviuaGydcTGwnpByYW1XwnARKr-2H1o5tcKtaAdOFjAdh-Xto1k_b7W1idDNJy5UamCn9ZyPuVcJxBEO3Dz1DGUX11fb4MU0yV5UZuu54W36_S7xwXO4zMtn3JRk-yCugMBT1M7Yx2A8wXYfLxpVIyjRWvnUXtSD7LmE9Hor8LAvpzbxEmEGjbr_HKzv9IlVnbUJhTlAPlclUwx0hh9gg9RbqNWrPkBF9mWOQ2c5l1OGw_hQvS6rKO3RxgZQ6LULnzAFOi3I-iEM1a6W-Q3USx4oKygsK4uro6lzvM0RKzLPhHp6ZoTUEWpo_cG_pXlTupiNx-a4p0mbLSsxRh4q4EziceqBNIeGwRTykFRIgQ9pZWo-1_dC_zPeL3giqZJRGeYVOP0SBnL4-ZKSd9_nbJwwKTp_pVSRx8f2Fb3oQAtZRdB1pE_-9feTUtK6t2ujGpJsMhnc1YWpITFsWg50lAZP0IVD4I-MXPUPPTy9fxc8up36msTXeD7TycY4B8-tfBA0evPcfJPAno93VOpdtIH_DN4mh9jd7tMV1yNBeEOPlfY__l3BH_8Ox-apVx7Ni9krLdQy2S-Lf9SzCEq_hThnKOQ6RhZP5PT6oD3DAYiy3py0ID0wh2LKVm57QOxR3RRjQHWBapYWWZuDlXa9p5c_hvhbCNwZd2NukWL-GlOUPXxuXu1BbiQ6ptPSe90duHPqPfdsHPrrnuX8EJv2KJfGQi11IiNFh5YMi96rZ1uC9wp1O_W5gA_2HTMNZqUe6pM1vhTRoKheG4PTXHsBnTTa_ZknuirdbQ1_PzpXFhqpdEE4xoozmCbE436-WSX1Zj3o3X7L7Efi4iwpLiLJlMfDtBGKM85FqJVCNaxd-u0S8iSAzY2xXZOO70XZnX3Dkgypstc4oozD_7tqxVtqaqDbR-VufD8NVRfpMqCBfVia44TvSIIZHvYTIcbYI7-oNJH47c5PmAwkw_UqzWS6h2wRGzvogHiKMXWelRLeaKtcuJVsPdrxCPRE5AQj9x1RNrhNk1bu9XcqbpCBiwU4TH8crJbZfLh3gQem0ibGYq9gAMtnJgVZD9He73e6YPAWe9LyKrSmVKHhYll77sWudvqAHbvA5jPEvdXhCLTu7xiZAN2WJmppJVbPwCpVIosNjZ8ug6-1nY45oEBSLqEwmV-EeMk69oukjSLtBRktZ59bJ3CIpogxhDc6VRdK9j6It9ZrkhO2k_Tuo0Z8KKgHdt3NY95xdJTDczmbC_3bkv9gOpKNb4P7fIpEJ67rVMxz4-FEKoG9iKk-q15yuqWKh42lhIhDUjNPnMTHKfhtoFGHH2tuvKoACOC
+11-19 21:55:59.713  3653  3653 D HostConnection: HostComposition ext ANDROID_EMU_CHECKSUM_HELPER_v1 ANDROID_EMU_native_sync_v2 ANDROID_EMU_dma_v1 ANDROID_EMU_direct_mem ANDROID_EMU_host_composition_v1 ANDROID_EMU_host_composition_v2 ANDROID_EMU_vulkan ANDROID_EMU_deferred_vulkan_commands ANDROID_EMU_vulkan_null_optional_strings ANDROID_EMU_vulkan_create_resources_with_requirements ANDROID_EMU_YUV_Cache ANDROID_EMU_vulkan_ignored_handles ANDROID_EMU_has_shared_slots_host_memory_allocator ANDROID_EMU_vulkan_free_memory_sync ANDROID_EMU_vulkan_shader_float16_int8 ANDROID_EMU_vulkan_async_queue_submit ANDROID_EMU_sync_buffer_data ANDROID_EMU_vulkan_async_qsri ANDROID_EMU_read_color_buffer_dma ANDROID_EMU_hwc_color_transform ANDROID_EMU_hwc_display_power_mode GL_OES_EGL_image_external_essl3 GL_OES_vertex_array_object GL_KHR_texture_compression_astc_ldr ANDROID_EMU_host_side_tracing ANDROID_EMU_gles_max_version_3_0 
+11-19 21:56:04.802  3666  3666 D AndroidRuntime: >>>>>> START com.android.internal.os.RuntimeInit uid 2000 <<<<<<
+11-19 21:56:04.805  3666  3666 I AndroidRuntime: Using default boot image
+11-19 21:56:04.805  3666  3666 I AndroidRuntime: Leaving lock profiling enabled
+11-19 21:56:06.187  3666  3666 D AndroidRuntime: Calling main entry com.android.commands.input.Input
+11-19 21:56:06.351  3666  3666 D AndroidRuntime: Shutting down VM
+11-19 21:56:08.535  3691  3691 D AndroidRuntime: >>>>>> START com.android.internal.os.RuntimeInit uid 2000 <<<<<<
+11-19 21:56:08.625  3691  3691 I AndroidRuntime: Using default boot image
+11-19 21:56:08.635  3691  3691 I AndroidRuntime: Leaving lock profiling enabled
+11-19 21:56:08.827  3691  3691 D AndroidRuntime: Calling main entry com.android.commands.input.Input
+11-19 21:56:08.841  3691  3691 D AndroidRuntime: Shutting down VM
+11-19 21:56:17.859  3748  3748 D HostConnection: HostComposition ext ANDROID_EMU_CHECKSUM_HELPER_v1 ANDROID_EMU_native_sync_v2 ANDROID_EMU_dma_v1 ANDROID_EMU_direct_mem ANDROID_EMU_host_composition_v1 ANDROID_EMU_host_composition_v2 ANDROID_EMU_vulkan ANDROID_EMU_deferred_vulkan_commands ANDROID_EMU_vulkan_null_optional_strings ANDROID_EMU_vulkan_create_resources_with_requirements ANDROID_EMU_YUV_Cache ANDROID_EMU_vulkan_ignored_handles ANDROID_EMU_has_shared_slots_host_memory_allocator ANDROID_EMU_vulkan_free_memory_sync ANDROID_EMU_vulkan_shader_float16_int8 ANDROID_EMU_vulkan_async_queue_submit ANDROID_EMU_sync_buffer_data ANDROID_EMU_vulkan_async_qsri ANDROID_EMU_read_color_buffer_dma ANDROID_EMU_hwc_color_transform ANDROID_EMU_hwc_display_power_mode GL_OES_EGL_image_external_essl3 GL_OES_vertex_array_object GL_KHR_texture_compression_astc_ldr ANDROID_EMU_host_side_tracing ANDROID_EMU_gles_max_version_3_0 
+11-19 21:56:21.667  3766  3766 D AndroidRuntime: >>>>>> START com.android.internal.os.RuntimeInit uid 2000 <<<<<<
+11-19 21:56:21.672  3766  3766 I AndroidRuntime: Using default boot image
+11-19 21:56:21.672  3766  3766 I AndroidRuntime: Leaving lock profiling enabled
+11-19 21:56:22.587  3766  3766 D AndroidRuntime: Calling main entry com.android.commands.uiautomator.Launcher
+11-19 21:56:24.321  3766  3766 D AndroidRuntime: Shutting down VM
+11-19 21:56:25.582  3795  3795 D AndroidRuntime: >>>>>> START com.android.internal.os.RuntimeInit uid 2000 <<<<<<
+11-19 21:56:25.614  3795  3795 I AndroidRuntime: Using default boot image
+11-19 21:56:25.615  3795  3795 I AndroidRuntime: Leaving lock profiling enabled
+11-19 21:56:26.486  3795  3795 D AndroidRuntime: Calling main entry com.android.commands.uiautomator.Launcher
+11-19 21:56:27.977  3795  3795 D AndroidRuntime: Shutting down VM
+11-19 21:56:29.245  3816  3816 D AndroidRuntime: >>>>>> START com.android.internal.os.RuntimeInit uid 2000 <<<<<<
+11-19 21:56:29.247  3816  3816 I AndroidRuntime: Using default boot image
+11-19 21:56:29.247  3816  3816 I AndroidRuntime: Leaving lock profiling enabled
+11-19 21:56:29.687  3816  3816 D AndroidRuntime: Calling main entry com.android.commands.input.Input
+11-19 21:56:29.762  3816  3816 D AndroidRuntime: Shutting down VM
+11-19 21:56:31.369  3830  3830 D AndroidRuntime: >>>>>> START com.android.internal.os.RuntimeInit uid 2000 <<<<<<
+11-19 21:56:31.383  3830  3830 I AndroidRuntime: Using default boot image
+11-19 21:56:31.383  3830  3830 I AndroidRuntime: Leaving lock profiling enabled
+11-19 21:56:31.743  3830  3830 D AndroidRuntime: Calling main entry com.android.commands.uiautomator.Launcher
+11-19 21:56:33.044  3830  3830 D AndroidRuntime: Shutting down VM
+11-19 21:56:34.666  3850  3850 D AndroidRuntime: >>>>>> START com.android.internal.os.RuntimeInit uid 2000 <<<<<<
+11-19 21:56:34.699  3850  3850 I AndroidRuntime: Using default boot image
+11-19 21:56:34.700  3850  3850 I AndroidRuntime: Leaving lock profiling enabled
+11-19 21:56:35.222  3850  3850 D AndroidRuntime: Calling main entry com.android.commands.input.Input
+11-19 21:56:35.326  3850  3850 D AndroidRuntime: Shutting down VM
+11-19 21:56:37.152  3867  3867 D AndroidRuntime: >>>>>> START com.android.internal.os.RuntimeInit uid 2000 <<<<<<
+11-19 21:56:37.172  3867  3867 I AndroidRuntime: Using default boot image
+11-19 21:56:37.172  3867  3867 I AndroidRuntime: Leaving lock profiling enabled
+11-19 21:56:38.179  3867  3867 D AndroidRuntime: Calling main entry com.android.commands.uiautomator.Launcher
+11-19 21:56:39.355  3867  3867 D AndroidRuntime: Shutting down VM
+11-19 21:56:41.298  3884  3884 D AndroidRuntime: >>>>>> START com.android.internal.os.RuntimeInit uid 2000 <<<<<<
+11-19 21:56:41.412  3884  3884 I AndroidRuntime: Using default boot image
+11-19 21:56:41.412  3884  3884 I AndroidRuntime: Leaving lock profiling enabled
+11-19 21:56:42.467  3884  3884 D AndroidRuntime: Calling main entry com.android.commands.input.Input
+11-19 21:56:42.729  3884  3884 D AndroidRuntime: Shutting down VM
+11-19 21:56:44.381  3924  3924 D AndroidRuntime: >>>>>> START com.android.internal.os.RuntimeInit uid 2000 <<<<<<
+11-19 21:56:44.401  3924  3924 I AndroidRuntime: Using default boot image
+11-19 21:56:44.401  3924  3924 I AndroidRuntime: Leaving lock profiling enabled
+11-19 21:56:44.831  3924  3924 D AndroidRuntime: Calling main entry com.android.commands.uiautomator.Launcher
+11-19 21:56:45.873  3924  3924 D AndroidRuntime: Shutting down VM
+11-19 21:56:47.319  3943  3943 D AndroidRuntime: >>>>>> START com.android.internal.os.RuntimeInit uid 2000 <<<<<<
+11-19 21:56:47.437  3943  3943 I AndroidRuntime: Using default boot image
+11-19 21:56:47.437  3943  3943 I AndroidRuntime: Leaving lock profiling enabled
+11-19 21:56:48.008  3943  3943 D AndroidRuntime: Calling main entry com.android.commands.input.Input
+11-19 21:56:48.157  3943  3943 D AndroidRuntime: Shutting down VM
+11-19 21:56:50.144  3957  3957 D AndroidRuntime: >>>>>> START com.android.internal.os.RuntimeInit uid 2000 <<<<<<
+11-19 21:56:50.377  3957  3957 I AndroidRuntime: Using default boot image
+11-19 21:56:50.388  3957  3957 I AndroidRuntime: Leaving lock profiling enabled
+11-19 21:56:51.435  3957  3957 D AndroidRuntime: Calling main entry com.android.commands.uiautomator.Launcher
