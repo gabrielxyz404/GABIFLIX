@@ -1,0 +1,40 @@
+11-19 16:57:34.833   830   830 D AndroidRuntime: Shutting down VM
+11-19 16:57:34.833   830   830 E AndroidRuntime: FATAL EXCEPTION: main
+11-19 16:57:34.833   830   830 E AndroidRuntime: Process: com.android.systemui, PID: 830
+11-19 16:57:34.833   830   830 E AndroidRuntime: java.lang.RuntimeException: Error receiving broadcast Intent { act=android.intent.action.PACKAGE_CHANGED dat=package: flg=0x5000010 (has extras) } in com.android.systemui.recents.OverviewProxyService$2@284b45b
+11-19 16:57:34.833   830   830 E AndroidRuntime: 	at android.app.LoadedApk$ReceiverDispatcher$Args.lambda$getRunnable$0(LoadedApk.java:1810)
+11-19 16:57:34.833   830   830 E AndroidRuntime: 	at android.app.LoadedApk$ReceiverDispatcher$Args.$r8$lambda$gDuJqgxY6Zb-ifyeubKeivTLAwk(Unknown Source:0)
+11-19 16:57:34.833   830   830 E AndroidRuntime: 	at android.app.LoadedApk$ReceiverDispatcher$Args$$ExternalSyntheticLambda0.run(Unknown Source:2)
+11-19 16:57:34.833   830   830 E AndroidRuntime: 	at android.os.Handler.handleCallback(Handler.java:958)
+11-19 16:57:34.833   830   830 E AndroidRuntime: 	at android.os.Handler.dispatchMessage(Handler.java:99)
+11-19 16:57:34.833   830   830 E AndroidRuntime: 	at android.os.Looper.loopOnce(Looper.java:205)
+11-19 16:57:34.833   830   830 E AndroidRuntime: 	at android.os.Looper.loop(Looper.java:294)
+11-19 16:57:34.833   830   830 E AndroidRuntime: 	at android.app.ActivityThread.main(ActivityThread.java:8177)
+11-19 16:57:34.833   830   830 E AndroidRuntime: 	at java.lang.reflect.Method.invoke(Native Method)
+11-19 16:57:34.833   830   830 E AndroidRuntime: 	at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:552)
+11-19 16:57:34.833   830   830 E AndroidRuntime: 	at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:971)
+11-19 16:57:34.833   830   830 E AndroidRuntime: Caused by: java.lang.NullPointerException: Attempt to read from field 'android.content.pm.ServiceInfo android.content.pm.ResolveInfo.serviceInfo' on a null object reference in method 'void com.android.systemui.recents.OverviewProxyService$2.onReceive(android.content.Context, android.content.Intent)'
+11-19 16:57:34.833   830   830 E AndroidRuntime: 	at com.android.systemui.recents.OverviewProxyService$2.onReceive(go/retraceme 19693c2b0a8439b7183751b64d60893829dbf56dc1e08e0669fc0cfc55754948:44)
+11-19 16:57:34.833   830   830 E AndroidRuntime: 	at android.app.LoadedApk$ReceiverDispatcher$Args.lambda$getRunnable$0(LoadedApk.java:1802)
+11-19 16:57:34.833   830   830 E AndroidRuntime: 	... 10 more
+11-19 16:58:07.015  4995  4995 D AndroidRuntime: >>>>>> START com.android.internal.os.RuntimeInit uid 0 <<<<<<
+11-19 16:58:07.037  4995  4995 I AndroidRuntime: Using default boot image
+11-19 16:58:07.038  4995  4995 I AndroidRuntime: Leaving lock profiling enabled
+11-19 16:58:07.405  4995  4995 D AndroidRuntime: Calling main entry com.android.commands.uiautomator.Launcher
+11-19 16:58:09.391  4995  4995 D AndroidRuntime: Shutting down VM
+11-19 16:58:10.653  5075  5075 D AndroidRuntime: >>>>>> START com.android.internal.os.RuntimeInit uid 0 <<<<<<
+11-19 16:58:10.662  5075  5075 I AndroidRuntime: Using default boot image
+11-19 16:58:10.662  5075  5075 I AndroidRuntime: Leaving lock profiling enabled
+11-19 16:58:10.783  5075  5075 D AndroidRuntime: Calling main entry com.android.commands.uiautomator.Launcher
+11-19 16:58:11.798  5075  5075 D AndroidRuntime: Shutting down VM
+11-19 16:58:11.801  5075  5136 I AndroidRuntime: NOTE: attach of thread 'binder:5075_3' failed
+11-19 16:58:14.248  5173  5173 D AndroidRuntime: >>>>>> START com.android.internal.os.RuntimeInit uid 0 <<<<<<
+11-19 16:58:14.253  5173  5173 I AndroidRuntime: Using default boot image
+11-19 16:58:14.254  5173  5173 I AndroidRuntime: Leaving lock profiling enabled
+11-19 16:58:14.346  5173  5173 D AndroidRuntime: Calling main entry com.android.commands.uiautomator.Launcher
+11-19 16:58:15.438  5173  5173 D AndroidRuntime: Shutting down VM
+11-19 16:58:18.018  5327  5327 D AndroidRuntime: >>>>>> START com.android.internal.os.RuntimeInit uid 0 <<<<<<
+11-19 16:58:18.025  5327  5327 I AndroidRuntime: Using default boot image
+11-19 16:58:18.026  5327  5327 I AndroidRuntime: Leaving lock profiling enabled
+11-19 16:58:18.351  5327  5327 D AndroidRuntime: Calling main entry com.android.commands.uiautomator.Launcher
+11-19 16:58:19.472  5327  5327 D AndroidRuntime: Shutting down VM
