@@ -1,0 +1,80 @@
+11-19 21:52:42.470  1035  1083 D EGL_emulation: app_time_stats: avg=34.67ms min=4.92ms max=81.20ms count=26
+11-19 21:52:43.101  4134  4134 D nativeloader: InitLlndkLibrariesProduct: libEGL.so:libGLESv1_CM.so:libGLESv2.so:libGLESv3.so:libRS.so:libandroid_net.so:libbinder_ndk.so:libc.so:libcgrouprc.so:libclang_rt.asan-x86_64-android.so:libcom.android.tethering.connectivity_native.so:libdl.so:libft2.so:liblog.so:libm.so:libmediandk.so:libnativewindow.so:libneuralnetworks.so:libselinux.so:libsync.so:libvndksupport.so:libvulkan.so
+11-19 21:52:43.397   826   893 D EGL_emulation: app_time_stats: avg=1450.34ms min=1450.34ms max=1450.34ms count=1
+11-19 21:52:43.558  1035  1083 D EGL_emulation: app_time_stats: avg=39.90ms min=14.79ms max=85.10ms count=26
+11-19 21:52:44.452   826   889 D SplashScreenView: Icon: view: android.widget.ImageView{78bfe6e V.ED..... ......I. 0,0-0,0 #10204f0 android:id/splashscreen_icon_view} drawable: com.android.wm.shell.startingsurface.SplashscreenIconDrawableFactory$ImmobileIconDrawable@535090f size: 420
+11-19 21:52:44.822  1035  1083 D EGL_emulation: app_time_stats: avg=48.92ms min=6.06ms max=280.40ms count=24
+11-19 21:52:44.899   826   867 V WindowManagerShell: onTransitionReady android.os.BinderProxy@1af42c8: {id=9 t=OPEN f=0x0 trk=0 r=[0@Point(0, 0)] c=[{WCT{android.window.IWindowContainerToken$Stub$Proxy@abe3fa9} m=OPEN f=NONE leash=Surface(name=Task=9)/@0x74380e2 sb=Rect(0, 0 - 1080, 2400) eb=Rect(0, 0 - 1080, 2400) d=0},{WCT{android.window.IWindowContainerToken$Stub$Proxy@1cc92e} m=TO_BACK f=SHOW_WALLPAPER leash=Surface(name=Task=1)/@0x9ceec73 sb=Rect(0, 0 - 1080, 2400) eb=Rect(0, 0 - 1080, 2400) d=0}]}
+11-19 21:52:44.899   826   867 V WindowManagerShell: Transition doesn't have explicit remote, search filters for match for {id=9 t=OPEN f=0x0 trk=0 r=[0@Point(0, 0)] c=[{WCT{android.window.IWindowContainerToken$Stub$Proxy@abe3fa9} m=OPEN f=NONE leash=Surface(name=Task=9)/@0x74380e2 sb=Rect(0, 0 - 1080, 2400) eb=Rect(0, 0 - 1080, 2400) d=0},{WCT{android.window.IWindowContainerToken$Stub$Proxy@1cc92e} m=TO_BACK f=SHOW_WALLPAPER leash=Surface(name=Task=1)/@0x9ceec73 sb=Rect(0, 0 - 1080, 2400) eb=Rect(0, 0 - 1080, 2400) d=0}]}
+11-19 21:52:44.899   826   867 V WindowManagerShell: start default transition animation, info = {id=9 t=OPEN f=0x0 trk=0 r=[0@Point(0, 0)] c=[{WCT{android.window.IWindowContainerToken$Stub$Proxy@abe3fa9} m=OPEN f=NONE leash=Surface(name=Task=9)/@0x74380e2 sb=Rect(0, 0 - 1080, 2400) eb=Rect(0, 0 - 1080, 2400) d=0},{WCT{android.window.IWindowContainerToken$Stub$Proxy@1cc92e} m=TO_BACK f=SHOW_WALLPAPER leash=Surface(name=Task=1)/@0x9ceec73 sb=Rect(0, 0 - 1080, 2400) eb=Rect(0, 0 - 1080, 2400) d=0}]}
+11-19 21:52:45.282   826   826 D AndroidRuntime: Shutting down VM
+11-19 21:52:45.283   826   826 E AndroidRuntime: FATAL EXCEPTION: main
+11-19 21:52:45.283   826   826 E AndroidRuntime: Process: com.android.systemui, PID: 826
+11-19 21:52:45.283   826   826 E AndroidRuntime: java.lang.RuntimeException: Error receiving broadcast Intent { act=android.intent.action.PACKAGE_CHANGED dat=package: flg=0x5000010 (has extras) } in com.android.systemui.recents.OverviewProxyService$2@772ec29
+11-19 21:52:45.283   826   826 E AndroidRuntime: 	at android.app.LoadedApk$ReceiverDispatcher$Args.lambda$getRunnable$0(LoadedApk.java:1810)
+11-19 21:52:45.283   826   826 E AndroidRuntime: 	at android.app.LoadedApk$ReceiverDispatcher$Args.$r8$lambda$gDuJqgxY6Zb-ifyeubKeivTLAwk(Unknown Source:0)
+11-19 21:52:45.283   826   826 E AndroidRuntime: 	at android.app.LoadedApk$ReceiverDispatcher$Args$$ExternalSyntheticLambda0.run(Unknown Source:2)
+11-19 21:52:45.283   826   826 E AndroidRuntime: 	at android.os.Handler.handleCallback(Handler.java:958)
+11-19 21:52:45.283   826   826 E AndroidRuntime: 	at android.os.Handler.dispatchMessage(Handler.java:99)
+11-19 21:52:45.283   826   826 E AndroidRuntime: 	at android.os.Looper.loopOnce(Looper.java:205)
+11-19 21:52:45.283   826   826 E AndroidRuntime: 	at android.os.Looper.loop(Looper.java:294)
+11-19 21:52:45.283   826   826 E AndroidRuntime: 	at android.app.ActivityThread.main(ActivityThread.java:8177)
+11-19 21:52:45.283   826   826 E AndroidRuntime: 	at java.lang.reflect.Method.invoke(Native Method)
+11-19 21:52:45.283   826   826 E AndroidRuntime: 	at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:552)
+11-19 21:52:45.283   826   826 E AndroidRuntime: 	at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:971)
+11-19 21:52:45.283   826   826 E AndroidRuntime: Caused by: java.lang.NullPointerException: Attempt to read from field 'android.content.pm.ServiceInfo android.content.pm.ResolveInfo.serviceInfo' on a null object reference in method 'void com.android.systemui.recents.OverviewProxyService$2.onReceive(android.content.Context, android.content.Intent)'
+11-19 21:52:45.283   826   826 E AndroidRuntime: 	at com.android.systemui.recents.OverviewProxyService$2.onReceive(go/retraceme 19693c2b0a8439b7183751b64d60893829dbf56dc1e08e0669fc0cfc55754948:44)
+11-19 21:52:45.283   826   826 E AndroidRuntime: 	at android.app.LoadedApk$ReceiverDispatcher$Args.lambda$getRunnable$0(LoadedApk.java:1802)
+11-19 21:52:45.283   826   826 E AndroidRuntime: 	... 10 more
+11-19 21:52:45.431   826   893 D EGL_emulation: app_time_stats: avg=2033.80ms min=2033.80ms max=2033.80ms count=1
+11-19 21:52:45.478  4194  4222 D libEGL  : loaded /vendor/lib64/egl/libEGL_emulation.so
+11-19 21:52:45.479  4194  4222 D libEGL  : loaded /vendor/lib64/egl/libGLESv1_CM_emulation.so
+11-19 21:52:45.480  4194  4222 D libEGL  : loaded /vendor/lib64/egl/libGLESv2_emulation.so
+11-19 21:52:45.662   517   534 V WindowManager:     info={id=9 t=OPEN f=0x0 trk=0 r=[0@Point(0, 0)] c=[{WCT{RemoteToken{14856f0 Task{8c66cb #9 type=standard A=10192:io.github.gabrielxyz404.gabiflix}}} m=OPEN f=NONE leash=Surface(name=Task=9)/@0x3bb75e0 sb=Rect(0, 0 - 1080, 2400) eb=Rect(0, 0 - 1080, 2400) d=0},{WCT{RemoteToken{52c0fce Task{ed8f7ed #1 type=home}}} m=TO_BACK f=SHOW_WALLPAPER leash=Surface(name=Task=1)/@0x54480b sb=Rect(0, 0 - 1080, 2400) eb=Rect(0, 0 - 1080, 2400) d=0}]}
+11-19 21:52:45.833  4225  4225 D nativeloader: InitLlndkLibrariesProduct: libEGL.so:libGLESv1_CM.so:libGLESv2.so:libGLESv3.so:libRS.so:libandroid_net.so:libbinder_ndk.so:libc.so:libcgrouprc.so:libclang_rt.asan-x86_64-android.so:libcom.android.tethering.connectivity_native.so:libdl.so:libft2.so:liblog.so:libm.so:libmediandk.so:libnativewindow.so:libneuralnetworks.so:libselinux.so:libsync.so:libvndksupport.so:libvulkan.so
+11-19 21:52:45.847  1453  4185 D libEGL  : loaded /vendor/lib64/egl/libEGL_emulation.so
+11-19 21:52:45.850  1453  4185 D libEGL  : loaded /vendor/lib64/egl/libGLESv1_CM_emulation.so
+11-19 21:52:45.851  1453  4185 D libEGL  : loaded /vendor/lib64/egl/libGLESv2_emulation.so
+11-19 21:52:46.166   398   625 W ServiceManagerCppClient: Permission failure: android.permission.ROTATE_SURFACE_FLINGER from uid=10192 pid=4194
+11-19 21:52:46.166   398   625 D PermissionCache: checking android.permission.ROTATE_SURFACE_FLINGER for uid=10192 => denied (181 us)
+11-19 21:52:46.166   398   625 W ServiceManagerCppClient: Permission failure: android.permission.ACCESS_SURFACE_FLINGER from uid=10192 pid=4194
+11-19 21:52:46.166   398   625 D PermissionCache: checking android.permission.ACCESS_SURFACE_FLINGER for uid=10192 => denied (21 us)
+11-19 21:52:46.183   398   612 W ServiceManagerCppClient: Permission failure: android.permission.ROTATE_SURFACE_FLINGER from uid=10192 pid=0
+11-19 21:52:46.183   398   612 D PermissionCache: checking android.permission.ROTATE_SURFACE_FLINGER for uid=10192 => denied (17345 us)
+11-19 21:52:46.184  4194  4220 W OpenGLRenderer: Failed to initialize 101010-2 format, error = EGL_SUCCESS
+11-19 21:52:46.753   517  1150 E ActivityTaskManager: 	at com.android.server.wm.ActivityTaskManagerService.updateGlobalConfigurationLocked(ActivityTaskManagerService.java:4563)
+11-19 21:52:46.770   517  2621 W ServiceManagerCppClient: Permission failure: android.permission.ROTATE_SURFACE_FLINGER from uid=10192 pid=0
+11-19 21:52:46.770   517  2621 D PermissionCache: checking android.permission.ROTATE_SURFACE_FLINGER for uid=10192 => denied (3890 us)
+11-19 21:52:46.771   517  2621 W ServiceManagerCppClient: Permission failure: android.permission.ACCESS_SURFACE_FLINGER from uid=10192 pid=0
+11-19 21:52:46.771   517  2621 D PermissionCache: checking android.permission.ACCESS_SURFACE_FLINGER for uid=10192 => denied (331 us)
+11-19 21:52:46.856   517   535 W WindowManager: 	at com.android.server.wm.WindowAnimator.executeAfterPrepareSurfacesRunnables(WindowAnimator.java:294)
+11-19 21:52:46.856   517   535 W WindowManager: 	at com.android.server.wm.RootWindowContainer.performSurfacePlacementNoTrace(RootWindowContainer.java:811)
+11-19 21:52:46.856   517   535 W WindowManager: 	at com.android.server.wm.RootWindowContainer.performSurfacePlacement(RootWindowContainer.java:756)
+11-19 21:52:46.856   517   535 W WindowManager: 	at com.android.server.wm.WindowSurfacePlacer.performSurfacePlacementLoop(WindowSurfacePlacer.java:177)
+11-19 21:52:46.856   517   535 W WindowManager: 	at com.android.server.wm.WindowSurfacePlacer.performSurfacePlacement(WindowSurfacePlacer.java:126)
+11-19 21:52:46.856   517   535 W WindowManager: 	at com.android.server.wm.WindowSurfacePlacer.performSurfacePlacement(WindowSurfacePlacer.java:115)
+11-19 21:52:46.922   517  2305 E ActivityTaskManager: 	at com.android.server.wm.ActivityTaskManagerService.updateGlobalConfigurationLocked(ActivityTaskManagerService.java:4563)
+11-19 21:52:47.611  4440  4440 D nativeloader: InitLlndkLibrariesProduct: libEGL.so:libGLESv1_CM.so:libGLESv2.so:libGLESv3.so:libRS.so:libandroid_net.so:libbinder_ndk.so:libc.so:libcgrouprc.so:libclang_rt.asan-x86_64-android.so:libcom.android.tethering.connectivity_native.so:libdl.so:libft2.so:liblog.so:libm.so:libmediandk.so:libnativewindow.so:libneuralnetworks.so:libselinux.so:libsync.so:libvndksupport.so:libvulkan.so
+11-19 21:52:48.684  4411  4411 W BatteryControllerGoogle: 	at com.google.android.systemui.dagger.DaggerSysUIGoogleGlobalRootComponent$WMComponentImpl$SwitchingProvider.get0$com$google$android$systemui$dagger$DaggerSysUIGoogleGlobalRootComponent$SysUIGoogleSysUIComponentImpl$SwitchingProvider(go/retraceme 19693c2b0a8439b7183751b64d60893829dbf56dc1e08e0669fc0cfc55754948:69)
+11-19 21:52:48.684  4411  4411 W BatteryControllerGoogle: 	at com.google.android.systemui.dagger.DaggerSysUIGoogleGlobalRootComponent$WMComponentImpl$SwitchingProvider.get(go/retraceme 19693c2b0a8439b7183751b64d60893829dbf56dc1e08e0669fc0cfc55754948:125)
+11-19 21:52:48.684  4411  4411 W BatteryControllerGoogle: 	at com.google.android.systemui.dagger.DaggerSysUIGoogleGlobalRootComponent$WMComponentImpl$SwitchingProvider.get0$com$google$android$systemui$dagger$DaggerSysUIGoogleGlobalRootComponent$SysUIGoogleSysUIComponentImpl$SwitchingProvider(go/retraceme 19693c2b0a8439b7183751b64d60893829dbf56dc1e08e0669fc0cfc55754948:5)
+11-19 21:52:48.684  4411  4411 W BatteryControllerGoogle: 	at com.google.android.systemui.dagger.DaggerSysUIGoogleGlobalRootComponent$WMComponentImpl$SwitchingProvider.get(go/retraceme 19693c2b0a8439b7183751b64d60893829dbf56dc1e08e0669fc0cfc55754948:125)
+11-19 21:52:48.684  4411  4411 W BatteryControllerGoogle: 	at com.google.android.systemui.dagger.DaggerSysUIGoogleGlobalRootComponent$WMComponentImpl$SwitchingProvider.get1$com$google$android$systemui$dagger$DaggerSysUIGoogleGlobalRootComponent$SysUIGoogleSysUIComponentImpl$SwitchingProvider(go/retraceme 19693c2b0a8439b7183751b64d60893829dbf56dc1e08e0669fc0cfc55754948:77)
+11-19 21:52:48.684  4411  4411 W BatteryControllerGoogle: 	at com.google.android.systemui.dagger.DaggerSysUIGoogleGlobalRootComponent$WMComponentImpl$SwitchingProvider.get1(go/retraceme 19693c2b0a8439b7183751b64d60893829dbf56dc1e08e0669fc0cfc55754948:6)
+11-19 21:52:48.684  4411  4411 W BatteryControllerGoogle: 	at com.google.android.systemui.dagger.DaggerSysUIGoogleGlobalRootComponent$WMComponentImpl$SwitchingProvider.get(go/retraceme 19693c2b0a8439b7183751b64d60893829dbf56dc1e08e0669fc0cfc55754948:124)
+11-19 21:52:48.684  4411  4411 W BatteryControllerGoogle: 	at com.google.android.systemui.dagger.DaggerSysUIGoogleGlobalRootComponent$WMComponentImpl$SwitchingProvider.get1$com$google$android$systemui$dagger$DaggerSysUIGoogleGlobalRootComponent$SysUIGoogleSysUIComponentImpl$SwitchingProvider(go/retraceme 19693c2b0a8439b7183751b64d60893829dbf56dc1e08e0669fc0cfc55754948:78)
+11-19 21:52:48.684  4411  4411 W BatteryControllerGoogle: 	at com.google.android.systemui.dagger.DaggerSysUIGoogleGlobalRootComponent$WMComponentImpl$SwitchingProvider.get1(go/retraceme 19693c2b0a8439b7183751b64d60893829dbf56dc1e08e0669fc0cfc55754948:6)
+11-19 21:52:48.684  4411  4411 W BatteryControllerGoogle: 	at com.google.android.systemui.dagger.DaggerSysUIGoogleGlobalRootComponent$WMComponentImpl$SwitchingProvider.get(go/retraceme 19693c2b0a8439b7183751b64d60893829dbf56dc1e08e0669fc0cfc55754948:124)
+11-19 21:52:48.685  4411  4411 W BatteryControllerGoogle: 	at com.google.android.systemui.dagger.DaggerSysUIGoogleGlobalRootComponent$WMComponentImpl$SwitchingProvider.get1$com$google$android$systemui$dagger$DaggerSysUIGoogleGlobalRootComponent$SysUIGoogleSysUIComponentImpl$SwitchingProvider(go/retraceme 19693c2b0a8439b7183751b64d60893829dbf56dc1e08e0669fc0cfc55754948:79)
+11-19 21:52:48.685  4411  4411 W BatteryControllerGoogle: 	at com.google.android.systemui.dagger.DaggerSysUIGoogleGlobalRootComponent$WMComponentImpl$SwitchingProvider.get1(go/retraceme 19693c2b0a8439b7183751b64d60893829dbf56dc1e08e0669fc0cfc55754948:6)
+11-19 21:52:48.685  4411  4411 W BatteryControllerGoogle: 	at com.google.android.systemui.dagger.DaggerSysUIGoogleGlobalRootComponent$WMComponentImpl$SwitchingProvider.get(go/retraceme 19693c2b0a8439b7183751b64d60893829dbf56dc1e08e0669fc0cfc55754948:124)
+11-19 21:52:48.685  4411  4411 W BatteryControllerGoogle: 	at com.google.android.systemui.dagger.DaggerSysUIGoogleGlobalRootComponent$WMComponentImpl$SwitchingProvider.get2(go/retraceme 19693c2b0a8439b7183751b64d60893829dbf56dc1e08e0669fc0cfc55754948:95)
+11-19 21:52:48.685  4411  4411 W BatteryControllerGoogle: 	at com.google.android.systemui.dagger.DaggerSysUIGoogleGlobalRootComponent$WMComponentImpl$SwitchingProvider.get(go/retraceme 19693c2b0a8439b7183751b64d60893829dbf56dc1e08e0669fc0cfc55754948:123)
+11-19 21:52:48.685  4411  4411 W BatteryControllerGoogle: 	at com.google.android.systemui.dagger.DaggerSysUIGoogleGlobalRootComponent$WMComponentImpl$SwitchingProvider.get8(go/retraceme 19693c2b0a8439b7183751b64d60893829dbf56dc1e08e0669fc0cfc55754948:38)
+11-19 21:52:48.685  4411  4411 W BatteryControllerGoogle: 	at com.google.android.systemui.dagger.DaggerSysUIGoogleGlobalRootComponent$WMComponentImpl$SwitchingProvider.get(go/retraceme 19693c2b0a8439b7183751b64d60893829dbf56dc1e08e0669fc0cfc55754948:8)
+11-19 21:52:48.685  4411  4411 W BatteryControllerGoogle: 	at com.google.android.systemui.dagger.DaggerSysUIGoogleGlobalRootComponent$SysUIGoogleSysUIComponentImpl.inject(go/retraceme 19693c2b0a8439b7183751b64d60893829dbf56dc1e08e0669fc0cfc55754948:29)
+11-19 21:52:49.425  1603  1913 I AiAiEcho: #postPredictionTargets: Sending updates to UISurface media_data_manager with targets# 0 (types=[])
+11-19 21:52:49.426  1603  1913 I AiAiEcho: #postPredictionTargets: Sending updates to UISurface media_data_manager with targets# 0 (types=[])
+11-19 21:52:49.661   398   418 E EGL_emulation: eglQueryContext 3100  EGL_BAD_ATTRIBUTE
+11-19 21:52:49.661   398   418 E EGL_emulation: tid 418: eglQueryContext(2146): error 0x3004 (EGL_BAD_ATTRIBUTE)
+11-19 21:52:49.661  4411  4411 I SystemUIService: Found SurfaceFlinger's GPU Priority: 0
