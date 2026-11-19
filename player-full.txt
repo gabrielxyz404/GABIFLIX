@@ -1,0 +1,291 @@
+--------- beginning of main
+--------- beginning of system
+--------- beginning of kernel
+ciclo: onStart, tocando=false, tempo=-1, escala=0, atraso=0, vista=SurfaceView 0x0, vout=true
+ciclo: onResume, tocando=false, tempo=-1, escala=0, atraso=0, vista=SurfaceView 0x0, vout=true
+hash=9e1a628aadc436e5 tamanho=91526045 arquivo=teste.mkv
+Hash calculado, mas a busca de legendas falhou
+candidatas para baixar: 3 (do site: 3)
+legendas PT válidas: 3 de 3; referências baixadas: 0
+alinhamento com 0 referência(s):
+  sem referência: consenso entre 3 PT, grupos [2, 1]
+  alinhadas: 0
+ciclo: evento Vout, saídas=1
+vistas do vídeo: SurfaceView(vídeo) SurfaceView
+AUDIOSYNC pronto (sem limite de dados; automático=true, começa 25 s depois de a legenda ficar ativa; resultado confiante vale 30 dias e não se reverifica; sem confiança: 1 nova tentativa em 1200 s; salto grande = 600 s)
+legenda PT embutida: não há
+ranking das legendas:
+  grupo 0: 2 legenda(s), nome 0.00, duração ok -> 3.50
+  grupo 1: 1 legenda(s), nome 0.00, duração ok -> 2.50
+  consenso escolheu o grupo 0 (2 PT), primeira #0
+  referência de fim=0ms (sem referência), duração=300021ms
+  #2 fim=303600ms hash=false corrigida=false nota=0.0969
+escolhida: candidata #0; melhor baixada: #0 alinhada=false nota=0.00 deslocamento=0ms hash=false corrigida=false; 3 no menu
+atraso da legenda ativa (nenhuma): 0 ms
+AUDIOSYNC estado: st=- executando=false tocando=true carregando=false faixa=2 baixadas=3 addedSubs=3 embeddedKnown=true faixas=[-1:Disable; 2:Track 1 - [gabiflix/cache/legendas/app-1](baixada); 3:Track 2 - [gabiflix/cache/legendas/app-2](baixada); 4:Track 3 - [gabiflix/cache/legendas/app-3](baixada); ] cand=true | pss=58MB java=3/512MB nativo=76MB livre=1025MB limiar=144MB poucaMemoria=false
+AUDIOSYNC legenda ativa: 9e1a628aadc436e5|http://10.0.2.2:8000/a1.srt#raw (nova nesta sessão)
+AUDIOSYNC GATILHO motivo=troca-de-legenda legenda=9e1a628aadc436e5|http://10.0.2.2:8000/a1.srt#raw decisão=avaliar (espera 25 s tocando; se há resultado guardado, não analisa) [análises=0 sem_confiança=0 estado=nova]
+legenda do app: 30 falas da faixa ativa
+legenda do app: ligada
+legenda do app: tempo 3047 ms, atraso 0 ms -> "Você não sabe o que ela fez para nós, mas eu também estou aqui [ALFA 01 @0s]/e isso é uma linha de baixo que tem de ficar inteira, com você"
+atraso da legenda ativa (d3:u|h:9e1a628aadc436e5|http://10.0.2.2:8000/a1.srt#raw): 0 ms
+legenda do app: tempo 9614 ms, atraso 0 ms -> (nada)
+legenda do app: tempo 9894 ms, atraso 0 ms -> "Você não sabe o que ela fez para nós, mas eu também estou aqui [ALFA 02 @10s]/e isso é uma linha de baixo que tem de ficar inteira, com você"
+legenda do app: tempo 19577 ms, atraso 0 ms -> (nada)
+legenda do app: tempo 19836 ms, atraso 0 ms -> "Você não sabe o que ela fez para nós, mas eu também estou aqui [ALFA 03 @20s]/e isso é uma linha de baixo que tem de ficar inteira, com você"
+AUDIOSYNC estado: st=nova executando=false tocando=true carregando=false faixa=2 baixadas=3 addedSubs=3 embeddedKnown=true faixas=[-1:Disable; 2:Track 1 - [gabiflix/cache/legendas/app-1](baixada); 3:Track 2 - [gabiflix/cache/legendas/app-2](baixada); 4:Track 3 - [gabiflix/cache/legendas/app-3](baixada); ] cand=true | pss=66MB java=4/512MB nativo=77MB livre=1012MB limiar=144MB poucaMemoria=false
+legenda do app: tempo 29587 ms, atraso 0 ms -> (nada)
+legenda do app: tempo 29855 ms, atraso 0 ms -> "Você não sabe o que ela fez para nós, mas eu também estou aqui [ALFA 04 @30s]/e isso é uma linha de baixo que tem de ficar inteira, com você"
+AUDIOSYNC GATILHO motivo=início legenda=9e1a628aadc436e5|http://10.0.2.2:8000/a1.srt#raw decisão=análise [análises=1 sem_confiança=0 estado=nova]
+AUDIOSYNC antes da análise: saúde da reprodução: amostras=30 paradas=0 razão_mínima=0.79 carregando=0 quadros_perdidos=130
+AUDIOSYNC começando: posição 33 s, duração 300 s, atraso atual 0 ms, faixa de áudio 1
+AUDIOSYNC resultado: poucas falas na legenda | vad=? janelas=0 captura=0 ms vad=0 ms (cpu 0) solve=0 ms (cpu 0) cpu_thread=18 ms total=476 ms leitura_estimada=0 MB leitura_real=? pss=66->66 MB java=4->4 MB
+AUDIOSYNC saúde da reprodução: amostras=0 paradas=0 razão_mínima=0.00 carregando=0 quadros_perdidos=3
+AUDIOSYNC o áudio não tem certeza: legenda deixada como estava
+AUDIOSYNC GATILHO motivo=sem-confiança legenda=9e1a628aadc436e5|http://10.0.2.2:8000/a1.srt#raw decisão=agendar UMA segunda tentativa em 1200 s: o áudio não tem certeza [análises=1 sem_confiança=1 estado=nova]
+AUDIOSYNC estado: st=nova executando=false tocando=false carregando=false faixa=2 baixadas=3 addedSubs=3 embeddedKnown=true faixas=[-1:Disable; 2:Track 1 - [gabiflix/cache/legendas/app-1](baixada); 3:Track 2 - [gabiflix/cache/legendas/app-2](baixada); 4:Track 3 - [gabiflix/cache/legendas/app-3](baixada); ] cand=true | pss=63MB java=5/512MB nativo=77MB livre=1002MB limiar=144MB poucaMemoria=false
+painel: escolheu a faixa 4 (setSpuTrack=true, VLC diz agora faixa 4, tempo 38905 ms)
+atraso da legenda ativa (d3:u|h:9e1a628aadc436e5|http://10.0.2.2:8000/b.srt#raw): 0 ms
+legenda do app: 30 falas da faixa ativa
+legenda do app: tempo 38905 ms, atraso 0 ms -> "Você não sabe o que ela fez para nós, mas eu também estou aqui [BRAVO 04 @34s]/e isso é uma linha de baixo que tem de ficar inteira, com você"
+AUDIOSYNC legenda ativa: :9e1a628aadc436e5|http://10.0.2.2:8000/b.srt#raw (nova nesta sessão)
+AUDIOSYNC GATILHO motivo=troca-de-legenda legenda=:9e1a628aadc436e5|http://10.0.2.2:8000/b.srt#raw decisão=avaliar (espera 25 s tocando; se há resultado guardado, não analisa) [análises=0 sem_confiança=0 estado=nova]
+=== escolheu item 3 ===
+painel: 2 s depois o VLC está na faixa 4, tempo 38905 ms
+AUDIOSYNC estado: st=nova executando=false tocando=false carregando=false faixa=4 baixadas=3 addedSubs=3 embeddedKnown=true faixas=[-1:Disable; 2:Track 1 - [gabiflix/cache/legendas/app-1](baixada); 3:Track 2 - [gabiflix/cache/legendas/app-2](baixada); 4:Track 3 - [gabiflix/cache/legendas/app-3](baixada); ] cand=true | pss=67MB java=5/512MB nativo=78MB livre=1040MB limiar=144MB poucaMemoria=false
+AUDIOSYNC estado: st=nova executando=false tocando=false carregando=false faixa=4 baixadas=3 addedSubs=3 embeddedKnown=true faixas=[-1:Disable; 2:Track 1 - [gabiflix/cache/legendas/app-1](baixada); 3:Track 2 - [gabiflix/cache/legendas/app-2](baixada); 4:Track 3 - [gabiflix/cache/legendas/app-3](baixada); ] cand=true | pss=67MB java=5/512MB nativo=78MB livre=1100MB limiar=144MB poucaMemoria=false
+painel: escolheu a faixa 2 (setSpuTrack=true, VLC diz agora faixa 2, tempo 38905 ms)
+atraso da legenda ativa (d3:u|h:9e1a628aadc436e5|http://10.0.2.2:8000/a1.srt#raw): 0 ms
+legenda do app: tempo 38905 ms, atraso 0 ms -> "Você não sabe o que ela fez para nós, mas eu também estou aqui [ALFA 04 @30s]/e isso é uma linha de baixo que tem de ficar inteira, com você"
+AUDIOSYNC legenda ativa: 9e1a628aadc436e5|http://10.0.2.2:8000/a1.srt#raw (já vista nesta sessão: nova, análises=1)
+=== escolheu item 1 ===
+painel: 2 s depois o VLC está na faixa 2, tempo 38905 ms
+AUDIOSYNC estado: st=nova executando=false tocando=false carregando=false faixa=2 baixadas=3 addedSubs=3 embeddedKnown=true faixas=[-1:Disable; 2:Track 1 - [gabiflix/cache/legendas/app-1](baixada); 3:Track 2 - [gabiflix/cache/legendas/app-2](baixada); 4:Track 3 - [gabiflix/cache/legendas/app-3](baixada); ] cand=true | pss=68MB java=5/512MB nativo=78MB livre=1128MB limiar=144MB poucaMemoria=false
+painel: escolheu a faixa 3 (setSpuTrack=true, VLC diz agora faixa 3, tempo 38905 ms)
+atraso da legenda ativa (d3:u|h:9e1a628aadc436e5|http://10.0.2.2:8000/a2.srt#raw): 0 ms
+legenda do app: 30 falas da faixa ativa
+legenda do app: tempo 38905 ms, atraso 0 ms -> "Você não sabe o que ela fez para nós, mas eu também estou aqui [CHARLIE 04 @30s]/e isso é uma linha de baixo que tem de ficar inteira, com você"
+AUDIOSYNC legenda ativa: 9e1a628aadc436e5|http://10.0.2.2:8000/a2.srt#raw (nova nesta sessão)
+AUDIOSYNC GATILHO motivo=troca-de-legenda legenda=9e1a628aadc436e5|http://10.0.2.2:8000/a2.srt#raw decisão=avaliar (espera 25 s tocando; se há resultado guardado, não analisa) [análises=0 sem_confiança=0 estado=nova]
+=== escolheu item 2 ===
+painel: 2 s depois o VLC está na faixa 3, tempo 38905 ms
+AUDIOSYNC estado: st=nova executando=false tocando=false carregando=false faixa=3 baixadas=3 addedSubs=3 embeddedKnown=true faixas=[-1:Disable; 2:Track 1 - [gabiflix/cache/legendas/app-1](baixada); 3:Track 2 - [gabiflix/cache/legendas/app-2](baixada); 4:Track 3 - [gabiflix/cache/legendas/app-3](baixada); ] cand=true | pss=69MB java=6/512MB nativo=79MB livre=1162MB limiar=144MB poucaMemoria=false
+AUDIOSYNC estado: st=nova executando=false tocando=false carregando=false faixa=3 baixadas=3 addedSubs=3 embeddedKnown=true faixas=[-1:Disable; 2:Track 1 - [gabiflix/cache/legendas/app-1](baixada); 3:Track 2 - [gabiflix/cache/legendas/app-2](baixada); 4:Track 3 - [gabiflix/cache/legendas/app-3](baixada); ] cand=true | pss=68MB java=6/512MB nativo=79MB livre=1143MB limiar=144MB poucaMemoria=false
+painel: escolheu a faixa 4 (setSpuTrack=true, VLC diz agora faixa 4, tempo 38905 ms)
+atraso da legenda ativa (d3:u|h:9e1a628aadc436e5|http://10.0.2.2:8000/b.srt#raw): 0 ms
+legenda do app: tempo 38905 ms, atraso 0 ms -> "Você não sabe o que ela fez para nós, mas eu também estou aqui [BRAVO 04 @34s]/e isso é uma linha de baixo que tem de ficar inteira, com você"
+AUDIOSYNC legenda ativa: :9e1a628aadc436e5|http://10.0.2.2:8000/b.srt#raw (já vista nesta sessão: nova, análises=0)
+=== escolheu item 3 ===
+painel: 2 s depois o VLC está na faixa 4, tempo 38905 ms
+AUDIOSYNC estado: st=nova executando=false tocando=false carregando=false faixa=4 baixadas=3 addedSubs=3 embeddedKnown=true faixas=[-1:Disable; 2:Track 1 - [gabiflix/cache/legendas/app-1](baixada); 3:Track 2 - [gabiflix/cache/legendas/app-2](baixada); 4:Track 3 - [gabiflix/cache/legendas/app-3](baixada); ] cand=true | pss=69MB java=6/512MB nativo=79MB livre=1161MB limiar=144MB poucaMemoria=false
+painel: escolheu a faixa 2 (setSpuTrack=true, VLC diz agora faixa 2, tempo 38905 ms)
+atraso da legenda ativa (d3:u|h:9e1a628aadc436e5|http://10.0.2.2:8000/a1.srt#raw): 0 ms
+AUDIOSYNC legenda ativa: 9e1a628aadc436e5|http://10.0.2.2:8000/a1.srt#raw (já vista nesta sessão: nova, análises=1)
+legenda do app: tempo 38905 ms, atraso 0 ms -> "Você não sabe o que ela fez para nós, mas eu também estou aqui [ALFA 04 @30s]/e isso é uma linha de baixo que tem de ficar inteira, com você"
+=== escolheu item 1 ===
+painel: 2 s depois o VLC está na faixa 2, tempo 38905 ms
+AUDIOSYNC estado: st=nova executando=false tocando=false carregando=false faixa=2 baixadas=3 addedSubs=3 embeddedKnown=true faixas=[-1:Disable; 2:Track 1 - [gabiflix/cache/legendas/app-1](baixada); 3:Track 2 - [gabiflix/cache/legendas/app-2](baixada); 4:Track 3 - [gabiflix/cache/legendas/app-3](baixada); ] cand=true | pss=69MB java=6/512MB nativo=79MB livre=1160MB limiar=144MB poucaMemoria=false
+AUDIOSYNC estado: st=nova executando=false tocando=false carregando=false faixa=2 baixadas=3 addedSubs=3 embeddedKnown=true faixas=[-1:Disable; 2:Track 1 - [gabiflix/cache/legendas/app-1](baixada); 3:Track 2 - [gabiflix/cache/legendas/app-2](baixada); 4:Track 3 - [gabiflix/cache/legendas/app-3](baixada); ] cand=true | pss=69MB java=6/512MB nativo=79MB livre=1159MB limiar=144MB poucaMemoria=false
+AUDIOSYNC estado: st=nova executando=false tocando=false carregando=false faixa=2 baixadas=3 addedSubs=3 embeddedKnown=true faixas=[-1:Disable; 2:Track 1 - [gabiflix/cache/legendas/app-1](baixada); 3:Track 2 - [gabiflix/cache/legendas/app-2](baixada); 4:Track 3 - [gabiflix/cache/legendas/app-3](baixada); ] cand=true | pss=69MB java=6/512MB nativo=79MB livre=1158MB limiar=144MB poucaMemoria=false
+=== atraso +5 +1 +1 ===
+atraso da legenda: 5000 ms (d3:u|h:9e1a628aadc436e5|http://10.0.2.2:8000/a1.srt#raw)
+atraso da legenda: 6000 ms (d3:u|h:9e1a628aadc436e5|http://10.0.2.2:8000/a1.srt#raw)
+atraso da legenda: 7000 ms (d3:u|h:9e1a628aadc436e5|http://10.0.2.2:8000/a1.srt#raw)
+AUDIOSYNC estado: st=nova executando=false tocando=true carregando=false faixa=2 baixadas=3 addedSubs=3 embeddedKnown=true faixas=[-1:Disable; 2:Track 1 - [gabiflix/cache/legendas/app-1](baixada); 3:Track 2 - [gabiflix/cache/legendas/app-2](baixada); 4:Track 3 - [gabiflix/cache/legendas/app-3](baixada); ] cand=true | pss=70MB java=7/512MB nativo=79MB livre=1157MB limiar=144MB poucaMemoria=false
+AUDIOSYNC estado: st=nova executando=false tocando=false carregando=false faixa=2 baixadas=3 addedSubs=3 embeddedKnown=true faixas=[-1:Disable; 2:Track 1 - [gabiflix/cache/legendas/app-1](baixada); 3:Track 2 - [gabiflix/cache/legendas/app-2](baixada); 4:Track 3 - [gabiflix/cache/legendas/app-3](baixada); ] cand=true | pss=70MB java=7/512MB nativo=79MB livre=1093MB limiar=144MB poucaMemoria=false
+AUDIOSYNC estado: st=nova executando=false tocando=false carregando=false faixa=2 baixadas=3 addedSubs=3 embeddedKnown=true faixas=[-1:Disable; 2:Track 1 - [gabiflix/cache/legendas/app-1](baixada); 3:Track 2 - [gabiflix/cache/legendas/app-2](baixada); 4:Track 3 - [gabiflix/cache/legendas/app-3](baixada); ] cand=true | pss=70MB java=7/512MB nativo=79MB livre=1096MB limiar=144MB poucaMemoria=false
+AUDIOSYNC estado: st=nova executando=false tocando=false carregando=false faixa=2 baixadas=3 addedSubs=3 embeddedKnown=true faixas=[-1:Disable; 2:Track 1 - [gabiflix/cache/legendas/app-1](baixada); 3:Track 2 - [gabiflix/cache/legendas/app-2](baixada); 4:Track 3 - [gabiflix/cache/legendas/app-3](baixada); ] cand=true | pss=70MB java=7/512MB nativo=79MB livre=1113MB limiar=144MB poucaMemoria=false
+AUDIOSYNC estado: st=nova executando=false tocando=false carregando=false faixa=2 baixadas=3 addedSubs=3 embeddedKnown=true faixas=[-1:Disable; 2:Track 1 - [gabiflix/cache/legendas/app-1](baixada); 3:Track 2 - [gabiflix/cache/legendas/app-2](baixada); 4:Track 3 - [gabiflix/cache/legendas/app-3](baixada); ] cand=true | pss=70MB java=8/512MB nativo=79MB livre=1083MB limiar=144MB poucaMemoria=false
+ciclo: finish() chamado por PlayerActivity.lambda$buildControls$14:779 < PlayerActivity.$r8$lambda$S79ifBLE4RbL1jw2Hp7M8qZ6shk:0 < PlayerActivity$$ExternalSyntheticLambda65.onClick:0 < View.performClick:7448 < View.performClickInternal:7425 < View.access$3600:810 < View$PerformClick.run:28305 < Handler.handleCallback:938 < Handler.dispatchMessage:99 < Looper.loop:223 < ActivityThread.main:7656 < Method.invoke:-2 < RuntimeInit$MethodAndArgsCaller.run:592 <  tempo=44837/300021 usuario=true fim=false
+ciclo: onPause, tocando=false, tempo=44837, escala=0, atraso=7000, vista=SurfaceView 1920x1080, vout=true
+ciclo: onStop, tocando=false, tempo=44837, escala=0, atraso=7000, vista=SurfaceView 1920x1080, vout=false
+=== SAIU ===
+=== VOLTOU ===
+ciclo: onStart, tocando=false, tempo=-1, escala=0, atraso=0, vista=SurfaceView 0x0, vout=true
+ciclo: onResume, tocando=false, tempo=-1, escala=0, atraso=0, vista=SurfaceView 0x0, vout=true
+hash=9e1a628aadc436e5 tamanho=91526045 arquivo=teste.mkv
+Hash calculado, mas a busca de legendas falhou
+candidatas para baixar: 3 (do site: 3)
+legendas PT válidas: 3 de 3; referências baixadas: 0
+alinhamento com 0 referência(s):
+  sem referência: consenso entre 3 PT, grupos [2, 1]
+  alinhadas: 0
+ciclo: evento Vout, saídas=1
+vistas do vídeo: SurfaceView(vídeo) SurfaceView
+AUDIOSYNC pronto (sem limite de dados; automático=true, começa 25 s depois de a legenda ficar ativa; resultado confiante vale 30 dias e não se reverifica; sem confiança: 1 nova tentativa em 1200 s; salto grande = 600 s)
+legenda PT embutida: não há
+ranking das legendas:
+  grupo 0: 2 legenda(s), nome 0.00, duração ok -> 3.50
+  grupo 1: 1 legenda(s), nome 0.00, duração ok -> 2.50
+  consenso escolheu o grupo 0 (2 PT), primeira #0
+  referência de fim=0ms (sem referência), duração=300021ms
+  #2 fim=303600ms hash=false corrigida=false nota=0.0969
+escolhida: candidata #0; melhor baixada: #0 alinhada=false nota=0.00 deslocamento=0ms hash=false corrigida=false; 3 no menu
+atraso da legenda ativa (nenhuma): 0 ms
+legenda do app: 30 falas da faixa ativa
+legenda do app: ligada
+legenda do app: tempo 45625 ms, atraso 0 ms -> "Você não sabe o que ela fez para nós, mas eu também estou aqui [ALFA 05 @40s]/e isso é uma linha de baixo que tem de ficar inteira, com você"
+AUDIOSYNC estado: st=- executando=false tocando=true carregando=false faixa=2 baixadas=3 addedSubs=3 embeddedKnown=true faixas=[-1:Disable; 2:Track 1 - [gabiflix/cache/legendas/app-1](baixada); 3:Track 2 - [gabiflix/cache/legendas/app-2](baixada); 4:Track 3 - [gabiflix/cache/legendas/app-3](baixada); ] cand=true | pss=58MB java=2/512MB nativo=77MB livre=1107MB limiar=144MB poucaMemoria=false
+AUDIOSYNC legenda ativa: 9e1a628aadc436e5|http://10.0.2.2:8000/a1.srt#raw (nova nesta sessão)
+AUDIOSYNC GATILHO motivo=troca-de-legenda legenda=9e1a628aadc436e5|http://10.0.2.2:8000/a1.srt#raw decisão=avaliar (espera 25 s tocando; se há resultado guardado, não analisa) [análises=0 sem_confiança=0 estado=nova]
+atraso da legenda ativa (d3:u|h:9e1a628aadc436e5|http://10.0.2.2:8000/a1.srt#raw): 7000 ms
+AVISO na tela: Legenda: atraso guardado +7,0 s
+legenda do app: tempo 46670 ms, atraso 7000 ms -> (nada)
+legenda do app: tempo 46670 ms, atraso 7000 ms -> "Você não sabe o que ela fez para nós, mas eu também estou aqui [ALFA 05 @40s]/e isso é uma linha de baixo que tem de ficar inteira, com você"
+legenda do app: tempo 56506 ms, atraso 7000 ms -> (nada)
+legenda do app: tempo 56782 ms, atraso 7000 ms -> "Você não sabe o que ela fez para nós, mas eu também estou aqui [ALFA 06 @50s]/e isso é uma linha de baixo que tem de ficar inteira, com você"
+AUDIOSYNC estado: st=nova executando=false tocando=true carregando=false faixa=2 baixadas=3 addedSubs=3 embeddedKnown=true faixas=[-1:Disable; 2:Track 1 - [gabiflix/cache/legendas/app-1](baixada); 3:Track 2 - [gabiflix/cache/legendas/app-2](baixada); 4:Track 3 - [gabiflix/cache/legendas/app-3](baixada); ] cand=true | pss=66MB java=3/512MB nativo=76MB livre=1130MB limiar=144MB poucaMemoria=false
+legenda do app: tempo 66617 ms, atraso 7000 ms -> (nada)
+legenda do app: tempo 66873 ms, atraso 7000 ms -> "Você não sabe o que ela fez para nós, mas eu também estou aqui [ALFA 07 @60s]/e isso é uma linha de baixo que tem de ficar inteira, com você"
+AUDIOSYNC GATILHO motivo=início legenda=9e1a628aadc436e5|http://10.0.2.2:8000/a1.srt#raw decisão=ignorado: já vista pelo áudio e recusada (vale 3 dias) [análises=0 sem_confiança=0 estado=parada]
+AUDIOSYNC esta legenda já foi vista pelo áudio e recusada: não tento de novo (por 3 dias)
+legenda do app: tempo 76580 ms, atraso 7000 ms -> (nada)
+legenda do app: tempo 76836 ms, atraso 7000 ms -> "Você não sabe o que ela fez para nós, mas eu também estou aqui [ALFA 08 @70s]/e isso é uma linha de baixo que tem de ficar inteira, com você"
+=== EMB+BAIXADAS ===
+ciclo: onStart, tocando=false, tempo=-1, escala=0, atraso=0, vista=SurfaceView 0x0, vout=true
+ciclo: onResume, tocando=false, tempo=-1, escala=0, atraso=0, vista=SurfaceView 0x0, vout=true
+hash=384ac76aa4731549 tamanho=91531771 arquivo=emb.mkv
+Hash calculado, mas a busca de legendas falhou
+candidatas para baixar: 3 (do site: 3)
+legendas PT válidas: 3 de 3; referências baixadas: 0
+alinhamento com 0 referência(s):
+  sem referência: consenso entre 3 PT, grupos [2, 1]
+  alinhadas: 0
+ciclo: evento Vout, saídas=1
+legenda embutida (libVLC) ativa: true
+vistas do vídeo: SurfaceView(vídeo) SurfaceView
+AUDIOSYNC pronto (sem limite de dados; automático=true, começa 25 s depois de a legenda ficar ativa; resultado confiante vale 30 dias e não se reverifica; sem confiança: 1 nova tentativa em 1200 s; salto grande = 600 s)
+legenda PT embutida: faixa 2
+ranking das legendas:
+  grupo 0: 2 legenda(s), nome 0.00, duração ok -> 3.50
+  grupo 1: 1 legenda(s), nome 0.00, duração ok -> 2.50
+  consenso escolheu o grupo 0 (2 PT), primeira #0
+  referência de fim=0ms (sem referência), duração=300052ms
+  #2 fim=303600ms hash=false corrigida=false nota=0.0968
+escolhida: embutida (faixa 2); melhor baixada: #0 alinhada=false nota=0.00 deslocamento=0ms hash=false corrigida=false; 3 no menu
+atraso da legenda ativa (d3:u|h:384ac76aa4731549|emb:Track 1 - [Portuguese]): 0 ms
+AUDIOSYNC estado: st=- executando=false tocando=true carregando=false faixa=2 baixadas=3 addedSubs=3 embeddedKnown=true faixas=[-1:Disable; 2:Track 1 - [Portuguese]; 3:Track 2 - [gabiflix/cache/legendas/app-1](baixada); 4:Track 3 - [gabiflix/cache/legendas/app-2](baixada); 5:Track 4 - [gabiflix/cache/legendas/app-3](baixada); ] cand=false | pss=62MB java=4/512MB nativo=79MB livre=1150MB limiar=144MB poucaMemoria=false
+AUDIOSYNC estado: st=- executando=false tocando=true carregando=false faixa=2 baixadas=3 addedSubs=3 embeddedKnown=true faixas=[-1:Disable; 2:Track 1 - [Portuguese]; 3:Track 2 - [gabiflix/cache/legendas/app-1](baixada); 4:Track 3 - [gabiflix/cache/legendas/app-2](baixada); 5:Track 4 - [gabiflix/cache/legendas/app-3](baixada); ] cand=false | pss=68MB java=4/512MB nativo=79MB livre=1147MB limiar=144MB poucaMemoria=false
+AUDIOSYNC estado: st=- executando=false tocando=false carregando=false faixa=2 baixadas=3 addedSubs=3 embeddedKnown=true faixas=[-1:Disable; 2:Track 1 - [Portuguese]; 3:Track 2 - [gabiflix/cache/legendas/app-1](baixada); 4:Track 3 - [gabiflix/cache/legendas/app-2](baixada); 5:Track 4 - [gabiflix/cache/legendas/app-3](baixada); ] cand=false | pss=68MB java=5/512MB nativo=79MB livre=1130MB limiar=144MB poucaMemoria=false
+painel: escolheu a faixa 4 (setSpuTrack=true, VLC diz agora faixa 4, tempo 36985 ms)
+atraso da legenda ativa (d3:u|h:384ac76aa4731549|http://10.0.2.2:8000/a2.srt#raw): 0 ms
+legenda do app: 30 falas da faixa ativa
+legenda do app: ligada
+legenda embutida (libVLC) ativa: false
+legenda do app: tempo 36985 ms, atraso 0 ms -> "Você não sabe o que ela fez para nós, mas eu também estou aqui [CHARLIE 04 @30s]/e isso é uma linha de baixo que tem de ficar inteira, com você"
+AUDIOSYNC legenda ativa: 384ac76aa4731549|http://10.0.2.2:8000/a2.srt#raw (nova nesta sessão)
+AUDIOSYNC GATILHO motivo=troca-de-legenda legenda=384ac76aa4731549|http://10.0.2.2:8000/a2.srt#raw decisão=avaliar (espera 25 s tocando; se há resultado guardado, não analisa) [análises=0 sem_confiança=0 estado=nova]
+painel: 2 s depois o VLC está na faixa 4, tempo 36985 ms
+AUDIOSYNC estado: st=nova executando=false tocando=false carregando=false faixa=4 baixadas=3 addedSubs=3 embeddedKnown=true faixas=[-1:Disable; 2:Track 1 - [Portuguese]; 3:Track 2 - [gabiflix/cache/legendas/app-1](baixada); 4:Track 3 - [gabiflix/cache/legendas/app-2](baixada); 5:Track 4 - [gabiflix/cache/legendas/app-3](baixada); ] cand=true | pss=71MB java=5/512MB nativo=80MB livre=1145MB limiar=144MB poucaMemoria=false
+=== PLAYPLAY ===
+ciclo: onStart, tocando=false, tempo=-1, escala=0, atraso=0, vista=SurfaceView 0x0, vout=true
+ciclo: onResume, tocando=false, tempo=-1, escala=0, atraso=0, vista=SurfaceView 0x0, vout=true
+hash=9e1a628aadc436e5 tamanho=91526045 arquivo=teste.mkv
+Hash calculado, mas a busca de legendas falhou
+candidatas para baixar: 3 (do site: 3)
+legendas PT válidas: 3 de 3; referências baixadas: 0
+alinhamento com 0 referência(s):
+  sem referência: consenso entre 3 PT, grupos [2, 1]
+  alinhadas: 0
+ciclo: evento Vout, saídas=1
+vistas do vídeo: SurfaceView(vídeo) SurfaceView
+AUDIOSYNC pronto (sem limite de dados; automático=true, começa 25 s depois de a legenda ficar ativa; resultado confiante vale 30 dias e não se reverifica; sem confiança: 1 nova tentativa em 1200 s; salto grande = 600 s)
+legenda PT embutida: não há
+ranking das legendas:
+  grupo 0: 2 legenda(s), nome 0.00, duração ok -> 3.50
+  grupo 1: 1 legenda(s), nome 0.00, duração ok -> 2.50
+  consenso escolheu o grupo 0 (2 PT), primeira #0
+  referência de fim=0ms (sem referência), duração=300021ms
+  #2 fim=303600ms hash=false corrigida=false nota=0.0969
+escolhida: candidata #0; melhor baixada: #0 alinhada=false nota=0.00 deslocamento=0ms hash=false corrigida=false; 3 no menu
+atraso da legenda ativa (nenhuma): 0 ms
+AUDIOSYNC estado: st=- executando=false tocando=true carregando=false faixa=-1 baixadas=3 addedSubs=3 embeddedKnown=true faixas=[] cand=false | pss=64MB java=4/512MB nativo=42MB livre=1148MB limiar=144MB poucaMemoria=false
+legenda do app: 30 falas da faixa ativa
+legenda do app: ligada
+legenda do app: tempo 82745 ms, atraso 0 ms -> "Você não sabe o que ela fez para nós, mas eu também estou aqui [ALFA 09 @80s]/e isso é uma linha de baixo que tem de ficar inteira, com você"
+atraso da legenda ativa (d3:u|h:9e1a628aadc436e5|http://10.0.2.2:8000/a1.srt#raw): 7000 ms
+AVISO na tela: Legenda: atraso guardado +7,0 s
+legenda do app: tempo 82745 ms, atraso 7000 ms -> "Você não sabe o que ela fez para nós, mas eu também estou aqui [ALFA 08 @70s]/e isso é uma linha de baixo que tem de ficar inteira, com você"
+AUDIOSYNC legenda ativa: 9e1a628aadc436e5|http://10.0.2.2:8000/a1.srt#raw (nova nesta sessão)
+AUDIOSYNC GATILHO motivo=troca-de-legenda legenda=9e1a628aadc436e5|http://10.0.2.2:8000/a1.srt#raw decisão=avaliar (espera 25 s tocando; se há resultado guardado, não analisa) [análises=0 sem_confiança=0 estado=nova]
+legenda do app: tempo 86670 ms, atraso 7000 ms -> (nada)
+legenda do app: tempo 86924 ms, atraso 7000 ms -> "Você não sabe o que ela fez para nós, mas eu também estou aqui [ALFA 09 @80s]/e isso é uma linha de baixo que tem de ficar inteira, com você"
+legenda do app: tempo 96629 ms, atraso 7000 ms -> (nada)
+legenda do app: tempo 96880 ms, atraso 7000 ms -> "Você não sabe o que ela fez para nós, mas eu também estou aqui [ALFA 10 @90s]/e isso é uma linha de baixo que tem de ficar inteira, com você"
+AUDIOSYNC estado: st=nova executando=false tocando=true carregando=false faixa=2 baixadas=3 addedSubs=3 embeddedKnown=true faixas=[-1:Disable; 2:Track 1 - [gabiflix/cache/legendas/app-1](baixada); 3:Track 2 - [gabiflix/cache/legendas/app-2](baixada); 4:Track 3 - [gabiflix/cache/legendas/app-3](baixada); ] cand=true | pss=69MB java=5/512MB nativo=78MB livre=1146MB limiar=144MB poucaMemoria=false
+legenda do app: tempo 106617 ms, atraso 7000 ms -> (nada)
+legenda do app: tempo 106873 ms, atraso 7000 ms -> "Você não sabe o que ela fez para nós, mas eu também estou aqui [ALFA 11 @100s]/e isso é uma linha de baixo que tem de ficar inteira, com você"
+AUDIOSYNC GATILHO motivo=início legenda=9e1a628aadc436e5|http://10.0.2.2:8000/a1.srt#raw decisão=ignorado: já vista pelo áudio e recusada (vale 3 dias) [análises=0 sem_confiança=0 estado=parada]
+AUDIOSYNC esta legenda já foi vista pelo áudio e recusada: não tento de novo (por 3 dias)
+AUDIOSYNC estado: st=parada executando=false tocando=false carregando=false faixa=2 baixadas=3 addedSubs=3 embeddedKnown=true faixas=[-1:Disable; 2:Track 1 - [gabiflix/cache/legendas/app-1](baixada); 3:Track 2 - [gabiflix/cache/legendas/app-2](baixada); 4:Track 3 - [gabiflix/cache/legendas/app-3](baixada); ] cand=true | pss=69MB java=6/512MB nativo=78MB livre=1126MB limiar=144MB poucaMemoria=false
+tela: modo Preencher (mede as barras antes de aplicar)
+amostra: imagem 192x108, proporção do vídeo 1.778, quadro 192x108, linhas com imagem 108, preto em cima 0, embaixo 0
+amostra: imagem 192x108, proporção do vídeo 1.778, quadro 192x108, linhas com imagem 108, preto em cima 0, embaixo 0
+zoom Preencher: vista 1920x1080 (SurfaceView em 240,0), tela 2400x1080, proporção do vídeo 1.778, barras 0.000/0.000/0.000/0.000, fator 1.100
+zoom Preencher: vista 1920x1080 (SurfaceView em 240,0), tela 2400x1080, proporção do vídeo 1.778, barras 0.000/0.000/0.000/0.000, fator 1.100
+legenda do app: tempo 116754 ms, atraso 7000 ms -> (nada)
+legenda do app: tempo 116754 ms, atraso 7000 ms -> "Você não sabe o que ela fez para nós, mas eu também estou aqui [ALFA 12 @110s]/e isso é uma linha de baixo que tem de ficar inteira, com você"
+amostra: imagem 192x108, proporção do vídeo 1.778, quadro 192x108, linhas com imagem 108, preto em cima 0, embaixo 0
+AUDIOSYNC estado: st=parada executando=false tocando=false carregando=false faixa=2 baixadas=3 addedSubs=3 embeddedKnown=true faixas=[-1:Disable; 2:Track 1 - [gabiflix/cache/legendas/app-1](baixada); 3:Track 2 - [gabiflix/cache/legendas/app-2](baixada); 4:Track 3 - [gabiflix/cache/legendas/app-3](baixada); ] cand=true | pss=70MB java=7/512MB nativo=79MB livre=1124MB limiar=144MB poucaMemoria=false
+tela: modo Normal
+legenda do app: tempo 126415 ms, atraso 7000 ms -> (nada)
+legenda do app: tempo 126922 ms, atraso 7000 ms -> "Você não sabe o que ela fez para nós, mas eu também estou aqui [ALFA 13 @120s]/e isso é uma linha de baixo que tem de ficar inteira, com você"
+AUDIOSYNC estado: st=parada executando=false tocando=false carregando=false faixa=2 baixadas=3 addedSubs=3 embeddedKnown=true faixas=[-1:Disable; 2:Track 1 - [gabiflix/cache/legendas/app-1](baixada); 3:Track 2 - [gabiflix/cache/legendas/app-2](baixada); 4:Track 3 - [gabiflix/cache/legendas/app-3](baixada); ] cand=true | pss=71MB java=7/512MB nativo=79MB livre=1121MB limiar=144MB poucaMemoria=false
+tela: modo Preencher (barras já medidas)
+zoom Preencher: vista 1920x1080 (SurfaceView em 240,0), tela 2400x1080, proporção do vídeo 1.778, barras 0.000/0.000/0.000/0.000, fator 1.100
+zoom Preencher: vista 1920x1080 (SurfaceView em 240,0), tela 2400x1080, proporção do vídeo 1.778, barras 0.000/0.000/0.000/0.000, fator 1.100
+zoom Preencher: vista 1920x1080 (SurfaceView em 240,0), tela 2400x1080, proporção do vídeo 1.778, barras 0.000/0.000/0.000/0.000, fator 1.100
+ciclo: onStart, tocando=false, tempo=-1, escala=0, atraso=0, vista=SurfaceView 0x0, vout=true
+ciclo: onResume, tocando=false, tempo=-1, escala=0, atraso=0, vista=SurfaceView 0x0, vout=true
+hash=0ca6629984d831f1 tamanho=83460529 arquivo=wide.mkv
+Hash calculado, mas a busca de legendas falhou
+candidatas para baixar: 3 (do site: 3)
+legendas PT válidas: 3 de 3; referências baixadas: 0
+alinhamento com 0 referência(s):
+  sem referência: consenso entre 3 PT, grupos [2, 1]
+  alinhadas: 0
+ciclo: evento Vout, saídas=1
+vistas do vídeo: SurfaceView(vídeo) SurfaceView
+AUDIOSYNC pronto (sem limite de dados; automático=true, começa 25 s depois de a legenda ficar ativa; resultado confiante vale 30 dias e não se reverifica; sem confiança: 1 nova tentativa em 1200 s; salto grande = 600 s)
+legenda PT embutida: não há
+ranking das legendas:
+  grupo 0: 2 legenda(s), nome 0.00, duração absurda -> -98.00
+  grupo 1: 1 legenda(s), nome 0.00, duração absurda -> -99.00
+  consenso escolheu o grupo 0 (2 PT), primeira #0
+  referência de fim=0ms (sem referência), duração=200021ms
+  #2 fim=303600ms hash=false corrigida=false nota=0.3200
+escolhida: candidata #0; melhor baixada: #0 alinhada=false nota=0.00 deslocamento=0ms hash=false corrigida=false; 3 no menu
+atraso da legenda ativa (nenhuma): 0 ms
+legenda do app: 30 falas da faixa ativa
+legenda do app: ligada
+legenda do app: tempo 1785 ms, atraso 0 ms -> "Você não sabe o que ela fez para nós, mas eu também estou aqui [ALFA 01 @0s]/e isso é uma linha de baixo que tem de ficar inteira, com você"
+AUDIOSYNC estado: st=- executando=false tocando=true carregando=false faixa=2 baixadas=3 addedSubs=3 embeddedKnown=true faixas=[-1:Disable; 2:Track 1 - [gabiflix/cache/legendas/app-1](baixada); 3:Track 2 - [gabiflix/cache/legendas/app-2](baixada); 4:Track 3 - [gabiflix/cache/legendas/app-3](baixada); ] cand=true | pss=63MB java=3/512MB nativo=81MB livre=1154MB limiar=144MB poucaMemoria=false
+AUDIOSYNC legenda ativa: 0ca6629984d831f1|http://10.0.2.2:8000/a1.srt#raw (nova nesta sessão)
+AUDIOSYNC GATILHO motivo=troca-de-legenda legenda=0ca6629984d831f1|http://10.0.2.2:8000/a1.srt#raw decisão=avaliar (espera 25 s tocando; se há resultado guardado, não analisa) [análises=0 sem_confiança=0 estado=nova]
+atraso da legenda ativa (d3:u|h:0ca6629984d831f1|http://10.0.2.2:8000/a1.srt#raw): 0 ms
+legenda do app: tempo 9401 ms, atraso 0 ms -> (nada)
+legenda do app: tempo 9708 ms, atraso 0 ms -> "Você não sabe o que ela fez para nós, mas eu também estou aqui [ALFA 02 @10s]/e isso é uma linha de baixo que tem de ficar inteira, com você"
+legenda do app: tempo 19731 ms, atraso 0 ms -> (nada)
+legenda do app: tempo 19731 ms, atraso 0 ms -> "Você não sabe o que ela fez para nós, mas eu também estou aqui [ALFA 03 @20s]/e isso é uma linha de baixo que tem de ficar inteira, com você"
+AUDIOSYNC estado: st=nova executando=false tocando=true carregando=false faixa=2 baixadas=3 addedSubs=3 embeddedKnown=true faixas=[-1:Disable; 2:Track 1 - [gabiflix/cache/legendas/app-1](baixada); 3:Track 2 - [gabiflix/cache/legendas/app-2](baixada); 4:Track 3 - [gabiflix/cache/legendas/app-3](baixada); ] cand=true | pss=67MB java=4/512MB nativo=81MB livre=1150MB limiar=144MB poucaMemoria=false
+legenda do app: tempo 29476 ms, atraso 0 ms -> (nada)
+legenda do app: tempo 29992 ms, atraso 0 ms -> "Você não sabe o que ela fez para nós, mas eu também estou aqui [ALFA 04 @30s]/e isso é uma linha de baixo que tem de ficar inteira, com você"
+AUDIOSYNC estado: st=nova executando=false tocando=false carregando=false faixa=2 baixadas=3 addedSubs=3 embeddedKnown=true faixas=[-1:Disable; 2:Track 1 - [gabiflix/cache/legendas/app-1](baixada); 3:Track 2 - [gabiflix/cache/legendas/app-2](baixada); 4:Track 3 - [gabiflix/cache/legendas/app-3](baixada); ] cand=true | pss=67MB java=4/512MB nativo=81MB livre=1129MB limiar=144MB poucaMemoria=false
+tela: modo Preencher (mede as barras antes de aplicar)
+amostra: imagem 192x80, proporção do vídeo 2.388, quadro 191x80, linhas com imagem 80, preto em cima 0, embaixo 0
+amostra: imagem 192x80, proporção do vídeo 2.388, quadro 191x80, linhas com imagem 80, preto em cima 0, embaixo 0
+zoom Preencher: vista 2400x1006 (SurfaceView em 0,37), tela 2400x1080, proporção do vídeo 2.388, barras 0.000/0.000/0.000/0.000, fator 1.075
+zoom Preencher: vista 2400x1006 (SurfaceView em 0,37), tela 2400x1080, proporção do vídeo 2.388, barras 0.000/0.000/0.000/0.000, fator 1.075
+amostra: imagem 192x80, proporção do vídeo 2.388, quadro 191x80, linhas com imagem 80, preto em cima 0, embaixo 0
+AUDIOSYNC estado: st=nova executando=false tocando=false carregando=false faixa=2 baixadas=3 addedSubs=3 embeddedKnown=true faixas=[-1:Disable; 2:Track 1 - [gabiflix/cache/legendas/app-1](baixada); 3:Track 2 - [gabiflix/cache/legendas/app-2](baixada); 4:Track 3 - [gabiflix/cache/legendas/app-3](baixada); ] cand=true | pss=68MB java=5/512MB nativo=81MB livre=1169MB limiar=144MB poucaMemoria=false
+tela: modo Normal
+legenda do app: tempo 39630 ms, atraso 0 ms -> (nada)
+legenda do app: tempo 39886 ms, atraso 0 ms -> "Você não sabe o que ela fez para nós, mas eu também estou aqui [ALFA 05 @40s]/e isso é uma linha de baixo que tem de ficar inteira, com você"
+AUDIOSYNC estado: st=nova executando=false tocando=false carregando=false faixa=2 baixadas=3 addedSubs=3 embeddedKnown=true faixas=[-1:Disable; 2:Track 1 - [gabiflix/cache/legendas/app-1](baixada); 3:Track 2 - [gabiflix/cache/legendas/app-2](baixada); 4:Track 3 - [gabiflix/cache/legendas/app-3](baixada); ] cand=true | pss=68MB java=6/512MB nativo=82MB livre=1167MB limiar=144MB poucaMemoria=false
+tela: modo Preencher (barras já medidas)
+zoom Preencher: vista 2400x1006 (SurfaceView em 0,37), tela 2400x1080, proporção do vídeo 2.388, barras 0.000/0.000/0.000/0.000, fator 1.075
+zoom Preencher: vista 2400x1006 (SurfaceView em 0,37), tela 2400x1080, proporção do vídeo 2.388, barras 0.000/0.000/0.000/0.000, fator 1.075
+zoom Preencher: vista 2400x1006 (SurfaceView em 0,37), tela 2400x1080, proporção do vídeo 2.388, barras 0.000/0.000/0.000/0.000, fator 1.075
+legenda do app: tempo 49673 ms, atraso 0 ms -> (nada)
+legenda do app: tempo 49673 ms, atraso 0 ms -> "Você não sabe o que ela fez para nós, mas eu também estou aqui [ALFA 06 @50s]/e isso é uma linha de baixo que tem de ficar inteira, com você"
+AUDIOSYNC estado: st=nova executando=false tocando=false carregando=false faixa=2 baixadas=3 addedSubs=3 embeddedKnown=true faixas=[-1:Disable; 2:Track 1 - [gabiflix/cache/legendas/app-1](baixada); 3:Track 2 - [gabiflix/cache/legendas/app-2](baixada); 4:Track 3 - [gabiflix/cache/legendas/app-3](baixada); ] cand=true | pss=69MB java=6/512MB nativo=81MB livre=1185MB limiar=144MB poucaMemoria=false
