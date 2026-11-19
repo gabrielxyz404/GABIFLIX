@@ -1,0 +1,166 @@
+aparelho: sdk_gphone_x86 api 30
+== post (antes de relançar)
+--------- beginning of system
+--------- beginning of main
+--------- beginning of kernel
+11-19 21:45:10.615  5056  5081 I GFCrash : corpo de TESTE:
+11-19 21:45:10.615  5056  5081 I GFCrash : FramePlay 1.0 | TESTE | processo main
+11-19 21:45:10.615  5056  5081 I GFCrash : Aparelho: Google sdk_gphone_x86 | Android 11 (API 30) | RAM 1981 MB, livre 920 MB | tv=false
+11-19 21:45:10.615  5056  5081 I GFCrash : ABI: [x86, armeabi-v7a, armeabi] (64 bits: []) processo=32 bits
+11-19 21:45:10.615  5056  5081 I GFCrash : Envio de teste do relatório de erros (sem dados pessoais).
+11-19 21:45:11.204  5056  5081 I GFCrash : POST TESTE parte 1/1 (255 bytes) -> HTTP 200
+11-19 21:45:11.204  5056  5081 I GFCrash : teste post: ENVIADO (HTTP 2xx) HTTP 200
+== java (antes de relançar)
+--------- beginning of main
+--------- beginning of system
+--------- beginning of kernel
+--------- beginning of crash
+== java (depois de relançar)
+--------- beginning of main
+--------- beginning of system
+--------- beginning of kernel
+--------- beginning of crash
+11-19 21:45:36.067  6122  6142 I GFCrash : corpo de CRASH_JAVA:
+11-19 21:45:36.067  6122  6142 I GFCrash : FramePlay 1.0 | CRASH_JAVA | processo main
+11-19 21:45:36.067  6122  6142 I GFCrash : Aparelho: Google sdk_gphone_x86 | Android 11 (API 30) | RAM 1981 MB, livre 915 MB | tv=false
+11-19 21:45:36.067  6122  6142 I GFCrash : ABI: [x86, armeabi-v7a, armeabi] (64 bits: []) processo=32 bits
+11-19 21:45:36.067  6122  6142 I GFCrash : Thread: main
+11-19 21:45:36.067  6122  6142 I GFCrash : Exceção: java.lang.IllegalStateException: queda de teste (Java)
+11-19 21:45:36.067  6122  6142 I GFCrash : 
+11-19 21:45:36.067  6122  6142 I GFCrash : Rasto:
+11-19 21:45:36.067  6122  6142 I GFCrash : java.lang.IllegalStateException: queda de teste (Java)
+11-19 21:45:36.067  6122  6142 I GFCrash : 	at io.github.gabrielxyz404.gabiflix.CrashReporter.lambda$testHook$7(CrashReporter.java:277)
+11-19 21:45:36.067  6122  6142 I GFCrash : 	at io.github.gabrielxyz404.gabiflix.CrashReporter$$ExternalSyntheticLambda8.run(D8$$SyntheticClass:0)
+11-19 21:45:36.067  6122  6142 I GFCrash : 	at android.os.Handler.handleCallback(Handler.java:938)
+11-19 21:45:36.067  6122  6142 I GFCrash : 	at android.os.Handler.dispatchMessage(Handler.java:99)
+11-19 21:45:36.067  6122  6142 I GFCrash : 	at android.os.Looper.loop(Looper.java:223)
+11-19 21:45:36.067  6122  6142 I GFCrash : 	at android.app.ActivityThread.main(ActivityThread.java:7656)
+11-19 21:45:36.067  6122  6142 I GFCrash : 	at java.lang.reflect.Method.invoke(Native Method)
+11-19 21:45:36.067  6122  6142 I GFCrash : 	at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:592)
+11-19 21:45:36.067  6122  6142 I GFCrash : 	at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:947)
+11-19 21:45:36.067  6122  6142 I GFCrash : 
+11-19 21:45:36.067  6122  6142 I GFCrash : 
+11-19 21:45:36.067  6122  6142 I GFCrash : Migalhas:
+11-19 21:45:36.067  6122  6142 I GFCrash : 21:45:23.962 processo main iniciado, versão 1.0, pid 5946
+11-19 21:45:36.067  6122  6142 I GFCrash : 21:45:23.965 MainActivity criada intent=268435456
+11-19 21:45:36.067  6122  6142 I GFCrash : 21:45:23.965 teste do relatório: java
+11-19 21:45:36.067  6122  6142 I GFCrash : 21:45:24.140 MainActivity iniciada
+11-19 21:45:36.067  6122  6142 I GFCrash : 21:45:24.140 MainActivity retomada
+11-19 21:45:36.067  6122  6142 I GFCrash : 21:45:25.468 EXCEÇÃO NÃO TRATADA em main
+11-19 21:45:36.719  6122  6142 I GFCrash : POST CRASH_JAVA parte 1/1 (1232 bytes) -> HTTP 200
+11-19 21:45:36.723  6122  6142 I GFCrash : corpo de CRASH:
+11-19 21:45:36.723  6122  6142 I GFCrash : FramePlay 1.0 | CRASH | processo io.github.gabrielxyz404.gabiflix
+11-19 21:45:36.723  6122  6142 I GFCrash : Aparelho: Google sdk_gphone_x86 | Android 11 (API 30) | RAM 1981 MB, livre 1027 MB | tv=false
+11-19 21:45:36.723  6122  6142 I GFCrash : ABI: [x86, armeabi-v7a, armeabi] (64 bits: []) processo=32 bits
+11-19 21:45:36.723  6122  6142 I GFCrash : Código: 4  estado: 0  importância: 100
+11-19 21:45:36.723  6122  6142 I GFCrash : Hora da morte: 2026-11-19 21:45:25
+11-19 21:45:36.723  6122  6142 I GFCrash : Descrição: crash
+11-19 21:45:36.723  6122  6142 I GFCrash : PSS: 0 kB  RSS: 0 kB
+11-19 21:45:36.723  6122  6142 I GFCrash : 
+11-19 21:45:36.723  6122  6142 I GFCrash : Migalhas do processo main antes da morte:
+11-19 21:45:36.723  6122  6142 I GFCrash : 21:45:23.962 processo main iniciado, versão 1.0, pid 5946
+11-19 21:45:36.723  6122  6142 I GFCrash : 21:45:23.965 MainActivity criada intent=268435456
+11-19 21:45:36.723  6122  6142 I GFCrash : 21:45:23.965 teste do relatório: java
+11-19 21:45:36.723  6122  6142 I GFCrash : 21:45:24.140 MainActivity iniciada
+11-19 21:45:36.723  6122  6142 I GFCrash : 21:45:24.140 MainActivity retomada
+11-19 21:45:36.723  6122  6142 I GFCrash : 21:45:25.468 EXCEÇÃO NÃO TRATADA em main
+11-19 21:45:37.369  6122  6142 I GFCrash : POST CRASH parte 1/1 (645 bytes) -> HTTP 200
+11-19 21:45:25.467  5946  5946 E AndroidRuntime: FATAL EXCEPTION: main
+== native (antes de relançar)
+--------- beginning of main
+--------- beginning of system
+--------- beginning of kernel
+--------- beginning of crash
+== native (depois de relançar)
+--------- beginning of main
+--------- beginning of system
+--------- beginning of kernel
+--------- beginning of crash
+11-19 21:46:02.585  6506  6526 I GFCrash : corpo de CRASH_NATIVE:
+11-19 21:46:02.585  6506  6526 I GFCrash : FramePlay 1.0 | CRASH_NATIVE | processo io.github.gabrielxyz404.gabiflix
+11-19 21:46:02.585  6506  6526 I GFCrash : Aparelho: Google sdk_gphone_x86 | Android 11 (API 30) | RAM 1981 MB, livre 1103 MB | tv=false
+11-19 21:46:02.585  6506  6526 I GFCrash : ABI: [x86, armeabi-v7a, armeabi] (64 bits: []) processo=32 bits
+11-19 21:46:02.585  6506  6526 I GFCrash : Código: 5  estado: 6  importância: 100
+11-19 21:46:02.585  6506  6526 I GFCrash : Hora da morte: 2026-11-19 21:45:52
+11-19 21:46:02.585  6506  6526 I GFCrash : Descrição: crash
+11-19 21:46:02.585  6506  6526 I GFCrash : PSS: 0 kB  RSS: 0 kB
+11-19 21:46:02.585  6506  6526 I GFCrash : 
+11-19 21:46:02.585  6506  6526 I GFCrash : Registo de queda do sistema (logcat, filtrado):
+11-19 21:46:02.585  6506  6526 I GFCrash : 11-19 21:45:52.194 F/libc    ( 6384): Fatal signal 6 (SIGABRT), code -6 (SI_TKILL) in tid 6384 (xyz404.gabiflix), pid 6384 (xyz404.gabiflix)
+11-19 21:46:02.585  6506  6526 I GFCrash : 11-19 21:45:52.229 F/DEBUG   ( 6482): pid: 6384, tid: 6384, name: xyz404.gabiflix  >>> io.github.gabrielxyz404.gabiflix <<<
+11-19 21:46:02.585  6506  6526 I GFCrash : 11-19 21:45:52.229 F/DEBUG   ( 6482): signal 6 (SIGABRT), code -6 (SI_TKILL), fault addr --------
+11-19 21:46:02.585  6506  6526 I GFCrash : 11-19 21:45:52.380 F/DEBUG   ( 6482): backtrace:
+11-19 21:46:02.585  6506  6526 I GFCrash : 11-19 21:45:52.380 F/DEBUG   ( 6482):       #00 pc 00000b89  [vdso] (__kernel_vsyscall+9)
+11-19 21:46:02.585  6506  6526 I GFCrash : 11-19 21:45:52.380 F/DEBUG   ( 6482):       #01 pc 000ccbc7  /apex/com.android.runtime/lib/bionic/libc.so (kill+23)
+11-19 21:46:02.585  6506  6526 I GFCrash : 11-19 21:45:52.380 F/DEBUG   ( 6482):       #02 pc 00127095  /system/lib/libandroid_runtime.so (android_os_Process_sendSignal(_JNIEnv*, _jobject*, int, int)+69)
+11-19 21:46:02.585  6506  6526 I GFCrash : 11-19 21:45:52.380 F/DEBUG   ( 6482):       #03 pc 00223912  /system/framework/x86/boot-framework.oat (art_jni_trampoline+162)
+11-19 21:46:02.585  6506  6526 I GFCrash : 11-19 21:45:52.380 F/DEBUG   ( 6482):       #04 pc 0013bc72  /apex/com.android.art/lib/libart.so (art_quick_invoke_static_stub+418)
+11-19 21:46:02.585  6506  6526 I GFCrash : 11-19 21:45:52.380 F/DEBUG   ( 6482):       #05 pc 001d0512  /apex/com.android.art/lib/libart.so (art::ArtMethod::Invoke(art::Thread*, unsigned int*, unsigned int, art::JValue*, char const*)+258)
+11-19 21:46:02.585  6506  6526 I GFCrash : 11-19 21:45:52.380 F/DEBUG   ( 6482):       #06 pc 00386881  /apex/com.android.art/lib/libart.so (art::interpreter::ArtInterpreterToCompiledCodeBridge(art::Thread*, art::ArtMethod*, art::ShadowFrame*, unsigned short, art::JValue*)+385)
+11-19 21:46:02.585  6506  6526 I GFCrash : 11-19 21:45:52.380 F/DEBUG   ( 6482):       #07 pc 0037abbe  /apex/com.android.art/lib/libart.so (bool art::interpreter::DoCall<false, false>(art::ArtMethod*, art::Thread*, art::ShadowFrame&, art::Instruction const*, unsigned short, art::JValue*)+1070)
+11-19 21:46:02.585  6506  6526 I GFCrash : 11-19 21:45:52.380 F/DEBUG   ( 6482):       #08 pc 007a6b8d  /apex/com.android.art/lib/libart.so (MterpInvokeStatic+637)
+11-19 21:46:02.585  6506  6526 I GFCrash : 11-19 21:45:52.380 F/DEBUG   ( 6482):       #09 pc 00135aa1  /apex/com.android.art/lib/libart.so (mterp_op_invoke_static+33)
+11-19 21:46:02.585  6506  6526 I GFCrash : 11-19 21:45:52.380 F/DEBUG   ( 6482):       #10 pc 001e7d76  /data/app/~~EWzBbowQg1JXsoHWzzy8bw==/io.github.gabrielxyz404.gabiflix-UUpzuSTQKfyOa_U6CeMP6A==/oat/x86/base.vdex (io.github.gabrielxyz404.gabiflix.CrashReporter.lambda$testHook$8+10)
+11-19 21:46:02.585  6506  6526 I GFCrash : 11-19 21:45:52.380 F/DEBUG   ( 6482):       #11 pc 007a6ebe  /apex/com.android.art/lib/libart.so (MterpInvokeStatic+1454)
+11-19 21:46:02.585  6506  6526 I GFCrash : 11-19 21:45:52.380 F/DEBUG   ( 6482):       #12 pc 00135aa1  /apex/com.android.art/lib/libart.so (mterp_op_invoke_static+33)
+11-19 21:46:02.585  6506  6526 I GFCrash : 11-19 21:45:52.380 F/DEBUG   ( 6482):       #13 pc 001e58bc  /data/app/~~EWzBbowQg1JXsoHWzzy8bw==/io.github.gabrielxyz404.gabiflix-UUpzuSTQKfyOa_U6CeMP6A==/oat/x86/base.vdex (io.github.gabrielxyz404.gabiflix.CrashReporter$$ExternalSyntheticLambda9.run)
+11-19 21:46:02.585  6506  6526 I GFCrash : 11-19 21:45:52.380 F/DEBUG   ( 6482):       #14 pc 0036fc82  /apex/com.android.art/lib/libart.so (art::interpreter::Execute(art::Thread*, art::CodeItemDataAccessor const&, art::ShadowFrame&, art::JValue, bool, bool) (.llvm.10914192770458939989)+370)
+11-19 21:46:02.585  6506  6526 I GFCrash : 11-19 21:45:52.380 F/DEBUG   ( 6482):       #15 pc 00379c80  /apex/com.android.art/lib/libart.so (art::interpreter::EnterInterpreterFromEntryPoint(art::Thread*, art::CodeItemDataAccessor const&, art::ShadowFrame*)+176)
+11-19 21:46:02.585  6506  6526 I GFCrash : 11-19 21:45:52.380 F/DEBUG   ( 6482):       #16 pc 0078d185  /apex/com.android.art/lib/libart.so (artQuickToInterpreterBridge+1061)
+11-19 21:46:02.585  6506  6526 I GFCrash : 11-19 21:45:52.380 F/DEBUG   ( 6482):       #17 pc 0014238d  /apex/com.android.art/lib/libart.so (art_quick_to_interpreter_bridge+77)
+11-19 21:46:02.585  6506  6526 I GFCrash : 11-19 21:45:52.380 F/DEBUG   ( 6482):       #18 pc 0063352d  /system/framework/x86/boot-framework.oat (android.os.Handler.dispatchMessage+77)
+11-19 21:46:02.585  6506  6526 I GFCrash : 11-19 21:45:52.380 F/DEBUG   ( 6482):       #19 pc 00636949  /system/framework/x86/boot-framework.oat (android.os.Looper.loop+1609)
+11-19 21:46:02.585  6506  6526 I GFCrash : 11-19 21:45:52.380 F/DEBUG   ( 6482):       #20 pc 0040581a  /system/framework/x86/boot-framework.oat (android.app.ActivityThread.main+746)
+11-19 21:46:02.585  6506  6526 I GFCrash : 11-19 21:45:52.380 F/DEBUG   ( 6482):       #21 pc 0013bc72  /apex/com.android.art/lib/libart.so (art_quick_invoke_static_stub+418)
+11-19 21:46:02.585  6506  6526 I GFCrash : 11-19 21:45:52.380 F/DEBUG   ( 6482):       #22 pc 001d0512  /apex/com.android.art/lib/libart.so (art::ArtMethod::Invoke(art::Thread*, unsigned int*, unsigned int, art::JValue*, char const*)+258)
+11-19 21:46:02.585  6506  6526 I GFCrash : 11-19 21:45:52.380 F/DEBUG   ( 6482):       #23 pc 00631e68  /apex/com.android.art/lib/libart.so (art::InvokeMethod(art::ScopedObjectAccessAlreadyRunnable const&, _jobject*, _jobject*, _jobject*, unsigned int)+1464)
+11-19 21:46:02.585  6506  6526 I GFCrash : 11-19 21:45:52.380 F/DEBUG   ( 6482):       #24 pc 0058a500  /apex/com.android.art/lib/libart.so (art::Method_invoke(_JNIEnv*, _jobject*, _jobject*, _jobjectArray*)+80)
+11-19 21:46:02.585  6506  6526 I GFCrash : 11-19 21:45:52.380 F/DEBUG   ( 6482):       #25 pc 0008a778  /apex/com.android.art/javalib/x86/boot.oat (art_jni_trampoline+168)
+11-19 21:46:02.585  6506  6526 I GFCrash : 11-19 21:45:52.380 F/DEBUG   ( 6482):       #26 pc 0088ac49  /system/framework/x86/boot-framework.oat (com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run+137)
+11-19 21:46:02.585  6506  6526 I GFCrash : 11-19 21:45:52.380 F/DEBUG   ( 6482):       #27 pc 00893656  /system/framework/x86/boot-framework.oat (com.android.internal.os.ZygoteInit.main+2102)
+11-19 21:46:02.585  6506  6526 I GFCrash : 11-19 21:45:52.380 F/DEBUG   ( 6482):       #28 pc 0013bc72  /apex/com.android.art/lib/libart.so (a
+11-19 21:46:02.585  6506  6526 I GFCrash : …(cortado)
+11-19 21:46:02.585  6506  6526 I GFCrash : 
+11-19 21:46:02.585  6506  6526 I GFCrash : Migalhas do processo main antes da morte:
+11-19 21:46:02.585  6506  6526 I GFCrash : 21:45:50.481 processo main iniciado, versão 1.0, pid 6384
+11-19 21:46:02.585  6506  6526 I GFCrash : 21:45:50.486 MainActivity criada intent=268435456
+11-19 21:46:02.585  6506  6526 I GFCrash : 21:45:50.486 teste do relatório: native
+11-19 21:46:02.585  6506  6526 I GFCrash : 21:45:50.684 MainActivity iniciada
+11-19 21:46:02.585  6506  6526 I GFCrash : 21:45:50.685 MainActivity retomada
+11-19 21:46:03.238  6506  6526 I GFCrash : POST CRASH_NATIVE parte 1/2 (3600 bytes) -> HTTP 200
+11-19 21:46:03.887  6506  6526 I GFCrash : POST CRASH_NATIVE parte 2/2 (2193 bytes) -> HTTP 200
+11-19 21:45:52.194  6384  6384 F libc    : Fatal signal 6 (SIGABRT), code -6 (SI_TKILL) in tid 6384 (xyz404.gabiflix), pid 6384 (xyz404.gabiflix)
+11-19 21:46:02.585  6506  6526 I GFCrash : 11-19 21:45:52.194 F/libc    ( 6384): Fatal signal 6 (SIGABRT), code -6 (SI_TKILL) in tid 6384 (xyz404.gabiflix), pid 6384 (xyz404.gabiflix)
+== evento (antes de relançar)
+--------- beginning of system
+--------- beginning of main
+--------- beginning of kernel
+11-19 21:46:16.936  6848  6873 I GFCrash : corpo de TESTE_EVENTO:
+11-19 21:46:16.936  6848  6873 I GFCrash : FramePlay 1.0 | TESTE_EVENTO | processo main
+11-19 21:46:16.936  6848  6873 I GFCrash : Aparelho: Google sdk_gphone_x86 | Android 11 (API 30) | RAM 1981 MB, livre 1132 MB | tv=false
+11-19 21:46:16.936  6848  6873 I GFCrash : ABI: [x86, armeabi-v7a, armeabi] (64 bits: []) processo=32 bits
+11-19 21:46:16.936  6848  6873 I GFCrash : evento de teste
+11-19 21:46:16.936  6848  6873 I GFCrash : 
+11-19 21:46:16.936  6848  6873 I GFCrash : Migalhas:
+11-19 21:46:16.936  6848  6873 I GFCrash : 21:46:16.919 processo main iniciado, versão 1.0, pid 6848
+11-19 21:46:16.936  6848  6873 I GFCrash : 21:46:16.925 MainActivity criada intent=268435456
+11-19 21:46:16.936  6848  6873 I GFCrash : 21:46:16.925 teste do relatório: event
+11-19 21:46:16.936  6848  6873 I GFCrash : 21:46:16.925 EVENTO TESTE_EVENTO: evento de teste
+11-19 21:46:17.335  6848  6873 I GFCrash : POST TESTE_EVENTO parte 1/1 (429 bytes) -> HTTP 200
+== evento (depois de relançar)
+--------- beginning of system
+--------- beginning of main
+--------- beginning of kernel
+11-19 21:46:16.936  6848  6873 I GFCrash : corpo de TESTE_EVENTO:
+11-19 21:46:16.936  6848  6873 I GFCrash : FramePlay 1.0 | TESTE_EVENTO | processo main
+11-19 21:46:16.936  6848  6873 I GFCrash : Aparelho: Google sdk_gphone_x86 | Android 11 (API 30) | RAM 1981 MB, livre 1132 MB | tv=false
+11-19 21:46:16.936  6848  6873 I GFCrash : ABI: [x86, armeabi-v7a, armeabi] (64 bits: []) processo=32 bits
+11-19 21:46:16.936  6848  6873 I GFCrash : evento de teste
+11-19 21:46:16.936  6848  6873 I GFCrash : 
+11-19 21:46:16.936  6848  6873 I GFCrash : Migalhas:
+11-19 21:46:16.936  6848  6873 I GFCrash : 21:46:16.919 processo main iniciado, versão 1.0, pid 6848
+11-19 21:46:16.936  6848  6873 I GFCrash : 21:46:16.925 MainActivity criada intent=268435456
+11-19 21:46:16.936  6848  6873 I GFCrash : 21:46:16.925 teste do relatório: event
+11-19 21:46:16.936  6848  6873 I GFCrash : 21:46:16.925 EVENTO TESTE_EVENTO: evento de teste
+11-19 21:46:17.335  6848  6873 I GFCrash : POST TESTE_EVENTO parte 1/1 (429 bytes) -> HTTP 200
+envios HTTP 2xx: 8
