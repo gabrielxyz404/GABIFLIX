@@ -35,6 +35,13 @@ jobs:
         run: |
           gradle -p android assembleRelease --no-daemon -q
           cp android/app/build/outputs/apk/release/app-release.apk /tmp/teste.apk
+      - name: Quem faz retain() no libVLC (para achar release faltando)
+        run: |
+          AAR=$(find ~/.gradle -name 'libvlc-all-3.6.0*.aar' | head -1)
+          mkdir -p /tmp/aar && unzip -o -q "$AAR" classes.jar -d /tmp/aar
+          for c in org.videolan.libvlc.MediaPlayer org.videolan.libvlc.Media org.videolan.libvlc.LibVLC org.videolan.libvlc.util.VLCVideoLayout org.videolan.libvlc.AWindow; do
+            echo "== $c"; javap -p -c -cp /tmp/aar/classes.jar "$c" 2>/dev/null | awk '/^  [a-zA-Z].*\(/{m=$0} /\.retain:/{print "  retain em: " m}' | sort -u
+          done | tee /tmp/retain.txt
       - name: Filmes de teste (12 min)
         run: |
           sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg espeak-ng >/dev/null
@@ -66,6 +73,7 @@ jobs:
         if: always()
         run: |
           cd shots || exit 0
+          cp /tmp/retain.txt . 2>/dev/null || true
           git init -q -b x && git add -A
           git -c user.name=ci -c user.email=ci@x commit -qm resultados
           git push -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" x:ciclos-out-${{ matrix.nome }}-${GITHUB_SHA::7}

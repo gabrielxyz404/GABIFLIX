@@ -1534,11 +1534,15 @@ public class PlayerActivity extends Activity {
             });
         }
         @Override public long lostFrames() {
+            // MediaPlayer.getMedia() faz retain() no Media (confirmado no bytecode do libVLC 3.6): quem chama tem de dar release(). Sem isso, a contagem do Media
+            // nunca chegava a zero ao fechar o player e ele (com a instância inteira do libVLC que ele segura) ficava na memória a cada filme.
+            IMedia m = null;
             try {
-                Object m = player == null ? null : player.getMedia();
+                m = player == null ? null : player.getMedia();
                 Object st = m == null ? null : m.getClass().getMethod("getStats").invoke(m);
                 return st == null ? -1 : ((Number) st.getClass().getField("lostPictures").get(st)).longValue();
             } catch (Throwable t) { return -1; }
+            finally { if (m != null) { try { m.release(); } catch (Throwable ignored) {} } }
         }
     };
 
