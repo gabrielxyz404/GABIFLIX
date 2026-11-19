@@ -489,7 +489,7 @@ public class PlayerActivity extends Activity {
         metaId = getIntent().getStringExtra(EXTRA_ID);
         startMs = getIntent().getLongExtra(EXTRA_START, 0);
         // o sistema matou o processo com o filme em segundo plano: volta de onde estava (o ponto do Intent é o de quando abriu)
-        if (savedInstanceState != null && savedInstanceState.getLong("gfPos", 0) > 0) startMs = savedInstanceState.getLong("gfPos");
+        if (savedInstanceState != null && savedInstanceState.getLong("gfPos", 0) > 0) { startMs = savedInstanceState.getLong("gfPos"); glog("ciclo: processo recriado pelo sistema, volta do ponto " + startMs + " ms"); }
         titleText = getIntent().getStringExtra(EXTRA_TITLE);
         getSharedPreferences(LAST_PREFS, MODE_PRIVATE).edit().clear().apply();
         if (url == null) { finish(); return; }
@@ -622,6 +622,14 @@ public class PlayerActivity extends Activity {
                             if (cmd.equals("seek")) player.setTime(Long.parseLong(val) * 1000L);
                             else if (cmd.equals("delay")) setSubDelay(Integer.parseInt(val), panelValue);
                             else if (cmd.equals("track")) { userPickedSub = true; player.setSpuTrack(Integer.parseInt(val)); syncDelayToTrack(Integer.parseInt(val)); }
+                            else if (cmd.equals("audionext")) { MediaPlayer.TrackDescription[] at = player.getAudioTracks(); if (at != null && at.length > 0) { int cur = player.getAudioTrack(), k = 0; for (int q = 0; q < at.length; q++) if (at[q].id == cur) k = q; player.setAudioTrack(at[(k + 1) % at.length].id); } }
+                            else if (cmd.equals("spunext")) { userPickedSub = true; MediaPlayer.TrackDescription[] st = player.getSpuTracks(); if (st != null && st.length > 0) { int cur = player.getSpuTrack(), k = 0; for (int q = 0; q < st.length; q++) if (st[q].id == cur) k = q; for (int q = 1; q <= st.length; q++) { int id = st[(k + q) % st.length].id; if (id != -1) { player.setSpuTrack(id); syncDelayToTrack(id); break; } } } }
+                            else if (cmd.equals("tela")) setScaleMode(Integer.parseInt(val));
+                            else if (cmd.equals("estado")) {   // só nos testes: uma linha com o que está na tela (o teste de estresse confere cada ação por ela)
+                                glog("ESTADO tempo=" + player.getTime() + " tocando=" + player.isPlaying() + " fim=" + ended + " spu=" + player.getSpuTrack() + " audio=" + player.getAudioTrack()
+                                    + " legenda=" + (subOverlay != null && subOverlay.getVisibility() == View.VISIBLE ? "visivel" : "nada") + " tela=" + SCALE_NAMES[scaleIndex]
+                                    + " video=" + player.getVideoTrack() + " mem=" + (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / 1024 + "k");
+                            }
                         } catch (Throwable t) { glog("teste: ação falhou: " + t); }
                     }
                 };
