@@ -44,10 +44,13 @@ jobs:
           def ts(ms):
               h, r = divmod(ms, 3600000); m, r = divmod(r, 60000); s, ms = divmod(r, 1000)
               return "%02d:%02d:%02d,%03d" % (h, m, s, ms)
+          L = ["Não sei o que você quer, mas eu estou aqui.", "Isso é tudo, então vai embora também.", "Obrigado, tá bem, já até muito bem.",
+               "Ele disse: nós temos uma casa. Sim, tudo aqui foi bem.", "Eu não vou com você, porque ela tem uma festa.",
+               "O que é isso? Você viu o meu carro?", "Não é bem assim, mas também não é tão mau.", "Então vamos embora, que já é tarde."]
           out = []
           for i in range(190):
               a = 5000 + i * 10500
-              out.append("%d\n%s --> %s\nFala número %d: não sei o que você quer, mas eu estou aqui.\n" % (i + 1, ts(a), ts(a + 4000), i + 1))
+              out.append("%d\n%s --> %s\nFala número %d (linha de cima)\n%s\n" % (i + 1, ts(a), ts(a + 4000), i + 1, L[i % len(L)]))
           open("leg.srt", "w", encoding="utf-8").write("\n".join(out))
           PY
           cat > /tmp/serve.py <<'PY'
