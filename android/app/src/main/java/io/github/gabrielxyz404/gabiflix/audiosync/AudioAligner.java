@@ -923,8 +923,10 @@ public final class AudioAligner {
         // tem uma deriva pequena que o deslocamento único não cobre): recusa em vez de aplicar uma legenda ~0,5 s fora
         boolean unsafeRes = !P.legacy && !R.driftScale && Math.abs(R.scale - 1.0) < 1e-9 && R.driftConfident >= 3 && R.unitResMs > P.driftSafeResMs;
         if (unsafeRes) ok = false;
+        // prova de reta de atraso constante: 4+ janelas confiáveis numa reta (resíduo <= 100 ms) valem como concordância mesmo se as outras janelas (fracas) discordam
+        boolean linePass = !P.legacy && !R.driftScale && Math.abs(R.scale - 1.0) < 1e-9 && R.driftConfident >= 4 && R.unitResMs <= 100;
         boolean gateDev = P.gateWinDevMs > 0 && R.winsValid >= 2
-                && (P.legacy ? R.winMaxDev > P.gateWinDevMs : R.driftScale ? R.winMaxDev > P.driftGateDevMs : !R.winConsensus);
+                && (P.legacy ? R.winMaxDev > P.gateWinDevMs : R.driftScale ? R.winMaxDev > P.driftGateDevMs : !R.winConsensus && !linePass);
         boolean gateWin = P.gateMinWinsAgree > 0 && R.winsAgree < P.gateMinWinsAgree;
         if (gateDev || gateWin) ok = false;
         R.accepted = ok;

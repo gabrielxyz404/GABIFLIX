@@ -898,8 +898,10 @@ enum AudioAligner {
         // escala 1,0 aceita, mas as janelas confiáveis não ficam numa reta de atraso constante (resíduo acima de driftSafeResMs): ajuste inseguro: recusa
         let unsafeRes = !P.legacy && !R.driftScale && abs(R.scale - 1.0) < 1e-9 && R.driftConfident >= 3 && R.unitResMs > P.driftSafeResMs
         if unsafeRes { ok = false }
+        // prova de reta de atraso constante: 4+ janelas confiáveis numa reta (resíduo <= 100 ms) valem como concordância mesmo se as outras janelas (fracas) discordam
+        let linePass = !P.legacy && !R.driftScale && abs(R.scale - 1.0) < 1e-9 && R.driftConfident >= 4 && R.unitResMs <= 100
         let gateDev = P.gateWinDevMs > 0 && R.winsValid >= 2
-            && (P.legacy ? R.winMaxDev > P.gateWinDevMs : R.driftScale ? R.winMaxDev > P.driftGateDevMs : !R.winConsensus)
+            && (P.legacy ? R.winMaxDev > P.gateWinDevMs : R.driftScale ? R.winMaxDev > P.driftGateDevMs : !R.winConsensus && !linePass)
         let gateWin = P.gateMinWinsAgree > 0 && R.winsAgree < P.gateMinWinsAgree
         if gateDev || gateWin { ok = false }
         R.accepted = ok
