@@ -1,0 +1,52 @@
+name: Bancada 300 titulos
+
+# Mede o motor de sincronia de legendas pelo audio (AudioAligner + Silero em Java puro, o laco do app) em ate 300 titulos legais
+# (dominio publico do archive.org + filmes abertos/CC modernos), em duas versoes do motor: origin/main (a de hoje) e o ramo da deriva.
+# NAO muda o motor nem publica o app. Resultados no ramo bench-300-out. Dispara so ao empurrar o ramo run-bench300;
+# a fase e escolhida em tools/bench300/run.conf (sonda | descobrir | piloto | completo | resumo).
+on:
+  push:
+    branches: [run-bench300]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  config:
+    runs-on: ubuntu-latest
+    outputs:
+      fase: ${{ steps.c.outputs.fase }}
+      shards: ${{ steps.c.outputs.shards }}
+      nshards: ${{ steps.c.outputs.nshards }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: c
+        run: |
+          set -a; . tools/bench300/run.conf; set +a
+          echo "fase=$FASE" >> $GITHUB_OUTPUT
+          echo "nshards=$NSHARDS" >> $GITHUB_OUTPUT
+          python3 -c "import json,os; print('shards='+json.dumps(list(range(int(os.environ['NSHARDS'])))))" >> $GITHUB_OUTPUT
+          cat tools/bench300/run.conf
+
+  sonda:
+    needs: config
+    if: ${{ needs.config.outputs.fase == 'sonda' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Rede e ferramentas
+        run: |
+          nproc; free -g | head -2; df -h / | tail -1
+          sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg >/dev/null
+          ffmpeg -hide_banner -filters 2>/dev/null | grep -i -E "flite|silencedetect" || true
+          ffmpeg -version | head -1
+      - name: Sonda
+        run: python3 tools/bench300/net_probe.py 2>&1 | tee sonda.txt
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: sonda
+          path: sonda.txt
+          retention-days: 7
