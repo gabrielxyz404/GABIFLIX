@@ -1,0 +1,52 @@
+Applications Memory Usage (in Kilobytes):
+Uptime: 2510190 Realtime: 2510190
+
+** MEMINFO in pid 7219 [io.github.gabrielxyz404.gabiflix] **
+                   Pss  Private  Private  SwapPss     Heap     Heap     Heap
+                 Total    Dirty    Clean    Dirty     Size    Alloc     Free
+                ------   ------   ------   ------   ------   ------   ------
+  Native Heap   200791   200724        0        0   255488   248502     6985
+  Dalvik Heap     1517     1452        0        0     3898     1949     1949
+ Dalvik Other      444      444        0        0                           
+        Stack       36       36        0        0                           
+       Ashmem       26        0        0        0                           
+    Other dev      104        0      104        0                           
+     .so mmap    19724      988    16240        0                           
+    .apk mmap      837        0       60        0                           
+    .ttf mmap      124        0       24        0                           
+    .dex mmap     4699        4     3452        0                           
+    .oat mmap     1243        0       60        0                           
+    .art mmap     2245     1656       32        0                           
+   Other mmap       34        4        0        0                           
+      Unknown      957      944        0        0                           
+        TOTAL   232781   206252    19972        0   259386   250451     8934
+ 
+ App Summary
+                       Pss(KB)
+                        ------
+           Java Heap:     3140
+         Native Heap:   200724
+                Code:    20828
+               Stack:       36
+            Graphics:        0
+       Private Other:     1496
+              System:     6557
+ 
+               TOTAL:   232781       TOTAL SWAP PSS:        0
+ 
+ Objects
+               Views:       34         ViewRootImpl:        1
+         AppContexts:        4           Activities:        1
+              Assets:        3        AssetManagers:        0
+       Local Binders:       12        Proxy Binders:       27
+       Parcel memory:        8         Parcel count:       32
+    Death Recipients:        0      OpenSSL Sockets:        0
+            WebViews:        0
+ 
+ SQL
+         MEMORY_USED:        0
+  PAGECACHE_OVERFLOW:        0          MALLOC_SIZE:        0
+ 
+ 
+ Asset Allocations
+    : 108K

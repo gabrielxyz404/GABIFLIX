@@ -1,0 +1,1224 @@
+11-19 18:17:17.161  4770  4770 I GabiFlixPlayer: ciclo: onStart, tocando=false, tempo=-1, escala=0, atraso=0, vista=SurfaceView 0x0, vout=true
+11-19 18:17:17.161  4770  4770 I GabiFlixPlayer: ciclo: onResume, tocando=false, tempo=-1, escala=0, atraso=0, vista=SurfaceView 0x0, vout=true
+11-19 18:17:17.187  4770  4792 I GabiFlixPlayer: hash=c437df0be78daf09 tamanho=727907440 arquivo=film.mkv
+11-19 18:17:18.660  4770  4770 I GabiFlixPlayer: ciclo: evento Vout, saídas=1
+11-19 18:17:18.665  4770  4770 I GabiFlixPlayer: vistas do vídeo: SurfaceView(vídeo) SurfaceView
+11-19 18:17:18.678  4770  4770 I GabiFlixPlayer: AUDIOSYNC pronto (sem limite de dados; automático=true, começa 25 s depois de a legenda ficar ativa; resultado confiante vale 30 dias e não se reverifica; sem confiança: 1 nova tentativa em 1200 s; salto grande = 600 s)
+11-19 18:17:18.864  4770  4792 I GabiFlixPlayer: Hash calculado, sem correspondência no OpenSubtitles; addon: 11 itens, PT=0, referências=0, hash igual=0
+11-19 18:17:18.864  4770  4792 I GabiFlixPlayer: candidatas para baixar: 1 (do site: 1)
+11-19 18:17:19.196  4770  4792 I GabiFlixPlayer: legendas PT válidas: 1 de 1; referências baixadas: 0
+11-19 18:17:19.202  4770  4792 I GabiFlixPlayer: alinhamento com 0 referência(s):
+11-19 18:17:19.202  4770  4792 I GabiFlixPlayer:   sem referência (nem outro idioma, nem PT do hash) e menos de 2 PT para comparar: ranking antigo
+11-19 18:17:19.202  4770  4792 I GabiFlixPlayer:   alinhadas: 0
+11-19 18:17:19.601  4770  4770 I GabiFlixPlayer: legenda PT embutida: não há
+11-19 18:17:19.601  4770  4770 I GabiFlixPlayer: ranking das legendas:
+11-19 18:17:19.601  4770  4770 I GabiFlixPlayer:   referência de fim=0ms (sem referência), duração=2100000ms
+11-19 18:17:19.601  4770  4770 I GabiFlixPlayer:   #0 fim=2081395ms hash=false corrigida=false nota=0.0561
+11-19 18:17:19.602  4770  4770 I GabiFlixPlayer: escolhida: candidata #0; melhor baixada: #0 alinhada=false nota=0.00 deslocamento=0ms hash=false corrigida=false; 1 no menu
+11-19 18:17:19.602  4770  4770 I GabiFlixPlayer: atraso da legenda ativa (nenhuma): 0 ms
+11-19 18:17:19.690  4770  4770 I GabiFlixPlayer: AUDIOSYNC estado: st=- executando=false tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=145MB java=1/576MB nativo=179MB livre=2076MB limiar=144MB poucaMemoria=false
+11-19 18:17:19.690  4770  4770 I GabiFlixPlayer: AUDIOSYNC legenda ativa: 37df0be78daf09|http://10.0.2.2:8000/film.srt#raw (nova nesta sessão)
+11-19 18:17:19.690  4770  4770 I GabiFlixPlayer: AUDIOSYNC GATILHO motivo=troca-de-legenda legenda=37df0be78daf09|http://10.0.2.2:8000/film.srt#raw decisão=avaliar (espera 25 s tocando; se há resultado guardado, não analisa) [análises=0 sem_confiança=0 estado=nova]
+11-19 18:17:20.016  4770  4770 I GabiFlixPlayer: legenda do app: 197 falas da faixa ativa
+11-19 18:17:20.016  4770  4770 I GabiFlixPlayer: legenda do app: ligada
+11-19 18:17:21.316  4770  4770 I GabiFlixPlayer: atraso da legenda ativa (d3:tt0000001|h:c437df0be78daf09|http://10.0.2.2:8000/film.srt#raw): 0 ms
+11-19 18:17:36.556  4770  4770 I GabiFlixPlayer: legenda do app: tempo 17860 ms, atraso 0 ms -> "Não, você não está entendendo isso, eu já disse que não vai dar."
+11-19 18:17:39.797  4770  4770 I GabiFlixPlayer: AUDIOSYNC estado: st=nova executando=false tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=158MB java=3/576MB nativo=177MB livre=2113MB limiar=144MB poucaMemoria=false
+11-19 18:17:41.783  4770  4770 I GabiFlixPlayer: legenda do app: tempo 23072 ms, atraso 0 ms -> (nada)
+11-19 18:17:47.136  4770  4770 I GabiFlixPlayer: legenda do app: tempo 28310 ms, atraso 0 ms -> "Então porque você está aqui? Eu estou com muito medo, tá bem?"
+11-19 18:17:49.879  4770  4770 I GabiFlixPlayer: AUDIOSYNC GATILHO motivo=início legenda=37df0be78daf09|http://10.0.2.2:8000/film.srt#raw decisão=análise [análises=1 sem_confiança=0 estado=nova]
+11-19 18:17:49.880  4770  4770 I GabiFlixPlayer: AUDIOSYNC antes da análise: saúde da reprodução: amostras=30 paradas=0 razão_mínima=0.76 carregando=0 quadros_perdidos=306
+11-19 18:17:49.880  4770  4770 I GabiFlixPlayer: AUDIOSYNC começando: posição 31 s, duração 2100 s, atraso atual 0 ms, faixa de áudio 1
+11-19 18:17:52.624  4770  4770 I GabiFlixPlayer: legenda do app: tempo 33732 ms, atraso 0 ms -> (nada)
+11-19 18:17:57.627  4770  4770 I GabiFlixPlayer: legenda do app: tempo 38884 ms, atraso 0 ms -> "Obrigado, mas isso não é tudo, ele também tem uma filha."
+11-19 18:17:59.980  4770  4770 I GabiFlixPlayer: AUDIOSYNC estado: st=nova executando=true tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=152MB java=2/576MB nativo=178MB livre=2119MB limiar=144MB poucaMemoria=false
+11-19 18:18:00.793  4770  4770 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:18:00.793  4770  4770 I GabiFlixPlayer: ESTADO tempo=41987 tocando=true fim=false spu=3 audio=1 legenda=visivel tela=Normal video=0 mem=3046k
+11-19 18:18:02.351  4770  4770 I GabiFlixPlayer: legenda do app: tempo 43537 ms, atraso 0 ms -> (nada)
+11-19 18:18:08.144  4770  4770 I GabiFlixPlayer: legenda do app: tempo 49245 ms, atraso 0 ms -> "Nós já fomos até lá, meu amigo, e foi muito bem, sim."
+11-19 18:18:13.284  4770  4770 I GabiFlixPlayer: legenda do app: tempo 54404 ms, atraso 0 ms -> (nada)
+11-19 18:18:18.528  4770  4770 I GabiFlixPlayer: teste: ação do usuário seek 630
+11-19 18:18:18.613  4770  4770 I GabiFlixPlayer: legenda do app: tempo 630000 ms, atraso 0 ms -> "Ela vai ficar aqui, minha casa é dela também, pra mim tudo bem."
+11-19 18:18:20.061  4770  4770 I GabiFlixPlayer: AUDIOSYNC estado: st=nova executando=true tocando=true carregando=true faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=151MB java=2/576MB nativo=167MB livre=2089MB limiar=144MB poucaMemoria=false
+11-19 18:18:24.277  4770  4770 I GabiFlixPlayer: legenda do app: tempo 632359 ms, atraso 0 ms -> (nada)
+11-19 18:18:29.129  4770  4770 I GabiFlixPlayer: legenda do app: tempo 637407 ms, atraso 0 ms -> "Isso são coisas que você tem que saber, porque nós não temos tempo."
+11-19 18:18:29.129  4770  4770 I GabiFlixPlayer: legenda do app: tempo 637407 ms, atraso 0 ms -> "Isso são coisas que você tem que saber, porque nós não temos tempo."
+11-19 18:18:31.111  4770  4770 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:18:31.113  4770  4770 I GabiFlixPlayer: ESTADO tempo=639272 tocando=true fim=false spu=3 audio=1 legenda=visivel tela=Normal video=0 mem=3055k
+11-19 18:18:34.264  4770  4770 I GabiFlixPlayer: legenda do app: tempo 642410 ms, atraso 0 ms -> (nada)
+11-19 18:18:34.519  4770  4770 I GabiFlixPlayer: teste: ação do usuário seek 30
+11-19 18:18:34.584  4770  4770 I GabiFlixPlayer: legenda do app: tempo 30000 ms, atraso 0 ms -> "Então porque você está aqui? Eu estou com muito medo, tá bem?"
+11-19 18:18:35.224  4770  4770 I GabiFlixPlayer: AUDIOSYNC salto na linha do tempo de 612 s (de 642 s para 30 s): só conta se o usuário também mexer no atraso à mão; sozinho não dispara análise
+11-19 18:18:35.225  4770  4770 I GabiFlixPlayer: AUDIOSYNC a reprodução engasgou 2 vezes durante a análise: cancelo para não atrapalhar o filme
+11-19 18:18:35.225  4770  4770 I GabiFlixPlayer: AUDIOSYNC GATILHO motivo=sem-confiança legenda=37df0be78daf09|http://10.0.2.2:8000/film.srt#raw decisão=agendar UMA segunda tentativa em 1200 s: reprodução engasgou [análises=1 sem_confiança=1 estado=nova]
+11-19 18:18:35.740  4770  4770 I GabiFlixPlayer: AUDIOSYNC resultado descartado (outra execução/legenda/tela): captura da janela 1 falhou: cancelado
+11-19 18:18:40.310  4770  4770 I GabiFlixPlayer: AUDIOSYNC estado: st=nova executando=false tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=160MB java=2/576MB nativo=178MB livre=2128MB limiar=144MB poucaMemoria=false
+11-19 18:18:40.310  4770  4770 I GabiFlixPlayer: AUDIOSYNC estado: st=nova executando=false tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=160MB java=2/576MB nativo=178MB livre=2128MB limiar=144MB poucaMemoria=false
+11-19 18:18:40.310  4770  4770 I GabiFlixPlayer: AUDIOSYNC estado: st=nova executando=false tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=160MB java=2/576MB nativo=178MB livre=2128MB limiar=144MB poucaMemoria=false
+11-19 18:18:43.369  4770  4770 I GabiFlixPlayer: legenda do app: tempo 33957 ms, atraso 0 ms -> (nada)
+11-19 18:18:44.429  4770  4770 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:18:44.429  4770  4770 I GabiFlixPlayer: ESTADO tempo=35037 tocando=true fim=false spu=3 audio=1 legenda=nada tela=Normal video=0 mem=2241k
+11-19 18:18:44.429  4770  4770 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:18:44.429  4770  4770 I GabiFlixPlayer: ESTADO tempo=35037 tocando=true fim=false spu=3 audio=1 legenda=nada tela=Normal video=0 mem=2241k
+11-19 18:18:47.583  4770  4770 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:18:47.584  4770  4770 I GabiFlixPlayer: ESTADO tempo=38113 tocando=true fim=false spu=3 audio=1 legenda=nada tela=Normal video=0 mem=2393k
+11-19 18:18:48.358  4770  4770 I GabiFlixPlayer: legenda do app: tempo 38884 ms, atraso 0 ms -> "Obrigado, mas isso não é tudo, ele também tem uma filha."
+11-19 18:18:47.583  4770  4770 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:18:47.584  4770  4770 I GabiFlixPlayer: ESTADO tempo=38113 tocando=true fim=false spu=3 audio=1 legenda=nada tela=Normal video=0 mem=2393k
+11-19 18:18:48.358  4770  4770 I GabiFlixPlayer: legenda do app: tempo 38884 ms, atraso 0 ms -> "Obrigado, mas isso não é tudo, ele também tem uma filha."
+11-19 18:18:50.251  4770  4770 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:18:50.251  4770  4770 I GabiFlixPlayer: ESTADO tempo=40719 tocando=true fim=false spu=3 audio=1 legenda=visivel tela=Normal video=0 mem=2529k
+11-19 18:18:52.766  4770  4770 I GabiFlixPlayer: teste: ação do usuário seek 600
+11-19 18:18:52.805  4770  4770 I GabiFlixPlayer: legenda do app: tempo 600000 ms, atraso 0 ms -> "Então porque você está aqui? Eu estou com muito medo, tá bem?"
+11-19 18:18:56.266  4770  4770 I GabiFlixPlayer: legenda do app: tempo 601033 ms, atraso 0 ms -> (nada)
+11-19 18:19:00.714  4770  4770 I GabiFlixPlayer: AUDIOSYNC estado: st=nova executando=false tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=161MB java=3/576MB nativo=179MB livre=2126MB limiar=144MB poucaMemoria=false
+11-19 18:19:01.132  4770  4770 I GabiFlixPlayer: legenda do app: tempo 605860 ms, atraso 0 ms -> "Obrigado, mas isso não é tudo, ele também tem uma filha."
+11-19 18:19:00.714  4770  4770 I GabiFlixPlayer: AUDIOSYNC estado: st=nova executando=false tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=161MB java=3/576MB nativo=179MB livre=2126MB limiar=144MB poucaMemoria=false
+11-19 18:19:01.132  4770  4770 I GabiFlixPlayer: legenda do app: tempo 605860 ms, atraso 0 ms -> "Obrigado, mas isso não é tudo, ele também tem uma filha."
+11-19 18:19:02.368  4770  4770 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:19:02.369  4770  4770 I GabiFlixPlayer: ESTADO tempo=607164 tocando=true fim=false spu=3 audio=1 legenda=visivel tela=Normal video=0 mem=3266k
+11-19 18:19:05.426  4770  4770 I GabiFlixPlayer: teste: ação do usuário seek 25
+11-19 18:19:05.476  4770  4770 I GabiFlixPlayer: legenda do app: tempo 25000 ms, atraso 0 ms -> (nada)
+11-19 18:19:10.574  4770  4770 I GabiFlixPlayer: legenda do app: tempo 28484 ms, atraso 0 ms -> "Então porque você está aqui? Eu estou com muito medo, tá bem?"
+11-19 18:19:10.574  4770  4770 I GabiFlixPlayer: legenda do app: tempo 28484 ms, atraso 0 ms -> "Então porque você está aqui? Eu estou com muito medo, tá bem?"
+11-19 18:19:10.574  4770  4770 I GabiFlixPlayer: legenda do app: tempo 28484 ms, atraso 0 ms -> "Então porque você está aqui? Eu estou com muito medo, tá bem?"
+11-19 18:19:14.092  4770  4770 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:19:14.093  4770  4770 I GabiFlixPlayer: ESTADO tempo=31844 tocando=true fim=false spu=3 audio=1 legenda=visivel tela=Normal video=0 mem=1959k
+11-19 18:19:16.069  4770  4770 I GabiFlixPlayer: legenda do app: tempo 33976 ms, atraso 0 ms -> (nada)
+11-19 18:19:17.165  4770  4770 I GabiFlixPlayer: teste: ação do usuário seek 560
+11-19 18:19:20.854  4770  4770 I GabiFlixPlayer: AUDIOSYNC estado: st=nova executando=false tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=163MB java=2/576MB nativo=180MB livre=2126MB limiar=144MB poucaMemoria=false
+11-19 18:19:20.854  4770  4770 I GabiFlixPlayer: AUDIOSYNC estado: st=nova executando=false tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=163MB java=2/576MB nativo=180MB livre=2126MB limiar=144MB poucaMemoria=false
+11-19 18:19:24.846  4770  4770 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:19:24.846  4770  4770 I GabiFlixPlayer: ESTADO tempo=563614 tocando=true fim=false spu=3 audio=1 legenda=nada tela=Normal video=0 mem=2679k
+11-19 18:19:24.901  4770  4770 I GabiFlixPlayer: legenda do app: tempo 563868 ms, atraso 0 ms -> "Ela vai ficar aqui, minha casa é dela também, pra mim tudo bem."
+11-19 18:19:24.846  4770  4770 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:19:24.846  4770  4770 I GabiFlixPlayer: ESTADO tempo=563614 tocando=true fim=false spu=3 audio=1 legenda=nada tela=Normal video=0 mem=2679k
+11-19 18:19:24.901  4770  4770 I GabiFlixPlayer: legenda do app: tempo 563868 ms, atraso 0 ms -> "Ela vai ficar aqui, minha casa é dela também, pra mim tudo bem."
+11-19 18:19:27.981  4770  4770 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:19:27.982  4770  4770 I GabiFlixPlayer: ESTADO tempo=566727 tocando=true fim=false spu=3 audio=1 legenda=visivel tela=Normal video=0 mem=2831k
+11-19 18:19:30.476  4770  4770 I GabiFlixPlayer: teste: ação do usuário seek 40
+11-19 18:19:30.501  4770  4770 I GabiFlixPlayer: legenda do app: tempo 40000 ms, atraso 0 ms -> "Obrigado, mas isso não é tudo, ele também tem uma filha."
+11-19 18:19:37.983  4770  4770 I GabiFlixPlayer: legenda do app: tempo 43477 ms, atraso 0 ms -> (nada)
+11-19 18:19:37.983  4770  4770 I GabiFlixPlayer: legenda do app: tempo 43477 ms, atraso 0 ms -> (nada)
+11-19 18:19:40.092  4770  4770 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:19:40.092  4770  4770 I GabiFlixPlayer: ESTADO tempo=45644 tocando=true fim=false spu=3 audio=1 legenda=nada tela=Normal video=0 mem=3599k
+11-19 18:19:40.985  4770  4770 I GabiFlixPlayer: AUDIOSYNC estado: st=nova executando=false tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=162MB java=3/576MB nativo=180MB livre=2140MB limiar=144MB poucaMemoria=false
+11-19 18:19:40.092  4770  4770 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:19:40.092  4770  4770 I GabiFlixPlayer: ESTADO tempo=45644 tocando=true fim=false spu=3 audio=1 legenda=nada tela=Normal video=0 mem=3599k
+11-19 18:19:40.985  4770  4770 I GabiFlixPlayer: AUDIOSYNC estado: st=nova executando=false tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=162MB java=3/576MB nativo=180MB livre=2140MB limiar=144MB poucaMemoria=false
+11-19 18:19:42.405  4770  4770 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:19:42.406  4770  4770 I GabiFlixPlayer: ESTADO tempo=47964 tocando=true fim=false spu=3 audio=1 legenda=nada tela=Normal video=0 mem=1948k
+11-19 18:19:43.875  4770  4770 I GabiFlixPlayer: legenda do app: tempo 49281 ms, atraso 0 ms -> "Nós já fomos até lá, meu amigo, e foi muito bem, sim."
+11-19 18:19:42.405  4770  4770 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:19:42.406  4770  4770 I GabiFlixPlayer: ESTADO tempo=47964 tocando=true fim=false spu=3 audio=1 legenda=nada tela=Normal video=0 mem=1948k
+11-19 18:19:43.875  4770  4770 I GabiFlixPlayer: legenda do app: tempo 49281 ms, atraso 0 ms -> "Nós já fomos até lá, meu amigo, e foi muito bem, sim."
+11-19 18:19:44.545  4770  4770 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:19:44.545  4770  4770 I GabiFlixPlayer: ESTADO tempo=50073 tocando=true fim=false spu=3 audio=1 legenda=visivel tela=Normal video=0 mem=2012k
+11-19 18:19:47.161  4770  4770 I GabiFlixPlayer: teste: ação do usuário seek 610
+11-19 18:19:47.210  4770  4770 I GabiFlixPlayer: legenda do app: tempo 610000 ms, atraso 0 ms -> "Obrigado, mas isso não é tudo, ele também tem uma filha."
+11-19 18:19:51.052  4770  4770 I GabiFlixPlayer: legenda do app: tempo 610496 ms, atraso 0 ms -> (nada)
+11-19 18:19:51.052  4770  4770 I GabiFlixPlayer: legenda do app: tempo 610496 ms, atraso 0 ms -> (nada)
+11-19 18:19:51.052  4770  4770 I GabiFlixPlayer: legenda do app: tempo 610496 ms, atraso 0 ms -> (nada)
+11-19 18:19:54.808  4770  4770 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:19:54.808  4770  4770 I GabiFlixPlayer: ESTADO tempo=614238 tocando=true fim=false spu=3 audio=1 legenda=nada tela=Normal video=0 mem=2684k
+11-19 18:19:56.840  4770  4770 I GabiFlixPlayer: legenda do app: tempo 616358 ms, atraso 0 ms -> "Nós já fomos até lá, meu amigo, e foi muito bem, sim."
+11-19 18:19:54.808  4770  4770 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:19:54.808  4770  4770 I GabiFlixPlayer: ESTADO tempo=614238 tocando=true fim=false spu=3 audio=1 legenda=nada tela=Normal video=0 mem=2684k
+11-19 18:19:56.840  4770  4770 I GabiFlixPlayer: legenda do app: tempo 616358 ms, atraso 0 ms -> "Nós já fomos até lá, meu amigo, e foi muito bem, sim."
+11-19 18:19:57.352  4770  4770 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:19:57.353  4770  4770 I GabiFlixPlayer: ESTADO tempo=616864 tocando=true fim=false spu=3 audio=1 legenda=visivel tela=Normal video=0 mem=2836k
+11-19 18:19:59.791  4770  4770 I GabiFlixPlayer: teste: ação do usuário seek 20
+11-19 18:19:59.856  4770  4770 I GabiFlixPlayer: legenda do app: tempo 20000 ms, atraso 0 ms -> "Não, você não está entendendo isso, eu já disse que não vai dar."
+11-19 18:20:01.060  4770  4770 I GabiFlixPlayer: AUDIOSYNC estado: st=nova executando=false tocando=true carregando=true faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=162MB java=2/576MB nativo=170MB livre=2149MB limiar=144MB poucaMemoria=false
+11-19 18:20:07.597  4770  4770 I GabiFlixPlayer: legenda do app: tempo 22958 ms, atraso 0 ms -> (nada)
+11-19 18:20:08.239  4770  4770 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:20:08.240  4770  4770 I GabiFlixPlayer: ESTADO tempo=23716 tocando=true fim=false spu=3 audio=1 legenda=nada tela=Normal video=0 mem=3532k
+11-19 18:20:08.239  4770  4770 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:20:08.240  4770  4770 I GabiFlixPlayer: ESTADO tempo=23716 tocando=true fim=false spu=3 audio=1 legenda=nada tela=Normal video=0 mem=3532k
+11-19 18:20:11.550  4770  4770 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:20:11.554  4770  4770 I GabiFlixPlayer: ESTADO tempo=27012 tocando=true fim=false spu=3 audio=1 legenda=nada tela=Normal video=0 mem=3668k
+11-19 18:20:12.975  4770  4770 I GabiFlixPlayer: legenda do app: tempo 28287 ms, atraso 0 ms -> "Então porque você está aqui? Eu estou com muito medo, tá bem?"
+11-19 18:20:11.550  4770  4770 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:20:11.554  4770  4770 I GabiFlixPlayer: ESTADO tempo=27012 tocando=true fim=false spu=3 audio=1 legenda=nada tela=Normal video=0 mem=3668k
+11-19 18:20:12.975  4770  4770 I GabiFlixPlayer: legenda do app: tempo 28287 ms, atraso 0 ms -> "Então porque você está aqui? Eu estou com muito medo, tá bem?"
+11-19 18:20:13.715  4770  4770 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:20:13.715  4770  4770 I GabiFlixPlayer: ESTADO tempo=29063 tocando=true fim=false spu=3 audio=1 legenda=visivel tela=Normal video=0 mem=2002k
+11-19 18:20:17.766  4770  4770 I GabiFlixPlayer: teste: ação do usuário tela 1
+11-19 18:20:17.766  4770  4770 I GabiFlixPlayer: tela: modo Preencher (mede as barras antes de aplicar)
+11-19 18:20:17.996  4770  5990 I GabiFlixPlayer: amostra: imagem 192x89, proporção do vídeo 1.778, quadro 158x89, linhas com imagem 89, preto em cima 0, embaixo 0
+11-19 18:20:18.126  4770  5990 I GabiFlixPlayer: amostra: imagem 192x89, proporção do vídeo 1.778, quadro 158x89, linhas com imagem 89, preto em cima 0, embaixo 0
+11-19 18:20:18.250  4770  5990 I GabiFlixPlayer: amostra: imagem 192x89, proporção do vídeo 1.778, quadro 158x89, linhas com imagem 89, preto em cima 0, embaixo 0
+11-19 18:20:18.266  4770  4770 I GabiFlixPlayer: zoom Preencher: vista 2340x1080 (SurfaceView em 0,0), tela 2340x1080, proporção do vídeo 1.778, barras 0.000/0.000/0.000/0.000, fator 1.100
+11-19 18:20:18.489  4770  4770 I GabiFlixPlayer: legenda do app: tempo 33791 ms, atraso 0 ms -> (nada)
+11-19 18:20:18.776  4770  4770 I GabiFlixPlayer: zoom Preencher: vista 2340x1080 (SurfaceView em 0,0), tela 2340x1080, proporção do vídeo 1.778, barras 0.000/0.000/0.000/0.000, fator 1.100
+11-19 18:20:19.325  4770  5990 I GabiFlixPlayer: amostra: imagem 192x89, proporção do vídeo 1.778, quadro 158x89, linhas com imagem 89, preto em cima 0, embaixo 0
+11-19 18:20:21.280  4770  5990 I GabiFlixPlayer: amostra: imagem 192x89, proporção do vídeo 1.778, quadro 158x89, linhas com imagem 89, preto em cima 0, embaixo 0
+11-19 18:20:21.353  4770  4770 I GabiFlixPlayer: AUDIOSYNC estado: st=nova executando=false tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=164MB java=2/576MB nativo=181MB livre=2148MB limiar=144MB poucaMemoria=false
+11-19 18:20:23.292  4770  5990 I GabiFlixPlayer: amostra: imagem 192x89, proporção do vídeo 1.778, quadro 158x89, linhas com imagem 89, preto em cima 0, embaixo 0
+11-19 18:20:23.461  4770  4770 I GabiFlixPlayer: legenda do app: tempo 38767 ms, atraso 0 ms -> "Obrigado, mas isso não é tudo, ele também tem uma filha."
+11-19 18:20:21.280  4770  5990 I GabiFlixPlayer: amostra: imagem 192x89, proporção do vídeo 1.778, quadro 158x89, linhas com imagem 89, preto em cima 0, embaixo 0
+11-19 18:20:21.353  4770  4770 I GabiFlixPlayer: AUDIOSYNC estado: st=nova executando=false tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=164MB java=2/576MB nativo=181MB livre=2148MB limiar=144MB poucaMemoria=false
+11-19 18:20:23.292  4770  5990 I GabiFlixPlayer: amostra: imagem 192x89, proporção do vídeo 1.778, quadro 158x89, linhas com imagem 89, preto em cima 0, embaixo 0
+11-19 18:20:23.461  4770  4770 I GabiFlixPlayer: legenda do app: tempo 38767 ms, atraso 0 ms -> "Obrigado, mas isso não é tudo, ele também tem uma filha."
+11-19 18:20:21.353  4770  4770 I GabiFlixPlayer: AUDIOSYNC estado: st=nova executando=false tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=164MB java=2/576MB nativo=181MB livre=2148MB limiar=144MB poucaMemoria=false
+11-19 18:20:23.292  4770  5990 I GabiFlixPlayer: amostra: imagem 192x89, proporção do vídeo 1.778, quadro 158x89, linhas com imagem 89, preto em cima 0, embaixo 0
+11-19 18:20:23.461  4770  4770 I GabiFlixPlayer: legenda do app: tempo 38767 ms, atraso 0 ms -> "Obrigado, mas isso não é tudo, ele também tem uma filha."
+11-19 18:20:24.464  4770  4770 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:20:24.464  4770  4770 I GabiFlixPlayer: ESTADO tempo=39813 tocando=true fim=false spu=3 audio=1 legenda=visivel tela=Preencher video=0 mem=2890k
+11-19 18:20:25.329  4770  5990 I GabiFlixPlayer: amostra: imagem 192x89, proporção do vídeo 1.778, quadro 158x89, linhas com imagem 89, preto em cima 0, embaixo 0
+11-19 18:20:26.704  4770  4770 I GabiFlixPlayer: teste: ação do usuário tela 0
+11-19 18:20:26.704  4770  4770 I GabiFlixPlayer: tela: modo Normal
+11-19 18:20:28.176  4770  4770 I GabiFlixPlayer: legenda do app: tempo 43430 ms, atraso 0 ms -> (nada)
+11-19 18:20:33.152  4770  4770 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:20:33.152  4770  4770 I GabiFlixPlayer: ESTADO tempo=48449 tocando=true fim=false spu=3 audio=1 legenda=nada tela=Normal video=0 mem=3278k
+11-19 18:20:33.889  4770  4770 I GabiFlixPlayer: legenda do app: tempo 49286 ms, atraso 0 ms -> "Nós já fomos até lá, meu amigo, e foi muito bem, sim."
+11-19 18:20:33.152  4770  4770 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:20:33.152  4770  4770 I GabiFlixPlayer: ESTADO tempo=48449 tocando=true fim=false spu=3 audio=1 legenda=nada tela=Normal video=0 mem=3278k
+11-19 18:20:33.889  4770  4770 I GabiFlixPlayer: legenda do app: tempo 49286 ms, atraso 0 ms -> "Nós já fomos até lá, meu amigo, e foi muito bem, sim."
+11-19 18:20:35.209  4770  4770 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:20:35.210  4770  4770 I GabiFlixPlayer: ESTADO tempo=50596 tocando=true fim=false spu=3 audio=1 legenda=visivel tela=Normal video=0 mem=3430k
+11-19 18:20:37.590  4770  4770 I GabiFlixPlayer: teste: ação do usuário tela 1
+11-19 18:20:37.590  4770  4770 I GabiFlixPlayer: tela: modo Preencher (barras já medidas)
+11-19 18:20:37.591  4770  4770 I GabiFlixPlayer: zoom Preencher: vista 2340x1080 (SurfaceView em 0,0), tela 2340x1080, proporção do vídeo 1.778, barras 0.000/0.000/0.000/0.000, fator 1.100
+11-19 18:20:37.891  4770  4770 I GabiFlixPlayer: zoom Preencher: vista 2340x1080 (SurfaceView em 0,0), tela 2340x1080, proporção do vídeo 1.778, barras 0.000/0.000/0.000/0.000, fator 1.100
+11-19 18:20:38.592  4770  4770 I GabiFlixPlayer: zoom Preencher: vista 2340x1080 (SurfaceView em 0,0), tela 2340x1080, proporção do vídeo 1.778, barras 0.000/0.000/0.000/0.000, fator 1.100
+11-19 18:20:39.007  4770  4770 I GabiFlixPlayer: legenda do app: tempo 54468 ms, atraso 0 ms -> (nada)
+11-19 18:20:39.205  4770  5990 I GabiFlixPlayer: amostra: imagem 192x89, proporção do vídeo 1.778, quadro 158x89, linhas com imagem 89, preto em cima 0, embaixo 0
+11-19 18:20:41.141  4770  5990 I GabiFlixPlayer: amostra: imagem 192x89, proporção do vídeo 1.778, quadro 158x89, linhas com imagem 89, preto em cima 0, embaixo 0
+11-19 18:20:41.499  4770  4770 I GabiFlixPlayer: AUDIOSYNC estado: st=nova executando=false tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=163MB java=2/576MB nativo=182MB livre=2145MB limiar=144MB poucaMemoria=false
+11-19 18:20:43.126  4770  5990 I GabiFlixPlayer: amostra: imagem 192x89, proporção do vídeo 1.778, quadro 158x89, linhas com imagem 89, preto em cima 0, embaixo 0
+11-19 18:20:41.141  4770  5990 I GabiFlixPlayer: amostra: imagem 192x89, proporção do vídeo 1.778, quadro 158x89, linhas com imagem 89, preto em cima 0, embaixo 0
+11-19 18:20:41.499  4770  4770 I GabiFlixPlayer: AUDIOSYNC estado: st=nova executando=false tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=163MB java=2/576MB nativo=182MB livre=2145MB limiar=144MB poucaMemoria=false
+11-19 18:20:43.126  4770  5990 I GabiFlixPlayer: amostra: imagem 192x89, proporção do vídeo 1.778, quadro 158x89, linhas com imagem 89, preto em cima 0, embaixo 0
+11-19 18:20:41.141  4770  5990 I GabiFlixPlayer: amostra: imagem 192x89, proporção do vídeo 1.778, quadro 158x89, linhas com imagem 89, preto em cima 0, embaixo 0
+11-19 18:20:41.499  4770  4770 I GabiFlixPlayer: AUDIOSYNC estado: st=nova executando=false tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=163MB java=2/576MB nativo=182MB livre=2145MB limiar=144MB poucaMemoria=false
+11-19 18:20:43.126  4770  5990 I GabiFlixPlayer: amostra: imagem 192x89, proporção do vídeo 1.778, quadro 158x89, linhas com imagem 89, preto em cima 0, embaixo 0
+11-19 18:20:44.379  4770  4770 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:20:44.379  4770  4770 I GabiFlixPlayer: ESTADO tempo=59817 tocando=true fim=false spu=3 audio=1 legenda=nada tela=Preencher video=0 mem=2209k
+11-19 18:20:44.503  4770  4770 I GabiFlixPlayer: legenda do app: tempo 59817 ms, atraso 0 ms -> "Ela vai ficar aqui, minha casa é dela também, pra mim tudo bem."
+11-19 18:20:45.145  4770  5990 I GabiFlixPlayer: amostra: imagem 192x89, proporção do vídeo 1.778, quadro 158x89, linhas com imagem 89, preto em cima 0, embaixo 0
+11-19 18:20:43.126  4770  5990 I GabiFlixPlayer: amostra: imagem 192x89, proporção do vídeo 1.778, quadro 158x89, linhas com imagem 89, preto em cima 0, embaixo 0
+11-19 18:20:44.379  4770  4770 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:20:44.379  4770  4770 I GabiFlixPlayer: ESTADO tempo=59817 tocando=true fim=false spu=3 audio=1 legenda=nada tela=Preencher video=0 mem=2209k
+11-19 18:20:44.503  4770  4770 I GabiFlixPlayer: legenda do app: tempo 59817 ms, atraso 0 ms -> "Ela vai ficar aqui, minha casa é dela também, pra mim tudo bem."
+11-19 18:20:45.145  4770  5990 I GabiFlixPlayer: amostra: imagem 192x89, proporção do vídeo 1.778, quadro 158x89, linhas com imagem 89, preto em cima 0, embaixo 0
+11-19 18:20:46.448  4770  4770 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:20:46.448  4770  4770 I GabiFlixPlayer: ESTADO tempo=61942 tocando=true fim=false spu=3 audio=1 legenda=visivel tela=Preencher video=0 mem=2445k
+11-19 18:20:47.170  4770  5990 I GabiFlixPlayer: amostra: imagem 192x89, proporção do vídeo 1.778, quadro 158x89, linhas com imagem 89, preto em cima 0, embaixo 0
+11-19 18:20:49.147  4770  5990 I GabiFlixPlayer: amostra: imagem 192x89, proporção do vídeo 1.778, quadro 158x89, linhas com imagem 89, preto em cima 0, embaixo 0
+11-19 18:20:49.732  4770  4770 I GabiFlixPlayer: teste: ação do usuário tela 0
+11-19 18:20:49.732  4770  4770 I GabiFlixPlayer: tela: modo Normal
+11-19 18:20:49.963  4770  4770 I GabiFlixPlayer: legenda do app: tempo 65399 ms, atraso 0 ms -> (nada)
+11-19 18:20:54.986  4770  4770 I GabiFlixPlayer: legenda do app: tempo 70343 ms, atraso 0 ms -> "Isso são coisas que você tem que saber, porque nós não temos tempo."
+11-19 18:20:54.986  4770  4770 I GabiFlixPlayer: legenda do app: tempo 70343 ms, atraso 0 ms -> "Isso são coisas que você tem que saber, porque nós não temos tempo."
+11-19 18:20:54.986  4770  4770 I GabiFlixPlayer: legenda do app: tempo 70343 ms, atraso 0 ms -> "Isso são coisas que você tem que saber, porque nós não temos tempo."
+11-19 18:20:56.594  4770  4770 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:20:56.594  4770  4770 I GabiFlixPlayer: ESTADO tempo=71963 tocando=true fim=false spu=3 audio=1 legenda=visivel tela=Normal video=0 mem=2933k
+11-19 18:20:59.060  4770  4770 I GabiFlixPlayer: teste: ação do usuário tela 1
+11-19 18:20:59.060  4770  4770 I GabiFlixPlayer: tela: modo Preencher (barras já medidas)
+11-19 18:20:59.060  4770  4770 I GabiFlixPlayer: zoom Preencher: vista 2340x1080 (SurfaceView em 0,0), tela 2340x1080, proporção do vídeo 1.778, barras 0.000/0.000/0.000/0.000, fator 1.100
+11-19 18:20:59.365  4770  4770 I GabiFlixPlayer: zoom Preencher: vista 2340x1080 (SurfaceView em 0,0), tela 2340x1080, proporção do vídeo 1.778, barras 0.000/0.000/0.000/0.000, fator 1.100
+11-19 18:21:00.084  4770  4770 I GabiFlixPlayer: zoom Preencher: vista 2340x1080 (SurfaceView em 0,0), tela 2340x1080, proporção do vídeo 1.778, barras 0.000/0.000/0.000/0.000, fator 1.100
+11-19 18:21:00.153  4770  4770 I GabiFlixPlayer: legenda do app: tempo 75620 ms, atraso 0 ms -> (nada)
+11-19 18:21:00.641  4770  5990 I GabiFlixPlayer: amostra: imagem 192x89, proporção do vídeo 1.778, quadro 158x89, linhas com imagem 89, preto em cima 0, embaixo 0
+11-19 18:21:01.554  4770  4770 I GabiFlixPlayer: AUDIOSYNC estado: st=nova executando=false tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=165MB java=3/576MB nativo=183MB livre=2144MB limiar=144MB poucaMemoria=false
+11-19 18:21:05.250  4770  4770 I GabiFlixPlayer: teste: ação do usuário seek 300
+11-19 18:21:10.265  4770  4770 I GabiFlixPlayer: legenda do app: tempo 301367 ms, atraso 0 ms -> "Nós já fomos até lá, meu amigo, e foi muito bem, sim."
+11-19 18:21:10.265  4770  4770 I GabiFlixPlayer: legenda do app: tempo 301367 ms, atraso 0 ms -> "Nós já fomos até lá, meu amigo, e foi muito bem, sim."
+11-19 18:21:10.265  4770  4770 I GabiFlixPlayer: legenda do app: tempo 301367 ms, atraso 0 ms -> "Nós já fomos até lá, meu amigo, e foi muito bem, sim."
+11-19 18:21:13.748  4770  4770 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:21:13.749  4770  4770 I GabiFlixPlayer: ESTADO tempo=304739 tocando=true fim=false spu=3 audio=1 legenda=visivel tela=Preencher video=0 mem=2067k
+11-19 18:21:15.418  4770  4770 I GabiFlixPlayer: legenda do app: tempo 306340 ms, atraso 0 ms -> (nada)
+11-19 18:21:16.695  4770  4770 I GabiFlixPlayer: teste: ação do usuário tela 0
+11-19 18:21:16.695  4770  4770 I GabiFlixPlayer: tela: modo Normal
+11-19 18:21:20.796  4770  4770 I GabiFlixPlayer: teste: ação do usuário spunext 0
+11-19 18:21:20.810  4770  4770 I GabiFlixPlayer: legenda do app: tempo 311784 ms, atraso 0 ms -> "Ela vai ficar aqui, minha casa é dela também, pra mim tudo bem."
+11-19 18:21:21.662  4770  4770 I GabiFlixPlayer: AUDIOSYNC estado: st=nova executando=false tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=165MB java=2/576MB nativo=183MB livre=2147MB limiar=144MB poucaMemoria=false
+11-19 18:21:26.293  4770  4770 I GabiFlixPlayer: legenda do app: tempo 317242 ms, atraso 0 ms -> (nada)
+11-19 18:21:26.293  4770  4770 I GabiFlixPlayer: legenda do app: tempo 317242 ms, atraso 0 ms -> (nada)
+11-19 18:21:26.772  4770  4770 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:21:26.772  4770  4770 I GabiFlixPlayer: ESTADO tempo=317774 tocando=true fim=false spu=3 audio=1 legenda=nada tela=Normal video=0 mem=2571k
+11-19 18:21:26.293  4770  4770 I GabiFlixPlayer: legenda do app: tempo 317242 ms, atraso 0 ms -> (nada)
+11-19 18:21:26.772  4770  4770 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:21:26.772  4770  4770 I GabiFlixPlayer: ESTADO tempo=317774 tocando=true fim=false spu=3 audio=1 legenda=nada tela=Normal video=0 mem=2571k
+11-19 18:21:29.178  4770  4770 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:21:29.179  4770  4770 I GabiFlixPlayer: ESTADO tempo=320196 tocando=true fim=false spu=3 audio=1 legenda=nada tela=Normal video=0 mem=2603k
+11-19 18:21:29.178  4770  4770 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:21:29.179  4770  4770 I GabiFlixPlayer: ESTADO tempo=320196 tocando=true fim=false spu=3 audio=1 legenda=nada tela=Normal video=0 mem=2603k
+11-19 18:21:31.288  4770  4770 I GabiFlixPlayer: legenda do app: tempo 322242 ms, atraso 0 ms -> "Isso são coisas que você tem que saber, porque nós não temos tempo."
+11-19 18:21:31.421  4770  4770 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:21:31.421  4770  4770 I GabiFlixPlayer: ESTADO tempo=322502 tocando=true fim=false spu=3 audio=1 legenda=visivel tela=Normal video=0 mem=2771k
+11-19 18:21:32.888  4770  4770 I GabiFlixPlayer: teste: ação do usuário spunext 0
+11-19 18:21:36.334  4770  4770 I GabiFlixPlayer: legenda do app: tempo 327491 ms, atraso 0 ms -> (nada)
+11-19 18:21:36.334  4770  4770 I GabiFlixPlayer: legenda do app: tempo 327491 ms, atraso 0 ms -> (nada)
+11-19 18:21:36.334  4770  4770 I GabiFlixPlayer: legenda do app: tempo 327491 ms, atraso 0 ms -> (nada)
+11-19 18:21:38.555  4770  4770 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:21:38.555  4770  4770 I GabiFlixPlayer: ESTADO tempo=329541 tocando=true fim=false spu=3 audio=1 legenda=nada tela=Normal video=0 mem=2972k
+11-19 18:21:38.555  4770  4770 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:21:38.555  4770  4770 I GabiFlixPlayer: ESTADO tempo=329541 tocando=true fim=false spu=3 audio=1 legenda=nada tela=Normal video=0 mem=2972k
+11-19 18:21:40.667  4770  4770 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:21:40.667  4770  4770 I GabiFlixPlayer: ESTADO tempo=331830 tocando=true fim=false spu=3 audio=1 legenda=nada tela=Normal video=0 mem=3108k
+11-19 18:21:41.735  4770  4770 I GabiFlixPlayer: legenda do app: tempo 332866 ms, atraso 0 ms -> "Não, você não está entendendo isso, eu já disse que não vai dar."
+11-19 18:21:41.782  4770  4770 I GabiFlixPlayer: AUDIOSYNC estado: st=nova executando=false tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=166MB java=3/576MB nativo=184MB livre=2148MB limiar=144MB poucaMemoria=false
+11-19 18:21:40.667  4770  4770 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:21:40.667  4770  4770 I GabiFlixPlayer: ESTADO tempo=331830 tocando=true fim=false spu=3 audio=1 legenda=nada tela=Normal video=0 mem=3108k
+11-19 18:21:41.735  4770  4770 I GabiFlixPlayer: legenda do app: tempo 332866 ms, atraso 0 ms -> "Não, você não está entendendo isso, eu já disse que não vai dar."
+11-19 18:21:41.782  4770  4770 I GabiFlixPlayer: AUDIOSYNC estado: st=nova executando=false tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=166MB java=3/576MB nativo=184MB livre=2148MB limiar=144MB poucaMemoria=false
+11-19 18:21:42.793  4770  4770 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:21:42.794  4770  4770 I GabiFlixPlayer: ESTADO tempo=333893 tocando=true fim=false spu=3 audio=1 legenda=visivel tela=Normal video=0 mem=3172k
+11-19 18:21:44.286  4770  4770 I GabiFlixPlayer: teste: ação do usuário audionext 0
+11-19 18:21:46.893  4770  4770 I GabiFlixPlayer: legenda do app: tempo 337831 ms, atraso 0 ms -> (nada)
+11-19 18:21:46.893  4770  4770 I GabiFlixPlayer: legenda do app: tempo 337831 ms, atraso 0 ms -> (nada)
+11-19 18:21:51.168  4770  4770 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:21:51.168  4770  4770 I GabiFlixPlayer: ESTADO tempo=342239 tocando=true fim=false spu=3 audio=2 legenda=nada tela=Normal video=0 mem=2006k
+11-19 18:21:52.266  4770  4770 I GabiFlixPlayer: legenda do app: tempo 343277 ms, atraso 0 ms -> "Então porque você está aqui? Eu estou com muito medo, tá bem?"
+11-19 18:21:51.168  4770  4770 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:21:51.168  4770  4770 I GabiFlixPlayer: ESTADO tempo=342239 tocando=true fim=false spu=3 audio=2 legenda=nada tela=Normal video=0 mem=2006k
+11-19 18:21:52.266  4770  4770 I GabiFlixPlayer: legenda do app: tempo 343277 ms, atraso 0 ms -> "Então porque você está aqui? Eu estou com muito medo, tá bem?"
+11-19 18:21:53.291  4770  4770 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:21:53.291  4770  4770 I GabiFlixPlayer: ESTADO tempo=344322 tocando=true fim=false spu=3 audio=2 legenda=visivel tela=Normal video=0 mem=2054k
+11-19 18:21:55.345  4770  4770 I GabiFlixPlayer: teste: ação do usuário audionext 0
+11-19 18:21:57.797  4770  4770 I GabiFlixPlayer: legenda do app: tempo 348838 ms, atraso 0 ms -> (nada)
+11-19 18:21:57.797  4770  4770 I GabiFlixPlayer: legenda do app: tempo 348838 ms, atraso 0 ms -> (nada)
+11-19 18:21:57.797  4770  4770 I GabiFlixPlayer: legenda do app: tempo 348838 ms, atraso 0 ms -> (nada)
+11-19 18:22:00.714  4770  4770 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:22:00.717  4770  4770 I GabiFlixPlayer: ESTADO tempo=351755 tocando=true fim=false spu=3 audio=-1 legenda=nada tela=Normal video=0 mem=2358k
+11-19 18:22:01.893  4770  4770 I GabiFlixPlayer: AUDIOSYNC estado: st=nova executando=false tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=166MB java=2/576MB nativo=184MB livre=2147MB limiar=144MB poucaMemoria=false
+11-19 18:22:00.714  4770  4770 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:22:00.717  4770  4770 I GabiFlixPlayer: ESTADO tempo=351755 tocando=true fim=false spu=3 audio=-1 legenda=nada tela=Normal video=0 mem=2358k
+11-19 18:22:01.893  4770  4770 I GabiFlixPlayer: AUDIOSYNC estado: st=nova executando=false tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=166MB java=2/576MB nativo=184MB livre=2147MB limiar=144MB poucaMemoria=false
+11-19 18:22:02.750  4770  4770 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:22:02.750  4770  4770 I GabiFlixPlayer: ESTADO tempo=353697 tocando=true fim=false spu=3 audio=-1 legenda=nada tela=Normal video=0 mem=2406k
+11-19 18:22:02.754  4770  4770 I GabiFlixPlayer: legenda do app: tempo 353697 ms, atraso 0 ms -> "Obrigado, mas isso não é tudo, ele também tem uma filha."
+11-19 18:22:01.893  4770  4770 I GabiFlixPlayer: AUDIOSYNC estado: st=nova executando=false tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=166MB java=2/576MB nativo=184MB livre=2147MB limiar=144MB poucaMemoria=false
+11-19 18:22:02.750  4770  4770 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:22:02.750  4770  4770 I GabiFlixPlayer: ESTADO tempo=353697 tocando=true fim=false spu=3 audio=-1 legenda=nada tela=Normal video=0 mem=2406k
+11-19 18:22:02.754  4770  4770 I GabiFlixPlayer: legenda do app: tempo 353697 ms, atraso 0 ms -> "Obrigado, mas isso não é tudo, ele também tem uma filha."
+11-19 18:22:04.770  4770  4770 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:22:04.770  4770  4770 I GabiFlixPlayer: ESTADO tempo=355823 tocando=true fim=false spu=3 audio=-1 legenda=visivel tela=Normal video=0 mem=2438k
+11-19 18:22:06.903  4770  4770 I GabiFlixPlayer: teste: ação do usuário audionext 0
+11-19 18:22:07.566  4770  4770 I GabiFlixPlayer: legenda do app: tempo 358530 ms, atraso 0 ms -> (nada)
+11-19 18:22:12.386  4770  4770 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:22:12.386  4770  4770 I GabiFlixPlayer: ESTADO tempo=363491 tocando=true fim=false spu=3 audio=1 legenda=nada tela=Normal video=0 mem=3166k
+11-19 18:22:13.270  4770  4770 I GabiFlixPlayer: legenda do app: tempo 364280 ms, atraso 0 ms -> "Nós já fomos até lá, meu amigo, e foi muito bem, sim."
+11-19 18:22:12.386  4770  4770 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:22:12.386  4770  4770 I GabiFlixPlayer: ESTADO tempo=363491 tocando=true fim=false spu=3 audio=1 legenda=nada tela=Normal video=0 mem=3166k
+11-19 18:22:13.270  4770  4770 I GabiFlixPlayer: legenda do app: tempo 364280 ms, atraso 0 ms -> "Nós já fomos até lá, meu amigo, e foi muito bem, sim."
+11-19 18:22:14.482  4770  4770 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:22:14.482  4770  4770 I GabiFlixPlayer: ESTADO tempo=365581 tocando=true fim=false spu=3 audio=1 legenda=visivel tela=Normal video=0 mem=3214k
+11-19 18:22:13.270  4770  4770 I GabiFlixPlayer: legenda do app: tempo 364280 ms, atraso 0 ms -> "Nós já fomos até lá, meu amigo, e foi muito bem, sim."
+11-19 18:22:14.482  4770  4770 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:22:14.482  4770  4770 I GabiFlixPlayer: ESTADO tempo=365581 tocando=true fim=false spu=3 audio=1 legenda=visivel tela=Normal video=0 mem=3214k
+11-19 18:22:16.444  4770  4770 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:22:16.444  4770  4770 I GabiFlixPlayer: ESTADO tempo=367508 tocando=true fim=false spu=3 audio=1 legenda=visivel tela=Normal video=0 mem=3350k
+11-19 18:22:18.129  4770  4770 I GabiFlixPlayer: ciclo: onPause, tocando=true, tempo=369125, escala=0, atraso=0, vista=SurfaceView 2340x1080, vout=true
+11-19 18:22:18.608  4770  4770 I GabiFlixPlayer: ciclo: onStop, tocando=false, tempo=369125, escala=0, atraso=0, vista=SurfaceView 2340x1080, vout=false
+11-19 18:22:18.824  4770  4770 I GabiFlixPlayer: ciclo: evento Vout, saídas=0
+11-19 18:22:22.102  4770  4770 I GabiFlixPlayer: AUDIOSYNC estado: st=nova executando=false tocando=false carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=167MB java=3/576MB nativo=55MB livre=2142MB limiar=144MB poucaMemoria=false
+11-19 18:22:23.199  4770  4770 I GabiFlixPlayer: ciclo: onStart, tocando=false, tempo=369125, escala=0, atraso=0, vista=SurfaceView 2340x1080, vout=true
+11-19 18:22:23.200  4770  4770 I GabiFlixPlayer: AUDIOSYNC GATILHO motivo=voltou-ao-app(onStart) legenda=37df0be78daf09|http://10.0.2.2:8000/film.srt#raw decisão=ignorado: o ciclo decide sozinho (sem gatilho próprio) [análises=1 sem_confiança=1 estado=nova]
+11-19 18:22:23.221  4770  4770 I GabiFlixPlayer: ciclo: onResume, tocando=false, tempo=369125, escala=0, atraso=0, vista=SurfaceView 2340x1080, vout=true
+11-19 18:22:23.221  4770  4770 I GabiFlixPlayer: AUDIOSYNC GATILHO motivo=voltou-ao-app(onResume) legenda=37df0be78daf09|http://10.0.2.2:8000/film.srt#raw decisão=ignorado: o ciclo decide sozinho (sem gatilho próprio) [análises=1 sem_confiança=1 estado=nova]
+11-19 18:22:23.486  4770  4770 I GabiFlixPlayer: legenda do app: tempo 369316 ms, atraso 0 ms -> (nada)
+11-19 18:22:24.065  4770  4770 I GabiFlixPlayer: ciclo: evento Vout, saídas=1
+11-19 18:22:24.488  4770  4770 I GabiFlixPlayer: ciclo: quadro reposto, tempo=370436
+11-19 18:22:28.890  4770  4770 I GabiFlixPlayer: legenda do app: tempo 374727 ms, atraso 0 ms -> "Ela vai ficar aqui, minha casa é dela também, pra mim tudo bem."
+11-19 18:22:28.890  4770  4770 I GabiFlixPlayer: legenda do app: tempo 374727 ms, atraso 0 ms -> "Ela vai ficar aqui, minha casa é dela também, pra mim tudo bem."
+11-19 18:22:28.890  4770  4770 I GabiFlixPlayer: legenda do app: tempo 374727 ms, atraso 0 ms -> "Ela vai ficar aqui, minha casa é dela também, pra mim tudo bem."
+11-19 18:22:30.777  4770  4770 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:22:30.778  4770  4770 I GabiFlixPlayer: ESTADO tempo=376804 tocando=true fim=false spu=3 audio=1 legenda=visivel tela=Normal video=0 mem=2423k
+11-19 18:22:30.777  4770  4770 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:22:30.778  4770  4770 I GabiFlixPlayer: ESTADO tempo=376804 tocando=true fim=false spu=3 audio=1 legenda=visivel tela=Normal video=0 mem=2423k
+11-19 18:22:32.215  4770  4770 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:22:32.215  4770  4770 I GabiFlixPlayer: ESTADO tempo=378114 tocando=true fim=false spu=3 audio=1 legenda=visivel tela=Normal video=0 mem=2439k
+11-19 18:22:30.777  4770  4770 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:22:30.778  4770  4770 I GabiFlixPlayer: ESTADO tempo=376804 tocando=true fim=false spu=3 audio=1 legenda=visivel tela=Normal video=0 mem=2423k
+11-19 18:22:32.215  4770  4770 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:22:32.215  4770  4770 I GabiFlixPlayer: ESTADO tempo=378114 tocando=true fim=false spu=3 audio=1 legenda=visivel tela=Normal video=0 mem=2439k
+11-19 18:22:33.679  4770  4770 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:22:33.679  4770  4770 I GabiFlixPlayer: ESTADO tempo=379684 tocando=true fim=false spu=3 audio=1 legenda=visivel tela=Normal video=0 mem=2471k
+11-19 18:22:34.370  4770  4770 I GabiFlixPlayer: legenda do app: tempo 380204 ms, atraso 0 ms -> (nada)
+11-19 18:22:35.483  4770  4770 I GabiFlixPlayer: ciclo: onPause, tocando=true, tempo=381514, escala=0, atraso=0, vista=SurfaceView 2340x1080, vout=true
+11-19 18:22:36.126  4770  4770 I GabiFlixPlayer: ciclo: onStop, tocando=false, tempo=381514, escala=0, atraso=0, vista=SurfaceView 2340x1080, vout=false
+11-19 18:22:36.165  4770  4770 I GabiFlixPlayer: ciclo: evento Vout, saídas=0
+11-19 18:22:40.332  4770  4770 I GabiFlixPlayer: ciclo: onStart, tocando=false, tempo=381514, escala=0, atraso=0, vista=SurfaceView 2340x1080, vout=true
+11-19 18:22:40.332  4770  4770 I GabiFlixPlayer: AUDIOSYNC GATILHO motivo=voltou-ao-app(onStart) legenda=37df0be78daf09|http://10.0.2.2:8000/film.srt#raw decisão=ignorado: o ciclo decide sozinho (sem gatilho próprio) [análises=1 sem_confiança=1 estado=nova]
+11-19 18:22:40.334  4770  4770 I GabiFlixPlayer: ciclo: onResume, tocando=false, tempo=381514, escala=0, atraso=0, vista=SurfaceView 2340x1080, vout=true
+11-19 18:22:40.334  4770  4770 I GabiFlixPlayer: AUDIOSYNC GATILHO motivo=voltou-ao-app(onResume) legenda=37df0be78daf09|http://10.0.2.2:8000/film.srt#raw decisão=ignorado: o ciclo decide sozinho (sem gatilho próprio) [análises=1 sem_confiança=1 estado=nova]
+11-19 18:22:40.749  4770  4770 I GabiFlixPlayer: ciclo: evento Vout, saídas=1
+11-19 18:22:41.150  4770  4770 I GabiFlixPlayer: ciclo: quadro reposto, tempo=382375
+11-19 18:22:42.653  4770  4770 I GabiFlixPlayer: AUDIOSYNC estado: st=nova executando=false tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=168MB java=3/576MB nativo=186MB livre=2153MB limiar=144MB poucaMemoria=false
+11-19 18:22:44.269  4770  4770 I GabiFlixPlayer: legenda do app: tempo 385476 ms, atraso 0 ms -> "Isso são coisas que você tem que saber, porque nós não temos tempo."
+11-19 18:22:44.269  4770  4770 I GabiFlixPlayer: legenda do app: tempo 385476 ms, atraso 0 ms -> "Isso são coisas que você tem que saber, porque nós não temos tempo."
+11-19 18:22:44.269  4770  4770 I GabiFlixPlayer: legenda do app: tempo 385476 ms, atraso 0 ms -> "Isso são coisas que você tem que saber, porque nós não temos tempo."
+11-19 18:22:47.550  4770  4770 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:22:47.550  4770  4770 I GabiFlixPlayer: ESTADO tempo=388549 tocando=true fim=false spu=3 audio=1 legenda=visivel tela=Normal video=0 mem=3345k
+11-19 18:22:47.550  4770  4770 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:22:47.550  4770  4770 I GabiFlixPlayer: ESTADO tempo=388549 tocando=true fim=false spu=3 audio=1 legenda=visivel tela=Normal video=0 mem=3345k
+11-19 18:22:49.035  4770  4770 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:22:49.035  4770  4770 I GabiFlixPlayer: ESTADO tempo=390085 tocando=true fim=false spu=3 audio=1 legenda=visivel tela=Normal video=0 mem=3377k
+11-19 18:22:49.346  4770  4770 I GabiFlixPlayer: legenda do app: tempo 390343 ms, atraso 0 ms -> (nada)
+11-19 18:22:47.550  4770  4770 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:22:47.550  4770  4770 I GabiFlixPlayer: ESTADO tempo=388549 tocando=true fim=false spu=3 audio=1 legenda=visivel tela=Normal video=0 mem=3345k
+11-19 18:22:49.035  4770  4770 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:22:49.035  4770  4770 I GabiFlixPlayer: ESTADO tempo=390085 tocando=true fim=false spu=3 audio=1 legenda=visivel tela=Normal video=0 mem=3377k
+11-19 18:22:49.346  4770  4770 I GabiFlixPlayer: legenda do app: tempo 390343 ms, atraso 0 ms -> (nada)
+11-19 18:22:50.434  4770  4770 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:22:50.435  4770  4770 I GabiFlixPlayer: ESTADO tempo=391653 tocando=true fim=false spu=3 audio=1 legenda=nada tela=Normal video=0 mem=3393k
+11-19 18:22:52.011  4770  4770 I GabiFlixPlayer: ciclo: onPause, tocando=true, tempo=393193, escala=0, atraso=0, vista=SurfaceView 2340x1080, vout=true
+11-19 18:22:52.361  4770  4770 I GabiFlixPlayer: ciclo: onStop, tocando=false, tempo=393193, escala=0, atraso=0, vista=SurfaceView 2340x1080, vout=false
+11-19 18:22:52.717  4770  4770 I GabiFlixPlayer: ciclo: evento Vout, saídas=0
+11-19 18:22:56.921  4770  4770 I GabiFlixPlayer: ciclo: onStart, tocando=false, tempo=393193, escala=0, atraso=0, vista=SurfaceView 2340x1080, vout=true
+11-19 18:22:56.921  4770  4770 I GabiFlixPlayer: AUDIOSYNC GATILHO motivo=voltou-ao-app(onStart) legenda=37df0be78daf09|http://10.0.2.2:8000/film.srt#raw decisão=ignorado: o ciclo decide sozinho (sem gatilho próprio) [análises=1 sem_confiança=1 estado=nova]
+11-19 18:22:56.924  4770  4770 I GabiFlixPlayer: ciclo: onResume, tocando=false, tempo=393193, escala=0, atraso=0, vista=SurfaceView 2340x1080, vout=true
+11-19 18:22:56.924  4770  4770 I GabiFlixPlayer: AUDIOSYNC GATILHO motivo=voltou-ao-app(onResume) legenda=37df0be78daf09|http://10.0.2.2:8000/film.srt#raw decisão=ignorado: o ciclo decide sozinho (sem gatilho próprio) [análises=1 sem_confiança=1 estado=nova]
+11-19 18:22:57.447  4770  4770 I GabiFlixPlayer: ciclo: evento Vout, saídas=1
+11-19 18:22:57.882  4770  4770 I GabiFlixPlayer: ciclo: quadro reposto, tempo=394023
+11-19 18:22:59.674  4770  4770 I GabiFlixPlayer: legenda do app: tempo 395812 ms, atraso 0 ms -> "Não, você não está entendendo isso, eu já disse que não vai dar."
+11-19 18:23:02.882  4770  4770 I GabiFlixPlayer: AUDIOSYNC estado: st=nova executando=false tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=168MB java=2/576MB nativo=187MB livre=2148MB limiar=144MB poucaMemoria=false
+11-19 18:23:02.882  4770  4770 I GabiFlixPlayer: AUDIOSYNC estado: st=nova executando=false tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=168MB java=2/576MB nativo=187MB livre=2148MB limiar=144MB poucaMemoria=false
+11-19 18:23:02.882  4770  4770 I GabiFlixPlayer: AUDIOSYNC estado: st=nova executando=false tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=168MB java=2/576MB nativo=187MB livre=2148MB limiar=144MB poucaMemoria=false
+11-19 18:23:04.012  4770  4770 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:23:04.013  4770  4770 I GabiFlixPlayer: ESTADO tempo=400232 tocando=true fim=false spu=3 audio=1 legenda=visivel tela=Normal video=0 mem=2393k
+11-19 18:23:04.814  4770  4770 I GabiFlixPlayer: legenda do app: tempo 400989 ms, atraso 0 ms -> (nada)
+11-19 18:23:02.882  4770  4770 I GabiFlixPlayer: AUDIOSYNC estado: st=nova executando=false tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=168MB java=2/576MB nativo=187MB livre=2148MB limiar=144MB poucaMemoria=false
+11-19 18:23:04.012  4770  4770 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:23:04.013  4770  4770 I GabiFlixPlayer: ESTADO tempo=400232 tocando=true fim=false spu=3 audio=1 legenda=visivel tela=Normal video=0 mem=2393k
+11-19 18:23:04.814  4770  4770 I GabiFlixPlayer: legenda do app: tempo 400989 ms, atraso 0 ms -> (nada)
+11-19 18:23:05.569  4770  4770 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:23:05.569  4770  4770 I GabiFlixPlayer: ESTADO tempo=401745 tocando=true fim=false spu=3 audio=1 legenda=nada tela=Normal video=0 mem=2425k
+11-19 18:23:04.012  4770  4770 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:23:04.013  4770  4770 I GabiFlixPlayer: ESTADO tempo=400232 tocando=true fim=false spu=3 audio=1 legenda=visivel tela=Normal video=0 mem=2393k
+11-19 18:23:04.814  4770  4770 I GabiFlixPlayer: legenda do app: tempo 400989 ms, atraso 0 ms -> (nada)
+11-19 18:23:05.569  4770  4770 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:23:05.569  4770  4770 I GabiFlixPlayer: ESTADO tempo=401745 tocando=true fim=false spu=3 audio=1 legenda=nada tela=Normal video=0 mem=2425k
+11-19 18:23:07.046  4770  4770 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:23:07.047  4770  4770 I GabiFlixPlayer: ESTADO tempo=403335 tocando=true fim=false spu=3 audio=1 legenda=nada tela=Normal video=0 mem=2457k
+11-19 18:23:08.786  4770  4770 I GabiFlixPlayer: ciclo: onPause, tocando=true, tempo=404932, escala=0, atraso=0, vista=SurfaceView 2340x1080, vout=true
+11-19 18:23:09.230  4770  4770 I GabiFlixPlayer: ciclo: onStop, tocando=false, tempo=404932, escala=0, atraso=0, vista=SurfaceView 2340x1080, vout=false
+11-19 18:23:09.485  4770  4770 I GabiFlixPlayer: ciclo: evento Vout, saídas=0
+11-19 18:23:13.573  4770  4770 I GabiFlixPlayer: ciclo: onStart, tocando=false, tempo=404932, escala=0, atraso=0, vista=SurfaceView 2340x1080, vout=true
+11-19 18:23:13.573  4770  4770 I GabiFlixPlayer: AUDIOSYNC GATILHO motivo=voltou-ao-app(onStart) legenda=37df0be78daf09|http://10.0.2.2:8000/film.srt#raw decisão=ignorado: o ciclo decide sozinho (sem gatilho próprio) [análises=1 sem_confiança=1 estado=nova]
+11-19 18:23:13.573  4770  4770 I GabiFlixPlayer: ciclo: onResume, tocando=false, tempo=404932, escala=0, atraso=0, vista=SurfaceView 2340x1080, vout=true
+11-19 18:23:13.573  4770  4770 I GabiFlixPlayer: AUDIOSYNC GATILHO motivo=voltou-ao-app(onResume) legenda=37df0be78daf09|http://10.0.2.2:8000/film.srt#raw decisão=ignorado: o ciclo decide sozinho (sem gatilho próprio) [análises=1 sem_confiança=1 estado=nova]
+11-19 18:23:13.889  4770  4770 I GabiFlixPlayer: ciclo: evento Vout, saídas=1
+11-19 18:23:14.318  4770  4770 I GabiFlixPlayer: ciclo: quadro reposto, tempo=405640
+11-19 18:23:14.841  4770  4770 I GabiFlixPlayer: legenda do app: tempo 406155 ms, atraso 0 ms -> "Então porque você está aqui? Eu estou com muito medo, tá bem?"
+11-19 18:23:20.507  4770  4770 I GabiFlixPlayer: legenda do app: tempo 411812 ms, atraso 0 ms -> (nada)
+11-19 18:23:20.507  4770  4770 I GabiFlixPlayer: legenda do app: tempo 411812 ms, atraso 0 ms -> (nada)
+11-19 18:23:20.706  4770  4770 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:23:20.706  4770  4770 I GabiFlixPlayer: ESTADO tempo=412069 tocando=true fim=false spu=3 audio=1 legenda=nada tela=Normal video=0 mem=3331k
+11-19 18:23:20.507  4770  4770 I GabiFlixPlayer: legenda do app: tempo 411812 ms, atraso 0 ms -> (nada)
+11-19 18:23:20.706  4770  4770 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:23:20.706  4770  4770 I GabiFlixPlayer: ESTADO tempo=412069 tocando=true fim=false spu=3 audio=1 legenda=nada tela=Normal video=0 mem=3331k
+11-19 18:23:22.883  4770  4770 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:23:22.883  4770  4770 I GabiFlixPlayer: ESTADO tempo=414408 tocando=true fim=false spu=3 audio=1 legenda=nada tela=Normal video=0 mem=3363k
+11-19 18:23:23.409  4770  4770 I GabiFlixPlayer: AUDIOSYNC estado: st=nova executando=false tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=169MB java=3/576MB nativo=187MB livre=2152MB limiar=144MB poucaMemoria=false
+11-19 18:23:22.883  4770  4770 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:23:22.883  4770  4770 I GabiFlixPlayer: ESTADO tempo=414408 tocando=true fim=false spu=3 audio=1 legenda=nada tela=Normal video=0 mem=3363k
+11-19 18:23:23.409  4770  4770 I GabiFlixPlayer: AUDIOSYNC estado: st=nova executando=false tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=169MB java=3/576MB nativo=187MB livre=2152MB limiar=144MB poucaMemoria=false
+11-19 18:23:25.025  4770  4770 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:23:25.025  4770  4770 I GabiFlixPlayer: ESTADO tempo=416516 tocando=true fim=false spu=3 audio=1 legenda=nada tela=Normal video=0 mem=3499k
+11-19 18:23:25.386  4770  4770 I GabiFlixPlayer: legenda do app: tempo 416772 ms, atraso 0 ms -> "Obrigado, mas isso não é tudo, ele também tem uma filha."
+11-19 18:23:25.025  4770  4770 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:23:25.025  4770  4770 I GabiFlixPlayer: ESTADO tempo=416516 tocando=true fim=false spu=3 audio=1 legenda=nada tela=Normal video=0 mem=3499k
+11-19 18:23:25.386  4770  4770 I GabiFlixPlayer: legenda do app: tempo 416772 ms, atraso 0 ms -> "Obrigado, mas isso não é tudo, ele também tem uma filha."
+11-19 18:23:27.197  4770  4770 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:23:27.197  4770  4770 I GabiFlixPlayer: ESTADO tempo=418620 tocando=true fim=false spu=3 audio=1 legenda=visivel tela=Normal video=0 mem=3547k
+11-19 18:23:25.386  4770  4770 I GabiFlixPlayer: legenda do app: tempo 416772 ms, atraso 0 ms -> "Obrigado, mas isso não é tudo, ele também tem uma filha."
+11-19 18:23:27.197  4770  4770 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:23:27.197  4770  4770 I GabiFlixPlayer: ESTADO tempo=418620 tocando=true fim=false spu=3 audio=1 legenda=visivel tela=Normal video=0 mem=3547k
+11-19 18:23:28.694  4770  4770 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:23:28.694  4770  4770 I GabiFlixPlayer: ESTADO tempo=420199 tocando=true fim=false spu=3 audio=1 legenda=visivel tela=Normal video=0 mem=3563k
+11-19 18:23:27.197  4770  4770 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:23:27.197  4770  4770 I GabiFlixPlayer: ESTADO tempo=418620 tocando=true fim=false spu=3 audio=1 legenda=visivel tela=Normal video=0 mem=3547k
+11-19 18:23:28.694  4770  4770 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:23:28.694  4770  4770 I GabiFlixPlayer: ESTADO tempo=420199 tocando=true fim=false spu=3 audio=1 legenda=visivel tela=Normal video=0 mem=3563k
+11-19 18:23:30.104  4770  4770 I GabiFlixPlayer: legenda do app: tempo 421574 ms, atraso 0 ms -> (nada)
+11-19 18:23:30.228  4770  4770 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:23:30.228  4770  4770 I GabiFlixPlayer: ESTADO tempo=421574 tocando=true fim=false spu=3 audio=1 legenda=nada tela=Normal video=0 mem=3699k
+11-19 18:23:31.856  4770  4770 I GabiFlixPlayer: ciclo: onPause, tocando=true, tempo=423141, escala=0, atraso=0, vista=SurfaceView 2340x1080, vout=true
+11-19 18:23:32.248  4770  4770 I GabiFlixPlayer: ciclo: onStop, tocando=false, tempo=423141, escala=0, atraso=0, vista=SurfaceView 2340x1080, vout=false
+11-19 18:23:32.506  4770  4770 I GabiFlixPlayer: ciclo: evento Vout, saídas=0
+11-19 18:23:37.082  4770  4770 I GabiFlixPlayer: ciclo: onStart, tocando=false, tempo=423141, escala=0, atraso=0, vista=SurfaceView 2340x1080, vout=true
+11-19 18:23:37.082  4770  4770 I GabiFlixPlayer: AUDIOSYNC GATILHO motivo=voltou-ao-app(onStart) legenda=37df0be78daf09|http://10.0.2.2:8000/film.srt#raw decisão=ignorado: o ciclo decide sozinho (sem gatilho próprio) [análises=1 sem_confiança=1 estado=nova]
+11-19 18:23:37.082  4770  4770 I GabiFlixPlayer: ciclo: onResume, tocando=false, tempo=423141, escala=0, atraso=0, vista=SurfaceView 2340x1080, vout=true
+11-19 18:23:37.082  4770  4770 I GabiFlixPlayer: AUDIOSYNC GATILHO motivo=voltou-ao-app(onResume) legenda=37df0be78daf09|http://10.0.2.2:8000/film.srt#raw decisão=ignorado: o ciclo decide sozinho (sem gatilho próprio) [análises=1 sem_confiança=1 estado=nova]
+11-19 18:23:37.516  4770  4770 I GabiFlixPlayer: ciclo: evento Vout, saídas=1
+11-19 18:23:37.956  4770  4770 I GabiFlixPlayer: ciclo: quadro reposto, tempo=424164
+11-19 18:23:41.152  4770  4770 I GabiFlixPlayer: legenda do app: tempo 427371 ms, atraso 0 ms -> "Nós já fomos até lá, meu amigo, e foi muito bem, sim."
+11-19 18:23:41.152  4770  4770 I GabiFlixPlayer: legenda do app: tempo 427371 ms, atraso 0 ms -> "Nós já fomos até lá, meu amigo, e foi muito bem, sim."
+11-19 18:23:43.781  4770  4770 I GabiFlixPlayer: AUDIOSYNC estado: st=nova executando=false tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=169MB java=2/576MB nativo=188MB livre=2141MB limiar=144MB poucaMemoria=false
+11-19 18:23:41.152  4770  4770 I GabiFlixPlayer: legenda do app: tempo 427371 ms, atraso 0 ms -> "Nós já fomos até lá, meu amigo, e foi muito bem, sim."
+11-19 18:23:43.781  4770  4770 I GabiFlixPlayer: AUDIOSYNC estado: st=nova executando=false tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=169MB java=2/576MB nativo=188MB livre=2141MB limiar=144MB poucaMemoria=false
+11-19 18:23:44.211  4770  4770 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:23:44.217  4770  4770 I GabiFlixPlayer: ESTADO tempo=430469 tocando=true fim=false spu=3 audio=1 legenda=visivel tela=Normal video=0 mem=2771k
+11-19 18:23:43.781  4770  4770 I GabiFlixPlayer: AUDIOSYNC estado: st=nova executando=false tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=169MB java=2/576MB nativo=188MB livre=2141MB limiar=144MB poucaMemoria=false
+11-19 18:23:44.211  4770  4770 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:23:44.217  4770  4770 I GabiFlixPlayer: ESTADO tempo=430469 tocando=true fim=false spu=3 audio=1 legenda=visivel tela=Normal video=0 mem=2771k
+11-19 18:23:45.805  4770  4770 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:23:45.805  4770  4770 I GabiFlixPlayer: ESTADO tempo=432070 tocando=true fim=false spu=3 audio=1 legenda=visivel tela=Normal video=0 mem=2803k
+11-19 18:23:46.255  4770  4770 I GabiFlixPlayer: legenda do app: tempo 432322 ms, atraso 0 ms -> (nada)
+11-19 18:23:51.619  4770  4770 I GabiFlixPlayer: legenda do app: tempo 437749 ms, atraso 0 ms -> "Ela vai ficar aqui, minha casa é dela também, pra mim tudo bem."
+11-19 18:23:51.619  4770  4770 I GabiFlixPlayer: legenda do app: tempo 437749 ms, atraso 0 ms -> "Ela vai ficar aqui, minha casa é dela também, pra mim tudo bem."
+11-19 18:23:51.619  4770  4770 I GabiFlixPlayer: legenda do app: tempo 437749 ms, atraso 0 ms -> "Ela vai ficar aqui, minha casa é dela também, pra mim tudo bem."
+11-19 18:23:52.961  4770  4770 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:23:52.963  4770  4770 I GabiFlixPlayer: ESTADO tempo=439030 tocando=true fim=false spu=3 audio=1 legenda=visivel tela=Normal video=0 mem=3107k
+11-19 18:23:57.134  4770  4770 I GabiFlixPlayer: legenda do app: tempo 443396 ms, atraso 0 ms -> (nada)
+11-19 18:23:57.134  4770  4770 I GabiFlixPlayer: legenda do app: tempo 443396 ms, atraso 0 ms -> (nada)
+11-19 18:23:57.134  4770  4770 I GabiFlixPlayer: legenda do app: tempo 443396 ms, atraso 0 ms -> (nada)
+11-19 18:23:59.338  4770  4770 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:23:59.338  4770  4770 I GabiFlixPlayer: ESTADO tempo=445445 tocando=true fim=false spu=3 audio=1 legenda=nada tela=Normal video=0 mem=3308k
+11-19 18:23:59.338  4770  4770 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:23:59.338  4770  4770 I GabiFlixPlayer: ESTADO tempo=445445 tocando=true fim=false spu=3 audio=1 legenda=nada tela=Normal video=0 mem=3308k
+11-19 18:24:01.411  4770  4770 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:24:01.413  4770  4770 I GabiFlixPlayer: ESTADO tempo=447498 tocando=true fim=false spu=3 audio=1 legenda=nada tela=Normal video=0 mem=3340k
+11-19 18:24:02.049  4770  4770 I GabiFlixPlayer: legenda do app: tempo 448260 ms, atraso 0 ms -> "Isso são coisas que você tem que saber, porque nós não temos tempo."
+11-19 18:24:01.411  4770  4770 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:24:01.413  4770  4770 I GabiFlixPlayer: ESTADO tempo=447498 tocando=true fim=false spu=3 audio=1 legenda=nada tela=Normal video=0 mem=3340k
+11-19 18:24:02.049  4770  4770 I GabiFlixPlayer: legenda do app: tempo 448260 ms, atraso 0 ms -> "Isso são coisas que você tem que saber, porque nós não temos tempo."
+11-19 18:24:03.458  4770  4770 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:24:03.458  4770  4770 I GabiFlixPlayer: ESTADO tempo=449534 tocando=true fim=false spu=3 audio=1 legenda=visivel tela=Normal video=0 mem=3476k
+11-19 18:24:03.891  4770  4770 I GabiFlixPlayer: AUDIOSYNC estado: st=nova executando=false tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=170MB java=3/576MB nativo=188MB livre=2157MB limiar=144MB poucaMemoria=false
+11-19 18:24:07.217  4770  4770 I GabiFlixPlayer: legenda do app: tempo 453489 ms, atraso 0 ms -> (nada)
+11-19 18:24:07.217  4770  4770 I GabiFlixPlayer: legenda do app: tempo 453489 ms, atraso 0 ms -> (nada)
+11-19 18:24:07.217  4770  4770 I GabiFlixPlayer: legenda do app: tempo 453489 ms, atraso 0 ms -> (nada)
+11-19 18:24:09.930  4770  4770 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:24:09.931  4770  4770 I GabiFlixPlayer: ESTADO tempo=456041 tocando=true fim=false spu=3 audio=1 legenda=nada tela=Normal video=0 mem=3724k
+11-19 18:24:09.930  4770  4770 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:24:09.931  4770  4770 I GabiFlixPlayer: ESTADO tempo=456041 tocando=true fim=false spu=3 audio=1 legenda=nada tela=Normal video=0 mem=3724k
+11-19 18:24:12.052  4770  4770 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:24:12.052  4770  4770 I GabiFlixPlayer: ESTADO tempo=458365 tocando=true fim=false spu=3 audio=1 legenda=nada tela=Normal video=0 mem=3756k
+11-19 18:24:12.590  4770  4770 I GabiFlixPlayer: legenda do app: tempo 458884 ms, atraso 0 ms -> "Não, você não está entendendo isso, eu já disse que não vai dar."
+11-19 18:24:12.052  4770  4770 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:24:12.052  4770  4770 I GabiFlixPlayer: ESTADO tempo=458365 tocando=true fim=false spu=3 audio=1 legenda=nada tela=Normal video=0 mem=3756k
+11-19 18:24:12.590  4770  4770 I GabiFlixPlayer: legenda do app: tempo 458884 ms, atraso 0 ms -> "Não, você não está entendendo isso, eu já disse que não vai dar."
+11-19 18:24:14.215  4770  4770 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:24:14.215  4770  4770 I GabiFlixPlayer: ESTADO tempo=460492 tocando=true fim=false spu=3 audio=1 legenda=visivel tela=Normal video=0 mem=2049k
+11-19 18:24:17.812  4770  4770 I GabiFlixPlayer: legenda do app: tempo 464114 ms, atraso 0 ms -> (nada)
+11-19 18:24:17.812  4770  4770 I GabiFlixPlayer: legenda do app: tempo 464114 ms, atraso 0 ms -> (nada)
+11-19 18:24:17.812  4770  4770 I GabiFlixPlayer: legenda do app: tempo 464114 ms, atraso 0 ms -> (nada)
+11-19 18:24:20.765  4770  4770 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:24:20.765  4770  4770 I GabiFlixPlayer: ESTADO tempo=466947 tocando=true fim=false spu=3 audio=1 legenda=nada tela=Normal video=0 mem=2249k
+11-19 18:24:20.765  4770  4770 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:24:20.765  4770  4770 I GabiFlixPlayer: ESTADO tempo=466947 tocando=true fim=false spu=3 audio=1 legenda=nada tela=Normal video=0 mem=2249k
+11-19 18:24:22.837  4770  4770 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:24:22.837  4770  4770 I GabiFlixPlayer: ESTADO tempo=469031 tocando=true fim=false spu=3 audio=1 legenda=nada tela=Normal video=0 mem=2281k
+11-19 18:24:23.127  4770  4770 I GabiFlixPlayer: legenda do app: tempo 469281 ms, atraso 0 ms -> "Então porque você está aqui? Eu estou com muito medo, tá bem?"
+11-19 18:24:23.993  4770  4770 I GabiFlixPlayer: AUDIOSYNC estado: st=nova executando=false tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=170MB java=2/576MB nativo=188MB livre=2167MB limiar=144MB poucaMemoria=false
+11-19 18:24:22.837  4770  4770 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:24:22.837  4770  4770 I GabiFlixPlayer: ESTADO tempo=469031 tocando=true fim=false spu=3 audio=1 legenda=nada tela=Normal video=0 mem=2281k
+11-19 18:24:23.127  4770  4770 I GabiFlixPlayer: legenda do app: tempo 469281 ms, atraso 0 ms -> "Então porque você está aqui? Eu estou com muito medo, tá bem?"
+11-19 18:24:23.993  4770  4770 I GabiFlixPlayer: AUDIOSYNC estado: st=nova executando=false tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=170MB java=2/576MB nativo=188MB livre=2167MB limiar=144MB poucaMemoria=false
+11-19 18:24:24.911  4770  4770 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:24:24.912  4770  4770 I GabiFlixPlayer: ESTADO tempo=471113 tocando=true fim=false spu=3 audio=1 legenda=visivel tela=Normal video=0 mem=2449k
+11-19 18:24:27.001  4770  4770 I GabiFlixPlayer: teste: ação do usuário seek 420
+11-19 18:24:27.091  4770  4770 I GabiFlixPlayer: legenda do app: tempo 420000 ms, atraso 0 ms -> "Obrigado, mas isso não é tudo, ele também tem uma filha."
+11-19 18:24:30.745  4770  4770 I GabiFlixPlayer: legenda do app: tempo 421605 ms, atraso 0 ms -> (nada)
+11-19 18:24:30.745  4770  4770 I GabiFlixPlayer: legenda do app: tempo 421605 ms, atraso 0 ms -> (nada)
+11-19 18:24:33.084  4770  4770 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:24:33.085  4770  4770 I GabiFlixPlayer: ESTADO tempo=423786 tocando=true fim=false spu=3 audio=1 legenda=nada tela=Normal video=0 mem=2905k
+11-19 18:24:36.385  4770  4770 I GabiFlixPlayer: ciclo: onPause, tocando=true, tempo=427245, escala=0, atraso=0, vista=SurfaceView 2340x1080, vout=true
+11-19 18:24:36.984  4770  4770 I GabiFlixPlayer: ciclo: onStop, tocando=false, tempo=427245, escala=0, atraso=0, vista=SurfaceView 2340x1080, vout=false
+11-19 18:24:37.523  4770  4770 I GabiFlixPlayer: ciclo: evento Vout, saídas=0
+11-19 18:24:44.583  7219  7219 I GabiFlixPlayer: ciclo: processo recriado pelo sistema, volta do ponto 427245 ms
+11-19 18:24:44.675  7219  7219 I GabiFlixPlayer: ciclo: onStart, tocando=false, tempo=-1, escala=0, atraso=0, vista=SurfaceView 0x0, vout=true
+11-19 18:24:44.676  7219  7219 I GabiFlixPlayer: ciclo: onResume, tocando=false, tempo=-1, escala=0, atraso=0, vista=SurfaceView 0x0, vout=true
+11-19 18:24:44.747  7219  7240 I GabiFlixPlayer: hash=c437df0be78daf09 tamanho=727907440 arquivo=film.mkv
+11-19 18:24:45.829  7219  7240 I GabiFlixPlayer: Hash calculado, sem correspondência no OpenSubtitles; addon: 11 itens, PT=0, referências=0, hash igual=0
+11-19 18:24:45.892  7219  7240 I GabiFlixPlayer: candidatas para baixar: 1 (do site: 1)
+11-19 18:24:46.638  7219  7240 I GabiFlixPlayer: legendas PT válidas: 1 de 1; referências baixadas: 0
+11-19 18:24:46.645  7219  7240 I GabiFlixPlayer: alinhamento com 0 referência(s):
+11-19 18:24:46.645  7219  7240 I GabiFlixPlayer:   sem referência (nem outro idioma, nem PT do hash) e menos de 2 PT para comparar: ranking antigo
+11-19 18:24:46.645  7219  7240 I GabiFlixPlayer:   alinhadas: 0
+11-19 18:24:46.646  7219  7219 I GabiFlixPlayer: legenda PT embutida: não há
+11-19 18:24:46.647  7219  7219 I GabiFlixPlayer: ranking das legendas:
+11-19 18:24:46.647  7219  7219 I GabiFlixPlayer:   referência de fim=0ms (sem referência), duração=2100000ms
+11-19 18:24:46.647  7219  7219 I GabiFlixPlayer:   #0 fim=2081395ms hash=false corrigida=false nota=0.0561
+11-19 18:24:46.647  7219  7219 I GabiFlixPlayer: escolhida: candidata #0; melhor baixada: #0 alinhada=false nota=0.00 deslocamento=0ms hash=false corrigida=false; 1 no menu
+11-19 18:24:46.647  7219  7219 I GabiFlixPlayer: atraso da legenda ativa (nenhuma): 0 ms
+11-19 18:24:46.669  7219  7219 I GabiFlixPlayer: ciclo: evento Vout, saídas=1
+11-19 18:24:46.707  7219  7219 I GabiFlixPlayer: vistas do vídeo: SurfaceView(vídeo) SurfaceView
+11-19 18:24:46.724  7219  7219 I GabiFlixPlayer: AUDIOSYNC pronto (sem limite de dados; automático=true, começa 25 s depois de a legenda ficar ativa; resultado confiante vale 30 dias e não se reverifica; sem confiança: 1 nova tentativa em 1200 s; salto grande = 600 s)
+11-19 18:24:47.792  7219  7219 I GabiFlixPlayer: AUDIOSYNC estado: st=- executando=false tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=79MB java=3/576MB nativo=179MB livre=2248MB limiar=144MB poucaMemoria=false
+11-19 18:24:47.793  7219  7219 I GabiFlixPlayer: AUDIOSYNC legenda ativa: 37df0be78daf09|http://10.0.2.2:8000/film.srt#raw (nova nesta sessão)
+11-19 18:24:47.793  7219  7219 I GabiFlixPlayer: AUDIOSYNC GATILHO motivo=troca-de-legenda legenda=37df0be78daf09|http://10.0.2.2:8000/film.srt#raw decisão=avaliar (espera 25 s tocando; se há resultado guardado, não analisa) [análises=0 sem_confiança=0 estado=nova]
+11-19 18:24:47.799  7219  7219 I GabiFlixPlayer: legenda do app: 197 falas da faixa ativa
+11-19 18:24:47.799  7219  7219 I GabiFlixPlayer: legenda do app: ligada
+11-19 18:24:47.900  7219  7219 I GabiFlixPlayer: legenda do app: tempo 427283 ms, atraso 0 ms -> "Nós já fomos até lá, meu amigo, e foi muito bem, sim."
+11-19 18:24:48.318  7219  7219 I GabiFlixPlayer: atraso da legenda ativa (d3:tt0000001|h:c437df0be78daf09|http://10.0.2.2:8000/film.srt#raw): 0 ms
+11-19 18:24:53.046  7219  7219 I GabiFlixPlayer: legenda do app: tempo 432613 ms, atraso 0 ms -> (nada)
+11-19 18:24:58.335  7219  7219 I GabiFlixPlayer: legenda do app: tempo 437798 ms, atraso 0 ms -> "Ela vai ficar aqui, minha casa é dela também, pra mim tudo bem."
+11-19 18:25:02.119  7219  7219 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:25:02.119  7219  7219 I GabiFlixPlayer: ESTADO tempo=441577 tocando=true fim=false spu=3 audio=1 legenda=visivel tela=Normal video=0 mem=4709k
+11-19 18:25:02.119  7219  7219 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:25:02.119  7219  7219 I GabiFlixPlayer: ESTADO tempo=441577 tocando=true fim=false spu=3 audio=1 legenda=visivel tela=Normal video=0 mem=4709k
+11-19 18:25:03.670  7219  7219 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:25:03.672  7219  7219 I GabiFlixPlayer: ESTADO tempo=443136 tocando=true fim=false spu=3 audio=1 legenda=visivel tela=Normal video=0 mem=4725k
+11-19 18:25:03.823  7219  7219 I GabiFlixPlayer: legenda do app: tempo 443398 ms, atraso 0 ms -> (nada)
+11-19 18:25:07.871  7219  7219 I GabiFlixPlayer: AUDIOSYNC estado: st=nova executando=false tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=163MB java=4/576MB nativo=179MB livre=2168MB limiar=144MB poucaMemoria=false
+11-19 18:25:08.874  7219  7219 I GabiFlixPlayer: legenda do app: tempo 448388 ms, atraso 0 ms -> "Isso são coisas que você tem que saber, porque nós não temos tempo."
+11-19 18:25:07.871  7219  7219 I GabiFlixPlayer: AUDIOSYNC estado: st=nova executando=false tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=163MB java=4/576MB nativo=179MB livre=2168MB limiar=144MB poucaMemoria=false
+11-19 18:25:08.874  7219  7219 I GabiFlixPlayer: legenda do app: tempo 448388 ms, atraso 0 ms -> "Isso são coisas que você tem que saber, porque nós não temos tempo."
+11-19 18:25:13.873  7219  7219 I GabiFlixPlayer: legenda do app: tempo 453283 ms, atraso 0 ms -> (nada)
+11-19 18:25:17.893  7219  7219 I GabiFlixPlayer: AUDIOSYNC GATILHO motivo=início legenda=37df0be78daf09|http://10.0.2.2:8000/film.srt#raw decisão=análise [análises=1 sem_confiança=0 estado=nova]
+11-19 18:25:17.894  7219  7219 I GabiFlixPlayer: AUDIOSYNC antes da análise: saúde da reprodução: amostras=30 paradas=0 razão_mínima=0.77 carregando=0 quadros_perdidos=244
+11-19 18:25:17.894  7219  7219 I GabiFlixPlayer: AUDIOSYNC começando: posição 457 s, duração 2100 s, atraso atual 0 ms, faixa de áudio 1
+11-19 18:25:19.389  7219  7219 I GabiFlixPlayer: legenda do app: tempo 458981 ms, atraso 0 ms -> "Não, você não está entendendo isso, eu já disse que não vai dar."
+11-19 18:25:24.512  7219  7219 I GabiFlixPlayer: legenda do app: tempo 464068 ms, atraso 0 ms -> (nada)
+11-19 18:25:28.000  7219  7219 I GabiFlixPlayer: AUDIOSYNC estado: st=nova executando=true tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=153MB java=2/576MB nativo=178MB livre=2146MB limiar=144MB poucaMemoria=false
+11-19 18:25:28.000  7219  7219 I GabiFlixPlayer: AUDIOSYNC estado: st=nova executando=true tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=153MB java=2/576MB nativo=178MB livre=2146MB limiar=144MB poucaMemoria=false
+11-19 18:25:28.593  7219  7219 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:25:28.594  7219  7219 I GabiFlixPlayer: ESTADO tempo=468081 tocando=true fim=false spu=3 audio=1 legenda=nada tela=Normal video=0 mem=2940k
+11-19 18:25:29.822  7219  7219 I GabiFlixPlayer: legenda do app: tempo 469381 ms, atraso 0 ms -> "Então porque você está aqui? Eu estou com muito medo, tá bem?"
+11-19 18:25:28.593  7219  7219 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:25:28.594  7219  7219 I GabiFlixPlayer: ESTADO tempo=468081 tocando=true fim=false spu=3 audio=1 legenda=nada tela=Normal video=0 mem=2940k
+11-19 18:25:29.822  7219  7219 I GabiFlixPlayer: legenda do app: tempo 469381 ms, atraso 0 ms -> "Então porque você está aqui? Eu estou com muito medo, tá bem?"
+11-19 18:25:31.363  7219  7219 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:25:31.363  7219  7219 I GabiFlixPlayer: ESTADO tempo=470957 tocando=true fim=false spu=3 audio=1 legenda=visivel tela=Normal video=0 mem=2988k
+11-19 18:25:34.820  7219  7219 I GabiFlixPlayer: teste: ação do usuário seek 20
+11-19 18:25:34.861  7219  7219 I GabiFlixPlayer: legenda do app: tempo 20000 ms, atraso 0 ms -> "Não, você não está entendendo isso, eu já disse que não vai dar."
+11-19 18:25:40.065  7219  7321 I GabiFlixPlayer: AUDIOSYNC captura 190 s +90 s: 90.08 s de PCM em 21.99 s (fim) leitura=32 MB | usou a faixa 2 (pedida 1) de [1:Track 1; 2:Track 2; ]
+11-19 18:25:42.351  7219  7219 I GabiFlixPlayer: legenda do app: tempo 22884 ms, atraso 0 ms -> (nada)
+11-19 18:25:46.759  7219  7219 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:25:46.760  7219  7219 I GabiFlixPlayer: ESTADO tempo=27281 tocando=true fim=false spu=3 audio=1 legenda=nada tela=Normal video=0 mem=10845k
+11-19 18:25:47.680  7219  7219 I GabiFlixPlayer: legenda do app: tempo 28293 ms, atraso 0 ms -> "Então porque você está aqui? Eu estou com muito medo, tá bem?"
+11-19 18:25:48.171  7219  7219 I GabiFlixPlayer: AUDIOSYNC estado: st=nova executando=true tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=161MB java=10/576MB nativo=177MB livre=2130MB limiar=144MB poucaMemoria=false
+11-19 18:25:46.759  7219  7219 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:25:46.760  7219  7219 I GabiFlixPlayer: ESTADO tempo=27281 tocando=true fim=false spu=3 audio=1 legenda=nada tela=Normal video=0 mem=10845k
+11-19 18:25:47.680  7219  7219 I GabiFlixPlayer: legenda do app: tempo 28293 ms, atraso 0 ms -> "Então porque você está aqui? Eu estou com muito medo, tá bem?"
+11-19 18:25:48.171  7219  7219 I GabiFlixPlayer: AUDIOSYNC estado: st=nova executando=true tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=161MB java=10/576MB nativo=177MB livre=2130MB limiar=144MB poucaMemoria=false
+11-19 18:25:49.306  7219  7219 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:25:49.306  7219  7219 I GabiFlixPlayer: ESTADO tempo=29895 tocando=true fim=false spu=3 audio=1 legenda=visivel tela=Normal video=0 mem=10949k
+11-19 18:25:53.250  7219  7219 I GabiFlixPlayer: legenda do app: tempo 33764 ms, atraso 0 ms -> (nada)
+11-19 18:25:58.220  7219  7219 I GabiFlixPlayer: legenda do app: tempo 38822 ms, atraso 0 ms -> "Obrigado, mas isso não é tudo, ele também tem uma filha."
+11-19 18:26:02.821  7219  7219 I GabiFlixPlayer: legenda do app: tempo 43559 ms, atraso 0 ms -> (nada)
+11-19 18:26:08.288  7219  7219 I GabiFlixPlayer: AUDIOSYNC estado: st=nova executando=true tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=162MB java=11/576MB nativo=178MB livre=2124MB limiar=144MB poucaMemoria=false
+11-19 18:26:08.691  7219  7219 I GabiFlixPlayer: legenda do app: tempo 49316 ms, atraso 0 ms -> "Nós já fomos até lá, meu amigo, e foi muito bem, sim."
+11-19 18:26:09.821  7219  7321 I GabiFlixPlayer: AUDIOSYNC captura 1135 s +90 s: 90.08 s de PCM em 21.14 s (fim) leitura=35 MB | usou a faixa 2 (pedida 1) de [1:Track 1; 2:Track 2; ]
+11-19 18:26:13.781  7219  7219 I GabiFlixPlayer: legenda do app: tempo 54314 ms, atraso 0 ms -> (nada)
+11-19 18:26:19.212  7219  7219 I GabiFlixPlayer: legenda do app: tempo 59791 ms, atraso 0 ms -> "Ela vai ficar aqui, minha casa é dela também, pra mim tudo bem."
+11-19 18:26:24.710  7219  7219 I GabiFlixPlayer: legenda do app: tempo 65407 ms, atraso 0 ms -> (nada)
+11-19 18:26:28.457  7219  7219 I GabiFlixPlayer: AUDIOSYNC estado: st=nova executando=true tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=163MB java=10/576MB nativo=179MB livre=2125MB limiar=144MB poucaMemoria=false
+11-19 18:26:29.654  7219  7219 I GabiFlixPlayer: legenda do app: tempo 70409 ms, atraso 0 ms -> "Isso são coisas que você tem que saber, porque nós não temos tempo."
+11-19 18:26:32.649  7219  7321 I GabiFlixPlayer: AUDIOSYNC captura 1825 s +90 s: 90.08 s de PCM em 19.35 s (fim) leitura=34 MB | usou a faixa 2 (pedida 1) de [1:Track 1; 2:Track 2; ]
+11-19 18:26:34.808  7219  7219 I GabiFlixPlayer: legenda do app: tempo 75332 ms, atraso 0 ms -> (nada)
+11-19 18:26:36.536  7219  7219 I GabiFlixPlayer: AUDIOSYNC resultado: recusada z=3.3 janelas=3/3 (z baixo; pico ambíguo;) | vad=silero janelas=3 captura=77808 ms vad=13411 ms (cpu 16) solve=629 ms (cpu 227) cpu_thread=320 ms total=78610 ms leitura_estimada=89 MB leitura_real=102 MB pss=163->165 MB java=5->12 MB
+11-19 18:26:36.537  7219  7219 I GabiFlixPlayer: AUDIOSYNC saúde da reprodução: amostras=73 paradas=0 razão_mínima=0.77 carregando=1 quadros_perdidos=674
+11-19 18:26:36.538  7219  7219 I GabiFlixPlayer: AUDIOSYNC o áudio não tem certeza: legenda deixada como estava
+11-19 18:26:36.538  7219  7219 I GabiFlixPlayer: AUDIOSYNC GATILHO motivo=sem-confiança legenda=37df0be78daf09|http://10.0.2.2:8000/film.srt#raw decisão=agendar UMA segunda tentativa em 1200 s: o áudio não tem certeza [análises=1 sem_confiança=1 estado=nova]
+11-19 18:26:40.138  7219  7219 I GabiFlixPlayer: legenda do app: tempo 80864 ms, atraso 0 ms -> "Não, você não está entendendo isso, eu já disse que não vai dar."
+11-19 18:26:45.353  7219  7219 I GabiFlixPlayer: legenda do app: tempo 85864 ms, atraso 0 ms -> (nada)
+11-19 18:26:48.604  7219  7219 I GabiFlixPlayer: AUDIOSYNC estado: st=nova executando=false tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=172MB java=13/576MB nativo=179MB livre=2165MB limiar=144MB poucaMemoria=false
+11-19 18:26:50.768  7219  7219 I GabiFlixPlayer: legenda do app: tempo 91422 ms, atraso 0 ms -> "Então porque você está aqui? Eu estou com muito medo, tá bem?"
+11-19 18:26:56.330  7219  7219 I GabiFlixPlayer: legenda do app: tempo 96986 ms, atraso 0 ms -> (nada)
+11-19 18:27:01.170  7219  7219 I GabiFlixPlayer: legenda do app: tempo 101697 ms, atraso 0 ms -> "Obrigado, mas isso não é tudo, ele também tem uma filha."
+11-19 18:27:05.880  7219  7219 I GabiFlixPlayer: legenda do app: tempo 106617 ms, atraso 0 ms -> (nada)
+11-19 18:27:08.696  7219  7219 I GabiFlixPlayer: AUDIOSYNC estado: st=nova executando=false tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=173MB java=13/576MB nativo=180MB livre=2164MB limiar=144MB poucaMemoria=false
+11-19 18:27:11.656  7219  7219 I GabiFlixPlayer: legenda do app: tempo 112196 ms, atraso 0 ms -> "Nós já fomos até lá, meu amigo, e foi muito bem, sim."
+11-19 18:27:16.839  7219  7219 I GabiFlixPlayer: legenda do app: tempo 117444 ms, atraso 0 ms -> (nada)
+11-19 18:27:22.212  7219  7219 I GabiFlixPlayer: legenda do app: tempo 122820 ms, atraso 0 ms -> "Ela vai ficar aqui, minha casa é dela também, pra mim tudo bem."
+11-19 18:27:27.738  7219  7219 I GabiFlixPlayer: legenda do app: tempo 128357 ms, atraso 0 ms -> (nada)
+11-19 18:27:28.877  7219  7219 I GabiFlixPlayer: AUDIOSYNC estado: st=nova executando=false tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=163MB java=2/576MB nativo=181MB livre=2174MB limiar=144MB poucaMemoria=false
+11-19 18:27:32.717  7219  7219 I GabiFlixPlayer: legenda do app: tempo 133281 ms, atraso 0 ms -> "Isso são coisas que você tem que saber, porque nós não temos tempo."
+11-19 18:27:37.810  7219  7219 I GabiFlixPlayer: legenda do app: tempo 138499 ms, atraso 0 ms -> (nada)
+11-19 18:27:43.175  7219  7219 I GabiFlixPlayer: legenda do app: tempo 143907 ms, atraso 0 ms -> "Não, você não está entendendo isso, eu já disse que não vai dar."
+11-19 18:27:48.461  7219  7219 I GabiFlixPlayer: legenda do app: tempo 149040 ms, atraso 0 ms -> (nada)
+11-19 18:27:48.973  7219  7219 I GabiFlixPlayer: AUDIOSYNC estado: st=nova executando=false tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=164MB java=2/576MB nativo=182MB livre=2173MB limiar=144MB poucaMemoria=false
+11-19 18:27:53.710  7219  7219 I GabiFlixPlayer: legenda do app: tempo 154278 ms, atraso 0 ms -> "Então porque você está aqui? Eu estou com muito medo, tá bem?"
+11-19 18:27:59.249  7219  7219 I GabiFlixPlayer: legenda do app: tempo 159995 ms, atraso 0 ms -> (nada)
+11-19 18:28:04.163  7219  7219 I GabiFlixPlayer: legenda do app: tempo 164864 ms, atraso 0 ms -> "Obrigado, mas isso não é tudo, ele também tem uma filha."
+11-19 18:28:08.902  7219  7219 I GabiFlixPlayer: legenda do app: tempo 169540 ms, atraso 0 ms -> (nada)
+11-19 18:28:09.050  7219  7219 I GabiFlixPlayer: AUDIOSYNC estado: st=nova executando=false tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=165MB java=2/576MB nativo=182MB livre=2173MB limiar=144MB poucaMemoria=false
+11-19 18:28:14.707  7219  7219 I GabiFlixPlayer: legenda do app: tempo 175239 ms, atraso 0 ms -> "Nós já fomos até lá, meu amigo, e foi muito bem, sim."
+11-19 18:28:19.765  7219  7219 I GabiFlixPlayer: legenda do app: tempo 180485 ms, atraso 0 ms -> (nada)
+11-19 18:28:25.191  7219  7219 I GabiFlixPlayer: legenda do app: tempo 185732 ms, atraso 0 ms -> "Ela vai ficar aqui, minha casa é dela também, pra mim tudo bem."
+11-19 18:28:29.156  7219  7219 I GabiFlixPlayer: AUDIOSYNC estado: st=nova executando=false tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=166MB java=2/576MB nativo=183MB livre=2172MB limiar=144MB poucaMemoria=false
+11-19 18:28:30.754  7219  7219 I GabiFlixPlayer: legenda do app: tempo 191428 ms, atraso 0 ms -> (nada)
+11-19 18:28:35.703  7219  7219 I GabiFlixPlayer: legenda do app: tempo 196389 ms, atraso 0 ms -> "Isso são coisas que você tem que saber, porque nós não temos tempo."
+11-19 18:28:40.803  7219  7219 I GabiFlixPlayer: legenda do app: tempo 201322 ms, atraso 0 ms -> (nada)
+11-19 18:28:46.127  7219  7219 I GabiFlixPlayer: legenda do app: tempo 206781 ms, atraso 0 ms -> "Não, você não está entendendo isso, eu já disse que não vai dar."
+11-19 18:28:49.239  7219  7219 I GabiFlixPlayer: AUDIOSYNC estado: st=nova executando=false tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=167MB java=2/576MB nativo=184MB livre=2171MB limiar=144MB poucaMemoria=false
+11-19 18:28:51.399  7219  7219 I GabiFlixPlayer: legenda do app: tempo 212034 ms, atraso 0 ms -> (nada)
+11-19 18:28:56.771  7219  7219 I GabiFlixPlayer: legenda do app: tempo 217484 ms, atraso 0 ms -> "Então porque você está aqui? Eu estou com muito medo, tá bem?"
+11-19 18:29:02.365  7219  7219 I GabiFlixPlayer: legenda do app: tempo 223072 ms, atraso 0 ms -> (nada)
+11-19 18:29:07.276  7219  7219 I GabiFlixPlayer: legenda do app: tempo 227813 ms, atraso 0 ms -> "Obrigado, mas isso não é tudo, ele também tem uma filha."
+11-19 18:29:09.400  7219  7219 I GabiFlixPlayer: AUDIOSYNC estado: st=nova executando=false tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=167MB java=2/576MB nativo=185MB livre=2170MB limiar=144MB poucaMemoria=false
+11-19 18:29:11.903  7219  7219 I GabiFlixPlayer: legenda do app: tempo 232550 ms, atraso 0 ms -> (nada)
+11-19 18:29:17.675  7219  7219 I GabiFlixPlayer: legenda do app: tempo 238277 ms, atraso 0 ms -> "Nós já fomos até lá, meu amigo, e foi muito bem, sim."
+11-19 18:29:22.798  7219  7219 I GabiFlixPlayer: legenda do app: tempo 243447 ms, atraso 0 ms -> (nada)
+11-19 18:29:22.798  7219  7219 I GabiFlixPlayer: legenda do app: tempo 243447 ms, atraso 0 ms -> (nada)
+11-19 18:29:25.906  7219  7219 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:29:25.906  7219  7219 I GabiFlixPlayer: ESTADO tempo=246582 tocando=true fim=false spu=3 audio=1 legenda=nada tela=Normal video=0 mem=2124k
+11-19 18:29:25.906  7219  7219 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:29:25.906  7219  7219 I GabiFlixPlayer: ESTADO tempo=246582 tocando=true fim=false spu=3 audio=1 legenda=nada tela=Normal video=0 mem=2124k
+11-19 18:29:28.298  7219  7219 I GabiFlixPlayer: legenda do app: tempo 249028 ms, atraso 0 ms -> "Ela vai ficar aqui, minha casa é dela também, pra mim tudo bem."
+11-19 18:29:29.505  7219  7219 I GabiFlixPlayer: AUDIOSYNC estado: st=nova executando=false tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=168MB java=2/576MB nativo=185MB livre=2169MB limiar=144MB poucaMemoria=false
+11-19 18:29:33.727  7219  7219 I GabiFlixPlayer: legenda do app: tempo 254439 ms, atraso 0 ms -> (nada)
+11-19 18:29:38.636  7219  7219 I GabiFlixPlayer: legenda do app: tempo 259364 ms, atraso 0 ms -> "Isso são coisas que você tem que saber, porque nós não temos tempo."
+11-19 18:29:43.775  7219  7219 I GabiFlixPlayer: legenda do app: tempo 264517 ms, atraso 0 ms -> (nada)
+11-19 18:29:49.226  7219  7219 I GabiFlixPlayer: legenda do app: tempo 269732 ms, atraso 0 ms -> "Não, você não está entendendo isso, eu já disse que não vai dar."
+11-19 18:29:49.629  7219  7219 I GabiFlixPlayer: AUDIOSYNC estado: st=nova executando=false tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=169MB java=2/576MB nativo=186MB livre=2169MB limiar=144MB poucaMemoria=false
+11-19 18:29:54.416  7219  7219 I GabiFlixPlayer: legenda do app: tempo 275021 ms, atraso 0 ms -> (nada)
+11-19 18:29:59.662  7219  7219 I GabiFlixPlayer: legenda do app: tempo 280260 ms, atraso 0 ms -> "Então porque você está aqui? Eu estou com muito medo, tá bem?"
+11-19 18:30:05.298  7219  7219 I GabiFlixPlayer: legenda do app: tempo 285866 ms, atraso 0 ms -> (nada)
+11-19 18:30:09.731  7219  7219 I GabiFlixPlayer: AUDIOSYNC estado: st=nova executando=false tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=169MB java=2/576MB nativo=186MB livre=2169MB limiar=144MB poucaMemoria=false
+11-19 18:30:10.266  7219  7219 I GabiFlixPlayer: legenda do app: tempo 290820 ms, atraso 0 ms -> "Obrigado, mas isso não é tudo, ele também tem uma filha."
+11-19 18:30:14.913  7219  7219 I GabiFlixPlayer: legenda do app: tempo 295494 ms, atraso 0 ms -> (nada)
+11-19 18:30:20.660  7219  7219 I GabiFlixPlayer: legenda do app: tempo 301408 ms, atraso 0 ms -> "Nós já fomos até lá, meu amigo, e foi muito bem, sim."
+11-19 18:30:25.800  7219  7219 I GabiFlixPlayer: legenda do app: tempo 306404 ms, atraso 0 ms -> (nada)
+11-19 18:30:29.835  7219  7219 I GabiFlixPlayer: AUDIOSYNC estado: st=nova executando=false tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=169MB java=1/576MB nativo=187MB livre=2168MB limiar=144MB poucaMemoria=false
+11-19 18:30:31.217  7219  7219 I GabiFlixPlayer: legenda do app: tempo 311877 ms, atraso 0 ms -> "Ela vai ficar aqui, minha casa é dela também, pra mim tudo bem."
+11-19 18:30:36.699  7219  7219 I GabiFlixPlayer: legenda do app: tempo 317319 ms, atraso 0 ms -> (nada)
+11-19 18:30:41.670  7219  7219 I GabiFlixPlayer: legenda do app: tempo 322278 ms, atraso 0 ms -> "Isso são coisas que você tem que saber, porque nós não temos tempo."
+11-19 18:30:46.784  7219  7219 I GabiFlixPlayer: legenda do app: tempo 327497 ms, atraso 0 ms -> (nada)
+11-19 18:30:49.958  7219  7219 I GabiFlixPlayer: AUDIOSYNC estado: st=nova executando=false tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=171MB java=2/576MB nativo=188MB livre=2172MB limiar=144MB poucaMemoria=false
+11-19 18:30:52.183  7219  7219 I GabiFlixPlayer: legenda do app: tempo 332697 ms, atraso 0 ms -> "Não, você não está entendendo isso, eu já disse que não vai dar."
+11-19 18:30:57.371  7219  7219 I GabiFlixPlayer: legenda do app: tempo 337902 ms, atraso 0 ms -> (nada)
+11-19 18:30:57.371  7219  7219 I GabiFlixPlayer: legenda do app: tempo 337902 ms, atraso 0 ms -> (nada)
+11-19 18:31:02.705  7219  7219 I GabiFlixPlayer: legenda do app: tempo 343366 ms, atraso 0 ms -> "Então porque você está aqui? Eu estou com muito medo, tá bem?"
+11-19 18:31:08.246  7219  7219 I GabiFlixPlayer: legenda do app: tempo 348893 ms, atraso 0 ms -> (nada)
+11-19 18:31:10.038  7219  7219 I GabiFlixPlayer: AUDIOSYNC estado: st=nova executando=false tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=171MB java=2/576MB nativo=188MB livre=2171MB limiar=144MB poucaMemoria=false
+11-19 18:31:13.166  7219  7219 I GabiFlixPlayer: legenda do app: tempo 353895 ms, atraso 0 ms -> "Obrigado, mas isso não é tudo, ele também tem uma filha."
+11-19 18:31:17.971  7219  7219 I GabiFlixPlayer: legenda do app: tempo 358710 ms, atraso 0 ms -> (nada)
+11-19 18:31:23.745  7219  7219 I GabiFlixPlayer: legenda do app: tempo 364488 ms, atraso 0 ms -> "Nós já fomos até lá, meu amigo, e foi muito bem, sim."
+11-19 18:31:28.814  7219  7219 I GabiFlixPlayer: legenda do app: tempo 369383 ms, atraso 0 ms -> (nada)
+11-19 18:31:30.145  7219  7219 I GabiFlixPlayer: AUDIOSYNC estado: st=nova executando=false tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=172MB java=2/576MB nativo=189MB livre=2170MB limiar=144MB poucaMemoria=false
+11-19 18:31:28.814  7219  7219 I GabiFlixPlayer: legenda do app: tempo 369383 ms, atraso 0 ms -> (nada)
+11-19 18:31:30.145  7219  7219 I GabiFlixPlayer: AUDIOSYNC estado: st=nova executando=false tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=172MB java=2/576MB nativo=189MB livre=2170MB limiar=144MB poucaMemoria=false
+11-19 18:31:30.668  7219  7219 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:31:30.669  7219  7219 I GabiFlixPlayer: ESTADO tempo=371167 tocando=true fim=false spu=3 audio=1 legenda=nada tela=Normal video=0 mem=2008k
+11-19 18:31:30.145  7219  7219 I GabiFlixPlayer: AUDIOSYNC estado: st=nova executando=false tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=172MB java=2/576MB nativo=189MB livre=2170MB limiar=144MB poucaMemoria=false
+11-19 18:31:30.668  7219  7219 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:31:30.669  7219  7219 I GabiFlixPlayer: ESTADO tempo=371167 tocando=true fim=false spu=3 audio=1 legenda=nada tela=Normal video=0 mem=2008k
+11-19 18:31:34.166  7219  7219 I GabiFlixPlayer: legenda do app: tempo 374853 ms, atraso 0 ms -> "Ela vai ficar aqui, minha casa é dela também, pra mim tudo bem."
+11-19 18:31:39.729  7219  7219 I GabiFlixPlayer: legenda do app: tempo 380322 ms, atraso 0 ms -> (nada)
+11-19 18:31:44.753  7219  7219 I GabiFlixPlayer: legenda do app: tempo 385477 ms, atraso 0 ms -> "Isso são coisas que você tem que saber, porque nós não temos tempo."
+11-19 18:31:49.764  7219  7219 I GabiFlixPlayer: legenda do app: tempo 390412 ms, atraso 0 ms -> (nada)
+11-19 18:31:50.324  7219  7219 I GabiFlixPlayer: AUDIOSYNC estado: st=nova executando=false tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=172MB java=2/576MB nativo=190MB livre=2169MB limiar=144MB poucaMemoria=false
+11-19 18:31:55.146  7219  7219 I GabiFlixPlayer: legenda do app: tempo 395668 ms, atraso 0 ms -> "Não, você não está entendendo isso, eu já disse que não vai dar."
+11-19 18:32:00.434  7219  7219 I GabiFlixPlayer: legenda do app: tempo 401165 ms, atraso 0 ms -> (nada)
+11-19 18:32:00.434  7219  7219 I GabiFlixPlayer: legenda do app: tempo 401165 ms, atraso 0 ms -> (nada)
+11-19 18:32:05.655  7219  7219 I GabiFlixPlayer: legenda do app: tempo 406160 ms, atraso 0 ms -> "Então porque você está aqui? Eu estou com muito medo, tá bem?"
+11-19 18:32:10.406  7219  7219 I GabiFlixPlayer: AUDIOSYNC estado: st=nova executando=false tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=173MB java=2/576MB nativo=190MB livre=2168MB limiar=144MB poucaMemoria=false
+11-19 18:32:11.279  7219  7219 I GabiFlixPlayer: legenda do app: tempo 411877 ms, atraso 0 ms -> (nada)
+11-19 18:32:16.191  7219  7219 I GabiFlixPlayer: legenda do app: tempo 416772 ms, atraso 0 ms -> "Obrigado, mas isso não é tudo, ele também tem uma filha."
+11-19 18:32:20.857  7219  7219 I GabiFlixPlayer: legenda do app: tempo 421492 ms, atraso 0 ms -> (nada)
+11-19 18:32:26.685  7219  7219 I GabiFlixPlayer: legenda do app: tempo 427279 ms, atraso 0 ms -> "Nós já fomos até lá, meu amigo, e foi muito bem, sim."
+11-19 18:32:30.496  7219  7219 I GabiFlixPlayer: AUDIOSYNC estado: st=nova executando=false tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=174MB java=2/576MB nativo=191MB livre=2167MB limiar=144MB poucaMemoria=false
+11-19 18:32:31.827  7219  7219 I GabiFlixPlayer: legenda do app: tempo 432448 ms, atraso 0 ms -> (nada)
+11-19 18:32:30.496  7219  7219 I GabiFlixPlayer: AUDIOSYNC estado: st=nova executando=false tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=174MB java=2/576MB nativo=191MB livre=2167MB limiar=144MB poucaMemoria=false
+11-19 18:32:31.827  7219  7219 I GabiFlixPlayer: legenda do app: tempo 432448 ms, atraso 0 ms -> (nada)
+11-19 18:32:31.827  7219  7219 I GabiFlixPlayer: legenda do app: tempo 432448 ms, atraso 0 ms -> (nada)
+11-19 18:32:34.288  7219  7219 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:32:34.288  7219  7219 I GabiFlixPlayer: ESTADO tempo=435032 tocando=true fim=false spu=3 audio=1 legenda=nada tela=Normal video=0 mem=2026k
+11-19 18:32:34.288  7219  7219 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:32:34.288  7219  7219 I GabiFlixPlayer: ESTADO tempo=435032 tocando=true fim=false spu=3 audio=1 legenda=nada tela=Normal video=0 mem=2026k
+11-19 18:32:36.368  7219  7219 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:32:36.368  7219  7219 I GabiFlixPlayer: ESTADO tempo=436901 tocando=true fim=false spu=3 audio=1 legenda=nada tela=Normal video=0 mem=2058k
+11-19 18:32:37.205  7219  7219 I GabiFlixPlayer: legenda do app: tempo 437948 ms, atraso 0 ms -> "Ela vai ficar aqui, minha casa é dela também, pra mim tudo bem."
+11-19 18:32:36.368  7219  7219 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:32:36.368  7219  7219 I GabiFlixPlayer: ESTADO tempo=436901 tocando=true fim=false spu=3 audio=1 legenda=nada tela=Normal video=0 mem=2058k
+11-19 18:32:37.205  7219  7219 I GabiFlixPlayer: legenda do app: tempo 437948 ms, atraso 0 ms -> "Ela vai ficar aqui, minha casa é dela também, pra mim tudo bem."
+11-19 18:32:38.641  7219  7219 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:32:38.641  7219  7219 I GabiFlixPlayer: ESTADO tempo=439271 tocando=true fim=false spu=3 audio=1 legenda=visivel tela=Normal video=0 mem=2210k
+11-19 18:32:42.764  7219  7219 I GabiFlixPlayer: legenda do app: tempo 443435 ms, atraso 0 ms -> (nada)
+11-19 18:32:47.727  7219  7219 I GabiFlixPlayer: legenda do app: tempo 448199 ms, atraso 0 ms -> "Isso são coisas que você tem que saber, porque nós não temos tempo."
+11-19 18:32:50.628  7219  7219 I GabiFlixPlayer: AUDIOSYNC estado: st=nova executando=false tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=175MB java=2/576MB nativo=192MB livre=2166MB limiar=144MB poucaMemoria=false
+11-19 18:32:52.789  7219  7219 I GabiFlixPlayer: legenda do app: tempo 453416 ms, atraso 0 ms -> (nada)
+11-19 18:32:58.179  7219  7219 I GabiFlixPlayer: legenda do app: tempo 458695 ms, atraso 0 ms -> "Não, você não está entendendo isso, eu já disse que não vai dar."
+11-19 18:33:03.470  7219  7219 I GabiFlixPlayer: legenda do app: tempo 464191 ms, atraso 0 ms -> (nada)
+11-19 18:33:08.703  7219  7219 I GabiFlixPlayer: legenda do app: tempo 469444 ms, atraso 0 ms -> "Então porque você está aqui? Eu estou com muito medo, tá bem?"
+11-19 18:33:08.703  7219  7219 I GabiFlixPlayer: legenda do app: tempo 469444 ms, atraso 0 ms -> "Então porque você está aqui? Eu estou com muito medo, tá bem?"
+11-19 18:33:10.718  7219  7219 I GabiFlixPlayer: AUDIOSYNC estado: st=nova executando=false tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=175MB java=1/576MB nativo=192MB livre=2164MB limiar=144MB poucaMemoria=false
+11-19 18:33:14.333  7219  7219 I GabiFlixPlayer: legenda do app: tempo 474886 ms, atraso 0 ms -> (nada)
+11-19 18:33:19.243  7219  7219 I GabiFlixPlayer: legenda do app: tempo 479812 ms, atraso 0 ms -> "Obrigado, mas isso não é tudo, ele também tem uma filha."
+11-19 18:33:23.866  7219  7219 I GabiFlixPlayer: legenda do app: tempo 484486 ms, atraso 0 ms -> (nada)
+11-19 18:33:29.665  7219  7219 I GabiFlixPlayer: legenda do app: tempo 490181 ms, atraso 0 ms -> "Nós já fomos até lá, meu amigo, e foi muito bem, sim."
+11-19 18:33:30.852  7219  7219 I GabiFlixPlayer: AUDIOSYNC estado: st=nova executando=false tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=176MB java=2/576MB nativo=193MB livre=2168MB limiar=144MB poucaMemoria=false
+11-19 18:33:34.793  7219  7219 I GabiFlixPlayer: legenda do app: tempo 495408 ms, atraso 0 ms -> (nada)
+11-19 18:33:40.264  7219  7219 I GabiFlixPlayer: legenda do app: tempo 500822 ms, atraso 0 ms -> "Ela vai ficar aqui, minha casa é dela também, pra mim tudo bem."
+11-19 18:33:40.264  7219  7219 I GabiFlixPlayer: legenda do app: tempo 500822 ms, atraso 0 ms -> "Ela vai ficar aqui, minha casa é dela também, pra mim tudo bem."
+11-19 18:33:41.345  7219  7219 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:33:41.346  7219  7219 I GabiFlixPlayer: ESTADO tempo=501864 tocando=true fim=false spu=3 audio=1 legenda=visivel tela=Normal video=0 mem=2014k
+11-19 18:33:40.264  7219  7219 I GabiFlixPlayer: legenda do app: tempo 500822 ms, atraso 0 ms -> "Ela vai ficar aqui, minha casa é dela também, pra mim tudo bem."
+11-19 18:33:41.345  7219  7219 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:33:41.346  7219  7219 I GabiFlixPlayer: ESTADO tempo=501864 tocando=true fim=false spu=3 audio=1 legenda=visivel tela=Normal video=0 mem=2014k
+11-19 18:33:45.724  7219  7219 I GabiFlixPlayer: legenda do app: tempo 506276 ms, atraso 0 ms -> (nada)
+11-19 18:33:50.662  7219  7219 I GabiFlixPlayer: legenda do app: tempo 511270 ms, atraso 0 ms -> "Isso são coisas que você tem que saber, porque nós não temos tempo."
+11-19 18:33:50.951  7219  7219 I GabiFlixPlayer: AUDIOSYNC estado: st=nova executando=false tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=177MB java=2/576MB nativo=194MB livre=2167MB limiar=144MB poucaMemoria=false
+11-19 18:33:55.820  7219  7219 I GabiFlixPlayer: legenda do app: tempo 516526 ms, atraso 0 ms -> (nada)
+11-19 18:34:01.277  7219  7219 I GabiFlixPlayer: legenda do app: tempo 521988 ms, atraso 0 ms -> "Não, você não está entendendo isso, eu já disse que não vai dar."
+11-19 18:34:06.457  7219  7219 I GabiFlixPlayer: legenda do app: tempo 527013 ms, atraso 0 ms -> (nada)
+11-19 18:34:11.046  7219  7219 I GabiFlixPlayer: AUDIOSYNC estado: st=nova executando=false tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=178MB java=2/576MB nativo=195MB livre=2165MB limiar=144MB poucaMemoria=false
+11-19 18:34:11.650  7219  7219 I GabiFlixPlayer: legenda do app: tempo 532390 ms, atraso 0 ms -> "Então porque você está aqui? Eu estou com muito medo, tá bem?"
+11-19 18:34:11.046  7219  7219 I GabiFlixPlayer: AUDIOSYNC estado: st=nova executando=false tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=178MB java=2/576MB nativo=195MB livre=2165MB limiar=144MB poucaMemoria=false
+11-19 18:34:11.650  7219  7219 I GabiFlixPlayer: legenda do app: tempo 532390 ms, atraso 0 ms -> "Então porque você está aqui? Eu estou com muito medo, tá bem?"
+11-19 18:34:17.303  7219  7219 I GabiFlixPlayer: legenda do app: tempo 537895 ms, atraso 0 ms -> (nada)
+11-19 18:34:22.167  7219  7219 I GabiFlixPlayer: legenda do app: tempo 542820 ms, atraso 0 ms -> "Obrigado, mas isso não é tudo, ele também tem uma filha."
+11-19 18:34:26.968  7219  7219 I GabiFlixPlayer: legenda do app: tempo 547525 ms, atraso 0 ms -> (nada)
+11-19 18:34:31.246  7219  7219 I GabiFlixPlayer: AUDIOSYNC estado: st=nova executando=false tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=178MB java=2/576MB nativo=196MB livre=2160MB limiar=144MB poucaMemoria=false
+11-19 18:34:32.725  7219  7219 I GabiFlixPlayer: legenda do app: tempo 553222 ms, atraso 0 ms -> "Nós já fomos até lá, meu amigo, e foi muito bem, sim."
+11-19 18:34:37.747  7219  7219 I GabiFlixPlayer: legenda do app: tempo 558503 ms, atraso 0 ms -> (nada)
+11-19 18:34:43.171  7219  7219 I GabiFlixPlayer: legenda do app: tempo 563686 ms, atraso 0 ms -> "Ela vai ficar aqui, minha casa é dela também, pra mim tudo bem."
+11-19 18:34:43.171  7219  7219 I GabiFlixPlayer: legenda do app: tempo 563686 ms, atraso 0 ms -> "Ela vai ficar aqui, minha casa é dela também, pra mim tudo bem."
+11-19 18:34:48.670  7219  7219 I GabiFlixPlayer: legenda do app: tempo 569191 ms, atraso 0 ms -> (nada)
+11-19 18:34:51.331  7219  7219 I GabiFlixPlayer: AUDIOSYNC estado: st=nova executando=false tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=179MB java=2/576MB nativo=196MB livre=2162MB limiar=144MB poucaMemoria=false
+11-19 18:34:53.698  7219  7219 I GabiFlixPlayer: legenda do app: tempo 574391 ms, atraso 0 ms -> "Isso são coisas que você tem que saber, porque nós não temos tempo."
+11-19 18:34:58.806  7219  7219 I GabiFlixPlayer: legenda do app: tempo 579370 ms, atraso 0 ms -> (nada)
+11-19 18:35:04.131  7219  7219 I GabiFlixPlayer: legenda do app: tempo 584864 ms, atraso 0 ms -> "Não, você não está entendendo isso, eu já disse que não vai dar."
+11-19 18:35:09.392  7219  7219 I GabiFlixPlayer: legenda do app: tempo 590034 ms, atraso 0 ms -> (nada)
+11-19 18:35:11.400  7219  7219 I GabiFlixPlayer: AUDIOSYNC estado: st=nova executando=false tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=180MB java=2/576MB nativo=197MB livre=2161MB limiar=144MB poucaMemoria=false
+11-19 18:35:14.755  7219  7219 I GabiFlixPlayer: legenda do app: tempo 595460 ms, atraso 0 ms -> "Então porque você está aqui? Eu estou com muito medo, tá bem?"
+11-19 18:35:20.194  7219  7219 I GabiFlixPlayer: legenda do app: tempo 600739 ms, atraso 0 ms -> (nada)
+11-19 18:35:25.102  7219  7219 I GabiFlixPlayer: legenda do app: tempo 605640 ms, atraso 0 ms -> "Obrigado, mas isso não é tudo, ele também tem uma filha."
+11-19 18:35:29.857  7219  7219 I GabiFlixPlayer: legenda do app: tempo 610564 ms, atraso 0 ms -> (nada)
+11-19 18:35:31.516  7219  7219 I GabiFlixPlayer: AUDIOSYNC estado: st=nova executando=false tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=180MB java=2/576MB nativo=197MB livre=2160MB limiar=144MB poucaMemoria=false
+11-19 18:35:35.673  7219  7219 I GabiFlixPlayer: legenda do app: tempo 616280 ms, atraso 0 ms -> "Nós já fomos até lá, meu amigo, e foi muito bem, sim."
+11-19 18:35:40.803  7219  7219 I GabiFlixPlayer: legenda do app: tempo 621543 ms, atraso 0 ms -> (nada)
+11-19 18:35:45.634  7219  7219 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:35:45.635  7219  7219 I GabiFlixPlayer: ESTADO tempo=626213 tocando=true fim=false spu=3 audio=1 legenda=nada tela=Normal video=0 mem=2019k
+11-19 18:35:46.233  7219  7219 I GabiFlixPlayer: legenda do app: tempo 626980 ms, atraso 0 ms -> "Ela vai ficar aqui, minha casa é dela também, pra mim tudo bem."
+11-19 18:35:45.634  7219  7219 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:35:45.635  7219  7219 I GabiFlixPlayer: ESTADO tempo=626213 tocando=true fim=false spu=3 audio=1 legenda=nada tela=Normal video=0 mem=2019k
+11-19 18:35:46.233  7219  7219 I GabiFlixPlayer: legenda do app: tempo 626980 ms, atraso 0 ms -> "Ela vai ficar aqui, minha casa é dela também, pra mim tudo bem."
+11-19 18:35:51.653  7219  7219 I GabiFlixPlayer: AUDIOSYNC estado: st=nova executando=false tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=181MB java=2/576MB nativo=198MB livre=2159MB limiar=144MB poucaMemoria=false
+11-19 18:35:51.702  7219  7219 I GabiFlixPlayer: legenda do app: tempo 632230 ms, atraso 0 ms -> (nada)
+11-19 18:35:56.626  7219  7219 I GabiFlixPlayer: legenda do app: tempo 637281 ms, atraso 0 ms -> "Isso são coisas que você tem que saber, porque nós não temos tempo."
+11-19 18:36:01.844  7219  7219 I GabiFlixPlayer: legenda do app: tempo 642438 ms, atraso 0 ms -> (nada)
+11-19 18:36:07.236  7219  7219 I GabiFlixPlayer: legenda do app: tempo 647940 ms, atraso 0 ms -> "Não, você não está entendendo isso, eu já disse que não vai dar."
+11-19 18:36:11.721  7219  7219 I GabiFlixPlayer: AUDIOSYNC estado: st=nova executando=false tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=182MB java=2/576MB nativo=199MB livre=2158MB limiar=144MB poucaMemoria=false
+11-19 18:36:12.408  7219  7219 I GabiFlixPlayer: legenda do app: tempo 653123 ms, atraso 0 ms -> (nada)
+11-19 18:36:17.753  7219  7219 I GabiFlixPlayer: legenda do app: tempo 658340 ms, atraso 0 ms -> "Então porque você está aqui? Eu estou com muito medo, tá bem?"
+11-19 18:36:23.321  7219  7219 I GabiFlixPlayer: legenda do app: tempo 664069 ms, atraso 0 ms -> (nada)
+11-19 18:36:28.132  7219  7219 I GabiFlixPlayer: legenda do app: tempo 668754 ms, atraso 0 ms -> "Obrigado, mas isso não é tudo, ele também tem uma filha."
+11-19 18:36:31.775  7219  7219 I GabiFlixPlayer: AUDIOSYNC estado: st=nova executando=false tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=182MB java=2/576MB nativo=199MB livre=2162MB limiar=144MB poucaMemoria=false
+11-19 18:36:32.953  7219  7219 I GabiFlixPlayer: legenda do app: tempo 673679 ms, atraso 0 ms -> (nada)
+11-19 18:36:38.740  7219  7219 I GabiFlixPlayer: legenda do app: tempo 679396 ms, atraso 0 ms -> "Nós já fomos até lá, meu amigo, e foi muito bem, sim."
+11-19 18:36:43.819  7219  7219 I GabiFlixPlayer: legenda do app: tempo 684573 ms, atraso 0 ms -> (nada)
+11-19 18:36:49.233  7219  7219 I GabiFlixPlayer: legenda do app: tempo 689988 ms, atraso 0 ms -> "Ela vai ficar aqui, minha casa é dela também, pra mim tudo bem."
+11-19 18:36:51.884  7219  7219 I GabiFlixPlayer: AUDIOSYNC estado: st=nova executando=false tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=183MB java=2/576MB nativo=200MB livre=2162MB limiar=144MB poucaMemoria=false
+11-19 18:36:54.737  7219  7219 I GabiFlixPlayer: legenda do app: tempo 695493 ms, atraso 0 ms -> (nada)
+11-19 18:36:59.685  7219  7219 I GabiFlixPlayer: legenda do app: tempo 700420 ms, atraso 0 ms -> "Isso são coisas que você tem que saber, porque nós não temos tempo."
+11-19 18:37:04.815  7219  7219 I GabiFlixPlayer: legenda do app: tempo 705330 ms, atraso 0 ms -> (nada)
+11-19 18:37:10.132  7219  7219 I GabiFlixPlayer: legenda do app: tempo 710854 ms, atraso 0 ms -> "Não, você não está entendendo isso, eu já disse que não vai dar."
+11-19 18:37:11.987  7219  7219 I GabiFlixPlayer: AUDIOSYNC estado: st=nova executando=false tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=184MB java=2/576MB nativo=201MB livre=2161MB limiar=144MB poucaMemoria=false
+11-19 18:37:15.342  7219  7219 I GabiFlixPlayer: legenda do app: tempo 715844 ms, atraso 0 ms -> (nada)
+11-19 18:37:20.675  7219  7219 I GabiFlixPlayer: legenda do app: tempo 721317 ms, atraso 0 ms -> "Então porque você está aqui? Eu estou com muito medo, tá bem?"
+11-19 18:37:26.293  7219  7219 I GabiFlixPlayer: legenda do app: tempo 726796 ms, atraso 0 ms -> (nada)
+11-19 18:37:31.221  7219  7219 I GabiFlixPlayer: legenda do app: tempo 731816 ms, atraso 0 ms -> "Obrigado, mas isso não é tudo, ele também tem uma filha."
+11-19 18:37:32.056  7219  7219 I GabiFlixPlayer: AUDIOSYNC estado: st=nova executando=false tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=184MB java=2/576MB nativo=202MB livre=2160MB limiar=144MB poucaMemoria=false
+11-19 18:37:35.947  7219  7219 I GabiFlixPlayer: legenda do app: tempo 736519 ms, atraso 0 ms -> (nada)
+11-19 18:37:41.712  7219  7219 I GabiFlixPlayer: legenda do app: tempo 742278 ms, atraso 0 ms -> "Nós já fomos até lá, meu amigo, e foi muito bem, sim."
+11-19 18:37:46.804  7219  7219 I GabiFlixPlayer: legenda do app: tempo 747489 ms, atraso 0 ms -> (nada)
+11-19 18:37:46.804  7219  7219 I GabiFlixPlayer: legenda do app: tempo 747489 ms, atraso 0 ms -> (nada)
+11-19 18:37:49.434  7219  7219 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:37:49.434  7219  7219 I GabiFlixPlayer: ESTADO tempo=750063 tocando=true fim=false spu=3 audio=1 legenda=nada tela=Normal video=0 mem=2026k
+11-19 18:37:49.434  7219  7219 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:37:49.434  7219  7219 I GabiFlixPlayer: ESTADO tempo=750063 tocando=true fim=false spu=3 audio=1 legenda=nada tela=Normal video=0 mem=2026k
+11-19 18:37:49.434  7219  7219 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:37:49.434  7219  7219 I GabiFlixPlayer: ESTADO tempo=750063 tocando=true fim=false spu=3 audio=1 legenda=nada tela=Normal video=0 mem=2026k
+11-19 18:37:51.499  7219  7219 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:37:51.499  7219  7219 I GabiFlixPlayer: ESTADO tempo=752196 tocando=true fim=false spu=3 audio=1 legenda=nada tela=Normal video=0 mem=2074k
+11-19 18:37:52.146  7219  7219 I GabiFlixPlayer: AUDIOSYNC estado: st=nova executando=false tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=185MB java=2/576MB nativo=202MB livre=2160MB limiar=144MB poucaMemoria=false
+11-19 18:37:52.162  7219  7219 I GabiFlixPlayer: legenda do app: tempo 752700 ms, atraso 0 ms -> "Ela vai ficar aqui, minha casa é dela também, pra mim tudo bem."
+11-19 18:37:51.499  7219  7219 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:37:51.499  7219  7219 I GabiFlixPlayer: ESTADO tempo=752196 tocando=true fim=false spu=3 audio=1 legenda=nada tela=Normal video=0 mem=2074k
+11-19 18:37:52.146  7219  7219 I GabiFlixPlayer: AUDIOSYNC estado: st=nova executando=false tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=185MB java=2/576MB nativo=202MB livre=2160MB limiar=144MB poucaMemoria=false
+11-19 18:37:52.162  7219  7219 I GabiFlixPlayer: legenda do app: tempo 752700 ms, atraso 0 ms -> "Ela vai ficar aqui, minha casa é dela também, pra mim tudo bem."
+11-19 18:37:53.570  7219  7219 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:37:53.570  7219  7219 I GabiFlixPlayer: ESTADO tempo=754285 tocando=true fim=false spu=3 audio=1 legenda=visivel tela=Normal video=0 mem=2226k
+11-19 18:37:57.730  7219  7219 I GabiFlixPlayer: legenda do app: tempo 758423 ms, atraso 0 ms -> (nada)
+11-19 18:38:02.738  7219  7219 I GabiFlixPlayer: legenda do app: tempo 763403 ms, atraso 0 ms -> "Isso são coisas que você tem que saber, porque nós não temos tempo."
+11-19 18:38:07.859  7219  7219 I GabiFlixPlayer: legenda do app: tempo 768612 ms, atraso 0 ms -> (nada)
+11-19 18:38:12.221  7219  7219 I GabiFlixPlayer: AUDIOSYNC estado: st=nova executando=false tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=186MB java=2/576MB nativo=203MB livre=2158MB limiar=144MB poucaMemoria=false
+11-19 18:38:13.278  7219  7219 I GabiFlixPlayer: legenda do app: tempo 773836 ms, atraso 0 ms -> "Não, você não está entendendo isso, eu já disse que não vai dar."
+11-19 18:38:18.395  7219  7219 I GabiFlixPlayer: legenda do app: tempo 779044 ms, atraso 0 ms -> (nada)
+11-19 18:38:23.675  7219  7219 I GabiFlixPlayer: legenda do app: tempo 784280 ms, atraso 0 ms -> "Então porque você está aqui? Eu estou com muito medo, tá bem?"
+11-19 18:38:23.675  7219  7219 I GabiFlixPlayer: legenda do app: tempo 784280 ms, atraso 0 ms -> "Então porque você está aqui? Eu estou com muito medo, tá bem?"
+11-19 18:38:29.320  7219  7219 I GabiFlixPlayer: legenda do app: tempo 790052 ms, atraso 0 ms -> (nada)
+11-19 18:38:32.308  7219  7219 I GabiFlixPlayer: AUDIOSYNC estado: st=nova executando=false tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=186MB java=2/576MB nativo=203MB livre=2157MB limiar=144MB poucaMemoria=false
+11-19 18:38:34.206  7219  7219 I GabiFlixPlayer: legenda do app: tempo 794947 ms, atraso 0 ms -> "Obrigado, mas isso não é tudo, ele também tem uma filha."
+11-19 18:38:38.804  7219  7219 I GabiFlixPlayer: legenda do app: tempo 799556 ms, atraso 0 ms -> (nada)
+11-19 18:38:44.648  7219  7219 I GabiFlixPlayer: legenda do app: tempo 805197 ms, atraso 0 ms -> "Nós já fomos até lá, meu amigo, e foi muito bem, sim."
+11-19 18:38:49.874  7219  7219 I GabiFlixPlayer: legenda do app: tempo 810616 ms, atraso 0 ms -> (nada)
+11-19 18:38:52.383  7219  7219 I GabiFlixPlayer: AUDIOSYNC estado: st=nova executando=false tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=187MB java=2/576MB nativo=204MB livre=2156MB limiar=144MB poucaMemoria=false
+11-19 18:38:55.104  7219  7219 I GabiFlixPlayer: legenda do app: tempo 815655 ms, atraso 0 ms -> "Ela vai ficar aqui, minha casa é dela também, pra mim tudo bem."
+11-19 18:38:55.104  7219  7219 I GabiFlixPlayer: legenda do app: tempo 815655 ms, atraso 0 ms -> "Ela vai ficar aqui, minha casa é dela também, pra mim tudo bem."
+11-19 18:39:00.726  7219  7219 I GabiFlixPlayer: legenda do app: tempo 821221 ms, atraso 0 ms -> (nada)
+11-19 18:39:05.723  7219  7219 I GabiFlixPlayer: legenda do app: tempo 826437 ms, atraso 0 ms -> "Isso são coisas que você tem que saber, porque nós não temos tempo."
+11-19 18:39:10.797  7219  7219 I GabiFlixPlayer: legenda do app: tempo 831405 ms, atraso 0 ms -> (nada)
+11-19 18:39:12.547  7219  7219 I GabiFlixPlayer: AUDIOSYNC estado: st=nova executando=false tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=188MB java=2/576MB nativo=205MB livre=2155MB limiar=144MB poucaMemoria=false
+11-19 18:39:16.176  7219  7219 I GabiFlixPlayer: legenda do app: tempo 836702 ms, atraso 0 ms -> "Não, você não está entendendo isso, eu já disse que não vai dar."
+11-19 18:39:21.415  7219  7219 I GabiFlixPlayer: legenda do app: tempo 842152 ms, atraso 0 ms -> (nada)
+11-19 18:39:26.661  7219  7219 I GabiFlixPlayer: legenda do app: tempo 847405 ms, atraso 0 ms -> "Então porque você está aqui? Eu estou com muito medo, tá bem?"
+11-19 18:39:32.309  7219  7219 I GabiFlixPlayer: legenda do app: tempo 852867 ms, atraso 0 ms -> (nada)
+11-19 18:39:32.611  7219  7219 I GabiFlixPlayer: AUDIOSYNC estado: st=nova executando=false tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=188MB java=2/576MB nativo=205MB livre=2154MB limiar=144MB poucaMemoria=false
+11-19 18:39:37.214  7219  7219 I GabiFlixPlayer: legenda do app: tempo 857834 ms, atraso 0 ms -> "Obrigado, mas isso não é tudo, ele também tem uma filha."
+11-19 18:39:41.857  7219  7219 I GabiFlixPlayer: legenda do app: tempo 862451 ms, atraso 0 ms -> (nada)
+11-19 18:39:47.737  7219  7219 I GabiFlixPlayer: legenda do app: tempo 868459 ms, atraso 0 ms -> "Nós já fomos até lá, meu amigo, e foi muito bem, sim."
+11-19 18:39:52.745  7219  7219 I GabiFlixPlayer: AUDIOSYNC estado: st=nova executando=false tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=189MB java=2/576MB nativo=206MB livre=2153MB limiar=144MB poucaMemoria=false
+11-19 18:39:52.825  7219  7219 I GabiFlixPlayer: legenda do app: tempo 873448 ms, atraso 0 ms -> (nada)
+11-19 18:39:57.669  7219  7219 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:39:57.669  7219  7219 I GabiFlixPlayer: ESTADO tempo=878189 tocando=true fim=false spu=3 audio=1 legenda=nada tela=Normal video=0 mem=2154k
+11-19 18:39:58.270  7219  7219 I GabiFlixPlayer: legenda do app: tempo 878981 ms, atraso 0 ms -> "Ela vai ficar aqui, minha casa é dela também, pra mim tudo bem."
+11-19 18:39:57.669  7219  7219 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:39:57.669  7219  7219 I GabiFlixPlayer: ESTADO tempo=878189 tocando=true fim=false spu=3 audio=1 legenda=nada tela=Normal video=0 mem=2154k
+11-19 18:39:58.270  7219  7219 I GabiFlixPlayer: legenda do app: tempo 878981 ms, atraso 0 ms -> "Ela vai ficar aqui, minha casa é dela também, pra mim tudo bem."
+11-19 18:40:03.675  7219  7219 I GabiFlixPlayer: legenda do app: tempo 884212 ms, atraso 0 ms -> (nada)
+11-19 18:40:08.631  7219  7219 I GabiFlixPlayer: legenda do app: tempo 889387 ms, atraso 0 ms -> "Isso são coisas que você tem que saber, porque nós não temos tempo."
+11-19 18:40:12.804  7219  7219 I GabiFlixPlayer: AUDIOSYNC estado: st=nova executando=false tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=190MB java=2/576MB nativo=207MB livre=2151MB limiar=144MB poucaMemoria=false
+11-19 18:40:13.840  7219  7219 I GabiFlixPlayer: legenda do app: tempo 894408 ms, atraso 0 ms -> (nada)
+11-19 18:40:19.190  7219  7219 I GabiFlixPlayer: legenda do app: tempo 899864 ms, atraso 0 ms -> "Não, você não está entendendo isso, eu já disse que não vai dar."
+11-19 18:40:24.385  7219  7219 I GabiFlixPlayer: legenda do app: tempo 905120 ms, atraso 0 ms -> (nada)
+11-19 18:40:29.672  7219  7219 I GabiFlixPlayer: legenda do app: tempo 910276 ms, atraso 0 ms -> "Então porque você está aqui? Eu estou com muito medo, tá bem?"
+11-19 18:40:32.872  7219  7219 I GabiFlixPlayer: AUDIOSYNC estado: st=nova executando=false tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=190MB java=2/576MB nativo=207MB livre=2150MB limiar=144MB poucaMemoria=false
+11-19 18:40:35.279  7219  7219 I GabiFlixPlayer: legenda do app: tempo 916000 ms, atraso 0 ms -> (nada)
+11-19 18:40:40.197  7219  7219 I GabiFlixPlayer: legenda do app: tempo 920779 ms, atraso 0 ms -> "Obrigado, mas isso não é tudo, ele também tem uma filha."
+11-19 18:40:44.907  7219  7219 I GabiFlixPlayer: legenda do app: tempo 925541 ms, atraso 0 ms -> (nada)
+11-19 18:40:50.692  7219  7219 I GabiFlixPlayer: legenda do app: tempo 931329 ms, atraso 0 ms -> "Nós já fomos até lá, meu amigo, e foi muito bem, sim."
+11-19 18:40:52.926  7219  7219 I GabiFlixPlayer: AUDIOSYNC estado: st=nova executando=false tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=191MB java=2/576MB nativo=208MB livre=2149MB limiar=144MB poucaMemoria=false
+11-19 18:40:55.833  7219  7219 I GabiFlixPlayer: legenda do app: tempo 936576 ms, atraso 0 ms -> (nada)
+11-19 18:41:01.100  7219  7219 I GabiFlixPlayer: legenda do app: tempo 941852 ms, atraso 0 ms -> "Ela vai ficar aqui, minha casa é dela também, pra mim tudo bem."
+11-19 18:41:06.750  7219  7219 I GabiFlixPlayer: legenda do app: tempo 947366 ms, atraso 0 ms -> (nada)
+11-19 18:41:11.628  7219  7219 I GabiFlixPlayer: legenda do app: tempo 952262 ms, atraso 0 ms -> "Isso são coisas que você tem que saber, porque nós não temos tempo."
+11-19 18:41:12.978  7219  7219 I GabiFlixPlayer: AUDIOSYNC estado: st=nova executando=false tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=192MB java=2/576MB nativo=209MB livre=2148MB limiar=144MB poucaMemoria=false
+11-19 18:41:16.735  7219  7219 I GabiFlixPlayer: legenda do app: tempo 957482 ms, atraso 0 ms -> (nada)
+11-19 18:41:22.195  7219  7219 I GabiFlixPlayer: legenda do app: tempo 962948 ms, atraso 0 ms -> "Não, você não está entendendo isso, eu já disse que não vai dar."
+11-19 18:41:27.329  7219  7219 I GabiFlixPlayer: legenda do app: tempo 967864 ms, atraso 0 ms -> (nada)
+11-19 18:41:32.784  7219  7219 I GabiFlixPlayer: legenda do app: tempo 973325 ms, atraso 0 ms -> "Então porque você está aqui? Eu estou com muito medo, tá bem?"
+11-19 18:41:33.069  7219  7219 I GabiFlixPlayer: AUDIOSYNC estado: st=nova executando=false tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=192MB java=2/576MB nativo=209MB livre=2147MB limiar=144MB poucaMemoria=false
+11-19 18:41:38.279  7219  7219 I GabiFlixPlayer: legenda do app: tempo 978828 ms, atraso 0 ms -> (nada)
+11-19 18:41:43.197  7219  7219 I GabiFlixPlayer: legenda do app: tempo 983865 ms, atraso 0 ms -> "Obrigado, mas isso não é tudo, ele também tem uma filha."
+11-19 18:41:47.911  7219  7219 I GabiFlixPlayer: legenda do app: tempo 988637 ms, atraso 0 ms -> (nada)
+11-19 18:41:53.168  7219  7219 I GabiFlixPlayer: AUDIOSYNC estado: st=nova executando=false tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=193MB java=2/576MB nativo=210MB livre=2151MB limiar=144MB poucaMemoria=false
+11-19 18:41:53.677  7219  7219 I GabiFlixPlayer: legenda do app: tempo 994197 ms, atraso 0 ms -> "Nós já fomos até lá, meu amigo, e foi muito bem, sim."
+11-19 18:41:58.845  7219  7219 I GabiFlixPlayer: legenda do app: tempo 999364 ms, atraso 0 ms -> (nada)
+11-19 18:41:58.845  7219  7219 I GabiFlixPlayer: legenda do app: tempo 999364 ms, atraso 0 ms -> (nada)
+11-19 18:42:01.937  7219  7219 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:42:01.937  7219  7219 I GabiFlixPlayer: ESTADO tempo=1002471 tocando=true fim=false spu=3 audio=1 legenda=nada tela=Normal video=0 mem=2041k
+11-19 18:42:01.937  7219  7219 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:42:01.937  7219  7219 I GabiFlixPlayer: ESTADO tempo=1002471 tocando=true fim=false spu=3 audio=1 legenda=nada tela=Normal video=0 mem=2041k
+11-19 18:42:04.136  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1004772 ms, atraso 0 ms -> "Ela vai ficar aqui, minha casa é dela também, pra mim tudo bem."
+11-19 18:42:09.739  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1010404 ms, atraso 0 ms -> (nada)
+11-19 18:42:13.300  7219  7219 I GabiFlixPlayer: AUDIOSYNC estado: st=nova executando=false tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=194MB java=2/576MB nativo=210MB livre=2149MB limiar=144MB poucaMemoria=false
+11-19 18:42:14.655  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1015364 ms, atraso 0 ms -> "Isso são coisas que você tem que saber, porque nós não temos tempo."
+11-19 18:42:19.794  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1020550 ms, atraso 0 ms -> (nada)
+11-19 18:42:25.113  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1025765 ms, atraso 0 ms -> "Não, você não está entendendo isso, eu já disse que não vai dar."
+11-19 18:42:30.458  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1031168 ms, atraso 0 ms -> (nada)
+11-19 18:42:33.404  7219  7219 I GabiFlixPlayer: AUDIOSYNC estado: st=nova executando=false tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=195MB java=3/576MB nativo=211MB livre=2148MB limiar=144MB poucaMemoria=false
+11-19 18:42:33.404  7219  7219 I GabiFlixPlayer: AUDIOSYNC estado: st=nova executando=false tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=195MB java=3/576MB nativo=211MB livre=2148MB limiar=144MB poucaMemoria=false
+11-19 18:42:35.687  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1036292 ms, atraso 0 ms -> "Então porque você está aqui? Eu estou com muito medo, tá bem?"
+11-19 18:42:41.276  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1041989 ms, atraso 0 ms -> (nada)
+11-19 18:42:46.206  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1046738 ms, atraso 0 ms -> "Obrigado, mas isso não é tudo, ele também tem uma filha."
+11-19 18:42:50.959  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1051686 ms, atraso 0 ms -> (nada)
+11-19 18:42:53.524  7219  7219 I GabiFlixPlayer: AUDIOSYNC estado: st=nova executando=false tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=195MB java=2/576MB nativo=213MB livre=2147MB limiar=144MB poucaMemoria=false
+11-19 18:42:56.648  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1057158 ms, atraso 0 ms -> "Nós já fomos até lá, meu amigo, e foi muito bem, sim."
+11-19 18:43:01.772  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1062419 ms, atraso 0 ms -> (nada)
+11-19 18:43:01.772  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1062419 ms, atraso 0 ms -> (nada)
+11-19 18:43:05.846  7219  7219 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:43:05.846  7219  7219 I GabiFlixPlayer: ESTADO tempo=1066405 tocando=true fim=false spu=3 audio=1 legenda=nada tela=Normal video=0 mem=2060k
+11-19 18:43:07.175  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1067780 ms, atraso 0 ms -> "Ela vai ficar aqui, minha casa é dela também, pra mim tudo bem."
+11-19 18:43:05.846  7219  7219 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:43:05.846  7219  7219 I GabiFlixPlayer: ESTADO tempo=1066405 tocando=true fim=false spu=3 audio=1 legenda=nada tela=Normal video=0 mem=2060k
+11-19 18:43:07.175  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1067780 ms, atraso 0 ms -> "Ela vai ficar aqui, minha casa é dela também, pra mim tudo bem."
+11-19 18:43:08.013  7219  7219 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:43:08.014  7219  7219 I GabiFlixPlayer: ESTADO tempo=1068548 tocando=true fim=false spu=3 audio=1 legenda=visivel tela=Normal video=0 mem=2108k
+11-19 18:43:12.786  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1073509 ms, atraso 0 ms -> (nada)
+11-19 18:43:13.582  7219  7219 I GabiFlixPlayer: AUDIOSYNC estado: st=nova executando=false tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=196MB java=2/576MB nativo=214MB livre=2145MB limiar=144MB poucaMemoria=false
+11-19 18:43:17.723  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1078410 ms, atraso 0 ms -> "Isso são coisas que você tem que saber, porque nós não temos tempo."
+11-19 18:43:22.766  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1083303 ms, atraso 0 ms -> (nada)
+11-19 18:43:28.273  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1088991 ms, atraso 0 ms -> "Não, você não está entendendo isso, eu já disse que não vai dar."
+11-19 18:43:33.372  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1093988 ms, atraso 0 ms -> (nada)
+11-19 18:43:33.624  7219  7219 I GabiFlixPlayer: AUDIOSYNC estado: st=nova executando=false tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=197MB java=2/576MB nativo=214MB livre=2144MB limiar=144MB poucaMemoria=false
+11-19 18:43:38.718  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1099447 ms, atraso 0 ms -> "Então porque você está aqui? Eu estou com muito medo, tá bem?"
+11-19 18:43:38.718  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1099447 ms, atraso 0 ms -> "Então porque você está aqui? Eu estou com muito medo, tá bem?"
+11-19 18:43:44.212  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1104939 ms, atraso 0 ms -> (nada)
+11-19 18:43:49.194  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1109860 ms, atraso 0 ms -> "Obrigado, mas isso não é tudo, ele também tem uma filha."
+11-19 18:43:53.665  7219  7219 I GabiFlixPlayer: AUDIOSYNC estado: st=nova executando=false tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=198MB java=2/576MB nativo=215MB livre=2143MB limiar=144MB poucaMemoria=false
+11-19 18:43:53.929  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1114507 ms, atraso 0 ms -> (nada)
+11-19 18:43:59.721  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1120282 ms, atraso 0 ms -> "Nós já fomos até lá, meu amigo, e foi muito bem, sim."
+11-19 18:44:04.834  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1125575 ms, atraso 0 ms -> (nada)
+11-19 18:44:10.167  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1130907 ms, atraso 0 ms -> "Ela vai ficar aqui, minha casa é dela também, pra mim tudo bem."
+11-19 18:44:10.167  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1130907 ms, atraso 0 ms -> "Ela vai ficar aqui, minha casa é dela também, pra mim tudo bem."
+11-19 18:44:10.794  7219  7219 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:44:10.794  7219  7219 I GabiFlixPlayer: ESTADO tempo=1131428 tocando=true fim=false spu=3 audio=1 legenda=visivel tela=Normal video=0 mem=2048k
+11-19 18:44:10.167  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1130907 ms, atraso 0 ms -> "Ela vai ficar aqui, minha casa é dela também, pra mim tudo bem."
+11-19 18:44:10.794  7219  7219 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:44:10.794  7219  7219 I GabiFlixPlayer: ESTADO tempo=1131428 tocando=true fim=false spu=3 audio=1 legenda=visivel tela=Normal video=0 mem=2048k
+11-19 18:44:13.742  7219  7219 I GabiFlixPlayer: AUDIOSYNC estado: st=nova executando=false tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=198MB java=2/576MB nativo=216MB livre=2142MB limiar=144MB poucaMemoria=false
+11-19 18:44:15.787  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1136356 ms, atraso 0 ms -> (nada)
+11-19 18:44:20.679  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1141317 ms, atraso 0 ms -> "Isso são coisas que você tem que saber, porque nós não temos tempo."
+11-19 18:44:25.833  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1146576 ms, atraso 0 ms -> (nada)
+11-19 18:44:31.194  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1151780 ms, atraso 0 ms -> "Não, você não está entendendo isso, eu já disse que não vai dar."
+11-19 18:44:33.824  7219  7219 I GabiFlixPlayer: AUDIOSYNC estado: st=nova executando=false tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=199MB java=2/576MB nativo=216MB livre=2141MB limiar=144MB poucaMemoria=false
+11-19 18:44:36.396  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1156966 ms, atraso 0 ms -> (nada)
+11-19 18:44:41.701  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1162404 ms, atraso 0 ms -> "Então porque você está aqui? Eu estou com muito medo, tá bem?"
+11-19 18:44:41.701  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1162404 ms, atraso 0 ms -> "Então porque você está aqui? Eu estou com muito medo, tá bem?"
+11-19 18:44:47.190  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1167932 ms, atraso 0 ms -> (nada)
+11-19 18:44:52.117  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1172652 ms, atraso 0 ms -> "Obrigado, mas isso não é tudo, ele também tem uma filha."
+11-19 18:44:53.915  7219  7219 I GabiFlixPlayer: AUDIOSYNC estado: st=nova executando=false tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=200MB java=2/576MB nativo=217MB livre=2140MB limiar=144MB poucaMemoria=false
+11-19 18:44:56.860  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1177606 ms, atraso 0 ms -> (nada)
+11-19 18:45:02.702  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1183363 ms, atraso 0 ms -> "Nós já fomos até lá, meu amigo, e foi muito bem, sim."
+11-19 18:45:07.844  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1188359 ms, atraso 0 ms -> (nada)
+11-19 18:45:13.188  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1193815 ms, atraso 0 ms -> "Ela vai ficar aqui, minha casa é dela também, pra mim tudo bem."
+11-19 18:45:13.958  7219  7219 I GabiFlixPlayer: AUDIOSYNC estado: st=nova executando=false tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=200MB java=2/576MB nativo=218MB livre=2138MB limiar=144MB poucaMemoria=false
+11-19 18:45:13.188  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1193815 ms, atraso 0 ms -> "Ela vai ficar aqui, minha casa é dela também, pra mim tudo bem."
+11-19 18:45:13.958  7219  7219 I GabiFlixPlayer: AUDIOSYNC estado: st=nova executando=false tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=200MB java=2/576MB nativo=218MB livre=2138MB limiar=144MB poucaMemoria=false
+11-19 18:45:18.807  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1199528 ms, atraso 0 ms -> (nada)
+11-19 18:45:23.707  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1204452 ms, atraso 0 ms -> "Isso são coisas que você tem que saber, porque nós não temos tempo."
+11-19 18:45:28.848  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1209366 ms, atraso 0 ms -> (nada)
+11-19 18:45:34.061  7219  7219 I GabiFlixPlayer: AUDIOSYNC estado: st=nova executando=false tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=201MB java=2/576MB nativo=218MB livre=2137MB limiar=144MB poucaMemoria=false
+11-19 18:45:34.197  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1214825 ms, atraso 0 ms -> "Não, você não está entendendo isso, eu já disse que não vai dar."
+11-19 18:45:39.367  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1219905 ms, atraso 0 ms -> (nada)
+11-19 18:45:44.639  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1225380 ms, atraso 0 ms -> "Então porque você está aqui? Eu estou com muito medo, tá bem?"
+11-19 18:45:44.639  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1225380 ms, atraso 0 ms -> "Então porque você está aqui? Eu estou com muito medo, tá bem?"
+11-19 18:45:50.211  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1230822 ms, atraso 0 ms -> (nada)
+11-19 18:45:54.114  7219  7219 I GabiFlixPlayer: AUDIOSYNC estado: st=nova executando=false tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=202MB java=2/576MB nativo=219MB livre=2136MB limiar=144MB poucaMemoria=false
+11-19 18:45:55.201  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1235716 ms, atraso 0 ms -> "Obrigado, mas isso não é tudo, ele também tem uma filha."
+11-19 18:45:59.861  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1240484 ms, atraso 0 ms -> (nada)
+11-19 18:46:05.674  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1246212 ms, atraso 0 ms -> "Nós já fomos até lá, meu amigo, e foi muito bem, sim."
+11-19 18:46:10.751  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1251396 ms, atraso 0 ms -> (nada)
+11-19 18:46:14.213  7219  7219 I GabiFlixPlayer: AUDIOSYNC estado: st=nova executando=false tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=203MB java=2/576MB nativo=219MB livre=2134MB limiar=144MB poucaMemoria=false
+11-19 18:46:14.213  7219  7219 I GabiFlixPlayer: AUDIOSYNC estado: st=nova executando=false tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=203MB java=2/576MB nativo=219MB livre=2134MB limiar=144MB poucaMemoria=false
+11-19 18:46:16.012  7219  7219 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:46:16.013  7219  7219 I GabiFlixPlayer: ESTADO tempo=1256743 tocando=true fim=false spu=3 audio=1 legenda=nada tela=Normal video=0 mem=2054k
+11-19 18:46:16.245  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1256743 ms, atraso 0 ms -> "Ela vai ficar aqui, minha casa é dela também, pra mim tudo bem."
+11-19 18:46:14.213  7219  7219 I GabiFlixPlayer: AUDIOSYNC estado: st=nova executando=false tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=203MB java=2/576MB nativo=219MB livre=2134MB limiar=144MB poucaMemoria=false
+11-19 18:46:16.012  7219  7219 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:46:16.013  7219  7219 I GabiFlixPlayer: ESTADO tempo=1256743 tocando=true fim=false spu=3 audio=1 legenda=nada tela=Normal video=0 mem=2054k
+11-19 18:46:16.245  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1256743 ms, atraso 0 ms -> "Ela vai ficar aqui, minha casa é dela também, pra mim tudo bem."
+11-19 18:46:21.744  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1262489 ms, atraso 0 ms -> (nada)
+11-19 18:46:26.803  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1267496 ms, atraso 0 ms -> "Isso são coisas que você tem que saber, porque nós não temos tempo."
+11-19 18:46:31.834  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1272420 ms, atraso 0 ms -> (nada)
+11-19 18:46:34.348  7219  7219 I GabiFlixPlayer: AUDIOSYNC estado: st=nova executando=false tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=203MB java=2/576MB nativo=220MB livre=2133MB limiar=144MB poucaMemoria=false
+11-19 18:46:37.136  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1277764 ms, atraso 0 ms -> "Não, você não está entendendo isso, eu já disse que não vai dar."
+11-19 18:46:37.369  7219  7219 I GabiFlixPlayer: AUDIOSYNC GATILHO motivo=segunda-tentativa-após-sem-confiança legenda=37df0be78daf09|http://10.0.2.2:8000/film.srt#raw decisão=análise [análises=2 sem_confiança=1 estado=nova]
+11-19 18:46:37.369  7219  7219 I GabiFlixPlayer: AUDIOSYNC antes da análise: saúde da reprodução: amostras=1268 paradas=0 razão_mínima=0.73 carregando=1 quadros_perdidos=9355
+11-19 18:46:37.369  7219  7219 I GabiFlixPlayer: AUDIOSYNC começando: posição 1278 s, duração 2100 s, atraso atual 0 ms, faixa de áudio 1
+11-19 18:46:42.333  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1282950 ms, atraso 0 ms -> (nada)
+11-19 18:46:47.652  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1288364 ms, atraso 0 ms -> "Então porque você está aqui? Eu estou com muito medo, tá bem?"
+11-19 18:46:47.652  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1288364 ms, atraso 0 ms -> "Então porque você está aqui? Eu estou com muito medo, tá bem?"
+11-19 18:46:53.230  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1293832 ms, atraso 0 ms -> (nada)
+11-19 18:46:54.609  7219  7219 I GabiFlixPlayer: AUDIOSYNC estado: st=nova executando=true tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=196MB java=2/576MB nativo=221MB livre=2111MB limiar=144MB poucaMemoria=false
+11-19 18:46:55.629  7219  7321 I GabiFlixPlayer: AUDIOSYNC captura 190 s +90 s: 90.08 s de PCM em 18.09 s (fim) leitura=33 MB | usou a faixa 2 (pedida 1) de [1:Track 1; 2:Track 2; ]
+11-19 18:46:58.128  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1298782 ms, atraso 0 ms -> "Obrigado, mas isso não é tudo, ele também tem uma filha."
+11-19 18:47:02.894  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1303535 ms, atraso 0 ms -> (nada)
+11-19 18:47:08.724  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1309389 ms, atraso 0 ms -> "Nós já fomos até lá, meu amigo, e foi muito bem, sim."
+11-19 18:47:13.780  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1314536 ms, atraso 0 ms -> (nada)
+11-19 18:47:14.693  7219  7219 I GabiFlixPlayer: AUDIOSYNC estado: st=nova executando=true tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=203MB java=8/576MB nativo=222MB livre=2098MB limiar=144MB poucaMemoria=false
+11-19 18:47:18.494  7219  7321 I GabiFlixPlayer: AUDIOSYNC captura 1135 s +90 s: 90.08 s de PCM em 18.91 s (fim) leitura=35 MB | usou a faixa 2 (pedida 1) de [1:Track 1; 2:Track 2; ]
+11-19 18:47:19.243  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1319744 ms, atraso 0 ms -> "Ela vai ficar aqui, minha casa é dela também, pra mim tudo bem."
+11-19 18:47:18.494  7219  7321 I GabiFlixPlayer: AUDIOSYNC captura 1135 s +90 s: 90.08 s de PCM em 18.91 s (fim) leitura=35 MB | usou a faixa 2 (pedida 1) de [1:Track 1; 2:Track 2; ]
+11-19 18:47:19.243  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1319744 ms, atraso 0 ms -> "Ela vai ficar aqui, minha casa é dela também, pra mim tudo bem."
+11-19 18:47:24.720  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1325286 ms, atraso 0 ms -> (nada)
+11-19 18:47:29.710  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1330436 ms, atraso 0 ms -> "Isso são coisas que você tem que saber, porque nós não temos tempo."
+11-19 18:47:34.822  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1335428 ms, atraso 0 ms -> (nada)
+11-19 18:47:34.874  7219  7219 I GabiFlixPlayer: AUDIOSYNC estado: st=nova executando=true tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=201MB java=5/576MB nativo=222MB livre=2100MB limiar=144MB poucaMemoria=false
+11-19 18:47:40.204  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1340837 ms, atraso 0 ms -> "Não, você não está entendendo isso, eu já disse que não vai dar."
+11-19 18:47:40.532  7219  7321 I GabiFlixPlayer: AUDIOSYNC captura 1825 s +90 s: 90.08 s de PCM em 17.68 s (fim) leitura=34 MB | usou a faixa 2 (pedida 1) de [1:Track 1; 2:Track 2; ]
+11-19 18:47:44.559  7219  7219 I GabiFlixPlayer: AUDIOSYNC resultado: recusada z=3.3 janelas=3/3 (z baixo; pico ambíguo;) | vad=silero janelas=3 captura=66590 ms vad=11186 ms (cpu 19) solve=408 ms (cpu 153) cpu_thread=246 ms total=67168 ms leitura_estimada=89 MB leitura_real=102 MB pss=203->209 MB java=2->13 MB
+11-19 18:47:44.560  7219  7219 I GabiFlixPlayer: AUDIOSYNC saúde da reprodução: amostras=66 paradas=0 razão_mínima=0.77 carregando=0 quadros_perdidos=628
+11-19 18:47:44.560  7219  7219 I GabiFlixPlayer: AUDIOSYNC o áudio não tem certeza: legenda deixada como estava
+11-19 18:47:44.560  7219  7219 I GabiFlixPlayer: AUDIOSYNC GATILHO motivo=sem-confiança legenda=37df0be78daf09|http://10.0.2.2:8000/film.srt#raw decisão=parar: o áudio não tem certeza (2 tentativas feitas) [análises=2 sem_confiança=2 estado=parada]
+11-19 18:47:45.447  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1346031 ms, atraso 0 ms -> (nada)
+11-19 18:47:50.737  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1351467 ms, atraso 0 ms -> "Então porque você está aqui? Eu estou com muito medo, tá bem?"
+11-19 18:47:50.737  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1351467 ms, atraso 0 ms -> "Então porque você está aqui? Eu estou com muito medo, tá bem?"
+11-19 18:47:54.967  7219  7219 I GabiFlixPlayer: AUDIOSYNC estado: st=parada executando=false tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=206MB java=2/576MB nativo=223MB livre=2133MB limiar=144MB poucaMemoria=false
+11-19 18:47:56.322  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1356900 ms, atraso 0 ms -> (nada)
+11-19 18:48:01.229  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1361898 ms, atraso 0 ms -> "Obrigado, mas isso não é tudo, ele também tem uma filha."
+11-19 18:48:05.872  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1366564 ms, atraso 0 ms -> (nada)
+11-19 18:48:11.688  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1372254 ms, atraso 0 ms -> "Nós já fomos até lá, meu amigo, e foi muito bem, sim."
+11-19 18:48:15.060  7219  7219 I GabiFlixPlayer: AUDIOSYNC estado: st=parada executando=false tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=207MB java=2/576MB nativo=223MB livre=2132MB limiar=144MB poucaMemoria=false
+11-19 18:48:16.804  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1377535 ms, atraso 0 ms -> (nada)
+11-19 18:48:22.017  7219  7219 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:48:22.017  7219  7219 I GabiFlixPlayer: ESTADO tempo=1382724 tocando=true fim=false spu=3 audio=1 legenda=nada tela=Normal video=0 mem=2067k
+11-19 18:48:22.255  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1382981 ms, atraso 0 ms -> "Ela vai ficar aqui, minha casa é dela também, pra mim tudo bem."
+11-19 18:48:22.017  7219  7219 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:48:22.017  7219  7219 I GabiFlixPlayer: ESTADO tempo=1382724 tocando=true fim=false spu=3 audio=1 legenda=nada tela=Normal video=0 mem=2067k
+11-19 18:48:22.255  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1382981 ms, atraso 0 ms -> "Ela vai ficar aqui, minha casa é dela também, pra mim tudo bem."
+11-19 18:48:22.017  7219  7219 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:48:22.017  7219  7219 I GabiFlixPlayer: ESTADO tempo=1382724 tocando=true fim=false spu=3 audio=1 legenda=nada tela=Normal video=0 mem=2067k
+11-19 18:48:22.255  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1382981 ms, atraso 0 ms -> "Ela vai ficar aqui, minha casa é dela também, pra mim tudo bem."
+11-19 18:48:24.417  7219  7219 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:48:24.419  7219  7219 I GabiFlixPlayer: ESTADO tempo=1385038 tocando=true fim=false spu=3 audio=1 legenda=visivel tela=Normal video=0 mem=2235k
+11-19 18:48:27.702  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1388241 ms, atraso 0 ms -> (nada)
+11-19 18:48:32.611  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1393160 ms, atraso 0 ms -> "Isso são coisas que você tem que saber, porque nós não temos tempo."
+11-19 18:48:35.199  7219  7219 I GabiFlixPlayer: AUDIOSYNC estado: st=parada executando=false tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=207MB java=2/576MB nativo=224MB livre=2155MB limiar=144MB poucaMemoria=false
+11-19 18:48:37.799  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1398406 ms, atraso 0 ms -> (nada)
+11-19 18:48:43.271  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1403992 ms, atraso 0 ms -> "Não, você não está entendendo isso, eu já disse que não vai dar."
+11-19 18:48:48.362  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1408950 ms, atraso 0 ms -> (nada)
+11-19 18:48:53.720  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1414436 ms, atraso 0 ms -> "Então porque você está aqui? Eu estou com muito medo, tá bem?"
+11-19 18:48:55.295  7219  7219 I GabiFlixPlayer: AUDIOSYNC estado: st=parada executando=false tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=208MB java=3/576MB nativo=225MB livre=2154MB limiar=144MB poucaMemoria=false
+11-19 18:48:53.720  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1414436 ms, atraso 0 ms -> "Então porque você está aqui? Eu estou com muito medo, tá bem?"
+11-19 18:48:55.295  7219  7219 I GabiFlixPlayer: AUDIOSYNC estado: st=parada executando=false tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=208MB java=3/576MB nativo=225MB livre=2154MB limiar=144MB poucaMemoria=false
+11-19 18:48:59.323  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1419905 ms, atraso 0 ms -> (nada)
+11-19 18:49:04.268  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1424840 ms, atraso 0 ms -> "Obrigado, mas isso não é tudo, ele também tem uma filha."
+11-19 18:49:08.934  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1429532 ms, atraso 0 ms -> (nada)
+11-19 18:49:14.729  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1435236 ms, atraso 0 ms -> "Nós já fomos até lá, meu amigo, e foi muito bem, sim."
+11-19 18:49:15.493  7219  7219 I GabiFlixPlayer: AUDIOSYNC estado: st=parada executando=false tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=209MB java=2/576MB nativo=225MB livre=2167MB limiar=144MB poucaMemoria=false
+11-19 18:49:19.764  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1440487 ms, atraso 0 ms -> (nada)
+11-19 18:49:25.264  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1445992 ms, atraso 0 ms -> "Ela vai ficar aqui, minha casa é dela também, pra mim tudo bem."
+11-19 18:49:25.264  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1445992 ms, atraso 0 ms -> "Ela vai ficar aqui, minha casa é dela também, pra mim tudo bem."
+11-19 18:49:30.739  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1451489 ms, atraso 0 ms -> (nada)
+11-19 18:49:35.560  7219  7219 I GabiFlixPlayer: AUDIOSYNC estado: st=parada executando=false tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=210MB java=2/576MB nativo=226MB livre=2166MB limiar=144MB poucaMemoria=false
+11-19 18:49:35.661  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1456197 ms, atraso 0 ms -> "Isso são coisas que você tem que saber, porque nós não temos tempo."
+11-19 18:49:40.810  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1461444 ms, atraso 0 ms -> (nada)
+11-19 18:49:46.134  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1466656 ms, atraso 0 ms -> "Não, você não está entendendo isso, eu já disse que não vai dar."
+11-19 18:49:51.456  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1472198 ms, atraso 0 ms -> (nada)
+11-19 18:49:55.655  7219  7219 I GabiFlixPlayer: AUDIOSYNC estado: st=parada executando=false tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=211MB java=2/576MB nativo=226MB livre=2166MB limiar=144MB poucaMemoria=false
+11-19 18:49:56.716  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1477465 ms, atraso 0 ms -> "Então porque você está aqui? Eu estou com muito medo, tá bem?"
+11-19 18:49:55.655  7219  7219 I GabiFlixPlayer: AUDIOSYNC estado: st=parada executando=false tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=211MB java=2/576MB nativo=226MB livre=2166MB limiar=144MB poucaMemoria=false
+11-19 18:49:56.716  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1477465 ms, atraso 0 ms -> "Então porque você está aqui? Eu estou com muito medo, tá bem?"
+11-19 18:50:02.251  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1482924 ms, atraso 0 ms -> (nada)
+11-19 18:50:07.179  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1487910 ms, atraso 0 ms -> "Obrigado, mas isso não é tudo, ele também tem uma filha."
+11-19 18:50:11.874  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1492388 ms, atraso 0 ms -> (nada)
+11-19 18:50:15.770  7219  7219 I GabiFlixPlayer: AUDIOSYNC estado: st=parada executando=false tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=211MB java=2/576MB nativo=227MB livre=2163MB limiar=144MB poucaMemoria=false
+11-19 18:50:17.665  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1498412 ms, atraso 0 ms -> "Nós já fomos até lá, meu amigo, e foi muito bem, sim."
+11-19 18:50:22.789  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1503404 ms, atraso 0 ms -> (nada)
+11-19 18:50:28.151  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1508864 ms, atraso 0 ms -> "Ela vai ficar aqui, minha casa é dela também, pra mim tudo bem."
+11-19 18:50:28.151  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1508864 ms, atraso 0 ms -> "Ela vai ficar aqui, minha casa é dela também, pra mim tudo bem."
+11-19 18:50:29.487  7219  7219 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:50:29.487  7219  7219 I GabiFlixPlayer: ESTADO tempo=1510148 tocando=true fim=false spu=3 audio=1 legenda=visivel tela=Normal video=0 mem=2073k
+11-19 18:50:28.151  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1508864 ms, atraso 0 ms -> "Ela vai ficar aqui, minha casa é dela também, pra mim tudo bem."
+11-19 18:50:29.487  7219  7219 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:50:29.487  7219  7219 I GabiFlixPlayer: ESTADO tempo=1510148 tocando=true fim=false spu=3 audio=1 legenda=visivel tela=Normal video=0 mem=2073k
+11-19 18:50:33.816  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1514565 ms, atraso 0 ms -> (nada)
+11-19 18:50:35.869  7219  7219 I GabiFlixPlayer: AUDIOSYNC estado: st=parada executando=false tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=212MB java=2/576MB nativo=228MB livre=2162MB limiar=144MB poucaMemoria=false
+11-19 18:50:38.775  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1519528 ms, atraso 0 ms -> "Isso são coisas que você tem que saber, porque nós não temos tempo."
+11-19 18:50:43.828  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1524486 ms, atraso 0 ms -> (nada)
+11-19 18:50:49.278  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1529990 ms, atraso 0 ms -> "Não, você não está entendendo isso, eu já disse que não vai dar."
+11-19 18:50:54.361  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1534947 ms, atraso 0 ms -> (nada)
+11-19 18:50:55.959  7219  7219 I GabiFlixPlayer: AUDIOSYNC estado: st=parada executando=false tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=213MB java=2/576MB nativo=228MB livre=2161MB limiar=144MB poucaMemoria=false
+11-19 18:50:59.700  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1540203 ms, atraso 0 ms -> "Então porque você está aqui? Eu estou com muito medo, tá bem?"
+11-19 18:50:59.700  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1540203 ms, atraso 0 ms -> "Então porque você está aqui? Eu estou com muito medo, tá bem?"
+11-19 18:51:05.238  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1545893 ms, atraso 0 ms -> (nada)
+11-19 18:51:10.218  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1550827 ms, atraso 0 ms -> "Obrigado, mas isso não é tudo, ele também tem uma filha."
+11-19 18:51:14.909  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1555571 ms, atraso 0 ms -> (nada)
+11-19 18:51:16.056  7219  7219 I GabiFlixPlayer: AUDIOSYNC estado: st=parada executando=false tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=213MB java=2/576MB nativo=229MB livre=2159MB limiar=144MB poucaMemoria=false
+11-19 18:51:20.783  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1561348 ms, atraso 0 ms -> "Nós já fomos até lá, meu amigo, e foi muito bem, sim."
+11-19 18:51:25.802  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1566546 ms, atraso 0 ms -> (nada)
+11-19 18:51:31.208  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1571940 ms, atraso 0 ms -> "Ela vai ficar aqui, minha casa é dela também, pra mim tudo bem."
+11-19 18:51:31.208  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1571940 ms, atraso 0 ms -> "Ela vai ficar aqui, minha casa é dela também, pra mim tudo bem."
+11-19 18:51:36.152  7219  7219 I GabiFlixPlayer: AUDIOSYNC estado: st=parada executando=false tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=214MB java=2/576MB nativo=230MB livre=2158MB limiar=144MB poucaMemoria=false
+11-19 18:51:36.766  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1577444 ms, atraso 0 ms -> (nada)
+11-19 18:51:41.640  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1582372 ms, atraso 0 ms -> "Isso são coisas que você tem que saber, porque nós não temos tempo."
+11-19 18:51:46.820  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1587524 ms, atraso 0 ms -> (nada)
+11-19 18:51:52.219  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1592806 ms, atraso 0 ms -> "Não, você não está entendendo isso, eu já disse que não vai dar."
+11-19 18:51:56.252  7219  7219 I GabiFlixPlayer: AUDIOSYNC estado: st=parada executando=false tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=215MB java=2/576MB nativo=230MB livre=2162MB limiar=144MB poucaMemoria=false
+11-19 18:51:57.335  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1597947 ms, atraso 0 ms -> (nada)
+11-19 18:52:02.645  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1603365 ms, atraso 0 ms -> "Então porque você está aqui? Eu estou com muito medo, tá bem?"
+11-19 18:52:02.645  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1603365 ms, atraso 0 ms -> "Então porque você está aqui? Eu estou com muito medo, tá bem?"
+11-19 18:52:08.202  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1608836 ms, atraso 0 ms -> (nada)
+11-19 18:52:13.132  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1613647 ms, atraso 0 ms -> "Obrigado, mas isso não é tudo, ele também tem uma filha."
+11-19 18:52:16.436  7219  7219 I GabiFlixPlayer: AUDIOSYNC estado: st=parada executando=false tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=215MB java=2/576MB nativo=231MB livre=2161MB limiar=144MB poucaMemoria=false
+11-19 18:52:17.898  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1618604 ms, atraso 0 ms -> (nada)
+11-19 18:52:23.601  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1624356 ms, atraso 0 ms -> "Nós já fomos até lá, meu amigo, e foi muito bem, sim."
+11-19 18:52:28.804  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1629320 ms, atraso 0 ms -> (nada)
+11-19 18:52:33.940  7219  7219 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:52:33.940  7219  7219 I GabiFlixPlayer: ESTADO tempo=1634531 tocando=true fim=false spu=3 audio=1 legenda=nada tela=Normal video=0 mem=2075k
+11-19 18:52:34.237  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1634796 ms, atraso 0 ms -> "Ela vai ficar aqui, minha casa é dela também, pra mim tudo bem."
+11-19 18:52:33.940  7219  7219 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:52:33.940  7219  7219 I GabiFlixPlayer: ESTADO tempo=1634531 tocando=true fim=false spu=3 audio=1 legenda=nada tela=Normal video=0 mem=2075k
+11-19 18:52:34.237  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1634796 ms, atraso 0 ms -> "Ela vai ficar aqui, minha casa é dela também, pra mim tudo bem."
+11-19 18:52:36.540  7219  7219 I GabiFlixPlayer: AUDIOSYNC estado: st=parada executando=false tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=216MB java=2/576MB nativo=232MB livre=2159MB limiar=144MB poucaMemoria=false
+11-19 18:52:39.805  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1640531 ms, atraso 0 ms -> (nada)
+11-19 18:52:44.648  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1645299 ms, atraso 0 ms -> "Isso são coisas que você tem que saber, porque nós não temos tempo."
+11-19 18:52:49.796  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1650338 ms, atraso 0 ms -> (nada)
+11-19 18:52:55.104  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1655654 ms, atraso 0 ms -> "Não, você não está entendendo isso, eu já disse que não vai dar."
+11-19 18:52:56.642  7219  7219 I GabiFlixPlayer: AUDIOSYNC estado: st=parada executando=false tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=217MB java=2/576MB nativo=232MB livre=2159MB limiar=144MB poucaMemoria=false
+11-19 18:53:00.394  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1661133 ms, atraso 0 ms -> (nada)
+11-19 18:53:05.626  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1666148 ms, atraso 0 ms -> "Então porque você está aqui? Eu estou com muito medo, tá bem?"
+11-19 18:53:05.626  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1666148 ms, atraso 0 ms -> "Então porque você está aqui? Eu estou com muito medo, tá bem?"
+11-19 18:53:11.320  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1671871 ms, atraso 0 ms -> (nada)
+11-19 18:53:16.154  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1676772 ms, atraso 0 ms -> "Obrigado, mas isso não é tudo, ele também tem uma filha."
+11-19 18:53:16.744  7219  7219 I GabiFlixPlayer: AUDIOSYNC estado: st=parada executando=false tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=217MB java=2/576MB nativo=233MB livre=2158MB limiar=144MB poucaMemoria=false
+11-19 18:53:20.888  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1681405 ms, atraso 0 ms -> (nada)
+11-19 18:53:26.741  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1687333 ms, atraso 0 ms -> "Nós já fomos até lá, meu amigo, e foi muito bem, sim."
+11-19 18:53:31.744  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1692269 ms, atraso 0 ms -> (nada)
+11-19 18:53:36.830  7219  7219 I GabiFlixPlayer: AUDIOSYNC estado: st=parada executando=false tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=218MB java=2/576MB nativo=234MB livre=2156MB limiar=144MB poucaMemoria=false
+11-19 18:53:36.830  7219  7219 I GabiFlixPlayer: AUDIOSYNC estado: st=parada executando=false tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=218MB java=2/576MB nativo=234MB livre=2156MB limiar=144MB poucaMemoria=false
+11-19 18:53:37.242  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1697947 ms, atraso 0 ms -> "Ela vai ficar aqui, minha casa é dela também, pra mim tudo bem."
+11-19 18:53:36.830  7219  7219 I GabiFlixPlayer: AUDIOSYNC estado: st=parada executando=false tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=218MB java=2/576MB nativo=234MB livre=2156MB limiar=144MB poucaMemoria=false
+11-19 18:53:37.242  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1697947 ms, atraso 0 ms -> "Ela vai ficar aqui, minha casa é dela também, pra mim tudo bem."
+11-19 18:53:37.762  7219  7219 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:53:37.762  7219  7219 I GabiFlixPlayer: ESTADO tempo=1698468 tocando=true fim=false spu=3 audio=1 legenda=visivel tela=Normal video=0 mem=2112k
+11-19 18:53:42.705  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1703428 ms, atraso 0 ms -> (nada)
+11-19 18:53:47.641  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1708358 ms, atraso 0 ms -> "Isso são coisas que você tem que saber, porque nós não temos tempo."
+11-19 18:53:52.810  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1713316 ms, atraso 0 ms -> (nada)
+11-19 18:53:56.884  7219  7219 I GabiFlixPlayer: AUDIOSYNC estado: st=parada executando=false tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=219MB java=2/576MB nativo=234MB livre=2155MB limiar=144MB poucaMemoria=false
+11-19 18:53:58.241  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1718824 ms, atraso 0 ms -> "Não, você não está entendendo isso, eu já disse que não vai dar."
+11-19 18:54:03.450  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1724163 ms, atraso 0 ms -> (nada)
+11-19 18:54:08.649  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1729365 ms, atraso 0 ms -> "Então porque você está aqui? Eu estou com muito medo, tá bem?"
+11-19 18:54:08.649  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1729365 ms, atraso 0 ms -> "Então porque você está aqui? Eu estou com muito medo, tá bem?"
+11-19 18:54:14.274  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1734886 ms, atraso 0 ms -> (nada)
+11-19 18:54:16.984  7219  7219 I GabiFlixPlayer: AUDIOSYNC estado: st=parada executando=false tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=219MB java=2/576MB nativo=235MB livre=2160MB limiar=144MB poucaMemoria=false
+11-19 18:54:19.182  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1739783 ms, atraso 0 ms -> "Obrigado, mas isso não é tudo, ele também tem uma filha."
+11-19 18:54:23.861  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1744463 ms, atraso 0 ms -> (nada)
+11-19 18:54:29.684  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1750417 ms, atraso 0 ms -> "Nós já fomos até lá, meu amigo, e foi muito bem, sim."
+11-19 18:54:34.792  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1755366 ms, atraso 0 ms -> (nada)
+11-19 18:54:37.117  7219  7219 I GabiFlixPlayer: AUDIOSYNC estado: st=parada executando=false tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=220MB java=2/576MB nativo=236MB livre=2159MB limiar=144MB poucaMemoria=false
+11-19 18:54:37.117  7219  7219 I GabiFlixPlayer: AUDIOSYNC estado: st=parada executando=false tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=220MB java=2/576MB nativo=236MB livre=2159MB limiar=144MB poucaMemoria=false
+11-19 18:54:39.996  7219  7219 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:54:39.996  7219  7219 I GabiFlixPlayer: ESTADO tempo=1760612 tocando=true fim=false spu=3 audio=1 legenda=nada tela=Normal video=0 mem=2086k
+11-19 18:54:40.192  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1760864 ms, atraso 0 ms -> "Ela vai ficar aqui, minha casa é dela também, pra mim tudo bem."
+11-19 18:54:39.996  7219  7219 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:54:39.996  7219  7219 I GabiFlixPlayer: ESTADO tempo=1760612 tocando=true fim=false spu=3 audio=1 legenda=nada tela=Normal video=0 mem=2086k
+11-19 18:54:40.192  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1760864 ms, atraso 0 ms -> "Ela vai ficar aqui, minha casa é dela também, pra mim tudo bem."
+11-19 18:54:45.792  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1766531 ms, atraso 0 ms -> (nada)
+11-19 18:54:50.703  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1771435 ms, atraso 0 ms -> "Isso são coisas que você tem que saber, porque nós não temos tempo."
+11-19 18:54:55.793  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1776388 ms, atraso 0 ms -> (nada)
+11-19 18:54:57.241  7219  7219 I GabiFlixPlayer: AUDIOSYNC estado: st=parada executando=false tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=221MB java=2/576MB nativo=236MB livre=2157MB limiar=144MB poucaMemoria=false
+11-19 18:55:01.184  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1781788 ms, atraso 0 ms -> "Não, você não está entendendo isso, eu já disse que não vai dar."
+11-19 18:55:06.304  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1786947 ms, atraso 0 ms -> (nada)
+11-19 18:55:11.773  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1792411 ms, atraso 0 ms -> "Então porque você está aqui? Eu estou com muito medo, tá bem?"
+11-19 18:55:11.773  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1792411 ms, atraso 0 ms -> "Então porque você está aqui? Eu estou com muito medo, tá bem?"
+11-19 18:55:17.330  7219  7219 I GabiFlixPlayer: AUDIOSYNC estado: st=parada executando=false tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=222MB java=2/576MB nativo=237MB livre=2156MB limiar=144MB poucaMemoria=false
+11-19 18:55:17.339  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1797895 ms, atraso 0 ms -> (nada)
+11-19 18:55:22.166  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1802672 ms, atraso 0 ms -> "Obrigado, mas isso não é tudo, ele também tem uma filha."
+11-19 18:55:26.900  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1807613 ms, atraso 0 ms -> (nada)
+11-19 18:55:32.668  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1813188 ms, atraso 0 ms -> "Nós já fomos até lá, meu amigo, e foi muito bem, sim."
+11-19 18:55:37.466  7219  7219 I GabiFlixPlayer: AUDIOSYNC estado: st=parada executando=false tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=222MB java=2/576MB nativo=238MB livre=2155MB limiar=144MB poucaMemoria=false
+11-19 18:55:37.768  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1818322 ms, atraso 0 ms -> (nada)
+11-19 18:55:43.137  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1823684 ms, atraso 0 ms -> "Ela vai ficar aqui, minha casa é dela também, pra mim tudo bem."
+11-19 18:55:48.784  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1829444 ms, atraso 0 ms -> (nada)
+11-19 18:55:53.652  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1834406 ms, atraso 0 ms -> "Isso são coisas que você tem que saber, porque nós não temos tempo."
+11-19 18:55:57.562  7219  7219 I GabiFlixPlayer: AUDIOSYNC estado: st=parada executando=false tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=223MB java=2/576MB nativo=238MB livre=2154MB limiar=144MB poucaMemoria=false
+11-19 18:55:58.795  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1839322 ms, atraso 0 ms -> (nada)
+11-19 18:56:04.133  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1844868 ms, atraso 0 ms -> "Não, você não está entendendo isso, eu já disse que não vai dar."
+11-19 18:56:09.486  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1850009 ms, atraso 0 ms -> (nada)
+11-19 18:56:14.705  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1855397 ms, atraso 0 ms -> "Então porque você está aqui? Eu estou com muito medo, tá bem?"
+11-19 18:56:17.631  7219  7219 I GabiFlixPlayer: AUDIOSYNC estado: st=parada executando=false tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=224MB java=2/576MB nativo=239MB livre=2153MB limiar=144MB poucaMemoria=false
+11-19 18:56:20.295  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1860869 ms, atraso 0 ms -> (nada)
+11-19 18:56:25.134  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1865636 ms, atraso 0 ms -> "Obrigado, mas isso não é tudo, ele também tem uma filha."
+11-19 18:56:29.877  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1870567 ms, atraso 0 ms -> (nada)
+11-19 18:56:35.673  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1876290 ms, atraso 0 ms -> "Nós já fomos até lá, meu amigo, e foi muito bem, sim."
+11-19 18:56:37.734  7219  7219 I GabiFlixPlayer: AUDIOSYNC estado: st=parada executando=false tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=225MB java=2/576MB nativo=240MB livre=2152MB limiar=144MB poucaMemoria=false
+11-19 18:56:40.823  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1881444 ms, atraso 0 ms -> (nada)
+11-19 18:56:44.115  7219  7219 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:56:44.115  7219  7219 I GabiFlixPlayer: ESTADO tempo=1884776 tocando=true fim=false spu=3 audio=1 legenda=nada tela=Normal video=0 mem=2092k
+11-19 18:56:44.115  7219  7219 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:56:44.115  7219  7219 I GabiFlixPlayer: ESTADO tempo=1884776 tocando=true fim=false spu=3 audio=1 legenda=nada tela=Normal video=0 mem=2092k
+11-19 18:56:46.258  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1886822 ms, atraso 0 ms -> "Ela vai ficar aqui, minha casa é dela também, pra mim tudo bem."
+11-19 18:56:51.788  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1892516 ms, atraso 0 ms -> (nada)
+11-19 18:56:56.701  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1897234 ms, atraso 0 ms -> "Isso são coisas que você tem que saber, porque nós não temos tempo."
+11-19 18:56:57.849  7219  7219 I GabiFlixPlayer: AUDIOSYNC estado: st=parada executando=false tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=225MB java=2/576MB nativo=240MB livre=2151MB limiar=144MB poucaMemoria=false
+11-19 18:57:01.785  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1902472 ms, atraso 0 ms -> (nada)
+11-19 18:57:07.219  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1907942 ms, atraso 0 ms -> "Não, você não está entendendo isso, eu já disse que não vai dar."
+11-19 18:57:12.360  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1912904 ms, atraso 0 ms -> (nada)
+11-19 18:57:17.626  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1918160 ms, atraso 0 ms -> "Então porque você está aqui? Eu estou com muito medo, tá bem?"
+11-19 18:57:17.957  7219  7219 I GabiFlixPlayer: AUDIOSYNC estado: st=parada executando=false tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=226MB java=2/576MB nativo=241MB livre=2149MB limiar=144MB poucaMemoria=false
+11-19 18:57:23.209  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1923847 ms, atraso 0 ms -> (nada)
+11-19 18:57:28.304  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1928836 ms, atraso 0 ms -> "Obrigado, mas isso não é tudo, ele também tem uma filha."
+11-19 18:57:32.832  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1933322 ms, atraso 0 ms -> (nada)
+11-19 18:57:38.006  7219  7219 I GabiFlixPlayer: AUDIOSYNC estado: st=parada executando=false tocando=true carregando=false faixa=3 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 3:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=227MB java=2/576MB nativo=242MB livre=2149MB limiar=144MB poucaMemoria=false
+11-19 18:57:38.650  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1939301 ms, atraso 0 ms -> "Nós já fomos até lá, meu amigo, e foi muito bem, sim."
+11-19 18:57:43.844  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1944522 ms, atraso 0 ms -> (nada)
+11-19 18:57:47.915  7219  7219 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:57:47.915  7219  7219 I GabiFlixPlayer: ESTADO tempo=1948613 tocando=true fim=false spu=3 audio=1 legenda=nada tela=Normal video=0 mem=2112k
+11-19 18:57:49.142  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1949892 ms, atraso 0 ms -> "Ela vai ficar aqui, minha casa é dela também, pra mim tudo bem."
+11-19 18:57:47.915  7219  7219 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:57:47.915  7219  7219 I GabiFlixPlayer: ESTADO tempo=1948613 tocando=true fim=false spu=3 audio=1 legenda=nada tela=Normal video=0 mem=2112k
+11-19 18:57:49.142  7219  7219 I GabiFlixPlayer: legenda do app: tempo 1949892 ms, atraso 0 ms -> "Ela vai ficar aqui, minha casa é dela também, pra mim tudo bem."
+11-19 18:57:50.018  7219  7219 I GabiFlixPlayer: teste: ação do usuário estado 0
+11-19 18:57:50.018  7219  7219 I GabiFlixPlayer: ESTADO tempo=1950656 tocando=true fim=false spu=3 audio=1 legenda=visivel tela=Normal video=0 mem=2160k
