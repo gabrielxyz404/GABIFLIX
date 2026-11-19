@@ -22,7 +22,7 @@ concurrency:
 
 jobs:
   paridade:
-    runs-on: macos-15
+    runs-on: macos-15-intel
     timeout-minutes: 240
     env:
       SRC: android/app/src/main/java/io/github/gabrielxyz404/gabiflix

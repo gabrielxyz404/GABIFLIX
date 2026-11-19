@@ -4,6 +4,7 @@ name: Mac polimento teste (sem publicar)
 # (Ajustar / Preencher / Esticar, painel de sincronização, lista de falas, atraso guardado). NÃO publica nada.
 # Dispara ao enviar um branch chamado mac-pol-run-<nome>; as telas vão para o branch mac-pol-out-<nome>
 on:
+  workflow_dispatch:
   push:
     branches: ['mac-pol-run-**']
 
@@ -27,7 +28,7 @@ jobs:
           FRAMEPLAY_ARCH: x86_64
         run: |
           set -o pipefail
-          ./mac/build.sh 2>&1 | tee build.log
+          FRAMEPLAY_ARCH=x86_64 ./mac/build.sh 2>&1 | tee build.log
       - name: Mostrar o erro (se houver)
         if: failure()
         run: |

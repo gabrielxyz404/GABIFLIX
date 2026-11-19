@@ -5,6 +5,7 @@ name: Teste do recorte do VLC (círculo redondo?)
 # Aqui o libvlc 3.x do Ubuntu (mesmo código do vout) desenha num Xvfb 960x600 com --crop=LxA+X+Y e a imagem de teste (círculo vermelho e quadrado
 # verde de 360 px) gravada num quadro 16:9; mede-se largura/altura do círculo e do quadrado. NÃO publica nada.
 on:
+  workflow_dispatch:
   push:
     branches: [vlc-crop-run]
 

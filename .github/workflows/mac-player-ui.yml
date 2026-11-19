@@ -4,6 +4,7 @@ name: Mac player UI antes/depois (sem publicar)
 # 1470x956 (MacBook Air 13") e 2560x1600. O GitHub não tem placa gráfica: o vídeo fica preto, só se vêem os controles. NÃO publica o app.
 # Dispara ao enviar um branch chamado mac-ui-run-<nome>; resultados no branch mac-ui-out-<nome>-<antes|depois>
 on:
+  workflow_dispatch:
   push:
     branches: ['mac-ui-run-**']
 
@@ -29,7 +30,7 @@ jobs:
           FRAMEPLAY_ARCH: x86_64
         run: |
           set -o pipefail
-          ./mac/build.sh 2>&1 | tee build.log
+          FRAMEPLAY_ARCH=x86_64 ./mac/build.sh 2>&1 | tee build.log
       - name: Mostrar o erro (se houver)
         if: failure()
         run: |

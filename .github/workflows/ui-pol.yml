@@ -3,6 +3,7 @@ name: UI polimento Mac (telas do site)
 # Abre o site (a versão deste commit, servida na própria máquina) com dados reais num Chromium
 # e tira fotos no modo Mac e no modo celular. Não publica nada. Fotos vão para o branch ui-revisao-out-<rotulo>.
 on:
+  workflow_dispatch:
   push:
     branches: ['ui-pol-**']
 

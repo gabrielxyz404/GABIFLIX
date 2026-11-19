@@ -14,7 +14,7 @@ permissions:
 
 jobs:
   teste:
-    runs-on: macos-15
+    runs-on: macos-15-intel
     timeout-minutes: 90
     steps:
       - uses: actions/checkout@v4
@@ -24,7 +24,7 @@ jobs:
           FRAMEPLAY_BUILD: ${{ github.run_number }}
         run: |
           set -o pipefail
-          ./mac/build.sh 2>&1 | tee build.log
+          FRAMEPLAY_ARCH=x86_64 ./mac/build.sh 2>&1 | tee build.log
           mkdir -p /tmp/apps && cp -R mac/build/FramePlay.app /tmp/apps/depois.app
       - name: Mostrar o erro (se houver)
         if: failure()
