@@ -26,13 +26,11 @@ jobs:
         include:
           - { nome: tv30-startup, modo: tv, api: 30, target: android-tv, profile: tv_1080p, ram: 2048M, hp: startup }
           - { nome: tv30-attach, modo: tv, api: 30, target: android-tv, profile: tv_1080p, ram: 2048M, hp: attach }
-          - { nome: tv30-vv, modo: tv, api: 30, target: android-tv, profile: tv_1080p, ram: 2048M, hp: none, extra: '--es gfVlcV 1' }
-          - { nome: tv30-sw, modo: tv, api: 30, target: android-tv, profile: tv_1080p, ram: 2048M, hp: none, extra: '--es gfHw 0' }
-          - { nome: tv30-hw, modo: tv, api: 30, target: android-tv, profile: tv_1080p, ram: 2048M, hp: none, extra: '--es gfHw force' }
-          - { nome: tv30-surface, modo: tv, api: 30, target: android-tv, profile: tv_1080p, ram: 2048M, hp: none, extra: '--es gfTexture 0' }
-          - { nome: tv30-sem-audio, modo: tv, api: 30, target: android-tv, profile: tv_1080p, ram: 2048M, hp: startup, extra: '--es gfAudioAuto false' }
-          - { nome: cel30-startup, modo: phone, api: 30, target: google_apis, profile: pixel_5, ram: 3072M, hp: startup }
-          - { nome: cel28-vv, modo: phone, api: 28, target: google_apis, profile: pixel_5, ram: 3072M, hp: none, extra: '--es gfVlcV 1' }
+          - { nome: tv30-hw-vv, modo: tv, api: 30, target: android-tv, profile: tv_1080p, ram: 2048M, hp: none, extra: '--es gfVlcV 1 --es gfHw force' }
+          - { nome: cel30-vv, modo: phone, api: 30, target: google_apis, profile: pixel_5, ram: 3072M, hp: none, extra: '--es gfVlcV 1' }
+          - { nome: cel30-sw, modo: phone, api: 30, target: google_apis, profile: pixel_5, ram: 3072M, hp: none, extra: '--es gfVlcV 1 --es gfHw 0' }
+          - { nome: cel30-tex, modo: phone, api: 30, target: google_apis, profile: pixel_5, ram: 3072M, hp: none, extra: '--es gfVlcV 1 --es gfTexture 1' }
+          - { nome: cel30-sw-hp, modo: phone, api: 30, target: google_apis, profile: pixel_5, ram: 3072M, hp: startup, extra: '--es gfHw 0' }
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v5
@@ -46,11 +44,20 @@ jobs:
         env:
           GABIFLIX_ABIS: x86,x86_64
         run: |
+          # so no APK de teste (a copia de trabalho do CI, nada e commitado): depuravel, para o heapprofd e o run-as funcionarem nas imagens "user" do emulador de TV
+          sed -i 's/android:largeHeap="true">/android:largeHeap="true" android:debuggable="true">/' android/app/src/main/AndroidManifest.xml
+          grep -c 'android:debuggable="true"' android/app/src/main/AndroidManifest.xml
           gradle -p android assembleRelease --no-daemon -q
           cp android/app/build/outputs/apk/release/app-release.apk /tmp/teste.apk
           mkdir -p /tmp/libs && unzip -o -j /tmp/teste.apk 'lib/x86/*' -d /tmp/libs >/dev/null
           ls -la /tmp/libs
           for f in /tmp/libs/libvlc.so /tmp/libs/libvlcjni.so; do echo "== $f"; readelf -S "$f" | grep -E "symtab|debug|dynsym" || true; done
+      - name: API do libVLC (o que o Java sabe dizer sobre o decodificador)
+        run: |
+          AAR=$(find ~/.gradle -name 'libvlc-all-3.6.0*.aar' | head -1); echo "$AAR"
+          mkdir -p /tmp/aar && unzip -o -q "$AAR" classes.jar -d /tmp/aar
+          { javap -p -cp /tmp/aar/classes.jar org.videolan.libvlc.LibVLC org.videolan.libvlc.MediaPlayer org.videolan.libvlc.Media 'org.videolan.libvlc.Media$Stats' org.videolan.libvlc.util.HWDecoderUtil 'org.videolan.libvlc.util.HWDecoderUtil$Decoder' org.videolan.libvlc.interfaces.IMedia 'org.videolan.libvlc.interfaces.IMedia$VideoTrack' 'org.videolan.libvlc.interfaces.IMedia$Track' org.videolan.libvlc.interfaces.IVLCVout; unzip -l "$AAR" | grep -E "\.so|jni"; } > /tmp/javap.txt 2>&1 || true
+          grep -n -i "hw\|decoder\|accel\|log\|stats" /tmp/javap.txt | head -60
       - name: Filmes de teste (35 min)
         run: |
           sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg espeak-ng >/dev/null
@@ -92,6 +99,7 @@ jobs:
           cd shots || exit 0
           cp /tmp/server.out . 2>/dev/null || true
           cp /tmp/heap.cfg . 2>/dev/null || true
+          cp /tmp/javap.txt . 2>/dev/null || true
           { for f in /tmp/libs/libvlc.so /tmp/libs/libvlcjni.so; do echo "== $f"; ls -la $f; readelf -S $f | grep -E "symtab|debug|dynsym"; done; } > libs-info.txt 2>&1 || true
           git init -q -b x && git add -A
           git -c user.name=ci -c user.email=ci@x commit -qm resultados

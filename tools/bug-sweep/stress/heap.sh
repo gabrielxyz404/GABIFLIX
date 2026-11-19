@@ -34,9 +34,10 @@ sample() {
 }
 snapshot() {  # $1 = rotulo: smaps resumido por mapeamento, threads por nome, meminfo -d
   local pid; pid=$(mainpid); [ -z "$pid" ] && return
-  adb shell cat /proc/$pid/smaps > /tmp/smaps.txt 2>/dev/null
+  # o app de teste e "debuggable": o run-as le o smaps do proprio processo (o shell nao le o de outro uid nos aparelhos "user")
+  adb shell "run-as $PKG cat /proc/$pid/smaps" > /tmp/smaps.txt 2>/dev/null
   python3 -I $HERE/smaps_sum.py /tmp/smaps.txt > $OUT/smaps-$1.txt 2>&1
-  adb shell "cat /proc/$pid/smaps_rollup" > $OUT/rollup-$1.txt 2>&1
+  adb shell "run-as $PKG cat /proc/$pid/smaps_rollup" > $OUT/rollup-$1.txt 2>&1
   adb shell "for d in /proc/$pid/task/*; do cat \$d/comm; done | sort | uniq -c | sort -rn | head -40" > $OUT/threads-$1.txt 2>&1
   adb shell dumpsys meminfo -d $pid > $OUT/meminfo-d-$1.txt 2>&1
 }
@@ -44,7 +45,6 @@ snapshot() {  # $1 = rotulo: smaps resumido por mapeamento, threads por nome, me
 adb shell am force-stop $PKG; adb shell pm clear $PKG >/dev/null; adb logcat -c
 
 # ---- heapprofd
-CFG=/data/local/tmp/heap.cfg
 start_perfetto() {  # $1 = linha que escolhe o processo (pid: N ou process_cmdline: "...")
   local secs=$(( PLAY + 400 ))
   cat > /tmp/heap.cfg <<EOF
@@ -55,7 +55,7 @@ data_sources {
     name: "android.heapprofd"
     target_buffer: 0
     heapprofd_config {
-      sampling_interval_bytes: 4096
+      sampling_interval_bytes: 32768
       $1
       shmem_size_bytes: 16777216
       block_client: true
@@ -72,8 +72,9 @@ data_sources {
 }
 duration_ms: $(( secs * 1000 ))
 EOF
-  adb push /tmp/heap.cfg $CFG >/dev/null
-  adb shell "rm -f /data/misc/perfetto-traces/heap.trace; perfetto --txt -c $CFG -o /data/misc/perfetto-traces/heap.trace --background" > $OUT/perfetto-start.txt 2>&1
+  # a configuracao entra pela entrada padrao (o perfetto do shell nao le /data/local/tmp nos aparelhos "user")
+  adb shell "rm -f /data/misc/perfetto-traces/heap.trace" >/dev/null 2>&1
+  adb shell "perfetto -c - --txt -o /data/misc/perfetto-traces/heap.trace --background" < /tmp/heap.cfg > $OUT/perfetto-start.txt 2>&1
   sleep 3; echo "perfetto: $(adb shell pidof perfetto | tr -d '\r')" >> $OUT/perfetto-start.txt
 }
 [ "$HP" = startup ] && start_perfetto "process_cmdline: \"$PKG\""

@@ -64,6 +64,32 @@ public class PlayerActivity extends Activity {
     private TextView noticeLabel;
     private final Runnable hideNotice = () -> { if (noticeLabel != null) noticeLabel.setVisibility(View.GONE); };
 
+    /** o player aberto agora (para o pedido de memória do sistema, que chega pelo App) */
+    private static volatile java.lang.ref.WeakReference<PlayerActivity> current;
+    private MemTelemetry memTel;
+
+    /** o sistema está apertado de memória (RUNNING_LOW / RUNNING_CRITICAL) com o filme aberto: solta o que o player pode soltar sem mexer na reprodução */
+    static void onMemoryPressure(int level) {
+        java.lang.ref.WeakReference<PlayerActivity> r = current;
+        final PlayerActivity a = r == null ? null : r.get();
+        if (a == null || a.player == null || a.isFinishing()) return;
+        a.ui.post(() -> a.trimCaches(level));
+    }
+
+    private void trimCaches(int level) {
+        try {
+            glog("memória: o sistema pediu memória (nível " + level + "); soltando caches. " + CrashReporter.memLine());
+            synchronized (barRowSamples) { barRowSamples.clear(); barColSamples.clear(); }   // amostras de barras pretas (bitmaps pequenos já foram soltos; aqui as listas)
+            io.github.gabrielxyz404.gabiflix.tv.TvCaches.release(this);                      // JSON do catálogo e bitmaps dos pôsteres que a navegação deixou
+            Thread gc = new Thread(() -> { Runtime.getRuntime().gc(); System.runFinalization(); }, "gf-trim-gc");
+            gc.setPriority(Thread.MIN_PRIORITY);
+            gc.start();
+        } catch (Throwable t) { glog("memória: não soltou os caches: " + t); }
+    }
+
+    /** "hardware" (MediaCodec) ou "software" (ffmpeg dentro do libVLC) */
+    private String decoderKind() { return "?"; }
+
     private LibVLC libVLC;
     private MediaPlayer player;
     private VLCVideoLayout videoLayout;
@@ -497,6 +523,7 @@ public class PlayerActivity extends Activity {
         loadSubtitlesInBackground();
 
         tv = MainActivity.isTv(this);
+        current = new java.lang.ref.WeakReference<>(this);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         if (android.os.Build.VERSION.SDK_INT >= 28) {
             getWindow().getAttributes().layoutInDisplayCutoutMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES;
@@ -610,6 +637,14 @@ public class PlayerActivity extends Activity {
             autoEngine = audioSync.chain(autoEngine);
             audioSync.start();
         } catch (Throwable t) { glog("AUDIOSYNC não iniciou: " + t); }
+        // TV: relatório anônimo MEMORIA a cada 15 min de reprodução (máx. 8 por sessão)
+        try {
+            if (memTel == null) memTel = MemTelemetry.startIfTv(this, tv, new MemTelemetry.Host() {
+                @Override public boolean playing() { return player != null && player.isPlaying() && !buffering; }
+                @Override public String decoder() { return decoderKind(); }
+                @Override public String surface() { View v = videoLayout == null ? null : findVideoView(videoLayout); return v == null ? "?" : v.getClass().getSimpleName(); }
+            });
+        } catch (Throwable t) { glog("telemetria de memória não iniciou: " + t); }
         // só nos testes: modo de tela, atraso da legenda e registro da posição (para medir quando cada fala aparece)
         try {
             String sc = getIntent().getStringExtra("gfScale");
@@ -2397,6 +2432,9 @@ public class PlayerActivity extends Activity {
     @Override
     protected void onDestroy() {
         ui.removeCallbacksAndMessages(null);
+        if (memTel != null) { memTel.stop(); memTel = null; }
+        java.lang.ref.WeakReference<PlayerActivity> cr = current;
+        if (cr != null && cr.get() == this) current = null;
         if (barThread != null) { barThread.quit(); barThread = null; }
         if (audioSync != null) audioSync.stop();
         if (testRx != null) { try { unregisterReceiver(testRx); } catch (Throwable ignored) {} testRx = null; }
