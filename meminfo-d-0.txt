@@ -1,0 +1,65 @@
+Applications Memory Usage (in Kilobytes):
+Uptime: 138717 Realtime: 138717
+
+** MEMINFO in pid 3110 [io.github.gabrielxyz404.gabiflix] **
+                   Pss  Private  Private     Swap      Rss     Heap     Heap     Heap
+                 Total    Dirty    Clean    Dirty    Total     Size    Alloc     Free
+                ------   ------   ------   ------   ------   ------   ------   ------
+  Native Heap   145742   145704        0        0   147520   191488   173025     8248
+  Dalvik Heap     4736     4644        0        0     8640    11139     5586     5553
+ Dalvik Other     1569     1076        0        0     2436                           
+        Stack      956      956        0        0      960                           
+       Ashmem       12        0        0        0       28                           
+    Other dev        8        0        8        0      228                           
+     .so mmap    14944     1072     5292        0    59396                           
+    .jar mmap     1731        0        0        0    29080                           
+    .apk mmap      872        0       40        0    24680                           
+    .ttf mmap      361        0      140        0      888                           
+    .dex mmap     5207     5188        0        0     5300                           
+    .oat mmap       51        0        0        0     1992                           
+    .art mmap     5648     5400        0        0    14648                           
+   Other mmap     8331       88       28        8    17868                           
+      Unknown      584      580        0       20      860                           
+        TOTAL   190752   164708     5508       28   190752   202627   178611    13801
+ 
+ Dalvik Details
+        .Heap     1484     1484        0        0     1484                           
+         .LOS     2655     2624        0        0     4260                           
+      .Zygote      545      484        0        0     2844                           
+   .NonMoving       52       52        0        0       52                           
+ .LinearAlloc      871      868        0        0     1120                           
+          .GC      109      108        0        0      156                           
+   .ZygoteJIT        1        0        0        0       76                           
+      .AppJIT      492        4        0        0      980                           
+ .IndirectRef       96       96        0        0      104                           
+   .Boot vdex       19        0        0        0       88                           
+     .App dex     5188     5188        0        0     5212                           
+    .Boot art     5648     5400        0        0    14648                           
+ 
+ App Summary
+                       Pss(KB)                        Rss(KB)
+                        ------                         ------
+           Java Heap:    10044                          23288
+         Native Heap:   145704                         147520
+                Code:    11736                         122392
+               Stack:      956                            960
+            Graphics:        0                              0
+       Private Other:     1776
+              System:    20536
+             Unknown:                                   20364
+ 
+           TOTAL PSS:   190752            TOTAL RSS:   314524      TOTAL SWAP (KB):       28
+ 
+ Objects
+               Views:      102         ViewRootImpl:        2
+         AppContexts:        7           Activities:        2
+              Assets:        8        AssetManagers:        0
+       Local Binders:       19        Proxy Binders:       35
+       Parcel memory:        9         Parcel count:       37
+    Death Recipients:        1      OpenSSL Sockets:        4
+            WebViews:        0
+ 
+ SQL
+         MEMORY_USED:        0
+  PAGECACHE_OVERFLOW:        0          MALLOC_SIZE:        0
+ 
