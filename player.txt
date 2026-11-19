@@ -1,0 +1,60 @@
+11-19 17:12:29.499   468   504 I ActivityTaskManager: Displayed io.github.gabrielxyz404.gabiflix/.tv.TvHomeActivity: +1s496ms
+11-19 17:12:43.647   468  4386 W NotificationService: Toast already killed. pkg=io.github.gabrielxyz404.gabiflix token=android.os.BinderProxy@ac0821c
+11-19 17:12:52.727   468  1210 I ActivityTaskManager: START u0 {act=android.settings.MANAGE_UNKNOWN_APP_SOURCES dat=package:io.github.gabrielxyz404.gabiflix cmp=com.android.tv.settings/.device.apps.specialaccess.ExternalSourcesActivity} from uid 10076
+11-19 17:12:56.230   468  3556 W NotificationService: Toast already killed. pkg=io.github.gabrielxyz404.gabiflix token=android.os.BinderProxy@bec2799
+11-19 17:13:15.835   468  1707 I ActivityManager: Force stopping io.github.gabrielxyz404.gabiflix appid=10076 user=0: from pid 6453
+11-19 17:13:15.835   468  1707 I ActivityManager: Killing 6301:io.github.gabrielxyz404.gabiflix/u0a76 (adj 102): stop io.github.gabrielxyz404.gabiflix due to from pid 6453
+11-19 17:13:15.840   468  1707 W ActivityTaskManager: Force removing ActivityRecord{5d5f94 u0 io.github.gabrielxyz404.gabiflix/.tv.TvHomeActivity t7 f}}: app died, no saved state
+11-19 17:13:15.845   468   553 W InputDispatcher: channel 'bea0b06 io.github.gabrielxyz404.gabiflix/io.github.gabrielxyz404.gabiflix.tv.TvHomeActivity (server)' ~ Consumer closed input channel or an error occurred.  events=0x9
+11-19 17:13:15.845   468   553 E InputDispatcher: channel 'bea0b06 io.github.gabrielxyz404.gabiflix/io.github.gabrielxyz404.gabiflix.tv.TvHomeActivity (server)' ~ Channel is unrecoverably broken and will be disposed!
+11-19 17:13:15.846   468  1707 W InputDispatcher: Attempted to unregister already unregistered input channel 'bea0b06 io.github.gabrielxyz404.gabiflix/io.github.gabrielxyz404.gabiflix.tv.TvHomeActivity (server)'
+11-19 17:13:16.293  6457  6457 W Monkey  : args: [-p, io.github.gabrielxyz404.gabiflix, -c, android.intent.category.LEANBACK_LAUNCHER, 1]
+11-19 17:13:16.293  6457  6457 W Monkey  :  arg: "io.github.gabrielxyz404.gabiflix"
+11-19 17:13:16.294  6457  6457 W Monkey  : data="io.github.gabrielxyz404.gabiflix"
+11-19 17:13:16.312   468  3556 I ActivityTaskManager: START u0 {act=android.intent.action.MAIN cat=[android.intent.category.LAUNCHER] flg=0x10200000 cmp=io.github.gabrielxyz404.gabiflix/.tv.TvHomeActivity} from uid 2000
+11-19 17:13:46.161   468  3556 I ActivityManager: Force stopping io.github.gabrielxyz404.gabiflix appid=10076 user=0: from pid 6647
+11-19 17:13:46.175   468  3556 I ActivityTaskManager: START u0 {flg=0x10000000 cmp=io.github.gabrielxyz404.gabiflix/.tv.TvHomeActivity (has extras)} from uid 2000
+11-19 17:13:46.222   468   506 I ActivityManager: Start proc 6655:io.github.gabrielxyz404.gabiflix/u0a76 for pre-top-activity {io.github.gabrielxyz404.gabiflix/io.github.gabrielxyz404.gabiflix.tv.TvHomeActivity}
+11-19 17:13:46.375   468   656 I ActivityTaskManager: START u0 {cmp=io.github.gabrielxyz404.gabiflix/.tv.TvSearchActivity (has extras)} from uid 10076
+11-19 17:13:48.164  6655  6655 I TetheringManager: registerTetheringEventCallback:io.github.gabrielxyz404.gabiflix
+11-19 17:13:48.240   468   504 D ArtManagerInternalImpl: /data/misc/iorapd/io.github.gabrielxyz404.gabiflix/1/io.github.gabrielxyz404.gabiflix.tv.TvSearchActivity/compiled_traces/compiled_trace.pb doesn't exist
+11-19 17:13:48.246   468   504 I ActivityTaskManager: Displayed io.github.gabrielxyz404.gabiflix/.tv.TvSearchActivity: +2s62ms
+11-19 17:13:53.876   468  2814 I ActivityManager: Force stopping io.github.gabrielxyz404.gabiflix appid=10076 user=0: from pid 6731
+11-19 17:13:53.876   468  2814 I ActivityManager: Killing 6655:io.github.gabrielxyz404.gabiflix/u0a76 (adj 0): stop io.github.gabrielxyz404.gabiflix due to from pid 6731
+11-19 17:13:53.876   468  2814 W ActivityTaskManager: Force removing ActivityRecord{75756d0 u0 io.github.gabrielxyz404.gabiflix/.tv.TvHomeActivity t7 f}}: app died, no saved state
+11-19 17:13:53.966   468   656 I ActivityTaskManager: START u0 {flg=0x10000000 cmp=io.github.gabrielxyz404.gabiflix/.tv.TvHomeActivity (has extras)} from uid 2000
+11-19 17:13:54.065   468   506 I ActivityManager: Start proc 6739:io.github.gabrielxyz404.gabiflix/u0a76 for pre-top-activity {io.github.gabrielxyz404.gabiflix/io.github.gabrielxyz404.gabiflix.tv.TvHomeActivity}
+11-19 17:13:55.948   468   504 D ArtManagerInternalImpl: /data/misc/iorapd/io.github.gabrielxyz404.gabiflix/1/io.github.gabrielxyz404.gabiflix.tv.TvHomeActivity/compiled_traces/compiled_trace.pb doesn't exist
+11-19 17:13:55.955  6739  6739 I TetheringManager: registerTetheringEventCallback:io.github.gabrielxyz404.gabiflix
+11-19 17:13:55.984   468   504 I ActivityTaskManager: Displayed io.github.gabrielxyz404.gabiflix/.tv.TvHomeActivity: +1s971ms
+11-19 17:13:56.019   468  2814 I ActivityTaskManager: START u0 {cmp=io.github.gabrielxyz404.gabiflix/.tv.TvCatalogActivity (has extras)} from uid 10076
+11-19 17:13:56.545   468   504 I ActivityTaskManager: Displayed io.github.gabrielxyz404.gabiflix/.tv.TvCatalogActivity: +526ms
+11-19 17:14:32.460   468  2814 I ActivityManager: Force stopping io.github.gabrielxyz404.gabiflix appid=10076 user=0: from pid 6941
+11-19 17:14:32.460   468  2814 I ActivityManager: Killing 6739:io.github.gabrielxyz404.gabiflix/u0a76 (adj 0): stop io.github.gabrielxyz404.gabiflix due to from pid 6941
+11-19 17:14:32.460   468  2814 W ActivityTaskManager: Force removing ActivityRecord{e592009 u0 io.github.gabrielxyz404.gabiflix/.tv.TvCatalogActivity t7 f}}: app died, no saved state
+11-19 17:14:32.465   468  2814 W ActivityTaskManager: Force removing ActivityRecord{212e414 u0 io.github.gabrielxyz404.gabiflix/.tv.TvHomeActivity t7 f}}: app died, no saved state
+11-19 17:14:32.526   468  1212 I ActivityTaskManager: START u0 {flg=0x10000000 cmp=io.github.gabrielxyz404.gabiflix/.tv.TvHomeActivity (has extras)} from uid 2000
+11-19 17:14:32.580   468   506 I ActivityManager: Start proc 6949:io.github.gabrielxyz404.gabiflix/u0a76 for pre-top-activity {io.github.gabrielxyz404.gabiflix/io.github.gabrielxyz404.gabiflix.tv.TvHomeActivity}
+11-19 17:14:34.195   468   504 D ArtManagerInternalImpl: /data/misc/iorapd/io.github.gabrielxyz404.gabiflix/1/io.github.gabrielxyz404.gabiflix.tv.TvHomeActivity/compiled_traces/compiled_trace.pb doesn't exist
+11-19 17:14:34.196   468   504 I ActivityTaskManager: Displayed io.github.gabrielxyz404.gabiflix/.tv.TvHomeActivity: +1s666ms
+11-19 17:14:34.197  6949  6949 I TetheringManager: registerTetheringEventCallback:io.github.gabrielxyz404.gabiflix
+11-19 17:14:47.246   468   656 I ActivityManager: Force stopping io.github.gabrielxyz404.gabiflix appid=10076 user=0: from pid 7058
+11-19 17:14:47.246   468   656 I ActivityManager: Killing 6949:io.github.gabrielxyz404.gabiflix/u0a76 (adj 0): stop io.github.gabrielxyz404.gabiflix due to from pid 7058
+11-19 17:14:47.247   468   656 W ActivityTaskManager: Force removing ActivityRecord{6d82106 u0 io.github.gabrielxyz404.gabiflix/.tv.TvHomeActivity t7 f}}: app died, no saved state
+11-19 17:14:47.254   468   553 W InputDispatcher: channel '1227ad8 io.github.gabrielxyz404.gabiflix/io.github.gabrielxyz404.gabiflix.tv.TvHomeActivity (server)' ~ Consumer closed input channel or an error occurred.  events=0x9
+11-19 17:14:47.254   468   553 E InputDispatcher: channel '1227ad8 io.github.gabrielxyz404.gabiflix/io.github.gabrielxyz404.gabiflix.tv.TvHomeActivity (server)' ~ Channel is unrecoverably broken and will be disposed!
+11-19 17:14:47.254   468   553 W InputDispatcher: channel '95fabb5 io.github.gabrielxyz404.gabiflix/io.github.gabrielxyz404.gabiflix.tv.TvHomeActivity (server)' ~ Consumer closed input channel or an error occurred.  events=0x9
+11-19 17:14:47.254   468   553 E InputDispatcher: channel '95fabb5 io.github.gabrielxyz404.gabiflix/io.github.gabrielxyz404.gabiflix.tv.TvHomeActivity (server)' ~ Channel is unrecoverably broken and will be disposed!
+11-19 17:14:47.263   468   656 W InputDispatcher: Attempted to unregister already unregistered input channel '95fabb5 io.github.gabrielxyz404.gabiflix/io.github.gabrielxyz404.gabiflix.tv.TvHomeActivity (server)'
+11-19 17:14:47.265   468   656 W InputDispatcher: Attempted to unregister already unregistered input channel '1227ad8 io.github.gabrielxyz404.gabiflix/io.github.gabrielxyz404.gabiflix.tv.TvHomeActivity (server)'
+11-19 17:14:47.879  7061  7061 W Monkey  : args: [-p, io.github.gabrielxyz404.gabiflix, -c, android.intent.category.LEANBACK_LAUNCHER, 1]
+11-19 17:14:47.879  7061  7061 W Monkey  :  arg: "io.github.gabrielxyz404.gabiflix"
+11-19 17:14:47.880  7061  7061 W Monkey  : data="io.github.gabrielxyz404.gabiflix"
+11-19 17:14:47.895   468  3805 I ActivityTaskManager: START u0 {act=android.intent.action.MAIN cat=[android.intent.category.LAUNCHER] flg=0x10200000 cmp=io.github.gabrielxyz404.gabiflix/.tv.TvHomeActivity} from uid 2000
+11-19 17:15:28.421   468  3805 I ActivityManager: Force stopping io.github.gabrielxyz404.gabiflix appid=10076 user=0: from pid 7210
+11-19 17:15:28.437   468  3805 I ActivityTaskManager: START u0 {flg=0x10000000 cmp=io.github.gabrielxyz404.gabiflix/.tv.TvHomeActivity (has extras)} from uid 2000
+11-19 17:15:28.446   468   506 I ActivityManager: Start proc 7219:io.github.gabrielxyz404.gabiflix/u0a76 for pre-top-activity {io.github.gabrielxyz404.gabiflix/io.github.gabrielxyz404.gabiflix.tv.TvHomeActivity}
+11-19 17:15:28.692   468  3696 I ActivityTaskManager: START u0 {cmp=io.github.gabrielxyz404.gabiflix/.tv.TvDetailActivity (has extras)} from uid 10076
+11-19 17:15:30.595   468   504 D ArtManagerInternalImpl: /data/misc/iorapd/io.github.gabrielxyz404.gabiflix/1/io.github.gabrielxyz404.gabiflix.tv.TvDetailActivity/compiled_traces/compiled_trace.pb doesn't exist
+11-19 17:15:30.595   468   504 I ActivityTaskManager: Displayed io.github.gabrielxyz404.gabiflix/.tv.TvDetailActivity: +2s155ms
+11-19 17:15:30.596  7219  7219 I TetheringManager: registerTetheringEventCallback:io.github.gabrielxyz404.gabiflix
