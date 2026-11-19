@@ -24,6 +24,8 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          - { nome: tv30, modo: tv, api: 30, target: android-tv, profile: tv_1080p, ram: 2048M, hp: startup }
+          - { nome: cel30, modo: phone, api: 30, target: google_apis, profile: pixel_5, ram: 3072M, hp: startup }
           - { nome: tv30-trim, modo: tv, api: 30, target: android-tv, profile: tv_1080p, ram: 2048M, hp: none, play: '200', trim: '1', extra: '--es gfMemTelMs 60000' }
           - { nome: cel30-trim, modo: phone, api: 30, target: google_apis, profile: pixel_5, ram: 3072M, hp: none, play: '200', trim: '1', extra: '--es gfMemTelMs 60000' }
     steps:
