@@ -136,7 +136,7 @@ def sub_candidates(entry, wd, maxn=5):
         pycues = parse_srt(pytext)
         rec = {"k": k, "lang": s["lang"], "src": s["src"], "id": s.get("id", ""), "bytes": len(rawb), "app": f, "py_cues": len(pycues)}
         if text is None:
-            if len(pycues) >= 100:
+            if len(pycues) >= 80:
                 rec["parser_bug"] = "o app descartaria (decode=null) uma legenda que o python le (%d falas)" % len(pycues)
                 text = pytext
             else:
@@ -151,15 +151,17 @@ def sub_candidates(entry, wd, maxn=5):
         rec["cues"] = cues
         rec["text_lang"] = "por" if f and f.get("pt") else guess_lang(text)
         rec["pt_app"] = int(bool(f and f.get("pt")))
-        if len(cues) < 150:
+        if len(cues) < 80:
             rec["skip"] = "poucas falas (%d)" % len(cues)
+        log("   legenda %d: %s/%s %d bytes -> app decodificou=%s falas=%s (python %d) PT=%s%s%s" % (k, s["lang"], s["src"], len(rawb), bool(f.get("decoded")), f.get("cues"), len(pycues), rec["pt_app"],
+                                                                                           " SKIP: " + rec["skip"] if rec.get("skip") else "", " BUG-PARSER: " + rec["parser_bug"] if rec.get("parser_bug") else ""))
         out.append(rec)
     return out
 
 
 def alass_align(wav, cues, dur_s, wd, tag):
     trimmed = [c for c in cues if c[1] <= dur_s * 1000]
-    if len(trimmed) < 150:
+    if len(trimmed) < 80:
         return None, "poucas falas no audio (%d)" % len(trimmed)
     tin, tout = os.path.join(wd, "a_%s.srt" % tag), os.path.join(wd, "a_%s.out.srt" % tag)
     write_srt(trimmed, tin)
@@ -169,7 +171,7 @@ def alass_align(wav, cues, dur_s, wd, tag):
         return None, "alass falhou: " + ((r.stderr or r.stdout or "")[-160:]).replace("\n", " ")
     aligned = parse_srt(open(tout, encoding="utf-8").read())
     pairs = cue_map(trimmed, aligned)
-    if len(pairs) < 100:
+    if len(pairs) < 60:
         return None, "poucos pares (%d)" % len(pairs)
     ds = sorted(b - a for a, b in pairs)
     med = ds[len(ds) // 2]
@@ -178,6 +180,15 @@ def alass_align(wav, cues, dur_s, wd, tag):
 
 
 def cue_map(cin, cout):
+    """pares (inicio_entrada, inicio_saida): por INDICE quando a quantidade e o texto batem (o alass/ffs mantem ordem e falas); senao pelo texto (n-esima ocorrencia)"""
+    if len(cin) == len(cout):
+        same = sum(1 for a, b in zip(cin, cout) if a[2] == b[2])
+        if same >= 0.9 * len(cin):
+            return [(a[0], b[0]) for a, b in zip(cin, cout)]
+    return _cue_map_text(cin, cout)
+
+
+def _cue_map_text(cin, cout):
     from collections import defaultdict
     occ = defaultdict(list)
     for a, b, t in cout:
@@ -213,12 +224,13 @@ def variants(slug, other_paths):
     rnd = random.Random(zlib.crc32(slug.encode()))
     V = [("certa", "ja certa", "C", 1.0, 0.0, "-"), ("mais3", "deslocamento +3 s", "S", 1.0, 3000.0, "-"), ("menos2", "deslocamento -2 s", "S", 1.0, -2000.0, "-"),
          ("mais7.5", "deslocamento +7,5 s", "S", 1.0, 7500.0, "-")]
-    offs = [1800.0, -2500.0, 4000.0, -900.0, 6200.0, -4300.0]
+    offs = [1800.0, -2500.0, 4000.0, -900.0, 6200.0, -4300.0, 2600.0, -1300.0]
     rnd.shuffle(offs)
     D = [("1.001", "escala 1.001 (24/23.976)", 24 / 23.976), ("0.999", "escala 0.999 (23.976/24)", 23.976 / 24), ("25/23.976", "escala 25/23.976", 25 / 23.976), ("23.976/25", "escala 23.976/25", 23.976 / 25)]
     for i, (n, fam, g) in enumerate(D):
-        o = offs[i]
-        V.append(("g%s|o%+d" % (n, int(o)), fam, "S", g, o, "-"))
+        for j in range(2):
+            o = offs[(2 * i + j) % len(offs)]
+            V.append(("g%s|o%+d" % (n, int(o)), fam, "S", g, o, "-"))
     for j, p in enumerate(other_paths[:2]):
         V.append(("outro%d" % (j + 1), "outro titulo", "X", 1.0, 0.0, p))
     if other_paths:
@@ -270,10 +282,14 @@ def process(entry, other_entries, wd, od, prefetch=None):
         return st
     # 2) midia + audio
     media = os.path.join(wd, "media")
+    t_dl = time.time()
     if prefetch is not None:
         ok = prefetch.result()
     else:
         ok = curl(entry["media"]["url"], media)
+    st["download_s"] = round(time.time() - t_dl, 1)
+    if ok and os.path.exists(media):
+        log("   download: %.0f MB em %.0f s (%.1f MB/s)" % (os.path.getsize(media) / 1e6, st["download_s"], os.path.getsize(media) / 1e6 / max(1, st["download_s"])))
     if not ok or not os.path.exists(media):
         st["status"] = "download falhou"
         return st
@@ -292,7 +308,7 @@ def process(entry, other_entries, wd, od, prefetch=None):
     wav = os.path.join(wd, "audio16k.wav")
     ok, err = extract_wav(media, wav, 0)
     if not ok:
-        st["status"] = "extracao de audio falhou: " + err
+        st["status"] = "extracao de audio falhou: %s (wav=%s bytes, midia=%s bytes, audio=%s)" % (err.strip()[-120:], os.path.getsize(wav) if os.path.exists(wav) else None, os.path.getsize(media), st["probe"]["audio"][:1])
         return st
     wav2 = None
     if len(aud) >= 2:
@@ -314,6 +330,7 @@ def process(entry, other_entries, wd, od, prefetch=None):
     for c in good[:3]:
         al, why = alass_align(wav, c["cues"], dur, wd, "c%d" % c["k"])
         rec = {"k": c["k"], "lang": c["lang"], "text_lang": c["text_lang"], "src": c["src"], "alass": why}
+        log("   alass cand %d (%s, %d falas): %s%s" % (c["k"], c["lang"], len(c["cues"]), why, (" med=%d p90dev=%d max=%d pares=%d (%.0fs)" % (al["med"], al["p90dev"], al["maxdev"], al["pairs"], al["alass_s"])) if al else ""))
         if al:
             rec.update({"alass_med_ms": al["med"], "alass_p90dev_ms": al["p90dev"], "alass_maxdev_ms": al["maxdev"], "pairs": al["pairs"], "alass_s": al["alass_s"]})
             score = al["p90dev"] + abs(al["med"]) * 0.1
@@ -334,7 +351,10 @@ def process(entry, other_entries, wd, od, prefetch=None):
     c = best["c"]
     ff, ffw = ffs_offset(wav, ref, wd)
     p90 = best["al"]["p90dev"]
-    tier = "A" if (p90 <= 300 and (ff is None or abs(ff) <= 300)) else "B" if (p90 <= 1000 and (ff is None or abs(ff) <= 300)) else "X"
+    # A: alass quase so desloca (desvio p90 <= 300 ms) e o ffsubsync concorda (<= 300 ms). B (ampliado): alass alinhou por partes (p90 > 300 ms) mas o ffsubsync concorda no deslocamento global.
+    ffok = ff is not None and abs(ff) <= 300
+    tier = "A" if (p90 <= 300 and (ff is None or ffok)) else "B" if (ffok and p90 > 300 and best["al"]["maxdev"] <= 120000) else "X"
+    log("   referencia: alass p90dev=%d ms med=%d ffs=%s -> nivel %s" % (p90, best["al"]["med"], ff, tier))
     st["ref"] = {"k": c["k"], "lang": c["lang"], "text_lang": c["text_lang"], "pt_app": c["pt_app"], "src": c["src"], "cues": len(best["al"]["aligned"]), "alass_p90dev_ms": p90, "alass_med_ms": best["al"]["med"],
                  "alass_maxdev_ms": best["al"]["maxdev"], "ffs_off_ms": ff, "ffs_note": ffw, "tier": tier}
     if tier == "X":
@@ -364,7 +384,7 @@ def process(entry, other_entries, wd, od, prefetch=None):
     t_run = time.time()
     st["engines"] = run_engines(entry["id"], wav, ref, vtsv, od)
     if wav2:
-        sub = {"certa", "mais3", "menos2", "g1.001|o%+d" % int([v for v in V if v[0].startswith("g1.001")][0][4])}
+        sub = {"certa", "mais3", "menos2", [v for v in V if v[0].startswith("g1.001")][0][0]}
         v2 = os.path.join(wd, "var2.tsv")
         write_variants(V, v2, only=sub)
         st["engines_t2"] = run_engines(entry["id"], wav2, ref, v2, od, "_t2")
