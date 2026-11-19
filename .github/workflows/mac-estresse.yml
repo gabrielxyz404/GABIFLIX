@@ -92,6 +92,7 @@ jobs:
         env:
           PLAY: ${{ github.event.inputs.play || '600' }}
         run: |
+          set +e
           xattr -cr mac/build/FramePlay.app
           mkdir -p /tmp/res
           APP=mac/build/FramePlay.app/Contents/MacOS/FramePlay
@@ -163,6 +164,9 @@ jobs:
           TOKEN: ${{ github.token }}
         run: |
           mkdir -p /tmp/res && cp build.log /tmp/res/ 2>/dev/null || true
+          cp /tmp/frameplay-player.log /tmp/res/player-final.log 2>/dev/null || true
+          cp /tmp/srv.log /tmp/res/ 2>/dev/null || true
+          screencapture -x /tmp/res/tela-final.png 2>/dev/null || true
           cd /tmp/res
           git init -q && git checkout -q -b x
           git config user.name "FramePlay CI"; git config user.email "ci@frameplay.local"
