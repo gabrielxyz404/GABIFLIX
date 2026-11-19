@@ -1,0 +1,170 @@
+name: Mac estresse (cenário simulado, sem publicar)
+
+# Equivalente, no Mac, do teste de estresse do emulador: compila o FramePlay.app, abre um filme com legenda e roda o roteiro pelos comandos de teste
+# (pula +-10 min, Normal/Preencher, troca de faixa de legenda, tela cheia entra/sai x5 no lugar de casa/volta, fecha o player e abre outro filme)
+# e toca por vários minutos medindo a memória (RSS). Confere: processo vivo, legenda na tela depois de cada ação, o filme anda, crescimento < 50 MB.
+on:
+  workflow_dispatch:
+    inputs:
+      play:
+        description: segundos de reprodução contínua
+        default: '600'
+  push:
+    branches: ['run-mac-estresse**']
+
+permissions:
+  contents: write
+
+jobs:
+  estresse:
+    runs-on: macos-15-intel
+    timeout-minutes: 75
+    steps:
+      - uses: actions/checkout@v4
+      - name: Montar o FramePlay.app
+        env:
+          FRAMEPLAY_VERSION: 0.0.${{ github.run_number }}
+          FRAMEPLAY_BUILD: ${{ github.run_number }}
+        run: |
+          set -o pipefail
+          FRAMEPLAY_ARCH=x86_64 ./mac/build.sh 2>&1 | tee build.log
+      - name: Mostrar o erro (se houver)
+        if: failure()
+        run: |
+          grep -n -E "error:|fatal|No such|cannot find|framework:" build.log | sort -u -k2 | head -60 | while IFS= read -r line; do
+            echo "::error::$(echo "$line" | cut -c1-900)"
+          done
+      - name: Filmes e legendas de teste
+        run: |
+          brew install ffmpeg > /dev/null 2>&1 || brew install ffmpeg
+          mkdir -p /tmp/srv && cd /tmp/srv
+          ffmpeg -loglevel error -f lavfi -i "testsrc2=size=1280x720:rate=24:duration=2100" -f lavfi -i "sine=frequency=440:duration=2100" -c:v libx264 -preset ultrafast -b:v 1M -pix_fmt yuv420p -c:a aac -shortest film.mp4
+          ln -s film.mp4 film2.mp4
+          python3 - <<'PY'
+          def ts(ms):
+              h, r = divmod(ms, 3600000); m, r = divmod(r, 60000); s, ms = divmod(r, 1000)
+              return "%02d:%02d:%02d,%03d" % (h, m, s, ms)
+          out = []
+          for i in range(190):
+              a = 5000 + i * 10500
+              out.append("%d\n%s --> %s\nFala número %d: não sei o que você quer, mas eu estou aqui.\n" % (i + 1, ts(a), ts(a + 4000), i + 1))
+          open("leg.srt", "w", encoding="utf-8").write("\n".join(out))
+          PY
+          cat > /tmp/serve.py <<'PY'
+          import http.server, os, re, socketserver
+          os.chdir("/tmp/srv")
+          class H(http.server.SimpleHTTPRequestHandler):
+              def log_message(self, *a): pass
+              def do_GET(self): self.serve(True)
+              def do_HEAD(self): self.serve(False)
+              def serve(self, body):
+                  path = self.translate_path(self.path)
+                  if not os.path.isfile(path): self.send_error(404); return
+                  size = os.path.getsize(path); a, b, code = 0, size - 1, 200
+                  m = re.match(r"bytes=(\d*)-(\d*)", self.headers.get("Range", ""))
+                  if m:
+                      if m.group(1) == "": a = max(0, size - int(m.group(2)))
+                      else:
+                          a = int(m.group(1))
+                          if m.group(2): b = min(size - 1, int(m.group(2)))
+                      code = 206
+                  self.send_response(code)
+                  self.send_header("Content-Type", self.guess_type(path))
+                  self.send_header("Accept-Ranges", "bytes")
+                  self.send_header("Content-Length", str(b - a + 1))
+                  if code == 206: self.send_header("Content-Range", "bytes %d-%d/%d" % (a, b, size))
+                  self.end_headers()
+                  if body:
+                      with open(path, "rb") as f:
+                          f.seek(a); left = b - a + 1
+                          try:
+                              while left > 0:
+                                  d = f.read(min(65536, left))
+                                  if not d: break
+                                  self.wfile.write(d); left -= len(d)
+                          except Exception: pass
+          class S(socketserver.ThreadingMixIn, http.server.HTTPServer): daemon_threads = True
+          S(("127.0.0.1", 8765), H).serve_forever()
+          PY
+          nohup python3 /tmp/serve.py > /tmp/srv.log 2>&1 &
+          sleep 2; curl -sI http://127.0.0.1:8765/film.mp4 | head -3
+      - name: Roteiro de estresse
+        env:
+          PLAY: ${{ github.event.inputs.play || '600' }}
+        run: |
+          xattr -cr mac/build/FramePlay.app
+          mkdir -p /tmp/res
+          APP=mac/build/FramePlay.app/Contents/MacOS/FramePlay
+          R=/tmp/res/resultado.txt; : > $R
+          FAILS=0
+          ok()   { echo "OK      $1 $2" | tee -a $R; }
+          fail() { echo "FALHOU  $1 $2" | tee -a $R; FAILS=$((FAILS+1)); }
+          LOG=/tmp/frameplay-player.log
+          cmd() { echo "$1" > /tmp/gf-cmd; sleep 2.5; }
+          rss() { ps -o rss= -p "$(pgrep -x FramePlay | head -1)" 2>/dev/null | tr -d ' ' ; }
+          # depois de uma ação: o app vive e, em até 30 s, aparece uma fala (linha "legenda do app: ... \"texto\"" nova no log)
+          check() {
+            local name=$1 before=$2 i
+            if ! pgrep -x FramePlay >/dev/null; then fail "$name" "o app MORREU"; return 1; fi
+            for i in $(seq 1 30); do
+              n=$(count)
+              if [ "$n" -gt "$before" ]; then ok "$name" "legenda apareceu"; return 0; fi
+              sleep 1
+            done
+            fail "$name" "SEM LEGENDA em 30 s"; return 1
+          }
+          count() { local c; c=$(grep -c 'legenda do app: .*"Fala' $LOG 2>/dev/null); echo "${c:-0}"; }
+          stats() { cmd "stats"; grep 'stats:' $LOG | tail -1; }
+          tempo() { stats | grep -o 'tempo=[0-9-]*' | cut -d= -f2; }
+          defaults delete FramePlay 2>/dev/null || true
+          rm -f $LOG
+          $APP --gf-test-play http://127.0.0.1:8765/film.mp4 - --gf-test-sub http://127.0.0.1:8765/leg.srt > /tmp/res/app1.log 2>&1 &
+          sleep 30
+          check "01-abre" 0
+          R0=$(rss); echo "rss inicio: $R0 KB" | tee -a $R
+          for t in 630000 30000 600000 25000 560000 40000 610000 20000; do
+            b=$(count); cmd "seek $t"; sleep 4; check "02-seek-$t" $b
+          done
+          for m in 1 0 1 0; do b=$(count); cmd "scale $m"; sleep 4; check "03-tela-$m" $b; done
+          for k in 1 2; do b=$(count); cmd "track $k"; sleep 4; check "04-faixa-$k" $b; done
+          cmd "track 1"
+          for k in 1 2 3 4 5; do b=$(count); cmd "fs"; sleep 4; cmd "fs"; sleep 4; check "06-tela-cheia-$k" $b; done
+          # fecha o player e abre outro filme
+          cmd "closeplayer"; sleep 5
+          pkill -x FramePlay || true; sleep 2
+          cp $LOG /tmp/res/player1.log 2>/dev/null || true
+          rm -f $LOG
+          $APP --gf-test-play http://127.0.0.1:8765/film2.mp4 - --gf-test-sub http://127.0.0.1:8765/leg.srt > /tmp/res/app2.log 2>&1 &
+          sleep 30
+          check "09-outro-filme" 0
+          cmd "seek 20000"; sleep 60
+          RA=$(rss); T0=$(tempo)
+          END=$(( $(date +%s) + PLAY )); k=0
+          while [ $(date +%s) -lt $END ]; do
+            sleep 30; k=$((k+1)); echo "$(date +%s),$(rss)" >> /tmp/res/memoria.csv
+            pgrep -x FramePlay >/dev/null || { fail "10-play" "o app MORREU durante a reprodução"; break; }
+          done
+          T1=$(tempo); RB=$(rss)
+          if [ -n "$T0" ] && [ -n "$T1" ] && [ "$T1" -gt "$T0" ] 2>/dev/null; then ok "10-play-andou" "tempo $T0 -> $T1 ms"; else fail "10-play-andou" "o filme não andou ($T0 -> $T1)"; fi
+          b=$(count); sleep 1; check "10-play-legenda" $(( b - 1 ))
+          GROW=$(( (${RB:-0} - ${RA:-0}) / 1024 ))
+          echo "MEMORIA rss: inicio=$(( ${R0:-0} / 1024 )) MB, após aquecimento=$(( ${RA:-0} / 1024 )) MB, fim=$(( ${RB:-0} / 1024 )) MB; crescimento=${GROW} MB" | tee -a $R
+          if [ "$GROW" -lt 50 ] 2>/dev/null; then ok "11-memoria" "crescimento ${GROW} MB (limite 50)"; else fail "11-memoria" "CRESCEU ${GROW} MB (limite 50)"; fi
+          pkill -x FramePlay || true
+          cp $LOG /tmp/res/player2.log 2>/dev/null || true
+          ls ~/Library/Logs/DiagnosticReports 2>/dev/null | grep -i frameplay > /tmp/res/crashreports.txt || true
+          [ -s /tmp/res/crashreports.txt ] && fail "12-crash-reports" "$(cat /tmp/res/crashreports.txt | tr '\n' ' ')"
+          echo "FALHAS=$FAILS" | tee -a $R
+          { echo '### Mac estresse'; echo '```'; cat $R | grep -v '^OK ' ; echo '```'; } >> $GITHUB_STEP_SUMMARY
+          [ "$FAILS" = 0 ]
+      - name: Guardar resultados
+        if: always()
+        env:
+          TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p /tmp/res && cp build.log /tmp/res/ 2>/dev/null || true
+          cd /tmp/res
+          git init -q && git checkout -q -b x
+          git config user.name "FramePlay CI"; git config user.email "ci@frameplay.local"
+          git add -A && git commit -qm "resultados do estresse do Mac" || true
+          git push -q -f "https://x-access-token:${TOKEN}@github.com/${{ github.repository }}.git" x:mac-estresse-out-${GITHUB_SHA::7} || echo "::warning::não guardou"
