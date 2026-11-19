@@ -1,0 +1,138 @@
+         1795109684.071   485  1928 I ActivityManager: Force stopping io.github.gabrielxyz404.gabiflix appid=10167 user=0: from pid 9878
+         1795109684.071   485  1928 I ActivityManager: Killing 9546:io.github.gabrielxyz404.gabiflix/u0a167 (adj 0): stop io.github.gabrielxyz404.gabiflix due to from pid 9878
+         1795109684.072   485  1928 W ActivityTaskManager: Force removing ActivityRecord{99dc66b u0 io.github.gabrielxyz404.gabiflix/.PlayerActivity t15 f}}: app died, no saved state
+         1795109684.077   485  1928 W ActivityTaskManager: Force removing ActivityRecord{e003ed u0 io.github.gabrielxyz404.gabiflix/.MainActivity t15 f}}: app died, no saved state
+         1795109684.095   485  1289 D ConnectivityService: ConnectivityService NetworkRequestInfo binderDied(NetworkRequest [ TRACK_DEFAULT id=58, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED Uid: 10167 AdministratorUids: [] RequestorUid: 10167 RequestorPackageName: io.github.gabrielxyz404.gabifl
+         1795109684.095   485  1289 D ConnectivityService: ConnectivityService NetworkRequestInfo binderDied(NetworkRequest [ LISTEN id=59, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&FOREGROUND Uid: 10167 AdministratorUids: [] RequestorUid: 10167 RequestorPackageName: io.github.gabrielxyz404.ga
+         1795109684.098   485   633 D ConnectivityService: releasing NetworkRequest [ TRACK_DEFAULT id=58, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED Uid: 10167 AdministratorUids: [] RequestorUid: 10167 RequestorPackageName: io.github.gabrielxyz404.gabiflix] ] (release request)
+         1795109685.239   485  1931 I ActivityManager: Force stopping io.github.gabrielxyz404.gabiflix appid=10167 user=0: clear data
+         1795109685.244   485   525 I ActivityManager: Force stopping io.github.gabrielxyz404.gabiflix appid=10167 user=-1: clearApplicationUserData
+         1795109685.259  1171  1171 I GeofencerStateMachine: removeGeofences: removeRequest=RemoveGeofencingRequest[REMOVE_ALL packageName=io.github.gabrielxyz404.gabiflix]
+         1795109685.318  1622  2952 I MediaProvider: Begin Intent { act=android.intent.action.PACKAGE_DATA_CLEARED dat=package:io.github.gabrielxyz404.gabiflix flg=0x1000010 cmp=com.google.android.providers.media.module/com.android.providers.media.MediaService (has extras) }
+         1795109685.320  1622  2952 I MediaProvider: End Intent { act=android.intent.action.PACKAGE_DATA_CLEARED dat=package:io.github.gabrielxyz404.gabiflix flg=0x1000010 cmp=com.google.android.providers.media.module/com.android.providers.media.MediaService (has extras) }
+         1795109685.325  1414  7890 I Icing   : doRemovePackageData io.github.gabrielxyz404.gabiflix [CONTEXT service_id=21 ]
+         1795109685.381   485  3741 I ActivityTaskManager: START u0 {act=android.intent.action.MAIN cat=[android.intent.category.LAUNCHER] flg=0x10200000 cmp=io.github.gabrielxyz404.gabiflix/.MainActivity} from uid 0
+         1795109685.475   485   526 I ActivityManager: Start proc 9921:io.github.gabrielxyz404.gabiflix/u0a167 for pre-top-activity {io.github.gabrielxyz404.gabiflix/io.github.gabrielxyz404.gabiflix.MainActivity}
+         1795109685.518  9921  9921 W xyz404.gabifli: Unexpected CPU variant for X86 using defaults: x86
+         1795109685.632  9921  9921 D NetworkSecurityConfig: No Network Security Config specified, using platform default
+         1795109685.632  9921  9921 D NetworkSecurityConfig: No Network Security Config specified, using platform default
+         1795109685.648  9921  9946 D libEGL  : loaded /vendor/lib/egl/libEGL_emulation.so
+         1795109685.664  9921  9946 D libEGL  : loaded /vendor/lib/egl/libGLESv1_CM_emulation.so
+         1795109685.665  9921  9946 D libEGL  : loaded /vendor/lib/egl/libGLESv2_emulation.so
+         1795109685.696  9921  9921 I WebViewFactory: Loading com.google.android.webview version 83.0.4103.106 (code 410410681)
+         1795109685.697  9921  9921 I xyz404.gabifli: The ClassLoaderContext is a special shared library.
+         1795109685.698  9921  9921 D nativeloader: classloader namespace configured for unbundled product apk. library_path=/product/app/WebViewGoogle/lib/x86:/product/app/WebViewGoogle/WebViewGoogle.apk!/lib/x86:/product/app/TrichromeLibrary/TrichromeLibrary.apk!/lib/x86:/product/lib:/system/produ
+         1795109685.698  9921  9921 I xyz404.gabifli: The ClassLoaderContext is a special shared library.
+         1795109685.699  9921  9921 D nativeloader: classloader namespace configured for unbundled product apk. library_path=/product/app/WebViewGoogle/lib/x86:/product/app/WebViewGoogle/WebViewGoogle.apk!/lib/x86:/product/app/TrichromeLibrary/TrichromeLibrary.apk!/lib/x86:/product/lib:/system/produ
+         1795109685.719  9921  9951 I cr_VariationsUtils: Requesting new seed from IVariationsSeedServer
+         1795109685.722  9921  9921 I cr_LibraryLoader: Loaded native library version number "83.0.4103.106"
+         1795109685.723  9921  9921 I cr_CachingUmaRecorder: Flushed 3 samples from 3 histograms.
+         1795109685.725  9921  9921 I TetheringManager: registerTetheringEventCallback:io.github.gabrielxyz404.gabiflix
+         1795109685.756  9921  9921 E chromium: [ERROR:filesystem_posix.cc(62)] mkdir /data/user/0/io.github.gabrielxyz404.gabiflix/cache/WebView/Crashpad: No such file or directory (2)
+         1795109685.758   485   526 I ActivityManager: Start proc 9954:com.google.android.webview:sandboxed_process0:org.chromium.content.app.SandboxedProcessService0:0/u0i7 for  {io.github.gabrielxyz404.gabiflix/org.chromium.content.app.SandboxedProcessService0:0}
+         1795109685.783   485  3741 D ConnectivityService: requestNetwork for uid/pid:10167/9921 NetworkRequest [ TRACK_DEFAULT id=60, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED Uid: 10167 AdministratorUids: [] RequestorUid: 10167 RequestorPackageName: io.github.gabrielxyz404.gabiflix] ]
+         1795109685.784   485   629 D WifiNetworkFactory: got request NetworkRequest [ TRACK_DEFAULT id=60, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED Uid: 10167 AdministratorUids: [] RequestorUid: 10167 RequestorPackageName: io.github.gabrielxyz404.gabiflix] ] with score 60 and providerId 3
+         1795109685.784   485   629 D UntrustedWifiNetworkFactory: got request NetworkRequest [ TRACK_DEFAULT id=60, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED Uid: 10167 AdministratorUids: [] RequestorUid: 10167 RequestorPackageName: io.github.gabrielxyz404.gabiflix] ] with score 60 and provid
+         1795109685.784   975   975 D PhoneSwitcherNetworkRequstListener: got request NetworkRequest [ TRACK_DEFAULT id=60, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED Uid: 10167 AdministratorUids: [] RequestorUid: 10167 RequestorPackageName: io.github.gabrielxyz404.gabiflix] ] with score 60 and
+         1795109685.820  9921  9944 D HostConnection: HostConnection::get() New Host Connection established 0xf15ed2d0, tid 9944
+         1795109685.833  9921  9944 D HostConnection: HostComposition ext ANDROID_EMU_CHECKSUM_HELPER_v1 ANDROID_EMU_native_sync_v2 ANDROID_EMU_dma_v1 ANDROID_EMU_direct_mem ANDROID_EMU_host_composition_v1 ANDROID_EMU_host_composition_v2 ANDROID_EMU_vulkan ANDROID_EMU_deferred_vulkan_commands ANDROI
+         1795109685.846  9921  9944 D EGL_emulation: eglCreateContext: 0xf15eddc0: maj 3 min 0 rcv 3
+         1795109685.848  9921  9944 D EGL_emulation: eglMakeCurrent: 0xf15eddc0: ver 3 0 (tinfo 0xc0a8d730) (first time)
+         1795109685.860  9921  9944 I Gralloc4: mapper 4.x is not supported
+         1795109685.860  9921  9944 D HostConnection: createUnique: call
+         1795109685.860  9921  9944 D HostConnection: HostConnection::get() New Host Connection established 0xf15ecf50, tid 9944
+         1795109685.890  9921  9944 D HostConnection: HostComposition ext ANDROID_EMU_CHECKSUM_HELPER_v1 ANDROID_EMU_native_sync_v2 ANDROID_EMU_dma_v1 ANDROID_EMU_direct_mem ANDROID_EMU_host_composition_v1 ANDROID_EMU_host_composition_v2 ANDROID_EMU_vulkan ANDROID_EMU_deferred_vulkan_commands ANDROI
+         1795109685.893  9921  9921 D HostConnection: HostConnection::get() New Host Connection established 0xf15ec8c0, tid 9921
+         1795109685.897  9921  9921 D HostConnection: HostComposition ext ANDROID_EMU_CHECKSUM_HELPER_v1 ANDROID_EMU_native_sync_v2 ANDROID_EMU_dma_v1 ANDROID_EMU_direct_mem ANDROID_EMU_host_composition_v1 ANDROID_EMU_host_composition_v2 ANDROID_EMU_vulkan ANDROID_EMU_deferred_vulkan_commands ANDROI
+         1795109685.898  9921  9921 D EGL_emulation: eglCreateContext: 0xf15ed030: maj 3 min 0 rcv 3
+         1795109685.898  9921  9921 D EGL_emulation: eglMakeCurrent: 0xf15ed030: ver 3 0 (tinfo 0xc0a8a190) (first time)
+         1795109686.070   485   524 D ArtManagerInternalImpl: /data/misc/iorapd/io.github.gabrielxyz404.gabiflix/1/io.github.gabrielxyz404.gabiflix.MainActivity/compiled_traces/compiled_trace.pb doesn't exist
+         1795109686.106   485   524 I ActivityTaskManager: Displayed io.github.gabrielxyz404.gabiflix/.MainActivity: +688ms
+         1795109688.073  9921  9999 D HostConnection: HostConnection::get() New Host Connection established 0xf15e6500, tid 9999
+         1795109688.076  9921  9965 W cr_media: Requires BLUETOOTH permission
+         1795109688.078  9921  9999 D HostConnection: HostComposition ext ANDROID_EMU_CHECKSUM_HELPER_v1 ANDROID_EMU_native_sync_v2 ANDROID_EMU_dma_v1 ANDROID_EMU_direct_mem ANDROID_EMU_host_composition_v1 ANDROID_EMU_host_composition_v2 ANDROID_EMU_vulkan ANDROID_EMU_deferred_vulkan_commands ANDROI
+         1795109688.084  9921  9999 I VideoCapabilities: Unsupported profile 4 for video/mp4v-es
+         1795109688.084  9921  9999 W cr_MediaCodecUtil: HW encoder for video/avc is not available on this device.
+         1795109688.085  9921  9999 D EGL_emulation: eglCreateContext: 0xf15df960: maj 3 min 0 rcv 3
+         1795109688.085  9921  9999 D EGL_emulation: eglMakeCurrent: 0xf15df960: ver 3 0 (tinfo 0xc0a8a1f0) (first time)
+         1795109689.085  9921  9965 D xyz404.gabifli: PlayerBase::PlayerBase()
+         1795109689.085  9921  9965 D xyz404.gabifli: TrackPlayerBase::TrackPlayerBase()
+         1795109689.085  9921  9965 I libOpenSLES: Emulating old channel mask behavior (ignoring positional mask 0x3, using default mask 0x3 based on channel count of 2)
+         1795109689.088  9921  9965 D AudioTrack: createTrack_l(0): AUDIO_OUTPUT_FLAG_FAST denied by server; frameCount 0 -> 1956
+         1795109689.178  9921  9921 I chromium: [INFO:CONSOLE(1)] "using deprecated parameters for the initialization function; pass a single object instead", source: https://gabrielxyz404.github.io/GABIFLIX/9f991f0e5de35babe83e7d632d2521e8a22855cb/scripts/worker.js (1)
+         1795109690.103  9921  9921 I chromium: [INFO:CONSOLE(1)] "Failed to initialize core: Error: WebAssembly.instantiateStreaming(): invalid local type @+165", source: https://gabrielxyz404.github.io/GABIFLIX/9f991f0e5de35babe83e7d632d2521e8a22855cb/scripts/main.js (1)
+         1795109690.117  9921  9921 I chromium: [INFO:CONSOLE(0)] "An <img> element was lazyloaded with loading=lazy, but had no dimensions specified. Specifying dimensions improves performance. See https://crbug.com/954323", source: https://gabrielxyz404.github.io/GABIFLIX/ (0)
+         1795109693.410   485  1661 I ActivityTaskManager: START u0 {flg=0x10000000 cmp=io.github.gabrielxyz404.gabiflix/.PlayerActivity (has extras)} from uid 0
+         1795109693.447  9921  9921 D VLC/JNI/VLCObject: JNI interface loaded.
+         1795109693.451  9921  9921 E VLC     : [ebd0a450/26c1] libvlc audio output: GetStaticFieldID(AudioFormat.ENCODING_PCM_32BIT) failed
+         1795109693.454  9921  9921 I GabiFlixPlayer: ciclo: onStart, tocando=false, tempo=-1, escala=0, atraso=0, vista=SurfaceView 0x0, vout=true
+         1795109693.455  9921  9921 I GabiFlixPlayer: ciclo: onResume, tocando=false, tempo=-1, escala=0, atraso=0, vista=SurfaceView 0x0, vout=true
+         1795109693.981  9921 10033 I GabiFlixPlayer: hash=df557a63d23fb94c tamanho=39670384 arquivo=clip.mkv
+         1795109693.981  9921 10033 I GabiFlixPlayer: Hash calculado, mas a busca de legendas falhou
+         1795109693.981  9921 10033 I GabiFlixPlayer: candidatas para baixar: 1 (do site: 1)
+         1795109694.025  9921 10042 E VLC     : [bbd91740/273a] libvlc window: request 1 not implemented
+         1795109694.025  9921 10042 E VLC     : [bbd91740/273a] libvlc window: request 0 not implemented
+         1795109694.025  9921 10042 E VLC     : [bbd91740/273a] libvlc window: request 0 not implemented
+         1795109694.031  9921 10042 E VLC     : [bbd91740/273a] libvlc window: request 1 not implemented
+         1795109694.048  9921 10044 I OMXClient: IOmx service obtained
+         1795109694.055  9921 10043 D SurfaceUtils: connecting to surface 0xebe11528, reason connectToSurface
+         1795109694.055  9921 10043 I MediaCodec: [OMX.android.goldfish.h264.decoder] setting surface generation to 10159105
+         1795109694.055  9921 10043 D SurfaceUtils: disconnecting from surface 0xebe11528, reason connectToSurface(reconnect)
+         1795109694.055  9921 10043 D SurfaceUtils: connecting to surface 0xebe11528, reason connectToSurface(reconnect)
+         1795109694.055  9921 10044 E ACodec  : [OMX.android.goldfish.h264.decoder] setPortMode on output to DynamicANWBuffer failed w/ err -1010
+         1795109694.064  9921 10044 D SurfaceUtils: disconnecting from surface 0xebe11528, reason setNativeWindowSizeFormatAndUsage
+         1795109694.064  9921 10044 D SurfaceUtils: connecting to surface 0xebe11528, reason setNativeWindowSizeFormatAndUsage
+         1795109694.064  9921 10044 D SurfaceUtils: set up nativeWindow 0xebe11528 for 640x480, color 0x13, rotation 0, usage 0x1002900
+         1795109694.107  9921  9921 I Choreographer: Skipped 37 frames!  The application may be doing too much work on its main thread.
+         1795109694.110   485   524 I ActivityTaskManager: Displayed io.github.gabrielxyz404.gabiflix/.PlayerActivity: +700ms
+         1795109694.146  9921 10051 W AudioTrack: Use of stream types is deprecated for operations other than volume control
+         1795109694.146  9921 10051 W AudioTrack: See the documentation of AudioTrack() for what to use instead with android.media.AudioAttributes to qualify your playback use case
+         1795109694.149  9921  9921 I GabiFlixPlayer: ciclo: evento Vout, saídas=1
+         1795109694.274  9921 10042 E VLC     : [bbd91740/273a] libvlc window: request 1 not implemented
+         1795109694.285  9921 10049 E VLC     : [f1406160/2741] libvlc decoder: output: 19 unknown, 640x480 stride 640 480, crop 0 0 0 0
+         1795109694.394  9921 10033 I GabiFlixPlayer: legendas PT válidas: 1 de 1; referências baixadas: 0
+         1795109694.883  9921  9944 I OpenGLRenderer: Davey! duration=711ms; Flags=1, IntendedVsync=1238576464702, Vsync=1239009798018, OldestInputEvent=9223372036854775807, NewestInputEvent=0, HandleInputStart=1239025969873, AnimationStart=1239025971385, PerformTraversalsStart=1239026066697, DrawSt
+         1795109695.069  9921 10033 I GabiFlixPlayer: alinhamento com 0 referência(s):
+         1795109695.069  9921 10033 I GabiFlixPlayer:   sem referência (nem outro idioma, nem PT do hash) e menos de 2 PT para comparar: ranking antigo
+         1795109695.069  9921 10033 I GabiFlixPlayer:   alinhadas: 0
+         1795109695.070  9921 10042 E VLC     : [bbd91740/273a] libvlc window: request 3 not implemented
+         1795109695.070  9921  9921 I GabiFlixPlayer: legenda PT embutida: não há
+         1795109695.072  9921  9921 I GabiFlixPlayer: ranking das legendas:
+         1795109695.072  9921  9921 I GabiFlixPlayer:   referência de fim=0ms (sem referência), duração=1200023ms
+         1795109695.072  9921  9921 I GabiFlixPlayer:   #0 fim=6108228ms hash=false corrigida=false nota=0.3000
+         1795109695.073  9921  9921 I GabiFlixPlayer: escolhida: candidata #0; melhor baixada: #0 alinhada=false nota=0.00 deslocamento=0ms hash=false corrigida=false; 1 no menu
+         1795109695.075  9921  9921 I GabiFlixPlayer: atraso da legenda ativa (d3:u|h:df557a63d23fb94c|http://10.0.2.2:8000/certa.srt#raw): 0 ms
+         1795109695.644  9921  9934 I xyz404.gabifli: NativeAlloc concurrent copying GC freed 267221(9915KB) AllocSpace objects, 18(1676KB) LOS objects, 49% free, 4863KB/9726KB, paused 19us total 291.859ms
+         1795109695.946  9921  9921 I GabiFlixPlayer: vistas do vídeo: SurfaceView(vídeo) SurfaceView
+         1795109695.948  9921  9921 I GabiFlixPlayer: AUDIOSYNC pronto (sem limite de dados; automático=true, começa 25 s depois de a legenda ficar ativa; resultado confiante vale 30 dias e não se reverifica; sem confiança: 1 nova tentativa em 1200 s; salto grande = 600 s)
+         1795109696.948  9921  9921 E memtrack: Couldn't load memtrack module
+         1795109696.948  9921  9921 I xyz404.gabifli: Using smaps_rollup for pss collection
+         1795109696.954  9921  9921 I GabiFlixPlayer: AUDIOSYNC estado: st=- executando=false tocando=true carregando=false faixa=2 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 2:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=117MB java=4/512MB nativo=62MB liv
+         1795109696.955  9921  9921 I GabiFlixPlayer: AUDIOSYNC legenda ativa: 57a63d23fb94c|http://10.0.2.2:8000/certa.srt#raw (nova nesta sessão)
+         1795109696.956  9921  9921 I GabiFlixPlayer: AUDIOSYNC GATILHO motivo=troca-de-legenda legenda=57a63d23fb94c|http://10.0.2.2:8000/certa.srt#raw decisão=avaliar (espera 25 s tocando; se há resultado guardado, não analisa) [análises=0 sem_confiança=0 estado=nova]
+         1795109714.146  9921  9921 I GabiFlixPlayer: ciclo: onPause, tocando=true, tempo=19586, escala=0, atraso=0, vista=SurfaceView 1475x1080, vout=true
+         1795109714.932  9921  9921 I GabiFlixPlayer: ciclo: onStop, tocando=false, tempo=19586, escala=0, atraso=0, vista=SurfaceView 1475x1080, vout=false
+         1795109714.954  9921 10049 E NdkMediaCodec: sf error code: -38
+         1795109715.032  9921 10044 E Surface : getSlotFromBufferLocked: unknown buffer: 0xbf803790
+         1795109715.032  9921 10044 W ACodec  : [OMX.android.goldfish.h264.decoder] can not return buffer 11 to native window
+         1795109715.090  9921 10043 D SurfaceUtils: disconnecting from surface 0xebe11528, reason disconnectFromSurface
+         1795109715.090   351   586 E BufferQueueProducer: [SurfaceView - io.github.gabrielxyz404.gabiflix/io.github.gabrielxyz404.gabiflix.PlayerActivity#0](id:15f00000061,api:0,p:-1,c:351) disconnect: not connected (req=3)
+         1795109715.090  9921 10043 E SurfaceUtils: Failed to disconnect from surface 0xebe11528, err -19
+         1795109715.090  9921 10043 W MediaCodec: nativeWindowDisconnect returned an error: No such device (-19)
+         1795109715.203  9921  9921 I GabiFlixPlayer: ciclo: evento Vout, saídas=0
+         1795109715.205   351   371 E BufferQueueProducer: [SurfaceView - io.github.gabrielxyz404.gabiflix/io.github.gabrielxyz404.gabiflix.PlayerActivity#1](id:15f00000062,api:0,p:-1,c:351) dequeueBuffer: BufferQueue has been abandoned
+         1795109715.205  9921 10042 E Surface : dequeueBuffer failed (No such device)
+         1795109715.205  9921 10042 D HostConnection: HostConnection::get() New Host Connection established 0xf15fb650, tid 10042
+         1795109715.210  9921 10042 D HostConnection: HostComposition ext ANDROID_EMU_CHECKSUM_HELPER_v1 ANDROID_EMU_native_sync_v2 ANDROID_EMU_dma_v1 ANDROID_EMU_direct_mem ANDROID_EMU_host_composition_v1 ANDROID_EMU_host_composition_v2 ANDROID_EMU_vulkan ANDROID_EMU_deferred_vulkan_commands ANDROI
+         1795109715.215   351   372 E BufferQueueProducer: [SurfaceView - io.github.gabrielxyz404.gabiflix/io.github.gabrielxyz404.gabiflix.PlayerActivity#0](id:15f00000061,api:0,p:-1,c:351) connect: BufferQueue has been abandoned
+         1795109715.215  9921 10042 E libEGL  : eglCreateWindowSurface: native_window_api_connect (win=0xebe11528) failed (0xffffffed) (already connected to another API?)
+         1795109715.215  9921 10042 E libEGL  : eglCreateWindowSurfaceTmpl:725 error 3003 (EGL_BAD_ALLOC)
+         1795109715.215  9921 10042 E VLC     : [b4573a00/273a] libvlc gl: cannot create EGL window surface
+         1795109717.240  9921  9921 I GabiFlixPlayer: AUDIOSYNC estado: st=nova executando=false tocando=false carregando=false faixa=2 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 2:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=123MB java=5/512MB nativo=59MB
+         1795109719.160  9921  9965 D xyz404.gabifli: PlayerBase::stop() from IPlayer
+         1795109719.160  9921  9965 D AudioTrack: stop(30): called with 1254204 frames delivered
+         1795109737.696  9921  9921 I GabiFlixPlayer: AUDIOSYNC estado: st=nova executando=false tocando=false carregando=false faixa=2 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 2:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=115MB java=3/512MB nativo=59MB
+         1795109758.166  9921  9921 I GabiFlixPlayer: AUDIOSYNC estado: st=nova executando=false tocando=false carregando=false faixa=2 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 2:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=115MB java=3/512MB nativo=59MB
+         1795109778.694  9921  9921 I GabiFlixPlayer: AUDIOSYNC estado: st=nova executando=false tocando=false carregando=false faixa=2 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 2:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=116MB java=3/512MB nativo=59MB
+         1795109799.267  9921  9921 I GabiFlixPlayer: AUDIOSYNC estado: st=nova executando=false tocando=false carregando=false faixa=2 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 2:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=116MB java=3/512MB nativo=59MB
+         1795109819.676  9921  9921 I GabiFlixPlayer: AUDIOSYNC estado: st=nova executando=false tocando=false carregando=false faixa=2 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 2:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=116MB java=3/512MB nativo=59MB
