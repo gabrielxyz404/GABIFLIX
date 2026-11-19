@@ -43,16 +43,107 @@ struct AudioCue {
         return out
     }
 
+    /** nomes de tag (HTML do SRT/VTT) que não são texto da fala */
+    private static let tagsSimple: Set<String> = ["i", "b", "u", "s", "c", "em", "strong", "strike", "br", "big", "small", "sub", "sup", "tt", "q", "mark", "del", "ins", "ruby", "rt", "rp", "center"]
+    private static let tagsAttr: Set<String> = ["v", "lang", "font", "span", "a", "p", "div"]
+
+    private static func isStampChar(_ c: UInt16) -> Bool {
+        if c >= 0x30 && c <= 0x39 { return true }
+        return c == 0x3A || c == 0x2E || c == 0x2C
+    }
+
+    private static func isAsciiAlnum(_ c: UInt16) -> Bool {
+        if c >= 0x61 && c <= 0x7A { return true }
+        if c >= 0x41 && c <= 0x5A { return true }
+        return c >= 0x30 && c <= 0x39
+    }
+
+    private static func isBlank(_ r: ArraySlice<UInt16>) -> Bool {
+        for c in r where c > 0x20 { return false }
+        return true
+    }
+
+    /**
+     * s[i] é '<': se começa uma tag de verdade devolve o índice do '>' que a fecha, senão -1 (o '<' é um caractere de texto, como em
+     * "<Hoje estou alegre, >" ou "2 < 3"). Porte 1:1 de Cue.tagEnd.
+     */
+    static func tagEnd(_ s: [UInt16], _ i: Int) -> Int {
+        let n = s.count
+        var j = i + 1
+        if j >= n { return -1 }
+        let c = s[j]
+        if c >= 0x30 && c <= 0x39 {
+            var k = j
+            while k < n && k < i + 16 && isStampChar(s[k]) { k += 1 }
+            return k < n && s[k] == 0x3E ? k : -1
+        }
+        var closing = false
+        if c == 0x2F {
+            closing = true
+            j += 1
+            while j < n && s[j] == 0x20 { j += 1 }
+        }
+        var k = j
+        while k < n {
+            let x = s[k]
+            if isAsciiAlnum(x) { k += 1 } else { break }
+        }
+        if k == j { return -1 }
+        var name = ""
+        for x in s[j..<k] { name.unicodeScalars.append(Unicode.Scalar(UInt8(x >= 0x41 && x <= 0x5A ? x + 32 : x))) }
+        let simple = tagsSimple.contains(name), attr = tagsAttr.contains(name)
+        if !simple && !attr { return -1 }
+        var e = k
+        while e < n && s[e] != 0x3E && s[e] != 0x3C && s[e] != 0x0A { e += 1 }
+        if e >= n || s[e] != 0x3E { return -1 }
+        if e == k { return e }                                             // "<i>"
+        let rest = s[k..<e]
+        if closing { return isBlank(rest) ? e : -1 }
+        let r0 = rest[rest.startIndex]
+        if r0 == 0x2F {                                                    // "<br/>"
+            var only = true
+            for c in rest where c > 0x20 && c != 0x2F { only = false }
+            var slashes = 0
+            for c in rest where c == 0x2F { slashes += 1 }
+            if only && slashes == 1 { return e }
+        }
+        if r0 == 0x2E && simple { return rest.contains(0x20) ? -1 : e }    // "<c.yellow>"
+        if r0 != 0x20 && r0 != 0x09 { return -1 }
+        if isBlank(rest) { return e }                                      // "<i >"
+        if name == "v" || name == "lang" { return e }                      // "<v Ana>", "<lang pt-BR>"
+        if attr, let eq = rest.firstIndex(of: 0x3D), eq > rest.startIndex { return e }   // "<font color=...>"
+        return -1
+    }
+
+    /** s[i] é '{': fim ('}') de um bloco de efeitos do ASS/MicroDVD ({\an8}, {\i1}, {an8}, {y:i}) na mesma linha; -1 se for só uma chave no texto */
+    static func braceEnd(_ s: [UInt16], _ i: Int) -> Int {
+        let n = s.count
+        let j = i + 1
+        if j >= n { return -1 }
+        let c = s[j]
+        var ok = c == 0x5C                                                   // {\an8}
+        if !ok && isAsciiAlnum(c) && !(c >= 0x30 && c <= 0x39) && j + 1 < n && s[j + 1] == 0x3A { ok = true }   // {y:i}
+        if !ok && c == 0x61 && j + 2 < n && s[j + 1] == 0x6E && s[j + 2] >= 0x31 && s[j + 2] <= 0x39 { ok = true }   // {an8}
+        if !ok { return -1 }
+        var k = j
+        while k < n {
+            if s[k] == 0x7D { return k }
+            if s[k] == 0x0A { return -1 }
+            k += 1
+        }
+        return -1
+    }
+
     /** (letras de fala, letras em colchetes/notas) */
-    static func countChars(_ s: String) -> (Int, Int) {
+    static func countChars(_ str: String) -> (Int, Int) {
+        let s = Array(str.utf16)
         var speech = 0, other = 0, depth = 0
-        var tag = false
-        for u in s.utf16 {
-            if u == 0x3C { tag = true; continue }            // <
-            if u == 0x3E { tag = false; continue }           // >
-            if tag { continue }
-            if u == 0x7B { tag = true; continue }            // {
-            if u == 0x7D { tag = false; continue }           // }
+        var i = 0
+        while i < s.count {
+            let u = s[i]
+            if u == 0x3C { let e = tagEnd(s, i); if e > 0 { i = e + 1; continue } }            // <
+            else if u == 0x7B { let e = braceEnd(s, i); if e > 0 { i = e + 1; continue } }      // {
+            i += 1
             if u == 0x5B || u == 0x28 { depth += 1; continue }   // [ (
             if u == 0x5D || u == 0x29 { if depth > 0 { depth -= 1 }; continue }   // ] )
             if u == 0x266A || u == 0x266B || u == 0x266C { other += 1; continue }  // notas

@@ -1,0 +1,16 @@
+[Script Info]
+Title: teste
+ScriptType: v4.00+
+
+[V4+ Styles]
+Format: Name, Fontname, Fontsize
+Style: Default,Arial,20
+
+[Events]
+Format: Layer, End, Start, Style, Name, MarginL, MarginR, MarginV, Effect, Text
+Dialogue: 0,1:02:05.50,1:02:03.25,Default,,0,0,0,,{\an8}Terceira, com vírgula, e mais uma\Nsegunda linha
+Dialogue: 0,0:00:03.50,0:00:01.25,Default,,0,0,0,,Primeira
+Dialogue: 0,0:00:07.00,0:00:05.05,Default,,0,0,0,,{\i1}Segunda{\i0}, em itálico
+Dialogue: 0,0:10:00.00,0:09:58.99,Default,,0,0,0,,Quarta, fora de ordem no tempo
+Dialogue: 0,0:00:09.00,0:00:08.00,Default,,0,0,0,,Quinta
+Comment: 0,0:00:01.00,0:00:02.00,Default,,0,0,0,,isto é comentário

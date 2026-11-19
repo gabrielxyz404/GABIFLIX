@@ -1,6 +1,9 @@
 package io.github.gabrielxyz404.gabiflix;
 
+import io.github.gabrielxyz404.gabiflix.audiosync.Cue;
+import java.io.File;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 
 /**
  * Testes na JVM (sem emulador) do que o app faz com o TEXTO das legendas: SubtitleOverlay.parse/at/clean (o que aparece na tela)
@@ -18,6 +21,14 @@ public class SweepTest {
     }
 
     static String show(Object o) { return o == null ? "null" : "\"" + String.valueOf(o).replace("\n", "\\n") + "\""; }
+
+    static String cuesString(Cue[] cs) {
+        StringBuilder sb = new StringBuilder();
+        for (Cue c : cs) sb.append(c.startMs).append(' ').append(c.endMs).append(' ').append(c.chars).append(' ').append(c.speech ? 1 : 0).append('\n');
+        return sb.toString();
+    }
+
+    static String readFile(File f) throws Exception { return new String(Files.readAllBytes(f.toPath()), StandardCharsets.UTF_8); }
 
     static byte[] b(String s, String cs) { try { return s.getBytes(cs); } catch (Exception e) { throw new RuntimeException(e); } }
 
@@ -127,6 +138,36 @@ public class SweepTest {
         eq("portugues reconhecido", true, SubtitleText.looksPortuguese(pt));
         eq("ingles recusado", false, SubtitleText.looksPortuguese("1\n00:00:01,000 --> 00:00:03,000\nYou are not what I thought, and this is what you have been told.\n"));
         eq("lastCueEnd", 6000L, SubtitleText.lastCueEnd(pt));
+
+        // ---------- parser: bugs da bancada de 300 títulos (uma fixture por bug em tools/bug-sweep/fixtures; o Swift lê as mesmas e tem que dar igual) ----------
+        // NOME.in = bytes da legenda; NOME.fps (opcional) = fps do vídeo; NOME.out = texto que o app tem que produzir; NOME.cues = falas que Cue.parseSrt tem que ler
+        File fx = new File("tools/bug-sweep/fixtures");
+        String[] names = fx.list((d, fn) -> fn.endsWith(".in"));
+        java.util.Arrays.sort(names);
+        eq("fixtures: pelo menos 17", true, names.length >= 17);
+        for (String nm : names) {
+            String base = nm.substring(0, nm.length() - 3);
+            File fpsF = new File(fx, base + ".fps");
+            double vf = fpsF.exists() ? Double.parseDouble(readFile(fpsF).trim()) : 0;
+            String got = SubtitleText.decode(Files.readAllBytes(new File(fx, nm).toPath()), vf);
+            eq("fixture " + base + ": texto", readFile(new File(fx, base + ".out")), got == null ? "(null)" : got);
+            eq("fixture " + base + ": falas", readFile(new File(fx, base + ".cues")), cuesString(got == null ? new Cue[0] : Cue.parseSrt(got)));
+        }
+        // MicroDVD: o fps do vídeo só vale sem cabeçalho; sem nenhum dos dois é 23.976; com menos de 3 falas não é legenda
+        byte[] mdvd = b("{50}{100}Um\n{100}{150}Dois\n{250}{300}Três\n", "UTF-8");
+        eq("microdvd: fps do video 25", true, SubtitleText.decode(mdvd, 25).contains("00:00:02,000 --> 00:00:04,000"));
+        eq("microdvd: fps 0 = 23.976", true, SubtitleText.decode(mdvd, 0).contains("00:00:02,085 --> 00:00:04,171"));
+        eq("microdvd: fps absurdo = 23.976", true, SubtitleText.decode(mdvd, 1000).contains("00:00:02,085 --> 00:00:04,171"));
+        eq("microdvd: so 2 falas nao e legenda", null, SubtitleText.decode(b("{50}{100}Um da lista de compras\n{100}{150}Dois da lista de compras\n", "UTF-8"), 25));
+        // mojibake: um "Ã©" solto num texto certo cheio de acentos não é mexido; um texto todo mojibake é; duas camadas também
+        String certo = "Não sei o que você está fazendo aqui, é muito tarde. Estou aqui porque tudo isso é meu, já até vi a ação. Coração, são, irmã, também, música.";
+        eq("mojibake: texto certo com um Ã© solto fica", true, SubtitleText.fixMojibake(certo + " fiancÃ©e").equals(certo + " fiancÃ©e"));
+        eq("mojibake: duas camadas", certo, SubtitleText.fixMojibake(new String(new String(certo.getBytes(StandardCharsets.UTF_8), "windows-1252").getBytes(StandardCharsets.UTF_8), "windows-1252")));
+        eq("mojibake: um byte de controle (ISO-8859-1) volta exato", "ÍNDIA e POLÍCIA e Ïris e ÁGUA e mãe e ação", SubtitleText.fixMojibake("Ã\u008dNDIA e POLÃ\u008dCIA e Ã\u008fris e Ã\u0081GUA e mÃ£e e aÃ§Ã£o"));
+        // codificação: o resultado limpo de um VTT ou de um MicroDVD passa de novo pelo app sem mudar
+        String yt = SubtitleText.decode(Files.readAllBytes(new File(fx, "vtt-rolling-youtube.in").toPath()));
+        eq("vtt limpo e idempotente", yt, SubtitleText.normalize(yt));
+        eq("rolling caption: 3 falas e nenhuma tag de tempo", true, Cue.parseSrt(yt).length == 3 && !yt.contains("<0"));
 
         System.out.println("\n" + (runs - fails) + "/" + runs + " casos ok");
         if (fails > 0) { System.out.println(fails + " FALHARAM"); System.exit(1); }
