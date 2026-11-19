@@ -2,8 +2,8 @@ name: Bancada 300 titulos
 
 # Mede o motor de sincronia de legendas pelo audio (AudioAligner + Silero em Java puro, o laco do app) em ate 300 titulos legais
 # (dominio publico do archive.org + filmes abertos/CC modernos), em duas versoes do motor: origin/main (a de hoje) e o ramo da deriva.
-# NAO muda o motor nem publica o app. Resultados no ramo bench-300-out. Dispara so ao empurrar o ramo run-bench300;
-# a fase e escolhida em tools/bench300/run.conf (sonda | descobrir | piloto | completo | resumo).
+# NAO muda o motor nem publica o app. Resultados nos ramos bench-300-catalogo / bench-300-out. Dispara so ao empurrar o ramo run-bench300;
+# a fase vem de tools/bench300/run.conf (sonda | descobrir | piloto | completo | resumo).
 on:
   push:
     branches: [run-bench300]
@@ -12,6 +12,9 @@ on:
 permissions:
   contents: write
 
+env:
+  D: android/app/src/main/java/io/github/gabrielxyz404/gabiflix
+
 jobs:
   config:
     runs-on: ubuntu-latest
@@ -19,6 +22,9 @@ jobs:
       fase: ${{ steps.c.outputs.fase }}
       shards: ${{ steps.c.outputs.shards }}
       nshards: ${{ steps.c.outputs.nshards }}
+      maxpar: ${{ steps.c.outputs.maxpar }}
+      main_sha: ${{ steps.c.outputs.main_sha }}
+      drift_sha: ${{ steps.c.outputs.drift_sha }}
     steps:
       - uses: actions/checkout@v4
       - id: c
@@ -26,6 +32,9 @@ jobs:
           set -a; . tools/bench300/run.conf; set +a
           echo "fase=$FASE" >> $GITHUB_OUTPUT
           echo "nshards=$NSHARDS" >> $GITHUB_OUTPUT
+          echo "maxpar=${MAXPAR:-8}" >> $GITHUB_OUTPUT
+          echo "main_sha=${MAIN_SHA:-main}" >> $GITHUB_OUTPUT
+          echo "drift_sha=${DRIFT_SHA:-run-deriva}" >> $GITHUB_OUTPUT
           python3 -c "import json,os; print('shards='+json.dumps(list(range(int(os.environ['NSHARDS'])))))" >> $GITHUB_OUTPUT
           cat tools/bench300/run.conf
 
@@ -41,12 +50,108 @@ jobs:
           nproc; free -g | head -2; df -h / | tail -1
           sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg >/dev/null
           ffmpeg -hide_banner -filters 2>/dev/null | grep -i -E "flite|silencedetect" || true
-          ffmpeg -version | head -1
       - name: Sonda
         run: python3 tools/bench300/net_probe.py 2>&1 | tee sonda.txt
+
+  catalogo:
+    needs: config
+    if: ${{ needs.config.outputs.fase == 'descobrir' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - name: Descobrir titulos e legendas
+        run: |
+          set -a; . tools/bench300/run.conf; set +a
+          python3 tools/bench300/catalog.py descobrir catalog.json --semente ${SEMENTE:-300} --antigos ${CAT_ANTIGOS:-330} --novos ${CAT_NOVOS:-190} --tv ${CAT_TV:-70} --pool ${CAT_POOL:-1000} --limite-s ${CAT_LIMITE:-3300} 2>&1 | tee catalogo.log | tail -400
+      - name: Publicar o catalogo
+        if: always()
+        run: |
+          mkdir out && cp catalog.json catalogo.log out/ 2>/dev/null || true
+          cd out && git init -q -b x && git add -A
+          git -c user.name=ci -c user.email=ci@x commit -qm "catalogo run ${{ github.run_number }}"
+          git push -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" x:bench-300-catalogo
+
+  shards:
+    needs: config
+    if: ${{ needs.config.outputs.fase == 'piloto' || needs.config.outputs.fase == 'completo' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    strategy:
+      fail-fast: false
+      max-parallel: ${{ fromJson(needs.config.outputs.maxpar) }}
+      matrix:
+        shard: ${{ fromJson(needs.config.outputs.shards) }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.config.outputs.main_sha }}
+          path: motor-main
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.config.outputs.drift_sha }}
+          path: motor-drift
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 17
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Ferramentas (ffmpeg, alass, ffsubsync)
+        run: |
+          set -a; . tools/bench300/run.conf; set +a
+          sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg >/dev/null
+          curl -fsSL -o /tmp/alass https://github.com/kaegi/alass/releases/download/v2.0.0/alass-linux64 && chmod +x /tmp/alass
+          if [ "${FFS:-1}" = "1" ]; then pip install -q "numpy<2" "setuptools<81" webrtcvad-wheels ffsubsync 2>&1 | tail -2; ffs --version || true; fi
+          echo "main=$(git -C motor-main rev-parse --short HEAD) deriva=$(git -C motor-drift rev-parse --short HEAD)" | tee versoes.txt
+      - name: Compilar os dois motores e a bancada
+        run: |
+          mkdir -p /tmp/cm /tmp/cd
+          javac -nowarn -d /tmp/cm motor-main/$D/audiosync/*.java motor-main/$D/SubtitleText.java tools/bench300/Bench300.java tools/bench300/FlowOld.java tools/bench300/SubFmt.java
+          javac -nowarn -d /tmp/cd motor-drift/$D/audiosync/*.java motor-main/$D/SubtitleText.java tools/bench300/Bench300.java tools/bench300/FlowNew.java
+          cmp motor-main/$D/SubtitleText.java motor-drift/$D/SubtitleText.java && echo "SubtitleText igual nos dois"
+      - name: Cobrir os titulos do shard
+        run: |
+          set -a; . tools/bench300/run.conf; set +a
+          mkdir -p res /tmp/w
+          python3 tools/bench300/shard.py tools/bench300/catalog.json ${{ matrix.shard }} $NSHARDS res /tmp/w --cp-main /tmp/cm --cp-drift /tmp/cd \
+            --weights motor-main/android/app/src/main/assets/silero_v5_16k.bin --alass /tmp/alass --alvo-antigos ${ALVO_ANTIGOS:-140} --alvo-tv ${ALVO_TV:-40} --alvo-novos ${ALVO_NOVOS:-120} \
+            --minutos ${MINUTOS:-300} --ffs ${FFS:-1} --max-titulos ${MAXTIT:-0} 2>&1 | tee res/shard.log | grep -v -E "^(  curl|JAVA_TOOL)" | tail -300
+          cp versoes.txt res/
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: sonda
-          path: sonda.txt
-          retention-days: 7
+          name: res-${{ matrix.shard }}
+          path: res
+          retention-days: 10
+
+  resumo:
+    needs: [config, shards]
+    if: ${{ always() && (needs.config.outputs.fase == 'piloto' || needs.config.outputs.fase == 'completo' || needs.config.outputs.fase == 'resumo') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          path: arts
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Resumo
+        run: |
+          pip install -q matplotlib 2>&1 | tail -1
+          mkdir -p out
+          python3 tools/bench300/aggregate.py arts out
+          python3 tools/bench300/aggregate.py arts out/ampliado --tiers AB || true
+          mkdir -p out/brutos && cp -r arts/*/ out/brutos/ 2>/dev/null || true
+          find out/brutos -name "*.bin" -delete; du -sh out
+          head -c 60000 out/resumo-300.md >> $GITHUB_STEP_SUMMARY || true
+      - name: Publicar
+        if: always()
+        run: |
+          cd out && git init -q -b x && git add -A
+          git -c user.name=ci -c user.email=ci@x commit -qm "bench300 run ${{ github.run_number }}"
+          git push -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" x:bench-300-out
