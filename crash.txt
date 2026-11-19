@@ -1,0 +1,47 @@
+11-19 16:41:23.747   490   531 I ActivityManager: Start proc 4822:io.github.gabrielxyz404.gabiflix/u0a167 for pre-top-activity {io.github.gabrielxyz404.gabiflix/io.github.gabrielxyz404.gabiflix.PlayerActivity}
+11-19 16:41:25.211  4822  4873 I GabiFlixPlayer: hash=bc3f40fcaa7ab509 tamanho=91526045 arquivo=teste.mkv
+11-19 16:41:25.414  4822  4873 I GabiFlixPlayer: Hash calculado, mas a busca de legendas falhou
+11-19 16:41:25.414  4822  4873 I GabiFlixPlayer: candidatas para baixar: 3 (do site: 3)
+11-19 16:41:25.684  4822  4822 I GabiFlixPlayer: ciclo: onStart, tocando=false, tempo=-1, escala=0, atraso=0, vista=SurfaceView 0x0, vout=true
+11-19 16:41:25.685  4822  4822 I GabiFlixPlayer: ciclo: onResume, tocando=false, tempo=-1, escala=0, atraso=0, vista=SurfaceView 0x0, vout=true
+11-19 16:41:25.885  4822  4873 I GabiFlixPlayer: legendas PT válidas: 3 de 3; referências baixadas: 0
+11-19 16:41:26.073  4822  4873 I GabiFlixPlayer: alinhamento com 0 referência(s):
+11-19 16:41:26.073  4822  4873 I GabiFlixPlayer:   sem referência: consenso entre 3 PT, grupos [2, 1]
+11-19 16:41:26.073  4822  4873 I GabiFlixPlayer:   alinhadas: 0
+11-19 16:41:28.013  4822  4822 I GabiFlixPlayer: ciclo: evento Vout, saídas=1
+11-19 16:41:30.638  4822  4822 I GabiFlixPlayer: vistas do vídeo: SurfaceView(vídeo) SurfaceView
+11-19 16:41:30.828  4822  4822 I GabiFlixPlayer: AUDIOSYNC pronto (sem limite de dados; automático=true, começa 25 s depois de a legenda ficar ativa; resultado confiante vale 30 dias e não se reverifica; sem confiança: 1 nova tentativa em 1200 s; salto grande = 600 s)
+11-19 16:41:31.271  4822  4822 I GabiFlixPlayer: legenda PT embutida: não há
+11-19 16:41:31.272  4822  4822 I GabiFlixPlayer: ranking das legendas:
+11-19 16:41:31.272  4822  4822 I GabiFlixPlayer:   grupo 0: 2 legenda(s), nome 0.00, duração ok -> 3.50
+11-19 16:41:31.272  4822  4822 I GabiFlixPlayer:   grupo 1: 1 legenda(s), nome 0.00, duração ok -> 2.50
+11-19 16:41:31.272  4822  4822 I GabiFlixPlayer:   consenso escolheu o grupo 0 (2 PT), primeira #0
+11-19 16:41:31.272  4822  4822 I GabiFlixPlayer:   referência de fim=0ms (sem referência), duração=300021ms
+11-19 16:41:31.272  4822  4822 I GabiFlixPlayer:   #2 fim=303600ms hash=false corrigida=false nota=0.0969
+11-19 16:41:31.277  4822  4822 I GabiFlixPlayer: escolhida: candidata #0; melhor baixada: #0 alinhada=false nota=0.00 deslocamento=0ms hash=false corrigida=false; 3 no menu
+11-19 16:41:31.277  4822  4822 I GabiFlixPlayer: atraso da legenda ativa (nenhuma): 0 ms
+11-19 16:41:31.421  4822  4822 I GabiFlixPlayer: legenda do app: 30 falas da faixa ativa
+11-19 16:41:31.422  4822  4822 I GabiFlixPlayer: legenda do app: ligada
+11-19 16:41:31.427  4822  4822 I GabiFlixPlayer: legenda do app: tempo 1913 ms, atraso 0 ms -> "Você não sabe o que ela fez para nós, mas eu também estou aqui [ALFA 01 @0s]/e isso é uma linha de baixo que tem de ficar inteira, com você"
+11-19 16:41:31.852  4822  4822 I GabiFlixPlayer: AUDIOSYNC estado: st=- executando=false tocando=true carregando=false faixa=2 baixadas=3 addedSubs=3 embeddedKnown=true faixas=[-1:Disable; 2:Track 1 - [gabiflix/cache/legendas/app-1](baixada); 3:Track 2 - [gabiflix/cache/legendas/app-2](baixada); 4:Track 3 - [gabiflix/cache/legendas/app-3](baixada); ] cand=true | pss=58MB java=3/512MB nativo=77MB livre=947MB limiar=144MB poucaMemoria=false
+11-19 16:41:31.852  4822  4822 I GabiFlixPlayer: AUDIOSYNC legenda ativa: bc3f40fcaa7ab509|http://10.0.2.2:8000/a1.srt#raw (nova nesta sessão)
+11-19 16:41:31.852  4822  4822 I GabiFlixPlayer: AUDIOSYNC GATILHO motivo=troca-de-legenda legenda=bc3f40fcaa7ab509|http://10.0.2.2:8000/a1.srt#raw decisão=avaliar (espera 25 s tocando; se há resultado guardado, não analisa) [análises=0 sem_confiança=0 estado=nova]
+11-19 16:41:33.128  4822  4822 I GabiFlixPlayer: atraso da legenda ativa (d3:u|h:bc3f40fcaa7ab509|http://10.0.2.2:8000/a1.srt#raw): 0 ms
+11-19 16:41:39.128  4822  4822 I GabiFlixPlayer: legenda do app: tempo 9562 ms, atraso 0 ms -> (nada)
+11-19 16:41:39.636  4822  4822 I GabiFlixPlayer: legenda do app: tempo 10184 ms, atraso 0 ms -> "Você não sabe o que ela fez para nós, mas eu também estou aqui [ALFA 02 @10s]/e isso é uma linha de baixo que tem de ficar inteira, com você"
+11-19 16:41:49.211  4822  4822 I GabiFlixPlayer: legenda do app: tempo 19720 ms, atraso 0 ms -> (nada)
+11-19 16:41:49.438  4822  4822 I GabiFlixPlayer: legenda do app: tempo 19982 ms, atraso 0 ms -> "Você não sabe o que ela fez para nós, mas eu também estou aqui [ALFA 03 @20s]/e isso é uma linha de baixo que tem de ficar inteira, com você"
+11-19 16:41:52.294  4822  4822 I GabiFlixPlayer: AUDIOSYNC estado: st=nova executando=false tocando=true carregando=false faixa=2 baixadas=3 addedSubs=3 embeddedKnown=true faixas=[-1:Disable; 2:Track 1 - [gabiflix/cache/legendas/app-1](baixada); 3:Track 2 - [gabiflix/cache/legendas/app-2](baixada); 4:Track 3 - [gabiflix/cache/legendas/app-3](baixada); ] cand=true | pss=67MB java=4/512MB nativo=77MB livre=1010MB limiar=144MB poucaMemoria=false
+11-19 16:41:59.196  4822  4822 I GabiFlixPlayer: legenda do app: tempo 29483 ms, atraso 0 ms -> (nada)
+11-19 16:41:59.408  4822  4822 I GabiFlixPlayer: legenda do app: tempo 29755 ms, atraso 0 ms -> "Você não sabe o que ela fez para nós, mas eu também estou aqui [ALFA 04 @30s]/e isso é uma linha de baixo que tem de ficar inteira, com você"
+11-19 16:42:02.406  4822  4822 I GabiFlixPlayer: AUDIOSYNC GATILHO motivo=início legenda=bc3f40fcaa7ab509|http://10.0.2.2:8000/a1.srt#raw decisão=análise [análises=1 sem_confiança=0 estado=nova]
+11-19 16:42:02.406  4822  4822 I GabiFlixPlayer: AUDIOSYNC antes da análise: saúde da reprodução: amostras=30 paradas=0 razão_mínima=0.74 carregando=0 quadros_perdidos=364
+11-19 16:42:02.407  4822  4822 I GabiFlixPlayer: AUDIOSYNC começando: posição 32 s, duração 300 s, atraso atual 0 ms, faixa de áudio 1
+11-19 16:42:02.947  4822  4822 I GabiFlixPlayer: AUDIOSYNC resultado: poucas falas na legenda | vad=? janelas=0 captura=0 ms vad=0 ms (cpu 0) solve=0 ms (cpu 0) cpu_thread=9 ms total=347 ms leitura_estimada=0 MB leitura_real=? pss=67->67 MB java=4->4 MB
+11-19 16:42:02.947  4822  4822 I GabiFlixPlayer: AUDIOSYNC saúde da reprodução: amostras=0 paradas=0 razão_mínima=0.00 carregando=0 quadros_perdidos=7
+11-19 16:42:02.947  4822  4822 I GabiFlixPlayer: AUDIOSYNC o áudio não tem certeza: legenda deixada como estava
+11-19 16:42:02.947  4822  4822 I GabiFlixPlayer: AUDIOSYNC GATILHO motivo=sem-confiança legenda=bc3f40fcaa7ab509|http://10.0.2.2:8000/a1.srt#raw decisão=agendar UMA segunda tentativa em 1200 s: o áudio não tem certeza [análises=1 sem_confiança=1 estado=nova]
+11-19 16:42:09.248  4822  4822 I GabiFlixPlayer: legenda do app: tempo 39590 ms, atraso 0 ms -> (nada)
+11-19 16:42:09.492  4822  4822 I GabiFlixPlayer: legenda do app: tempo 39841 ms, atraso 0 ms -> "Você não sabe o que ela fez para nós, mas eu também estou aqui [ALFA 05 @40s]/e isso é uma linha de baixo que tem de ficar inteira, com você"
+11-19 16:42:12.513  4822  4822 I GabiFlixPlayer: AUDIOSYNC estado: st=nova executando=false tocando=true carregando=false faixa=2 baixadas=3 addedSubs=3 embeddedKnown=true faixas=[-1:Disable; 2:Track 1 - [gabiflix/cache/legendas/app-1](baixada); 3:Track 2 - [gabiflix/cache/legendas/app-2](baixada); 4:Track 3 - [gabiflix/cache/legendas/app-3](baixada); ] cand=true | pss=67MB java=5/512MB nativo=77MB livre=976MB limiar=144MB poucaMemoria=false
+11-19 16:42:32.527  4822  4822 I GabiFlixPlayer: AUDIOSYNC estado: st=nova executando=false tocando=false carregando=false faixa=2 baixadas=3 addedSubs=3 embeddedKnown=true faixas=[-1:Disable; 2:Track 1 - [gabiflix/cache/legendas/app-1](baixada); 3:Track 2 - [gabiflix/cache/legendas/app-2](baixada); 4:Track 3 - [gabiflix/cache/legendas/app-3](baixada); ] cand=true | pss=52MB java=5/512MB nativo=79MB livre=981MB limiar=144MB poucaMemoria=false
