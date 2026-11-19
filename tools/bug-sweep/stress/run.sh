@@ -6,6 +6,10 @@
 # Em cada passo: sem queda/ANR, legenda visivel, o video nao esta preto. No fim: crescimento de memoria < 50 MB. Nunca publica o app.
 PKG=io.github.gabrielxyz404.gabiflix
 APK=$1; MODE=${2:-phone}; PLAY=${3:-1800}; EXTRA=${4:-}   # EXTRA: extras da intent (ex.: "--es gfAudioAuto false" para isolar a sincronizacao pelo audio)
+LIMIT=${5:-50}; INFO=${6:-}   # LIMIT: crescimento maximo de memoria (MB) na reproducao continua; INFO=info: acima do limite so avisa (nao reprova)
+# Sobre a memoria: no emulador, o libVLC com saida de video OpenGL ES (gles2: sempre na TV/TextureView, e no celular quando decodifica por software)
+# faz o libEGL_emulation.so do EMULADOR vazar ~33 KB por eglMakeCurrent (heapprofd: getGLString = ~97% do crescimento; ver heap-emulador.yml).
+# Num aparelho de verdade esse codigo nao existe. A configuracao "--es gfVlcOpt --vout=android_display" nao usa GL e mostra a memoria do app sem esse vazamento.
 OUT=shots; mkdir -p $OUT
 BASE=http://10.0.2.2:8000
 HERE=$(dirname "$0")
@@ -24,7 +28,7 @@ mainpid() { adb shell pidof $PKG | tr -d '\r' | awk '{print $1}'; }
 # guarda o log e procura queda / ANR; limpa o log para a proxima leitura ser so do que vem agora
 harvest() {
   adb logcat -d 2>/dev/null > /tmp/lc.txt
-  grep -E "GabiFlixPlayer|AUDIOSYNC|ESTADO" /tmp/lc.txt >> $OUT/log-all.txt
+  grep -E "GabiFlixPlayer|AUDIOSYNC|ESTADO|GFCrash" /tmp/lc.txt >> $OUT/log-all.txt
   # so o que e do app: queda/ANR dele, ou a morte do processo principal (a do :audiocap, que acaba ao fim da analise, e normal; as dos apps do sistema nao contam)
   grep -E "FATAL EXCEPTION|Fatal signal|ANR in io.github|am_crash|am_anr|Process io.github.gabrielxyz404.gabiflix \(pid [0-9]+\) has died" /tmp/lc.txt | grep -v "audiocap" >> $OUT/fatal.txt
   adb logcat -c
@@ -189,7 +193,15 @@ MB=$(mem_sample play-fim); snap 10-fim
 adb shell dumpsys meminfo $(mainpid) > $OUT/meminfo-play-fim.txt 2>&1
 GROW=$(( (MB - MA) / 1024 )); TOT=$(( (MB - M0) / 1024 ))
 echo "MEMORIA pss do app: inicio=$((M0/1024)) MB, depois do aquecimento=$((MA/1024)) MB, fim=$((MB/1024)) MB; crescimento na reproducao continua=${GROW} MB; desde o inicio=${TOT} MB" | tee -a $R
-if [ "$GROW" -lt 50 ] 2>/dev/null; then ok "11-memoria" "crescimento ${GROW} MB (limite 50)"; else fail "11-memoria" "CRESCEU ${GROW} MB (limite 50)"; fi
+if [ "$GROW" -lt "$LIMIT" ] 2>/dev/null; then ok "11-memoria" "crescimento ${GROW} MB (limite $LIMIT)"
+elif [ "$INFO" = info ]; then echo "AVISO   11-memoria crescimento ${GROW} MB (acima de $LIMIT; so informa: o EGL do emulador vaza com a saida OpenGL ES do libVLC, ver o cabecalho)" | tee -a $R
+else fail "11-memoria" "CRESCEU ${GROW} MB (limite $LIMIT)"; fi
+# telemetria MEMORIA (so TV; nos testes "gfMemTelMs" encurta o intervalo e so escreve no log, sem postar): tem de ter saido pelo menos um relatorio
+if echo "$EXTRA" | grep -q gfMemTelMs; then
+  NT=$(grep -c "MEMORIA (teste, nao enviado)\|MEMORIA (teste, não enviado)" $OUT/log-all.txt)
+  if [ "${NT:-0}" -ge 1 ]; then ok "12-telemetria" "$NT relatorio(s) MEMORIA gerados no teste"; grep -E "decodificador:|PSS total|availMem|desde o 1" $OUT/log-all.txt | tail -4 | cut -c1-260 >> $R
+  else fail "12-telemetria" "nenhum relatorio MEMORIA saiu em $PLAY s de reproducao"; fi
+fi
 harvest; adb shell ls /data/tombstones > $OUT/tombstones.txt 2>&1
 echo "FALHAS=$FAILS" | tee -a $R
 exit 0

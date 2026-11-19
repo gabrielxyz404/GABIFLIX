@@ -24,10 +24,8 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { nome: tv30-vout-shot, modo: tv, api: 30, target: android-tv, profile: tv_1080p, ram: 2048M, hp: none, play: '240', extra: '--es gfVlcOpt --vout=android_display --es gfMemTelMs 60000' }
-          - { nome: tv30-tel, modo: tv, api: 30, target: android-tv, profile: tv_1080p, ram: 2048M, hp: none, play: '240', extra: '--es gfMemTelMs 60000' }
-          - { nome: cel30-tel, modo: phone, api: 30, target: google_apis, profile: pixel_5, ram: 3072M, hp: none, play: '240', extra: '--es gfMemTelMs 60000' }
-          - { nome: cel28-vout-shot, modo: phone, api: 28, target: google_apis, profile: pixel_5, ram: 3072M, hp: none, play: '240', extra: '--es gfVlcOpt --vout=android_display' }
+          - { nome: tv30-trim, modo: tv, api: 30, target: android-tv, profile: tv_1080p, ram: 2048M, hp: none, play: '200', trim: '1', extra: '--es gfMemTelMs 60000' }
+          - { nome: cel30-trim, modo: phone, api: 30, target: google_apis, profile: pixel_5, ram: 3072M, hp: none, play: '200', trim: '1', extra: '--es gfMemTelMs 60000' }
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v5
@@ -53,7 +51,7 @@ jobs:
         run: |
           AAR=$(find ~/.gradle -name 'libvlc-all-3.6.0*.aar' | head -1); echo "$AAR"
           mkdir -p /tmp/aar && unzip -o -q "$AAR" classes.jar -d /tmp/aar
-          { javap -p -cp /tmp/aar/classes.jar org.videolan.libvlc.LibVLC org.videolan.libvlc.MediaPlayer org.videolan.libvlc.Media 'org.videolan.libvlc.Media$Stats' org.videolan.libvlc.util.HWDecoderUtil 'org.videolan.libvlc.util.HWDecoderUtil$Decoder' org.videolan.libvlc.interfaces.IMedia 'org.videolan.libvlc.interfaces.IMedia$VideoTrack' 'org.videolan.libvlc.interfaces.IMedia$Track' org.videolan.libvlc.interfaces.IVLCVout; unzip -l "$AAR" | grep -E "\.so|jni"; } > /tmp/javap.txt 2>&1 || true
+          { javap -p -c -cp /tmp/aar/classes.jar org.videolan.libvlc.MediaPlayer | sed -n '/IMedia getMedia/,/areturn/p'; javap -p -cp /tmp/aar/classes.jar org.videolan.libvlc.LibVLC org.videolan.libvlc.MediaPlayer org.videolan.libvlc.Media 'org.videolan.libvlc.Media$Stats' org.videolan.libvlc.util.HWDecoderUtil 'org.videolan.libvlc.util.HWDecoderUtil$Decoder' org.videolan.libvlc.interfaces.IMedia 'org.videolan.libvlc.interfaces.IMedia$VideoTrack' 'org.videolan.libvlc.interfaces.IMedia$Track' org.videolan.libvlc.interfaces.IVLCVout; unzip -l "$AAR" | grep -E "\.so|jni"; } > /tmp/javap.txt 2>&1 || true
           grep -n -i "hw\|decoder\|accel\|log\|stats" /tmp/javap.txt | head -60
       - name: Filmes de teste (35 min)
         run: |
@@ -77,7 +75,7 @@ jobs:
           heap-size: 512M
           disable-animations: true
           emulator-options: -no-window -gpu ${{ matrix.gpu || 'swiftshader_indirect' }} -no-snapshot -noaudio -no-boot-anim
-          script: timeout 4200 bash tools/bug-sweep/stress/heap.sh /tmp/teste.apk ${{ matrix.modo }} ${{ matrix.play || github.event.inputs.play || '900' }} "${{ matrix.extra }}" ${{ matrix.hp }}
+          script: timeout 4200 env TRIM=${{ matrix.trim || 0 }} bash tools/bug-sweep/stress/heap.sh /tmp/teste.apk ${{ matrix.modo }} ${{ matrix.play || github.event.inputs.play || '900' }} "${{ matrix.extra }}" ${{ matrix.hp }}
       - name: Analise do heapprofd
         if: always() && matrix.hp != 'none'
         run: |

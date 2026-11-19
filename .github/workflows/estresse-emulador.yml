@@ -24,11 +24,17 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { nome: celular-api30, modo: phone, api: 30, target: google_apis, profile: pixel_5, ram: 3072M }
-          - { nome: tv-api30, modo: tv, api: 30, target: android-tv, profile: tv_1080p, ram: 2048M }
-          - { nome: celular-api28, modo: phone, api: 28, target: google_apis, profile: pixel_5, ram: 3072M }
-          - { nome: celular-api28-sem-audio, modo: phone, api: 28, target: google_apis, profile: pixel_5, ram: 3072M, extra: '--es gfAudioAuto false', play: '900' }
-          - { nome: tv-api30-sem-audio, modo: tv, api: 30, target: android-tv, profile: tv_1080p, ram: 2048M, extra: '--es gfAudioAuto false', play: '900' }
+          # celular API 30: o emulador decodifica por MediaCodec e o video vai por SurfaceView (sem OpenGL no libVLC): a memoria do app fica parada (limite 20 MB)
+          - { nome: celular-api30, modo: phone, api: 30, target: google_apis, profile: pixel_5, ram: 3072M, limite: 20 }
+          # TV API 30 e celular API 28 com a saida de video OpenGL ES do libVLC (a mesma da TV de verdade): o EGL do EMULADOR vaza ~33 KB por eglMakeCurrent
+          # (heapprofd, heap-emulador.yml); aqui o crescimento so e informado, nao reprova
+          - { nome: tv-api30, modo: tv, api: 30, target: android-tv, profile: tv_1080p, ram: 2048M, info: info, extra: '--es gfMemTelMs 300000' }
+          - { nome: celular-api28, modo: phone, api: 28, target: google_apis, profile: pixel_5, ram: 3072M, info: info }
+          # as mesmas telas com a saida de video sem OpenGL (--vout=android_display): sem o vazamento do EGL do emulador, a memoria do app tem de ficar parada (limite 20 MB)
+          - { nome: tv-api30-vout, modo: tv, api: 30, target: android-tv, profile: tv_1080p, ram: 2048M, limite: 20, extra: '--es gfVlcOpt --vout=android_display --es gfMemTelMs 300000' }
+          - { nome: celular-api28-vout, modo: phone, api: 28, target: google_apis, profile: pixel_5, ram: 3072M, limite: 20, extra: '--es gfVlcOpt --vout=android_display' }
+          - { nome: celular-api28-sem-audio, modo: phone, api: 28, target: google_apis, profile: pixel_5, ram: 3072M, extra: '--es gfAudioAuto false', play: '900', info: info }
+          - { nome: tv-api30-sem-audio, modo: tv, api: 30, target: android-tv, profile: tv_1080p, ram: 2048M, extra: '--es gfAudioAuto false', play: '900', info: info }
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v5
@@ -68,7 +74,7 @@ jobs:
           heap-size: 512M
           disable-animations: true
           emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
-          script: timeout 6600 bash tools/bug-sweep/stress/run.sh /tmp/teste.apk ${{ matrix.modo }} ${{ matrix.play || github.event.inputs.play || '1800' }} "${{ matrix.extra }}"
+          script: timeout 6600 bash tools/bug-sweep/stress/run.sh /tmp/teste.apk ${{ matrix.modo }} ${{ matrix.play || github.event.inputs.play || '1800' }} "${{ matrix.extra }}" ${{ matrix.limite || 50 }} ${{ matrix.info }}
       - name: Resumo
         if: always()
         run: |

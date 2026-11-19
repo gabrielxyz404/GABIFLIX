@@ -95,6 +95,18 @@ PID=$(mainpid); echo "pid=$PID" >> $OUT/aparelho.txt
 sleep 25
 sample inicio; snapshot 0
 START=$(date +%s)
+# TRIM=1: prova a rede de seguranca (o sistema pede memoria no meio do filme: o player solta caches e o filme segue)
+if [ "${TRIM:-0}" = 1 ]; then
+  : > $OUT/trim.txt
+  M1=$(awk -F, '$2=="inicio"{print $3}' $OUT/memoria.csv)
+  for L in RUNNING_LOW RUNNING_CRITICAL RUNNING_MODERATE; do
+    echo "== $L: $(adb shell am send-trim-memory $PKG $L 2>&1 | tr -d '\r')" >> $OUT/trim.txt
+    sleep 6
+    echo "   tocando depois: $(adb shell dumpsys activity activities | grep -m1 -E 'mResumedActivity|ResumedActivity' | tr -d '\r' | cut -c1-120)" >> $OUT/trim.txt
+    tell estado; sleep 1
+    adb logcat -d | grep -E "ESTADO|memória: o sistema pediu" | tail -2 | cut -c1-200 >> $OUT/trim.txt
+  done
+fi
 
 # ---- reproducao continua
 END=$(( START + PLAY )); k=0
