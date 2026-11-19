@@ -1,0 +1,11 @@
+  public void attachViews(org.videolan.libvlc.util.VLCVideoLayout, org.videolan.libvlc.util.DisplayManager, boolean, boolean);
+  public int getSpuTracksCount();
+  public org.videolan.libvlc.MediaPlayer$TrackDescription[] getSpuTracks();
+  public int getSpuTrack();
+  public boolean setSpuTrack(int);
+  public long getSpuDelay();
+  public boolean setSpuDelay(long);
+  public native float getPosition();
+  public void setPosition(float, boolean);
+  public void setPosition(float);
+  public native void nativeSetPosition(float, boolean);
