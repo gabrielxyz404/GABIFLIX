@@ -854,6 +854,7 @@ enum AudioAligner {
             let fw = fineWindow(p, w.startMs, fine, scale, offsetMs, 150)
             devs.append(fw.bestDelta); zs.append(fw.z)
         }
+        if devs.count < 2 { return false } // sem janelas com fala para conferir, o plano B não vale
         return consensus(devs, zs, P)
     }
 
@@ -898,6 +899,9 @@ enum AudioAligner {
         // escala 1,0 aceita, mas as janelas confiáveis não ficam numa reta de atraso constante (resíduo acima de driftSafeResMs): ajuste inseguro: recusa
         let unsafeRes = !P.legacy && !R.driftScale && abs(R.scale - 1.0) < 1e-9 && R.driftConfident >= 3 && R.unitResMs > P.driftSafeResMs
         if unsafeRes { ok = false }
+        // escala de fps (ou 1,001) sem ao menos 2 janelas com fala para conferir o modelo: nada contradiz nem confirma o ajuste, recusa
+        let unverified = !P.legacy && abs(R.scale - 1.0) > 1e-9 && R.winsValid < 2
+        if unverified { ok = false }
         // prova de reta de atraso constante: 4+ janelas confiáveis numa reta (resíduo <= 100 ms) valem como concordância mesmo se as outras janelas (fracas) discordam
         let linePass = !P.legacy && !R.driftScale && abs(R.scale - 1.0) < 1e-9 && R.driftConfident >= 4 && R.unitResMs <= 100
         let gateDev = P.gateWinDevMs > 0 && R.winsValid >= 2

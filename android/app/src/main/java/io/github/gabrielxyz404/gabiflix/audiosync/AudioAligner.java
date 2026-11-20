@@ -877,6 +877,7 @@ public final class AudioAligner {
             Fine fw = fineWindow(p, w.startMs, fine, scale, offsetMs, 150);
             devs[n] = fw.bestDelta; zs[n] = fw.z; n++;
         }
+        if (n < 2) return false; // sem janelas com fala para conferir, o plano B não vale
         return consensus(devs, zs, n, P);
     }
 
@@ -923,6 +924,9 @@ public final class AudioAligner {
         // tem uma deriva pequena que o deslocamento único não cobre): recusa em vez de aplicar uma legenda ~0,5 s fora
         boolean unsafeRes = !P.legacy && !R.driftScale && Math.abs(R.scale - 1.0) < 1e-9 && R.driftConfident >= 3 && R.unitResMs > P.driftSafeResMs;
         if (unsafeRes) ok = false;
+        // escala de fps (ou 1,001) sem ao menos 2 janelas com fala para conferir o modelo: nada contradiz nem confirma o ajuste, recusa
+        boolean unverified = !P.legacy && Math.abs(R.scale - 1.0) > 1e-9 && R.winsValid < 2;
+        if (unverified) ok = false;
         // prova de reta de atraso constante: 4+ janelas confiáveis numa reta (resíduo <= 100 ms) valem como concordância mesmo se as outras janelas (fracas) discordam
         boolean linePass = !P.legacy && !R.driftScale && Math.abs(R.scale - 1.0) < 1e-9 && R.driftConfident >= 4 && R.unitResMs <= 100;
         boolean gateDev = P.gateWinDevMs > 0 && R.winsValid >= 2
