@@ -61,6 +61,11 @@ enum AudioAligner {
         var gateTolMaxMs = 350.0
         var gateTolStepMs = 50.0
         var gateSigmaMs = 150.0
+        /// invariante duro: janelas fortes medidas com busca larga não podem mandar mais de shiftContraMs de diferença do modelo aplicado
+        var shiftContraMs = 1000.0
+        var wideRangeMs = 3000
+        /// invariante de direção: inclinação medida (>= dirSlopeMin, em módulo) não pode ter sinal oposto ao da escala escolhida
+        var dirSlopeMin = 0.005
         /** motor de ANTES (plano B): sem prova de deriva e com a porta de 150 ms sobre o desvio máximo bruto; é o que o origin/main fazia */
         var legacy = false
         var unitSnap = 0.0035
@@ -816,12 +821,18 @@ enum AudioAligner {
         var sum = 0.0, mn = 9.0
         var cnt = 0
         var tp = 0.0, fp = 0.0, fn = 0.0
-        var devs: [Double] = [], zs: [Double] = []
+        var devs: [Double] = [], zs: [Double] = [], wides: [Double] = []
+        var fd = ""
         for w in 0..<ws.count {
             if w == R.driftDropWin { continue }
             let f = fineWindow(ps[w], ws[w].startMs, fine, R.scale, R.offsetMs, 40)
             if f.speechFrac < P.minSpeechFrac { continue }
             let fw = fineWindow(ps[w], ws[w].startMs, fine, R.scale, R.offsetMs, 150)
+            if !P.legacy {
+                let fwide = fineWindow(ps[w], ws[w].startMs, fine, R.scale, R.offsetMs, P.wideRangeMs)
+                wides.append(fwide.bestDelta)
+                fd += "[\(ws[w].startMs / 1000)s n=\(jround(fw.bestDelta)) L=\(jround(fwide.bestDelta)) z=\(String(format: "%.1f", fw.z))]"
+            }
             R.winsValid += 1
             let dev = abs(fw.bestDelta)
             if dev > R.winMaxDev { R.winMaxDev = dev }
@@ -837,6 +848,8 @@ enum AudioAligner {
             }
         }
         R.winConsensus = consensus(devs, zs, P)
+        R.shiftContra = !P.legacy && contradicts(wides, zs, P)
+        R.finDetail = fd
         R.nccMean = cnt > 0 ? sum / Double(cnt) : 0
         R.nccMin = cnt > 0 ? mn : 0
         let pr = tp / max(1, tp + fp), rc = tp / max(1, tp + fn)
@@ -846,16 +859,35 @@ enum AudioAligner {
     /** Confere um modelo (escala, deslocamento) contra TODAS as janelas capturadas pela mesma porta robusta (porte de verifyModel). */
     static func verifyModel(_ cues: [AudioCue], _ ws: [AudioWindow], _ scale: Double, _ offsetMs: Double, _ P: Params) -> Bool {
         let fine = fineMask(cues, P.trimCues)
-        var devs: [Double] = [], zs: [Double] = []
+        var devs: [Double] = [], zs: [Double] = [], wides: [Double] = []
         for w in ws {
             let p = smooth(w.p, P.smoothMs)
             let f = fineWindow(p, w.startMs, fine, scale, offsetMs, 40)
             if f.speechFrac < P.minSpeechFrac { continue }
             let fw = fineWindow(p, w.startMs, fine, scale, offsetMs, 150)
+            wides.append(fineWindow(p, w.startMs, fine, scale, offsetMs, P.wideRangeMs).bestDelta)
             devs.append(fw.bestDelta); zs.append(fw.z)
         }
         if devs.count < 2 { return false } // sem janelas com fala para conferir, o plano B não vale
+        if contradicts(wides, zs, P) { return false }
         return consensus(devs, zs, P)
+    }
+
+    /// Invariante duro (porte de contradicts): janelas fortes com busca larga a menos de shiftContraMs do modelo aplicado (mediana e maioria).
+    static func contradicts(_ wide: [Double], _ z: [Double], _ P: Params) -> Bool {
+        let n = wide.count
+        if n < 2 { return false }
+        var zmax = 0.0
+        for v in z { zmax = max(zmax, v) }
+        var kd: [Double] = []
+        var bad = 0
+        for i in 0..<n where z[i] >= P.gateZFrac * zmax {
+            kd.append(wide[i])
+            if abs(wide[i]) > P.shiftContraMs { bad += 1 }
+        }
+        let k = kd.count
+        if k < 2 { return false }
+        return abs(median(kd)) > P.shiftContraMs || bad * 2 > k
     }
 
     private static func median(_ v: [Double]) -> Double {
@@ -900,6 +932,11 @@ enum AudioAligner {
         let unsafeRes = !P.legacy && !R.driftScale && abs(R.scale - 1.0) < 1e-9 && R.driftConfident >= 3 && R.unitResMs > P.driftSafeResMs
         if unsafeRes { ok = false }
         // escala de fps (ou 1,001) sem ao menos 2 janelas com fala para conferir o modelo: nada contradiz nem confirma o ajuste, recusa
+        // invariantes duros: o ajuste não pode contradizer as janelas por mais de shiftContraMs, nem ter direção oposta à inclinação medida
+        let dirBad = !P.legacy && abs(R.scale - 1.0) > 1e-9 && R.driftConfident >= 3 && abs(R.driftSlope) >= P.dirSlopeMin
+            && (alphaOf(R.scale) > 0 ? 1.0 : -1.0) != (R.driftSlope > 0 ? 1.0 : -1.0)
+        if !P.legacy && R.shiftContra { ok = false }
+        if dirBad { ok = false }
         let unverified = !P.legacy && abs(R.scale - 1.0) > 1e-9 && R.winsValid < 2
         if unverified { ok = false }
         // prova de reta de atraso constante: 4+ janelas confiáveis numa reta (resíduo <= 100 ms) valem como concordância mesmo se as outras janelas (fracas) discordam
@@ -923,6 +960,8 @@ enum AudioAligner {
             if R.f1 < P.minF1 { sb += "cobertura baixa; " }
             if !R.scaleKnown && (R.z < P.minZFree || R.nccMean < P.minNccFree) { sb += "escala fora das razões de fps; " }
             if nearUnit { sb += "escala 0,999/1,001 sem prova de deriva; " }
+            if !P.legacy && R.shiftContra { sb += "ajuste contradiz as janelas (> 1 s); " }
+            if dirBad { sb += "escala contraria a inclinação das janelas; " }
             if unsafeRes { sb += "ajuste inseguro: janelas fora de uma reta de atraso constante (\(jround(R.unitResMs)) ms); " }
             if R.driftSuspect { sb += "possível deriva: janelas discordam entre si; " }
             if gateDev || gateWin { sb += "janelas discordam; " }

@@ -61,6 +61,9 @@ final class AudioResult {
     var driftDropWin = -1
     /** as janelas de z alto concordam em torno da mediana (porta robusta, ver finalEvidence) */
     var winConsensus = true
+    /// invariante: o deslocamento aplicado contradiz em mais de shiftContraMs o que as janelas medem com busca larga
+    var shiftContra = false
+    var finDetail = ""
     /** o resultado é o do plano B (motor de antes sobre as 3 janelas densas) */
     var planB = false
     var driftSlope = 0.0, driftResMs = 0.0, unitResMs = 0.0, driftMeasMs = 0.0, driftContentMs = 0.0

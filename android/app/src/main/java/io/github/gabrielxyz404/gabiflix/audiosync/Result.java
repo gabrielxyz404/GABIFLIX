@@ -50,6 +50,10 @@ public final class Result {
     /** o resultado é o do plano B (motor de antes sobre as 3 janelas densas): o ajuste com 9 janelas não passou, ou discordou de uma escala de fps comum */
     public boolean planB;
     public boolean driftScale;
+    /** invariante: o deslocamento aplicado contradiz em mais de shiftContraMs o que as janelas medem com busca larga (consenso das janelas fortes) */
+    public boolean shiftContra;
+    /** diagnóstico por janela no modelo final: posição, desvio estreito (±150 ms), desvio largo (±3 s), z */
+    public String finDetail = "";
     /** inclinação ajustada livremente (ms de atraso por ms de filme), resíduos máximos (ms) com a escala escolhida e com escala 1,0, deriva medida nas janelas e no filme todo (ms) */
     public double driftSlope, driftResMs, unitResMs, driftMeasMs, driftContentMs;
     public int driftConfident;

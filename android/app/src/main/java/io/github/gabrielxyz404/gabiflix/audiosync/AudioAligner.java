@@ -91,6 +91,11 @@ public final class AudioAligner {
         public double gateTolMaxMs = 350;
         public double gateTolStepMs = 50;
         public double gateSigmaMs = 150;
+        /** invariante duro: as janelas fortes (z >= gateZFrac x o maior), medidas com busca larga (+-wideRangeMs), não podem mandar mais de shiftContraMs de diferença do modelo aplicado */
+        public double shiftContraMs = 1000;
+        public int wideRangeMs = 3000;
+        /** invariante de direção: a inclinação medida (>= dirSlopeMin, em módulo) não pode ter sinal oposto ao da escala escolhida */
+        public double dirSlopeMin = 0.005;
         /** motor de ANTES (plano B): sem prova de deriva e com a porta de 150 ms sobre o desvio máximo bruto; é o que o origin/main fazia */
         public boolean legacy = false;
         /** escalas fora das razões de fps conhecidas: ajuste dentro de unitSnap de 1,0 vira 1,0 (reajusta o offset); fora disso é recusado (allowFreeScale=false) */
@@ -834,13 +839,19 @@ public final class AudioAligner {
         double sum = 0, min = 9;
         int cnt = 0;
         double tp = 0, fp = 0, fn = 0;
-        double[] devs = new double[ws.length], zs = new double[ws.length];
+        double[] devs = new double[ws.length], zs = new double[ws.length], wides = new double[ws.length];
         int nd = 0;
+        StringBuilder fd = new StringBuilder();
         for (int w = 0; w < ws.length; w++) {
             if (w == R.driftDropWin) continue;
             Fine f = fineWindow(ps[w], ws[w].startMs, fine, R.scale, R.offsetMs, 40);
             if (f.speechFrac < P.minSpeechFrac) continue;
             Fine fw = fineWindow(ps[w], ws[w].startMs, fine, R.scale, R.offsetMs, 150);
+            if (!P.legacy) {
+                Fine fwide = fineWindow(ps[w], ws[w].startMs, fine, R.scale, R.offsetMs, P.wideRangeMs);
+                wides[nd] = fwide.bestDelta;
+                fd.append('[').append(ws[w].startMs / 1000).append("s n=").append(Math.round(fw.bestDelta)).append(" L=").append(Math.round(fwide.bestDelta)).append(" z=").append(String.format(java.util.Locale.ROOT, "%.1f", fw.z)).append(']');
+            }
             R.winsValid++;
             double dev = Math.abs(fw.bestDelta);
             if (dev > R.winMaxDev) R.winMaxDev = dev;
@@ -856,6 +867,8 @@ public final class AudioAligner {
             }
         }
         R.winConsensus = consensus(devs, zs, nd, P);
+        R.shiftContra = !P.legacy && contradicts(wides, zs, nd, P);
+        R.finDetail = fd.toString();
         R.nccMean = cnt > 0 ? sum / cnt : 0;
         R.nccMin = cnt > 0 ? min : 0;
         double pr = tp / Math.max(1, tp + fp), rc = tp / Math.max(1, tp + fn);
@@ -868,17 +881,34 @@ public final class AudioAligner {
      */
     public static boolean verifyModel(Cue[] cues, Window[] ws, double scale, double offsetMs, Params P) {
         float[] fine = fineMask(cues, P.trimCues);
-        double[] devs = new double[ws.length], zs = new double[ws.length];
+        double[] devs = new double[ws.length], zs = new double[ws.length], wides = new double[ws.length];
         int n = 0;
         for (Window w : ws) {
             float[] p = smooth(w.p, P.smoothMs);
             Fine f = fineWindow(p, w.startMs, fine, scale, offsetMs, 40);
             if (f.speechFrac < P.minSpeechFrac) continue;
             Fine fw = fineWindow(p, w.startMs, fine, scale, offsetMs, 150);
+            wides[n] = fineWindow(p, w.startMs, fine, scale, offsetMs, P.wideRangeMs).bestDelta;
             devs[n] = fw.bestDelta; zs[n] = fw.z; n++;
         }
         if (n < 2) return false; // sem janelas com fala para conferir, o plano B não vale
+        if (contradicts(wides, zs, n, P)) return false;
         return consensus(devs, zs, n, P);
+    }
+
+    /**
+     * Invariante duro: entre as janelas fortes (z >= gateZFrac x o maior z), a medida com busca larga (+-wideRangeMs) tem de ficar a menos de shiftContraMs do modelo
+     * aplicado: a mediana, e a maioria individualmente. Um ajuste que as janelas contradizem por segundos (escala invertida, offset de dezenas de segundos) não passa.
+     */
+    static boolean contradicts(double[] wide, double[] z, int n, Params P) {
+        if (n < 2) return false;
+        double zmax = 0;
+        for (int i = 0; i < n; i++) zmax = Math.max(zmax, z[i]);
+        double[] kd = new double[n];
+        int k = 0, bad = 0;
+        for (int i = 0; i < n; i++) if (z[i] >= P.gateZFrac * zmax) { kd[k++] = wide[i]; if (Math.abs(wide[i]) > P.shiftContraMs) bad++; }
+        if (k < 2) return false;
+        return Math.abs(median(kd, k)) > P.shiftContraMs || bad * 2 > k;
     }
 
     private static double median(double[] v, int n) {
@@ -925,6 +955,11 @@ public final class AudioAligner {
         boolean unsafeRes = !P.legacy && !R.driftScale && Math.abs(R.scale - 1.0) < 1e-9 && R.driftConfident >= 3 && R.unitResMs > P.driftSafeResMs;
         if (unsafeRes) ok = false;
         // escala de fps (ou 1,001) sem ao menos 2 janelas com fala para conferir o modelo: nada contradiz nem confirma o ajuste, recusa
+        // invariantes duros: o ajuste não pode contradizer as janelas por mais de shiftContraMs, nem ter direção oposta à inclinação medida
+        boolean dirBad = !P.legacy && Math.abs(R.scale - 1.0) > 1e-9 && R.driftConfident >= 3 && Math.abs(R.driftSlope) >= P.dirSlopeMin
+                && Math.signum(alphaOf(R.scale)) != Math.signum(R.driftSlope);
+        if (!P.legacy && R.shiftContra) ok = false;
+        if (dirBad) ok = false;
         boolean unverified = !P.legacy && Math.abs(R.scale - 1.0) > 1e-9 && R.winsValid < 2;
         if (unverified) ok = false;
         // prova de reta de atraso constante: 4+ janelas confiáveis numa reta (resíduo <= 100 ms) valem como concordância mesmo se as outras janelas (fracas) discordam
@@ -946,6 +981,8 @@ public final class AudioAligner {
             if (R.f1 < P.minF1) sb.append("cobertura baixa; ");
             if (!R.scaleKnown && (R.z < P.minZFree || R.nccMean < P.minNccFree)) sb.append("escala fora das razões de fps; ");
             if (nearUnit) sb.append("escala 0,999/1,001 sem prova de deriva; ");
+            if (!P.legacy && R.shiftContra) sb.append("ajuste contradiz as janelas (> 1 s); ");
+            if (dirBad) sb.append("escala contraria a inclinação das janelas; ");
             if (unsafeRes) sb.append("ajuste inseguro: janelas fora de uma reta de atraso constante (" + Math.round(R.unitResMs) + " ms); ");
             if (R.driftSuspect) sb.append("possível deriva: janelas discordam entre si; ");
             if (gateDev || gateWin) sb.append("janelas discordam; ");

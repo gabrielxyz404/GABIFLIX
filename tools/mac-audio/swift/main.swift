@@ -255,8 +255,8 @@ func runPre(_ wav: String, _ srtPath: String) {
             return AudioWindow(startMs: st, p: vad.speechProb(sl, sl.count, 16000))
         }, P, spread: true, dense: 3, used: &used)
         guard let r = rr else { print("SPREAD falhou"); return }
-        print(String(format: "SPREAD accepted=%d scale=%.6f raw=%.0f drift=%d confiaveis=%d janelas=%d inSync=%d z=%.1f res=%.0f unitRes=%.0f planB=%d consenso=%d motivo=%@ at=%@", r.accepted ? 1 : 0, r.scale, r.rawOffsetMs,
-                     r.driftScale ? 1 : 0, r.driftConfident, used.count, r.inSync ? 1 : 0, r.z, r.driftResMs, r.unitResMs, r.planB ? 1 : 0, r.winConsensus ? 1 : 0, r.reason.trimmingCharacters(in: .whitespaces).replacingOccurrences(of: " ", with: "_"), used.map { "[\($0.startMs)]," }.joined()))
+        print(String(format: "SPREAD accepted=%d scale=%.6f raw=%.0f drift=%d confiaveis=%d janelas=%d inSync=%d z=%.1f res=%.0f unitRes=%.0f planB=%d consenso=%d contra=%d motivo=%@ fin=%@ at=%@", r.accepted ? 1 : 0, r.scale, r.rawOffsetMs,
+                     r.driftScale ? 1 : 0, r.driftConfident, used.count, r.inSync ? 1 : 0, r.z, r.driftResMs, r.unitResMs, r.planB ? 1 : 0, r.winConsensus ? 1 : 0, r.shiftContra ? 1 : 0, r.reason.trimmingCharacters(in: .whitespaces).replacingOccurrences(of: " ", with: "_"), r.finDetail.replacingOccurrences(of: " ", with: "_"), used.map { "[\($0.startMs)]," }.joined()))
         return
     }
     let r = ses.solve()
