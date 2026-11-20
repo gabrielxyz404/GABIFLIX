@@ -1,0 +1,400 @@
+11-20 07:40:27.907  1310  1625 I PeopleChimeraService: onService. callbacks = zup@e9bfbf3, request = com.google.android.gms.common.internal.GetServiceRequest@2080b0
+11-20 07:40:27.925  7760  7813 I TngMinusOneSync: Syncing TNG:-1
+11-20 07:40:27.930  1108  1108 W SystemServiceRegistry: No service published for: persistent_data_block
+11-20 07:40:27.963  7760  7760 D l       : setAvailableAccounts() 0 -> 0.
+11-20 07:40:27.963  7760  7760 D l       : availableAccounts hasn't changed, returning.
+11-20 07:40:27.963  7760  7760 D l       : modelLoaded
+11-20 07:40:28.260   487  3254 I ActivityManager: Force stopping io.github.gabrielxyz404.gabiflix appid=10167 user=0: from pid 7843
+11-20 07:40:28.261  7843  7845 I cmd     : oneway function results will be dropped but finished with status OK and parcel size 4
+11-20 07:40:28.262   983   983 D CarrierSvcBindHelper: No carrier app for: 0
+11-20 07:40:29.179   487  3253 I system_server: oneway function results will be dropped but finished with status OK and parcel size 4
+11-20 07:40:29.288   487   520 D EventSequenceValidator: inc AccIntentStartedEvents to 2
+11-20 07:40:29.288   487  3253 I ActivityTaskManager: START u0 {flg=0x10000000 cmp=io.github.gabrielxyz404.gabiflix/.PlayerActivity (has extras)} from uid 0
+11-20 07:40:29.290   417   417 I perfetto: ing_service_impl.cc:758 Configured tracing session 10, #sources:1, duration:5000 ms, #buffers:1, total buffer size:4096 KB, total sessions:1, uid:1071 session name: ""
+11-20 07:40:29.290   416   416 I perfetto: probes_producer.cc:230  Ftrace setup (target_buf=10)
+11-20 07:40:29.292  7851  7853 I cmd     : oneway function results will be dropped but finished with status OK and parcel size 4
+11-20 07:40:29.292   487   520 D CompatibilityChangeReporter: Compat change id reported: 135634846; UID 10167; state: DISABLED
+11-20 07:40:29.293   487   527 D CompatibilityChangeReporter: Compat change id reported: 143937733; UID 10167; state: ENABLED
+11-20 07:40:29.299   286   286 D Zygote  : Forked child process 7859
+11-20 07:40:29.323   487   527 I ActivityManager: Start proc 7859:io.github.gabrielxyz404.gabiflix/u0a167 for pre-top-activity {io.github.gabrielxyz404.gabiflix/io.github.gabrielxyz404.gabiflix.PlayerActivity}
+11-20 07:40:29.325   416   416 I perfetto: ftrace_procfs.cc:176    enabled ftrace
+11-20 07:40:29.522     0     0 W perfetto: enabled ftrace
+11-20 07:40:29.340  7859  7859 W xyz404.gabifli: Unexpected CPU variant for X86 using defaults: x86
+11-20 07:40:29.359  7859  7859 D NetworkSecurityConfig: No Network Security Config specified, using platform default
+11-20 07:40:29.359  7859  7859 D NetworkSecurityConfig: No Network Security Config specified, using platform default
+11-20 07:40:29.373  4528  4565 I adbd    : jdwp connection from 7859
+11-20 07:40:29.384  7859  7885 D libEGL  : loaded /vendor/lib/egl/libEGL_emulation.so
+11-20 07:40:29.385  7859  7885 D libEGL  : loaded /vendor/lib/egl/libGLESv1_CM_emulation.so
+11-20 07:40:29.389  7859  7885 D libEGL  : loaded /vendor/lib/egl/libGLESv2_emulation.so
+11-20 07:40:29.633     0     0 D logd    : logdr: UID=0 GID=0 PID=7865 n tail=0 logMask=99 pid=0 start=0ns timeout=0ns
+11-20 07:40:29.545  7859  7859 D VLC/JNI/VLCObject: JNI interface loaded.
+11-20 07:40:29.558  7859  7859 E VLC     : [f05c9320/1eb3] libvlc audio output: GetStaticFieldID(AudioFormat.ENCODING_PCM_32BIT) failed
+11-20 07:40:29.614   487   520 W ActivityTaskManager: Current config: {1.0 310mcc260mnc [en_US] ldltr sw411dp w411dp h836dp 420dpi nrml long port finger qwerty/v/v -nav/h winConfig={ mBounds=Rect(0, 0 - 1080, 2400) mAppBounds=Rect(0, 0 - 1080, 2274) mWindowingMode=fullscreen mDisplayWindowingMode=fullscreen mActivityType=undefined mAlwaysOnTop=undefined mRotation=ROTATION_0} s.567} unchanged for IME proc com.google.android.inputmethod.latin
+11-20 07:40:29.614   487   520 I ActivityTaskManager: Config changes=20000480 {1.0 310mcc260mnc [en_US] ldltr sw411dp w866dp h381dp 420dpi nrml long land finger qwerty/v/v -nav/h winConfig={ mBounds=Rect(0, 0 - 2400, 1080) mAppBounds=Rect(0, 0 - 2274, 1080) mWindowingMode=fullscreen mDisplayWindowingMode=fullscreen mActivityType=undefined mAlwaysOnTop=undefined mRotation=ROTATION_90} s.599}
+11-20 07:40:29.656   487   520 W ActivityTaskManager: Current config: {1.0 310mcc260mnc [en_US] ldltr sw411dp w411dp h836dp 420dpi nrml long port finger qwerty/v/v -nav/h winConfig={ mBounds=Rect(0, 0 - 1080, 2400) mAppBounds=Rect(0, 0 - 1080, 2274) mWindowingMode=fullscreen mDisplayWindowingMode=fullscreen mActivityType=undefined mAlwaysOnTop=undefined mRotation=ROTATION_0} s.567} unchanged for IME proc com.google.android.inputmethod.latin
+11-20 07:40:29.656   487   520 I WindowManager: Override config changes=20000480 {1.0 310mcc260mnc [en_US] ldltr sw411dp w866dp h381dp 420dpi nrml long land finger qwerty/v/v -nav/h winConfig={ mBounds=Rect(0, 0 - 2400, 1080) mAppBounds=Rect(0, 0 - 2274, 1080) mWindowingMode=fullscreen mDisplayWindowingMode=fullscreen mActivityType=undefined mAlwaysOnTop=undefined mRotation=ROTATION_90} s.599} for displayId=0
+11-20 07:40:29.656   487   520 V ActivityTaskManager: Sending to IME proc com.google.android.inputmethod.latin new config {1.0 310mcc260mnc [en_US] ldltr sw411dp w866dp h381dp 420dpi nrml long land finger qwerty/v/v -nav/h winConfig={ mBounds=Rect(0, 0 - 2400, 1080) mAppBounds=Rect(0, 0 - 2274, 1080) mWindowingMode=fullscreen mDisplayWindowingMode=fullscreen mActivityType=undefined mAlwaysOnTop=undefined mRotation=ROTATION_90} s.599}
+11-20 07:40:29.656   487   520 W ActivityTaskManager: Current config: {1.0 310mcc260mnc [en_US] ldltr sw411dp w866dp h381dp 420dpi nrml long land finger qwerty/v/v -nav/h winConfig={ mBounds=Rect(0, 0 - 2400, 1080) mAppBounds=Rect(0, 0 - 2274, 1080) mWindowingMode=fullscreen mDisplayWindowingMode=fullscreen mActivityType=undefined mAlwaysOnTop=undefined mRotation=ROTATION_90} s.599} unchanged for IME proc com.google.android.inputmethod.latin
+11-20 07:40:29.657   487   520 V WindowManager: Orientation start waiting for draw, mDrawState=DRAW_PENDING in Window{ec2c8bb u0 com.android.systemui.ImageWallpaper}, surfaceController Surface(name=com.android.systemui.ImageWallpaper)/@0x43680d8
+11-20 07:40:29.666  1486  1486 W GoogleInputMethodService: GoogleInputMethodService.onConfigurationChanged():1401 onConfigurationChanged() : NewConfig = {1.0 310mcc260mnc [en_US] ldltr sw411dp w866dp h381dp 420dpi nrml long land finger qwerty/v/v -nav/h winConfig={ mBounds=Rect(0, 0 - 2400, 1080) mAppBounds=Rect(0, 0 - 2274, 1080) mWindowingMode=fullscreen mDisplayWindowingMode=fullscreen mActivityType=undefined mAlwaysOnTop=undefined mRotation=ROTATION_90} as.1 s.617}
+11-20 07:40:29.666  1486  1486 W KeyboardModeManager: KeyboardModeManager.reloadOrientationAwareData():457 reloadOrientationAwareData() : orientation = 2
+11-20 07:40:29.683   487   520 I InputManager-JNI: Viewport [0] to add: local:8141603649153536, isActive: true
+11-20 07:40:29.685   487   577 I InputReader: Reconfiguring input devices, changes=DISPLAY_INFO | 
+11-20 07:40:29.685   487   577 I InputReader: Touch device 'virtio_input_multi_touch_10' could not query the properties of its associated display.  The device will be inoperable until the display size becomes available.
+11-20 07:40:29.685   487   577 I InputReader: Touch device 'virtio_input_multi_touch_7' could not query the properties of its associated display.  The device will be inoperable until the display size becomes available.
+11-20 07:40:29.685   487   577 I InputReader: Touch device 'virtio_input_multi_touch_4' could not query the properties of its associated display.  The device will be inoperable until the display size becomes available.
+11-20 07:40:29.685   487   577 I InputReader: Touch device 'virtio_input_multi_touch_11' could not query the properties of its associated display.  The device will be inoperable until the display size becomes available.
+11-20 07:40:29.685   487   577 I InputReader: Touch device 'virtio_input_multi_touch_5' could not query the properties of its associated display.  The device will be inoperable until the display size becomes available.
+11-20 07:40:29.685   487   577 I InputReader: Touch device 'virtio_input_multi_touch_2' could not query the properties of its associated display.  The device will be inoperable until the display size becomes available.
+11-20 07:40:29.685   487   577 I InputReader: Touch device 'virtio_input_multi_touch_6' could not query the properties of its associated display.  The device will be inoperable until the display size becomes available.
+11-20 07:40:29.685   487   577 I InputReader: Touch device 'virtio_input_multi_touch_3' could not query the properties of its associated display.  The device will be inoperable until the display size becomes available.
+11-20 07:40:29.685   487   577 I InputReader: Device reconfigured: id=4, name='virtio_input_multi_touch_1', size 1136x2400, orientation 1, mode 1, display id 0
+11-20 07:40:29.685   487   577 I InputReader: Touch device 'virtio_input_multi_touch_8' could not query the properties of its associated display.  The device will be inoperable until the display size becomes available.
+11-20 07:40:29.685   487   577 I InputReader: Touch device 'virtio_input_multi_touch_9' could not query the properties of its associated display.  The device will be inoperable until the display size becomes available.
+11-20 07:40:29.694  1486  1486 W KeyboardModeManager: KeyboardModeManager.setInputView():302 setInputView() : inputView = null
+11-20 07:40:29.740  1486  1486 I GoogleInputMethodService: GoogleInputMethodService.initializeKeyboardTheme():1171 Apply keyboard theme: theme_border_stylesheet_googleblue_materiallight_assets:theme_package_metadata_google_blue_light.binarypb_land
+11-20 07:40:29.749   694   804 D EglHelper: createEglContext start
+11-20 07:40:29.751  1486  1486 I Environment: Environment.getDeviceMode():694 Get device mode by ui mode:1 and smallestScreenWidthDp:411
+11-20 07:40:29.751  1486  1486 I chatty  : uid=10142(com.google.android.inputmethod.latin) identical 4 lines
+11-20 07:40:29.751  1486  1486 I Environment: Environment.getDeviceMode():694 Get device mode by ui mode:1 and smallestScreenWidthDp:411
+11-20 07:40:29.754   694   804 D EGL_emulation: eglCreateContext: 0xc19cbd80: maj 3 min 0 rcv 3
+11-20 07:40:29.754   694   804 D EglHelper: createEglContext done
+11-20 07:40:29.754   694   804 D EglHelper: createEglSurface start
+11-20 07:40:29.762  1486  1486 I KeyboardViewUtil: KeyboardViewUtil.getKeyboardHeightRatio():128 systemKeyboardHeightRatio:1.000000; userKeyboardHeightRatio:1.000000.
+11-20 07:40:29.768  7859  7859 I GabiFlixPlayer: ciclo: onStart, tocando=false, tempo=-1, escala=0, atraso=0, vista=SurfaceView 0x0, vout=true
+11-20 07:40:29.769  7859  7859 I GabiFlixPlayer: ciclo: onResume, tocando=false, tempo=-1, escala=0, atraso=0, vista=SurfaceView 0x0, vout=true
+11-20 07:40:29.775  1486  1486 W SessionManager: SessionManager.beginSession():53 Try to begin an already begun session [INPUT_SESSION], end it first
+11-20 07:40:29.776   694   694 D StatusBar: disable<e i a s b h r c s > disable2<q i n >
+11-20 07:40:29.784   694   804 D EglHelper: createEglSurface done
+11-20 07:40:29.790  1486  1486 I Environment: Environment.getDeviceMode():694 Get device mode by ui mode:1 and smallestScreenWidthDp:411
+11-20 07:40:29.790  1486  1486 I Environment: Environment.getDeviceMode():694 Get device mode by ui mode:1 and smallestScreenWidthDp:411
+11-20 07:40:29.850   366   366 E Layer   : [Surface(name=9e9754 NavigationBar0)/@0x8f10dee - animation-leash#0] No local sync point found
+11-20 07:40:29.850  7859  7882 D HostConnection: HostConnection::get() New Host Connection established 0xf5eed8f0, tid 7882
+11-20 07:40:29.853  7859  7882 D HostConnection: HostComposition ext ANDROID_EMU_CHECKSUM_HELPER_v1 ANDROID_EMU_native_sync_v2 ANDROID_EMU_dma_v1 ANDROID_EMU_direct_mem ANDROID_EMU_host_composition_v1 ANDROID_EMU_host_composition_v2 ANDROID_EMU_vulkan ANDROID_EMU_deferred_vulkan_commands ANDROID_EMU_vulkan_null_optional_strings ANDROID_EMU_vulkan_create_resources_with_requirements ANDROID_EMU_YUV_Cache ANDROID_EMU_vulkan_ignored_handles ANDROID_EMU_has_shared_slots_host_memory_allocator ANDROID_EMU_vulkan_free_memory_sync ANDROID_EMU_vulkan_shader_float16_int8 ANDROID_EMU_vulkan_async_queue_submit ANDROID_EMU_sync_buffer_data ANDROID_EMU_vulkan_async_qsri ANDROID_EMU_read_color_buffer_dma ANDROID_EMU_hwc_color_transform ANDROID_EMU_hwc_display_power_mode GL_OES_EGL_image_external_essl3 GL_OES_vertex_array_object GL_KHR_texture_compression_astc_ldr ANDROID_EMU_host_side_tracing ANDROID_EMU_gles_max_version_3_0 
+11-20 07:40:29.854   161   161 I hwservicemanager: getTransport: Cannot find entry android.hardware.configstore@1.0::ISurfaceFlingerConfigs/default in either framework or device manifest.
+11-20 07:40:29.860  7859  7882 D EGL_emulation: eglCreateContext: 0xf5eedce0: maj 3 min 0 rcv 3
+11-20 07:40:29.862  7859  7882 D EGL_emulation: eglMakeCurrent: 0xf5eedce0: ver 3 0 (tinfo 0xf623c350) (first time)
+11-20 07:40:29.918   161   161 I hwservicemanager: getTransport: Cannot find entry android.hardware.graphics.mapper@4.0::IMapper/default in either framework or device manifest.
+11-20 07:40:29.918  7859  7882 I Gralloc4: mapper 4.x is not supported
+11-20 07:40:29.918  7859  7882 D HostConnection: createUnique: call
+11-20 07:40:29.919  7859  7882 D HostConnection: HostConnection::get() New Host Connection established 0xf5eeed10, tid 7882
+11-20 07:40:29.934  7859  7882 D HostConnection: HostComposition ext ANDROID_EMU_CHECKSUM_HELPER_v1 ANDROID_EMU_native_sync_v2 ANDROID_EMU_dma_v1 ANDROID_EMU_direct_mem ANDROID_EMU_host_composition_v1 ANDROID_EMU_host_composition_v2 ANDROID_EMU_vulkan ANDROID_EMU_deferred_vulkan_commands ANDROID_EMU_vulkan_null_optional_strings ANDROID_EMU_vulkan_create_resources_with_requirements ANDROID_EMU_YUV_Cache ANDROID_EMU_vulkan_ignored_handles ANDROID_EMU_has_shared_slots_host_memory_allocator ANDROID_EMU_vulkan_free_memory_sync ANDROID_EMU_vulkan_shader_float16_int8 ANDROID_EMU_vulkan_async_queue_submit ANDROID_EMU_sync_buffer_data ANDROID_EMU_vulkan_async_qsri ANDROID_EMU_read_color_buffer_dma ANDROID_EMU_hwc_color_transform ANDROID_EMU_hwc_display_power_mode GL_OES_EGL_image_external_essl3 GL_OES_vertex_array_object GL_KHR_texture_compression_astc_ldr ANDROID_EMU_host_side_tracing ANDROID_EMU_gles_max_version_3_0 
+11-20 07:40:30.112  7859  7888 I GabiFlixPlayer: hash=ddf5a6c3eb3f9682 tamanho=52825190 arquivo=clip.mkv
+11-20 07:40:30.112  7859  7888 I GabiFlixPlayer: Hash calculado, mas a busca de legendas falhou
+11-20 07:40:30.112  7859  7888 I GabiFlixPlayer: candidatas para baixar: 1 (do site: 1)
+11-20 07:40:30.156   694   694 D StatusBar: disable<e i a s b h r c s > disable2<q i n >
+11-20 07:40:30.333   694   694 I OpaEnabledReceiver: Dispatching OPA eligble = false; AGSA = true; OPA enabled = false
+11-20 07:40:30.333   694   694 I OpaLayout: Setting opa enabled to false
+11-20 07:40:30.333   694   694 I OpaLayout: Setting opa enabled to false
+11-20 07:40:30.444   694   694 I Choreographer: Skipped 38 frames!  The application may be doing too much work on its main thread.
+11-20 07:40:30.591   694  1210 I OpenGLRenderer: Davey! duration=792ms; Flags=1, IntendedVsync=686205823193, Vsync=686839156501, OldestInputEvent=9223372036854775807, NewestInputEvent=0, HandleInputStart=686851906986, AnimationStart=686851909180, PerformTraversalsStart=686851921959, DrawStart=686862143397, SyncQueued=686862213712, SyncStart=686862685482, IssueDrawCommandsStart=686862747474, SwapBuffers=686866685843, FrameCompleted=686998356854, DequeueBufferDuration=9346735, QueueBufferDuration=5281613, GpuCompleted=0, 
+11-20 07:40:30.710   487   521 I Choreographer: Skipped 35 frames!  The application may be doing too much work on its main thread.
+11-20 07:40:30.710   487   521 I Choreographer: Skipped 34 frames!  The application may be doing too much work on its main thread.
+11-20 07:40:30.762  7859  7882 I OpenGLRenderer: Davey! duration=962ms; Flags=1, IntendedVsync=686205823193, Vsync=686205823193, OldestInputEvent=9223372036854775807, NewestInputEvent=0, HandleInputStart=686208163828, AnimationStart=686208165140, PerformTraversalsStart=686208165340, DrawStart=686342827959, SyncQueued=686343617181, SyncStart=686344299810, IssueDrawCommandsStart=686344432196, SwapBuffers=687113660180, FrameCompleted=687169140538, DequeueBufferDuration=11510723, QueueBufferDuration=2674812, GpuCompleted=281890908365184, 
+11-20 07:40:30.763  7859  7859 I Choreographer: Skipped 56 frames!  The application may be doing too much work on its main thread.
+11-20 07:40:30.763   487  3254 I system_server: oneway function results will be dropped but finished with status OK and parcel size 4
+11-20 07:40:30.778   487  3254 D WifiNl80211Manager: Scan result ready event
+11-20 07:40:30.778   487  3254 D WifiNative: Scan result ready event
+11-20 07:40:30.817  7859  7888 I GabiFlixPlayer: legendas PT válidas: 1 de 1; referências baixadas: 0
+11-20 07:40:30.872  7859  7888 I GabiFlixPlayer: alinhamento com 0 referência(s):
+11-20 07:40:30.872  7859  7888 I GabiFlixPlayer:   sem referência (nem outro idioma, nem PT do hash) e menos de 2 PT para comparar: ranking antigo
+11-20 07:40:30.872  7859  7888 I GabiFlixPlayer:   alinhadas: 0
+11-20 07:40:30.890  7859  7882 I OpenGLRenderer: Davey! duration=1065ms; Flags=0, IntendedVsync=686222488510, Vsync=687155821806, OldestInputEvent=9223372036854775807, NewestInputEvent=0, HandleInputStart=687170534498, AnimationStart=687170535450, PerformTraversalsStart=687170575529, DrawStart=687170667035, SyncQueued=687170708707, SyncStart=687180262795, IssueDrawCommandsStart=687180300140, SwapBuffers=687284300867, FrameCompleted=687297971668, DequeueBufferDuration=6861239, QueueBufferDuration=173918, GpuCompleted=4129512368, 
+11-20 07:40:30.893   487   520 D EventSequenceValidator: dec AccIntentStartedEvents to 1
+11-20 07:40:30.894   487   525 D ArtManagerInternalImpl: /data/misc/iorapd/io.github.gabrielxyz404.gabiflix/1/io.github.gabrielxyz404.gabiflix.PlayerActivity/compiled_traces/compiled_trace.pb doesn't exist
+11-20 07:40:30.894   487   525 I ActivityTaskManager: Displayed io.github.gabrielxyz404.gabiflix/.PlayerActivity: +1s604ms
+11-20 07:40:30.979  7760  7839 I PBSessionCacheImpl: Deleted sessionId[34130636086594034] from persistence.
+11-20 07:40:31.003  7760  7813 W SearchServiceCore: Abort, client detached.
+11-20 07:40:31.007  7760  7813 I MicroDetectionState: Should stop hotword detection immediately - false
+11-20 07:40:31.127  7859  7896 I VideoCapabilities: Unsupported profile 4 for video/mp4v-es
+11-20 07:40:31.130  7859  7903 E VLC     : [f6132140/1edf] libvlc window: request 1 not implemented
+11-20 07:40:31.130  7859  7903 E VLC     : [f6132140/1edf] libvlc window: request 0 not implemented
+11-20 07:40:31.130  7859  7903 E VLC     : [f6132140/1edf] libvlc window: request 0 not implemented
+11-20 07:40:31.130  7859  7903 E VLC     : [f6132140/1edf] libvlc window: request 1 not implemented
+11-20 07:40:31.141  7859  7905 I OMXClient: IOmx service obtained
+11-20 07:40:31.141   440  6951 I OMXMaster: makeComponentInstance(OMX.android.goldfish.h264.decoder) in android.hardwar process
+11-20 07:40:31.141   440  6951 I GoldfishOMXPlugin: makeComponentInstance 'OMX.android.goldfish.h264.decoder'
+11-20 07:40:31.141   440  6951 I GoldfishOMXPlugin: Using goldfish codec for 'avcdec'
+11-20 07:40:31.141   440  6951 I goldfish_avcdec: created GoldfishAVCDec 96 object 0xe5e439d0
+11-20 07:40:31.142  7859  7904 D SurfaceUtils: connecting to surface 0xf06c7e08, reason connectToSurface
+11-20 07:40:31.142  7859  7904 I MediaCodec: [OMX.android.goldfish.h264.decoder] setting surface generation to 8047617
+11-20 07:40:31.142  7859  7904 D SurfaceUtils: disconnecting from surface 0xf06c7e08, reason connectToSurface(reconnect)
+11-20 07:40:31.142  7859  7904 D SurfaceUtils: connecting to surface 0xf06c7e08, reason connectToSurface(reconnect)
+11-20 07:40:31.142   440  6951 W OMXNodeInstance: [0xe69c0e10:android.goldfish.h264.decoder] component does not support metadata mode; using fallback
+11-20 07:40:31.142  7859  7905 E ACodec  : [OMX.android.goldfish.h264.decoder] setPortMode on output to DynamicANWBuffer failed w/ err -1010
+11-20 07:40:31.142   440  6951 E OMXNodeInstance: getParameter(0xe69c0e10:android.goldfish.h264.decoder, ??(0x6f600011)) ERROR: UnsupportedIndex(0x8000101a)
+11-20 07:40:31.142   440  6951 W OMXNodeInstance: [0xe69c0e10:android.goldfish.h264.decoder] component does not support metadata mode; using fallback
+11-20 07:40:31.143   440  6951 D GoldfishVideoDecoderOMXComponent: Color Aspects preference: 1 
+11-20 07:40:31.143   440  6951 E OMXNodeInstance: getConfig(0xe69c0e10:android.goldfish.h264.decoder, ConfigAndroidVendorExtension(0x6f100004)) ERROR: UnsupportedIndex(0x8000101a)
+11-20 07:40:31.143   440  6951 E OMXNodeInstance: getConfig(0xe69c0e10:android.goldfish.h264.decoder, ??(0x7f000003)) ERROR: UnsupportedSetting(0x80001019)
+11-20 07:40:31.145  7859  7905 D SurfaceUtils: disconnecting from surface 0xf06c7e08, reason setNativeWindowSizeFormatAndUsage
+11-20 07:40:31.145  7859  7905 D SurfaceUtils: connecting to surface 0xf06c7e08, reason setNativeWindowSizeFormatAndUsage
+11-20 07:40:31.145  7859  7905 D SurfaceUtils: set up nativeWindow 0xf06c7e08 for 640x480, color 0x13, rotation 0, usage 0x1002900
+11-20 07:40:31.145   315   335 W android.hardware.graphics.allocator@3.0-service: gralloc_alloc: Requested OMX_COLOR_FormatYUV420Planar, given YCbCr_420_888, taking experimental path. usage=1000900
+11-20 07:40:31.149  7859  7859 I GabiFlixPlayer: ciclo: evento Vout, saídas=1
+11-20 07:40:31.191   315   315 W android.hardware.graphics.allocator@3.0-service: gralloc_alloc: Requested OMX_COLOR_FormatYUV420Planar, given YCbCr_420_888, taking experimental path. usage=1000900
+11-20 07:40:31.222   315   315 I chatty  : uid=1000(system) allocator@3.0-s identical 2 lines
+11-20 07:40:31.229   315   315 W android.hardware.graphics.allocator@3.0-service: gralloc_alloc: Requested OMX_COLOR_FormatYUV420Planar, given YCbCr_420_888, taking experimental path. usage=1000900
+11-20 07:40:31.231   435  3845 W ResourceManagerService: Ignoring request to add new resource entry with value <= 0
+11-20 07:40:31.238   440  7907 I goldfish_avcdec: GoldfishAVC decoder version 1.0
+11-20 07:40:31.238   487  4438 I system_server: oneway function results will be dropped but finished with status OK and parcel size 4
+11-20 07:40:31.238   487  4438 I chatty  : uid=1000(system) Binder:487_20 identical 2 lines
+11-20 07:40:31.238   487  4438 I system_server: oneway function results will be dropped but finished with status OK and parcel size 4
+11-20 07:40:31.244   369  7284 D AudioFlinger: Client defaulted notificationFrames to 1956 for frameCount 3912
+11-20 07:40:31.244   369  7284 D AF::TrackHandle: OpPlayAudio: track:61 usage:1 not muted
+11-20 07:40:31.248  7859  7911 W AudioTrack: Use of stream types is deprecated for operations other than volume control
+11-20 07:40:31.248  7859  7911 W AudioTrack: See the documentation of AudioTrack() for what to use instead with android.media.AudioAttributes to qualify your playback use case
+11-20 07:40:31.248   369  7284 W APM::AudioPolicyEngine: getDevicesForStrategy() unknown strategy: -1
+11-20 07:40:31.248   369  7284 W APM::AudioPolicyEngine: getDevicesForStrategy() unknown strategy: -1
+11-20 07:40:31.248   487  4442 I system_server: oneway function results will be dropped but finished with status OK and parcel size 4
+11-20 07:40:31.287   440  7907 D GoldfishVideoDecoderOMXComponent: Color Aspects preference: 1 
+11-20 07:40:31.293   440  6951 E OMXNodeInstance: getConfig(0xe69c0e10:android.goldfish.h264.decoder, ??(0x7f000003)) ERROR: UnsupportedSetting(0x80001019)
+11-20 07:40:31.294  7859  7909 E VLC     : [f5d48380/1ee5] libvlc decoder: output: 19 unknown, 640x480 stride 640 480, crop 0 0 0 0
+11-20 07:40:31.853     0     0 D logd    : logdr: UID=0 GID=0 PID=7916 n tail=0 logMask=99 pid=0 start=0ns timeout=0ns
+11-20 07:40:31.670  7859  7873 I xyz404.gabifli: Background young concurrent copying GC freed 170770(6474KB) AllocSpace objects, 15(1316KB) LOS objects, 86% free, 3823KB/27MB, paused 16us total 276.579ms
+11-20 07:40:31.688  1486  1567 I PeriodicStatsRunner: PeriodicStatsRunner.call():180 call()
+11-20 07:40:31.688  1486  1567 I PeriodicStatsRunner: PeriodicStatsRunner.call():184 No submit PeriodicStats since input started.
+11-20 07:40:31.722   369   455 D AudioFlinger: mixer(0xee196030) throttle end: throttle time(84)
+11-20 07:40:32.142  1486  1567 I PeriodicStatsRunner: PeriodicStatsRunner.call():180 call()
+11-20 07:40:32.142  1486  1567 I PeriodicStatsRunner: PeriodicStatsRunner.call():184 No submit PeriodicStats since input started.
+11-20 07:40:32.159  7859  7903 E VLC     : [f6132140/1edf] libvlc window: request 3 not implemented
+11-20 07:40:32.736  7859  7859 I GabiFlixPlayer: vistas do vídeo: SurfaceView(vídeo) SurfaceView
+11-20 07:40:32.739  7859  7859 I GabiFlixPlayer: AUDIOSYNC pronto (sem limite de dados; automático=true, começa 10 s depois de a legenda ficar ativa; resultado confiante vale 30 dias e não se reverifica; sem confiança: 1 nova tentativa em 1200 s; salto grande = 600 s)
+11-20 07:40:32.752  7859  7859 I GabiFlixPlayer: legenda PT embutida: não há
+11-20 07:40:32.752  7859  7859 I GabiFlixPlayer: ranking das legendas:
+11-20 07:40:32.752  7859  7859 I GabiFlixPlayer:   referência de fim=0ms (sem referência), duração=1200084ms
+11-20 07:40:32.752  7859  7859 I GabiFlixPlayer:   #0 fim=4576587ms hash=false corrigida=false nota=0.3000
+11-20 07:40:32.753  7859  7859 I GabiFlixPlayer: escolhida: candidata #0; melhor baixada: #0 alinhada=false nota=0.00 deslocamento=0ms hash=false corrigida=false; 1 no menu
+11-20 07:40:32.753  7859  7859 I GabiFlixPlayer: atraso da legenda ativa (nenhuma): 0 ms
+11-20 07:40:32.754  7859  7859 I GabiFlixPlayer: pos 1209 spu=-1 atraso=0
+11-20 07:40:32.851   369   455 D AudioFlinger: mixer(0xee196030) throttle end: throttle time(22)
+11-20 07:40:32.948  7859  7859 I GabiFlixPlayer: legenda do app: 1311 falas da faixa ativa
+11-20 07:40:32.948  7859  7859 I GabiFlixPlayer: legenda do app: ligada
+11-20 07:40:33.048   369   455 D AudioFlinger: mixer(0xee196030) throttle end: throttle time(3)
+11-20 07:40:33.160  7859  7859 I GabiFlixPlayer: pos 1744 spu=2 atraso=0
+11-20 07:40:33.560  7859  7859 I GabiFlixPlayer: pos 1998 spu=2 atraso=0
+11-20 07:40:33.932     0     0 D logd    : logdr: UID=0 GID=0 PID=7925 n tail=0 logMask=99 pid=0 start=0ns timeout=0ns
+11-20 07:40:33.739   161   161 E SELinux : avc:  denied  { find } for interface=android.hardware.memtrack::IMemtrack sid=u:r:untrusted_app:s0:c167,c256,c512,c768 pid=7859 scontext=u:r:untrusted_app:s0:c167,c256,c512,c768 tcontext=u:object_r:hal_memtrack_hwservice:s0 tclass=hwservice_manager permissive=0
+11-20 07:40:33.740  7859  7859 E memtrack: Couldn't load memtrack module
+11-20 07:40:33.740  7859  7859 I xyz404.gabifli: Using smaps_rollup for pss collection
+11-20 07:40:33.744  7859  7859 I GabiFlixPlayer: AUDIOSYNC estado: st=- executando=false tocando=true carregando=false faixa=2 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 2:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=84MB java=7/512MB nativo=51MB livre=1137MB limiar=144MB poucaMemoria=false
+11-20 07:40:33.745  7859  7859 I GabiFlixPlayer: AUDIOSYNC legenda ativa: 5a6c3eb3f9682|http://10.0.2.2:8000/outro.srt#raw (nova nesta sessão)
+11-20 07:40:33.745  7859  7859 I GabiFlixPlayer: AUDIOSYNC GATILHO motivo=troca-de-legenda legenda=5a6c3eb3f9682|http://10.0.2.2:8000/outro.srt#raw decisão=avaliar (espera 10 s tocando; se há resultado guardado, não analisa) [análises=0 sem_confiança=0 estado=nova]
+11-20 07:40:33.961  7859  7859 I GabiFlixPlayer: pos 2504 spu=2 atraso=0
+11-20 07:40:33.982   369   455 D AudioFlinger: mixer(0xee196030) throttle end: throttle time(6)
+11-20 07:40:34.241   487   514 I system_server: oneway function results will be dropped but finished with status OK and parcel size 4
+11-20 07:40:34.258  7859  7859 I GabiFlixPlayer: atraso da legenda ativa (d3:u|h:ddf5a6c3eb3f9682|http://10.0.2.2:8000/outro.srt#raw): 0 ms
+11-20 07:40:34.293   416   416 I perfetto: probes_producer.cc:329  Producer stop (id=10)
+11-20 07:40:34.295   417   417 I perfetto: ng_service_impl.cc:1948 Tracing session 10 ended, total sessions:0
+11-20 07:40:34.297   416   416 I perfetto: ftrace_procfs.cc:183    disabled ftrace
+11-20 07:40:34.509     0     0 W perfetto: disabled ftrace
+11-20 07:40:34.361  7859  7859 I GabiFlixPlayer: pos 2754 spu=2 atraso=0
+11-20 07:40:34.763  7859  7859 I GabiFlixPlayer: pos 3296 spu=2 atraso=0
+11-20 07:40:34.776   369   455 D AudioFlinger: mixer(0xee196030) throttle end: throttle time(3)
+11-20 07:40:35.164  7859  7859 I GabiFlixPlayer: pos 3577 spu=2 atraso=0
+11-20 07:40:35.565  7859  7859 I GabiFlixPlayer: pos 4088 spu=2 atraso=0
+11-20 07:40:35.970     0     0 D logd    : logdr: UID=0 GID=0 PID=7929 n tail=0 logMask=99 pid=0 start=0ns timeout=0ns
+11-20 07:40:35.965  7859  7859 I GabiFlixPlayer: pos 4367 spu=2 atraso=0
+11-20 07:40:35.999  1486  1567 I PeriodicStatsRunner: PeriodicStatsRunner.call():180 call()
+11-20 07:40:35.999  1486  1567 I PeriodicStatsRunner: PeriodicStatsRunner.call():184 No submit PeriodicStats since input started.
+11-20 07:40:36.366  7859  7859 I GabiFlixPlayer: pos 4881 spu=2 atraso=0
+11-20 07:40:36.766  7859  7859 I GabiFlixPlayer: pos 5156 spu=2 atraso=0
+11-20 07:40:37.166  7859  7859 I GabiFlixPlayer: pos 5669 spu=2 atraso=0
+11-20 07:40:37.566  7859  7859 I GabiFlixPlayer: pos 6171 spu=2 atraso=0
+11-20 07:40:38.005     0     0 D logd    : logdr: UID=0 GID=0 PID=7932 n tail=0 logMask=99 pid=0 start=0ns timeout=0ns
+11-20 07:40:37.967  7859  7859 I GabiFlixPlayer: pos 6421 spu=2 atraso=0
+11-20 07:40:38.367  7859  7859 I GabiFlixPlayer: pos 6949 spu=2 atraso=0
+11-20 07:40:38.768  7859  7859 I GabiFlixPlayer: pos 7206 spu=2 atraso=0
+11-20 07:40:39.168  7859  7859 I GabiFlixPlayer: pos 7713 spu=2 atraso=0
+11-20 07:40:39.570  7859  7859 I GabiFlixPlayer: pos 7993 spu=2 atraso=0
+11-20 07:40:40.032     0     0 D logd    : logdr: UID=0 GID=0 PID=7935 n tail=0 logMask=99 pid=0 start=0ns timeout=0ns
+11-20 07:40:39.923  7859  7859 I GabiFlixPlayer: legenda do app: tempo 8505 ms, atraso 0 ms -> "Agente?"
+11-20 07:40:39.972  7859  7859 I GabiFlixPlayer: pos 8505 spu=2 atraso=0
+11-20 07:40:40.374  7859  7859 I GabiFlixPlayer: pos 8786 spu=2 atraso=0
+11-20 07:40:40.774  7859  7859 I GabiFlixPlayer: pos 9294 spu=2 atraso=0
+11-20 07:40:41.176  7859  7859 I GabiFlixPlayer: pos 9546 spu=2 atraso=0
+11-20 07:40:41.430  7859  7859 I GabiFlixPlayer: legenda do app: tempo 9796 ms, atraso 0 ms -> (nada)
+11-20 07:40:41.576  7859  7859 I GabiFlixPlayer: pos 10084 spu=2 atraso=0
+11-20 07:40:41.631  7859  7859 I GabiFlixPlayer: legenda do app: tempo 10084 ms, atraso 0 ms -> "Como faço para/chegar a Três Rios?"
+11-20 07:40:42.062     0     0 D logd    : logdr: UID=0 GID=0 PID=7938 n tail=0 logMask=99 pid=0 start=0ns timeout=0ns
+11-20 07:40:41.976  7859  7859 I GabiFlixPlayer: pos 10338 spu=2 atraso=0
+11-20 07:40:42.376  7859  7859 I GabiFlixPlayer: pos 10873 spu=2 atraso=0
+11-20 07:40:42.776  7859  7859 I GabiFlixPlayer: pos 11379 spu=2 atraso=0
+11-20 07:40:43.176  7859  7859 I GabiFlixPlayer: pos 11630 spu=2 atraso=0
+11-20 07:40:43.577  7859  7859 I GabiFlixPlayer: pos 12171 spu=2 atraso=0
+11-20 07:40:43.747  7859  7859 I GabiFlixPlayer: AUDIOSYNC GATILHO motivo=início legenda=5a6c3eb3f9682|http://10.0.2.2:8000/outro.srt#raw decisão=análise [análises=1 sem_confiança=0 estado=nova]
+11-20 07:40:43.748  7859  7859 I GabiFlixPlayer: AUDIOSYNC antes da análise: saúde da reprodução: amostras=10 paradas=0 razão_mínima=0.79 carregando=0 quadros_perdidos=7
+11-20 07:40:43.748  7859  7859 I GabiFlixPlayer: AUDIOSYNC começando: posição 12 s, duração 1200 s, atraso atual 0 ms, faixa de áudio 1
+11-20 07:40:43.841  7859  7859 I GabiFlixPlayer: legenda do app: tempo 12454 ms, atraso 0 ms -> "Continue por 3 Km até/o primeiro cruzamento..."
+11-20 07:40:43.846   487  4442 D CompatibilityChangeReporter: Compat change id reported: 135634846; UID 10167; state: DISABLED
+11-20 07:40:43.846   487   527 D CompatibilityChangeReporter: Compat change id reported: 143937733; UID 10167; state: ENABLED
+11-20 07:40:43.852   286   286 D Zygote  : Forked child process 7944
+11-20 07:40:43.853   487   527 I ActivityManager: Start proc 7944:io.github.gabrielxyz404.gabiflix:audiocap/u0a167 for service {io.github.gabrielxyz404.gabiflix/io.github.gabrielxyz404.gabiflix.AudioCapService}
+11-20 07:40:43.858  7944  7944 W biflix:audioca: Unexpected CPU variant for X86 using defaults: x86
+11-20 07:40:43.870   487  4442 D CompatibilityChangeReporter: Compat change id reported: 136274596; UID 10167; state: ENABLED
+11-20 07:40:43.897  4528  4565 I adbd    : jdwp connection from 7944
+11-20 07:40:43.910  7944  7944 D NetworkSecurityConfig: No Network Security Config specified, using platform default
+11-20 07:40:44.130     0     0 D logd    : logdr: UID=0 GID=0 PID=7962 n tail=0 logMask=99 pid=0 start=0ns timeout=0ns
+11-20 07:40:43.910  7944  7944 D NetworkSecurityConfig: No Network Security Config specified, using platform default
+11-20 07:40:43.963  7944  7968 D VLC/JNI/VLCObject: JNI interface loaded.
+11-20 07:40:43.968  7944  7968 E VLC     : [f05c3d30/1f20] libvlc audio output: GetStaticFieldID(AudioFormat.ENCODING_PCM_32BIT) failed
+11-20 07:40:43.978  7859  7859 I GabiFlixPlayer: pos 12454 spu=2 atraso=0
+11-20 07:40:44.378  7859  7859 I GabiFlixPlayer: pos 12963 spu=2 atraso=0
+11-20 07:40:44.778  7859  7859 I GabiFlixPlayer: pos 13213 spu=2 atraso=0
+11-20 07:40:45.132  7944  7973 E VLC     : [f5f80c20/1f25] libvlc mux: cannot add this stream
+11-20 07:40:45.132  7944  7973 E VLC     : [f5d4bd40/1f25] libvlc decoder: cannot create packetizer output (h264)
+11-20 07:40:45.161  7944  7971 E VLC     : [f5d4bd40/1f23] libvlc decoder: buffer deadlock prevented
+11-20 07:40:45.179  7859  7859 I GabiFlixPlayer: pos 13714 spu=2 atraso=0
+11-20 07:40:45.582  7859  7859 I GabiFlixPlayer: pos 13964 spu=2 atraso=0
+11-20 07:40:46.184     0     0 D logd    : logdr: UID=0 GID=0 PID=7975 n tail=0 logMask=99 pid=0 start=0ns timeout=0ns
+11-20 07:40:45.983  7859  7859 I GabiFlixPlayer: pos 14501 spu=2 atraso=0
+11-20 07:40:46.052  7859  7859 I GabiFlixPlayer: legenda do app: tempo 14501 ms, atraso 0 ms -> "Continue por 3 Km até/o primeiro cruzamento.../e vire à esquerda./Fica a uns 90 Km."
+11-20 07:40:46.153  7859  7859 I GabiFlixPlayer: legenda do app: tempo 14754 ms, atraso 0 ms -> "e vire à esquerda./Fica a uns 90 Km."
+11-20 07:40:46.352  7859  7941 I GabiFlixPlayer: AUDIOSYNC captura 135 s +90 s: 90.00 s de PCM em 2.51 s (fim) leitura=3 MB | usou a faixa 1 (pedida 1) de [1:Track 1; ]
+11-20 07:40:46.383  7859  7859 I GabiFlixPlayer: pos 14754 spu=2 atraso=0
+11-20 07:40:46.784  7859  7859 I GabiFlixPlayer: pos 15290 spu=2 atraso=0
+11-20 07:40:47.184  7859  7859 I GabiFlixPlayer: pos 15547 spu=2 atraso=0
+11-20 07:40:47.585  7859  7859 I GabiFlixPlayer: pos 16078 spu=2 atraso=0
+11-20 07:40:47.921  7760  7813 I WorkerManager: dispose()
+11-20 07:40:47.922  7760  7813 W ThreadPoolDumper: Queue length for executor EventBus is now 11. Perhaps some tasks are too long, or the pool is too small.
+11-20 07:40:47.987  7859  7859 I GabiFlixPlayer: pos 16591 spu=2 atraso=0
+11-20 07:40:48.233     0     0 D logd    : logdr: UID=0 GID=0 PID=7978 n tail=0 logMask=99 pid=0 start=0ns timeout=0ns
+11-20 07:40:48.262  7859  7859 I GabiFlixPlayer: legenda do app: tempo 16868 ms, atraso 0 ms -> "e vire à esquerda./Fica a uns 90 Km./Obrigado./Que lugar é esse?"
+11-20 07:40:48.363  7859  7859 I GabiFlixPlayer: legenda do app: tempo 16868 ms, atraso 0 ms -> "Obrigado./Que lugar é esse?"
+11-20 07:40:48.388  7859  7859 I GabiFlixPlayer: pos 16868 spu=2 atraso=0
+11-20 07:40:48.788  7859  7859 I GabiFlixPlayer: pos 17380 spu=2 atraso=0
+11-20 07:40:49.189  7859  7859 I GabiFlixPlayer: pos 17657 spu=2 atraso=0
+11-20 07:40:49.287  7944  7983 E VLC     : [f5f846e0/1f2f] libvlc mux: cannot add this stream
+11-20 07:40:49.287  7944  7983 E VLC     : [f5d4b560/1f2f] libvlc decoder: cannot create packetizer output (h264)
+11-20 07:40:49.312  7944  7981 E VLC     : [f5d4b560/1f2d] libvlc decoder: buffer deadlock prevented
+11-20 07:40:49.590  7859  7859 I GabiFlixPlayer: pos 18170 spu=2 atraso=0
+11-20 07:40:49.990  7859  7859 I GabiFlixPlayer: pos 18421 spu=2 atraso=0
+11-20 07:40:50.290     0     0 D logd    : logdr: UID=0 GID=0 PID=7985 n tail=0 logMask=99 pid=0 start=0ns timeout=0ns
+11-20 07:40:50.177  7859  7859 I GabiFlixPlayer: legenda do app: tempo 18673 ms, atraso 0 ms -> "Obrigado./Que lugar é esse?/De Repente."
+11-20 07:40:50.277  7859  7859 I GabiFlixPlayer: legenda do app: tempo 18673 ms, atraso 0 ms -> "De Repente."
+11-20 07:40:50.390  7859  7859 I GabiFlixPlayer: pos 18958 spu=2 atraso=0
+11-20 07:40:50.434  7859  7941 I GabiFlixPlayer: AUDIOSYNC captura 555 s +90 s: 90.05 s de PCM em 1.92 s (fim) leitura=3 MB | usou a faixa 1 (pedida 1) de [1:Track 1; ]
+11-20 07:40:50.790  7859  7859 I GabiFlixPlayer: pos 19214 spu=2 atraso=0
+11-20 07:40:51.192  7859  7859 I GabiFlixPlayer: pos 19748 spu=2 atraso=0
+11-20 07:40:51.592  7859  7859 I GabiFlixPlayer: pos 20004 spu=2 atraso=0
+11-20 07:40:51.682  7859  7859 I GabiFlixPlayer: legenda do app: tempo 20255 ms, atraso 0 ms -> "- De Repente o quê?/- Nada, é o nome daqui."
+11-20 07:40:51.994  7859  7859 I GabiFlixPlayer: pos 20505 spu=2 atraso=0
+11-20 07:40:52.348     0     0 D logd    : logdr: UID=0 GID=0 PID=7988 n tail=0 logMask=99 pid=0 start=0ns timeout=0ns
+11-20 07:40:52.394  7859  7859 I GabiFlixPlayer: pos 20793 spu=2 atraso=0
+11-20 07:40:52.795  7859  7859 I GabiFlixPlayer: pos 21296 spu=2 atraso=0
+11-20 07:40:53.121  7944  7993 E VLC     : [f5f82de0/1f39] libvlc mux: cannot add this stream
+11-20 07:40:53.122  7944  7993 E VLC     : [f5d434c0/1f39] libvlc decoder: cannot create packetizer output (h264)
+11-20 07:40:53.131  7944  7991 E VLC     : [f5d434c0/1f37] libvlc decoder: buffer deadlock prevented
+11-20 07:40:53.197  7859  7859 I GabiFlixPlayer: pos 21583 spu=2 atraso=0
+11-20 07:40:53.599  7859  7859 I GabiFlixPlayer: pos 22117 spu=2 atraso=0
+11-20 07:40:53.770  7859  7859 I GabiFlixPlayer: AUDIOSYNC estado: st=nova executando=true tocando=true carregando=false faixa=2 baixadas=1 addedSubs=1 embeddedKnown=true faixas=[-1:Disable; 2:Track 1 - [gabiflix/cache/legendas/app-1](baixada); ] cand=true | pss=100MB java=27/512MB nativo=57MB livre=1096MB limiar=144MB poucaMemoria=false
+11-20 07:40:53.796  7859  7859 I GabiFlixPlayer: legenda do app: tempo 22372 ms, atraso 0 ms -> (nada)
+11-20 07:40:53.999  7859  7859 I GabiFlixPlayer: pos 22372 spu=2 atraso=0
+11-20 07:40:54.373     0     0 D logd    : logdr: UID=0 GID=0 PID=7995 n tail=0 logMask=99 pid=0 start=0ns timeout=0ns
+11-20 07:40:54.199  7859  7859 I GabiFlixPlayer: legenda do app: tempo 22629 ms, atraso 0 ms -> "Que nome esquisito/para uma cidade."
+11-20 07:40:54.353  7859  7941 I GabiFlixPlayer: AUDIOSYNC captura 975 s +90 s: 90.07 s de PCM em 1.86 s (fim) leitura=6 MB | usou a faixa -1 (pedida 1) de []
+11-20 07:40:54.399  7859  7859 I GabiFlixPlayer: pos 22879 spu=2 atraso=0
+11-20 07:40:54.799  7859  7859 I GabiFlixPlayer: pos 23161 spu=2 atraso=0
+11-20 07:40:55.203  7859  7859 I GabiFlixPlayer: pos 23674 spu=2 atraso=0
+11-20 07:40:55.604  7859  7859 I GabiFlixPlayer: pos 24206 spu=2 atraso=0
+11-20 07:40:56.004  7859  7859 I GabiFlixPlayer: pos 24462 spu=2 atraso=0
+11-20 07:40:56.397     0     0 D logd    : logdr: UID=0 GID=0 PID=7998 n tail=0 logMask=99 pid=0 start=0ns timeout=0ns
+11-20 07:40:56.209  7859  7859 I GabiFlixPlayer: legenda do app: tempo 24714 ms, atraso 0 ms -> "Que nome esquisito/para uma cidade./É uma herança/de outros tempos."
+11-20 07:40:56.310  7859  7859 I GabiFlixPlayer: legenda do app: tempo 24714 ms, atraso 0 ms -> "É uma herança/de outros tempos."
+11-20 07:40:56.406  7859  7859 I GabiFlixPlayer: pos 24996 spu=2 atraso=0
+11-20 07:40:56.806  7859  7859 I GabiFlixPlayer: pos 25252 spu=2 atraso=0
+11-20 07:40:57.210  7859  7859 I GabiFlixPlayer: pos 25755 spu=2 atraso=0
+11-20 07:40:57.411  7944  8003 E VLC     : [f5f859a0/1f43] libvlc mux: cannot add this stream
+11-20 07:40:57.411  7944  8003 E VLC     : [f5d495e0/1f43] libvlc decoder: cannot create packetizer output (h264)
+11-20 07:40:57.426  7944  8001 E VLC     : [f5d495e0/1f41] libvlc decoder: buffer deadlock prevented
+11-20 07:40:57.611  7859  7859 I GabiFlixPlayer: pos 26006 spu=2 atraso=0
+11-20 07:40:58.011  7859  7859 I GabiFlixPlayer: pos 26533 spu=2 atraso=0
+11-20 07:40:58.429     0     0 D logd    : logdr: UID=0 GID=0 PID=8005 n tail=0 logMask=99 pid=0 start=0ns timeout=0ns
+11-20 07:40:58.412  7859  7859 I GabiFlixPlayer: pos 26789 spu=2 atraso=0
+11-20 07:40:58.503  7859  7941 I GabiFlixPlayer: AUDIOSYNC captura 260 s +90 s: 90.09 s de PCM em 2.25 s (fim) leitura=3 MB | usou a faixa 1 (pedida 1) de [1:Track 1; ]
+11-20 07:40:58.629  7859  7859 I GabiFlixPlayer: legenda do app: tempo 27044 ms, atraso 0 ms -> "É uma herança/de outros tempos./Era como as coisas/aconteciam aqui, de repente."
+11-20 07:40:58.730  7859  7859 I GabiFlixPlayer: legenda do app: tempo 27296 ms, atraso 0 ms -> "Era como as coisas/aconteciam aqui, de repente."
+11-20 07:40:58.814  7859  7859 I GabiFlixPlayer: pos 27296 spu=2 atraso=0
+11-20 07:40:59.215  7859  7859 I GabiFlixPlayer: pos 27577 spu=2 atraso=0
+11-20 07:40:59.615  7859  7859 I GabiFlixPlayer: pos 28088 spu=2 atraso=0
+11-20 07:41:00.004   694   694 D KeyguardClockSwitch: Updating clock: 741
+11-20 07:41:00.017  7859  7859 I GabiFlixPlayer: pos 28623 spu=2 atraso=0
+11-20 07:41:00.464     0     0 D logd    : logdr: UID=0 GID=0 PID=8008 n tail=0 logMask=99 pid=0 start=0ns timeout=0ns
+11-20 07:41:00.417  7859  7859 I GabiFlixPlayer: pos 28881 spu=2 atraso=0
+11-20 07:41:00.818  7859  7859 I GabiFlixPlayer: pos 29413 spu=2 atraso=0
+11-20 07:41:01.218  7859  7859 I GabiFlixPlayer: pos 29668 spu=2 atraso=0
+11-20 07:41:01.622  7859  7859 I GabiFlixPlayer: pos 30172 spu=2 atraso=0
+11-20 07:41:01.997  7944  8013 E VLC     : [f5f82de0/1f4d] libvlc mux: cannot add this stream
+11-20 07:41:01.997  7944  8013 E VLC     : [f5d4ec80/1f4d] libvlc decoder: cannot create packetizer output (h264)
+11-20 07:41:02.016  7944  8011 E VLC     : [f5d4ec80/1f4b] libvlc decoder: buffer deadlock prevented
+11-20 07:41:02.023  7859  7859 I GabiFlixPlayer: pos 30468 spu=2 atraso=0
+11-20 07:41:02.056  7859  7859 I GabiFlixPlayer: legenda do app: tempo 30468 ms, atraso 0 ms -> "Era como as coisas/aconteciam aqui, de repente./Entendo."
+11-20 07:41:02.157  7859  7859 I GabiFlixPlayer: legenda do app: tempo 30738 ms, atraso 0 ms -> "Entendo."
+11-20 07:41:02.537     0     0 D logd    : logdr: UID=0 GID=0 PID=8015 n tail=0 logMask=99 pid=0 start=0ns timeout=0ns
+11-20 07:41:02.430  7859  7859 I GabiFlixPlayer: pos 30990 spu=2 atraso=0
+11-20 07:41:02.831  7859  7859 I GabiFlixPlayer: pos 31247 spu=2 atraso=0
+11-20 07:41:02.997   369   455 D AudioFlinger: mixer(0xee196030) throttle end: throttle time(1)
+11-20 07:41:03.232  7859  7859 I GabiFlixPlayer: pos 31754 spu=2 atraso=0
+11-20 07:41:03.338  7859  7941 I GabiFlixPlayer: AUDIOSYNC captura 720 s +90 s: 90.07 s de PCM em 2.58 s (fim) leitura=4 MB | usou a faixa -1 (pedida 1) de []
+11-20 07:41:03.476  7859  7859 I GabiFlixPlayer: legenda do app: tempo 32036 ms, atraso 0 ms -> "Ladrões, jogadores, pistoleiros."
+11-20 07:41:03.545   369   455 D AudioFlinger: mixer(0xee196030) throttle end: throttle time(2)
+11-20 07:41:03.632  7859  7859 I GabiFlixPlayer: pos 32036 spu=2 atraso=0
+11-20 07:41:04.032  7859  7859 I GabiFlixPlayer: pos 32546 spu=2 atraso=0
+11-20 07:41:04.609     0     0 D logd    : logdr: UID=0 GID=0 PID=8018 n tail=0 logMask=99 pid=0 start=0ns timeout=0ns
+11-20 07:41:04.433  7859  7859 I GabiFlixPlayer: pos 32825 spu=2 atraso=0
+11-20 07:41:04.833  7859  7859 I GabiFlixPlayer: pos 33337 spu=2 atraso=0
+11-20 07:41:05.094  7859  7859 I GabiFlixPlayer: legenda do app: tempo 33588 ms, atraso 0 ms -> "Espero que as coisas/tenham mudado."
+11-20 07:41:05.234  7859  7859 I GabiFlixPlayer: pos 33588 spu=2 atraso=0
+11-20 07:41:05.636  7859  7859 I GabiFlixPlayer: pos 34126 spu=2 atraso=0
+11-20 07:41:06.043  7859  7859 I GabiFlixPlayer: pos 34629 spu=2 atraso=0
+11-20 07:41:06.382  7859  7859 I GabiFlixPlayer: AUDIOSYNC resultado: recusada z=5.1 janelas=1/5 (z baixo; correlação fraca; pico ambíguo; escala fora das razões de fps; ajuste contradiz as janelas (> 1 s); janelas discordam;) | vad=silero janelas=5 captura=22533 ms vad=8681 ms (cpu 26) solve=0 ms (cpu 0) cpu_thread=1327 ms total=22628 ms leitura_estimada=11 MB leitura_real=21 MB pss=86->84 MB java=7->17 MB
+11-20 07:41:06.382  7859  7859 I GabiFlixPlayer: AUDIOSYNC saúde da reprodução: amostras=22 paradas=0 razão_mínima=0.78 carregando=0 quadros_perdidos=0
+11-20 07:41:06.382  7859  7859 I GabiFlixPlayer: AUDIOSYNC o áudio não tem certeza: legenda deixada como estava
+11-20 07:41:06.384  7859  7859 I GFCrash : corpo de ANALISE (teste: não enviado):
+11-20 07:41:06.384  7859  7859 I GFCrash : FramePlay 1.0 | ANALISE | processo main
+11-20 07:41:06.384  7859  7859 I GFCrash : Aparelho: Google sdk_gphone_x86 | Android 11 (API 30) | RAM 1981 MB, livre 1117 MB | tv=false
+11-20 07:41:06.384  7859  7859 I GFCrash : ABI: [x86, armeabi-v7a, armeabi] (64 bits: []) processo=32 bits
+11-20 07:41:06.384  7859  7859 I GFCrash : duracao_s=1200 janelas=5 rodadas=0 vad=silero motor=a3
+11-20 07:41:06.384  7859  7859 I GFCrash : j1 inicio_s=135 centro_s=180 atraso_ms=10821 ncc=0.19 segundo=0.19 z=1.8 confiavel=0
+11-20 07:41:06.384  7859  7859 I GFCrash : j2 inicio_s=555 centro_s=600 atraso_ms=1271 ncc=0.25 segundo=0.23 z=2.9 confiavel=0
+11-20 07:41:06.384  7859  7859 I GFCrash : j3 inicio_s=975 centro_s=1020 atraso_ms=8602 ncc=0.29 segundo=0.21 z=3.1 confiavel=0
+11-20 07:41:06.384  7859  7859 I GFCrash : j4 inicio_s=260 centro_s=305 atraso_ms=-2530 ncc=0.18 segundo=0.15 z=3.0 confiavel=0
+11-20 07:41:06.384  7859  7859 I GFCrash : j5 inicio_s=720 centro_s=765 atraso_ms=5317 ncc=0.07 segundo=0.07 z=1.8 confiavel=0
+11-20 07:41:06.384  7859  7859 I GFCrash : ajuste escala=1.100019 deslocamento_ms=-774629 inclinacao=0.000000 residuo_ms=0 residuo_sem_escala_ms=0 deriva_janelas_ms=0 deriva_filme_ms=0 confiaveis=0 deriva_provada=0
+11-20 07:41:06.384  7859  7859 I GFCrash : motor aceita=0 inSync=0 z=5.1 margem=0.12 ncc=0.08 janelas_concordam=1/5 desvio_max_ms=1500 escala_conhecida=0 suspeita_deriva=0 cortes=0 plano_b=0 consenso=0
+11-20 07:41:06.384  7859  7859 I GFCrash : motivo=z baixo; correlação fraca; pico ambíguo; escala fora das razões de fps; ajuste contradiz as janelas (> 1 s); janelas discordam; | menos de 2 janelas confiáveis (0 de 5)
+11-20 07:41:06.384  7859  7859 I GFCrash : resultado=sem_confianca nota=recusada z=5.1 janelas=1/5 (z baixo; correlação fraca; pico ambíguo; escala fora das razões de fps; ajuste contradiz as janelas (> 1 s); janelas discordam;)
+11-20 07:41:06.384  7859  7859 I GFCrash : tempos captura_ms=22533 vad_ms=8681 total_ms=22628 leitura_mb=21
+11-20 07:41:06.384  7859  7859 I GFCrash : decisao=recusou: manteve
+11-20 07:41:06.384  7859  7859 I GFCrash : atraso_ao_iniciar_ms=0 atraso_manual_guardado=0 tentativa=1
+11-20 07:41:06.384  7859  7859 I GFCrash : manual pontos=[]
+11-20 07:41:06.384  7859  7859 I GabiFlixPlayer: AUDIOSYNC GATILHO motivo=sem-confiança legenda=5a6c3eb3f9682|http://10.0.2.2:8000/outro.srt#raw decisão=agendar UMA segunda tentativa em 1200 s: o áudio não tem certeza [análises=1 sem_confiança=1 estado=nova]
+11-20 07:41:06.639     0     0 D logd    : logdr: UID=0 GID=0 PID=8023 n tail=0 logMask=99 pid=0 start=0ns timeout=0ns
+11-20 07:41:06.443  7859  7859 I GabiFlixPlayer: pos 34879 spu=2 atraso=0
+11-20 07:41:06.702  7859  7859 I GabiFlixPlayer: legenda do app: tempo 35150 ms, atraso 0 ms -> "Espero que as coisas/tenham mudado./Agora tudo acontece/tão devagar..."
+11-20 07:41:06.802  7859  7859 I GabiFlixPlayer: legenda do app: tempo 35407 ms, atraso 0 ms -> "Agora tudo acontece/tão devagar..."
+11-20 07:41:06.845  7859  7859 I GabiFlixPlayer: pos 35407 spu=2 atraso=0
+11-20 07:41:07.245  7859  7859 I GabiFlixPlayer: pos 35663 spu=2 atraso=0
+11-20 07:41:07.645  7859  7859 I GabiFlixPlayer: pos 36171 spu=2 atraso=0
+11-20 07:41:08.045  7859  7859 I GabiFlixPlayer: pos 36421 spu=2 atraso=0
+11-20 07:41:08.436  7944  7944 I biflix:audioca: System.exit called, status: 0
+11-20 07:41:08.436  7944  7944 I AndroidRuntime: VM exiting with result code 0, cleanup skipped.
+11-20 07:41:08.443   487  4442 I ActivityManager: Process io.github.gabrielxyz404.gabiflix:audiocap (pid 7944) has died: cch+5 CEM 
+11-20 07:41:08.444   286   286 I Zygote  : Process 7944 exited cleanly (0)
+11-20 07:41:08.445  7859  7859 I GabiFlixPlayer: pos 36963 spu=2 atraso=0
+11-20 07:41:08.487   487   528 I libprocessgroup: Successfully killed process cgroup uid 10167 pid 7944 in 43ms
+11-20 07:41:08.845  7859  7859 I GabiFlixPlayer: pos 37213 spu=2 atraso=0
+11-20 07:41:09.013  7859  7859 I GabiFlixPlayer: legenda do app: tempo 37497 ms, atraso 0 ms -> "Agora tudo acontece/tão devagar.../que a câmara municipal quer/mudar o nome para "Lentamente"."
+11-20 07:41:09.113  7859  7859 I GabiFlixPlayer: legenda do app: tempo 37497 ms, atraso 0 ms -> "que a câmara municipal quer/mudar o nome para "Lentamente"."
+11-20 07:41:09.245  7859  7859 I GabiFlixPlayer: pos 37753 spu=2 atraso=0
+11-20 07:41:09.645  7859  7859 I GabiFlixPlayer: pos 38009 spu=2 atraso=0
+11-20 07:41:09.802   161   161 I hwservicemanager: getTransport: Cannot find entry android.hardware.graphics.mapper@4.0::IMapper/default in either framework or device manifest.
+11-20 07:41:09.802  8031  8031 I Gralloc4: mapper 4.x is not supported
+11-20 07:41:09.811  8031  8031 D HostConnection: createUnique: call
+11-20 07:41:09.812  8031  8031 D HostConnection: HostConnection::get() New Host Connection established 0xf4280b70, tid 8031
+11-20 07:41:09.843  8031  8031 D HostConnection: HostComposition ext ANDROID_EMU_CHECKSUM_HELPER_v1 ANDROID_EMU_native_sync_v2 ANDROID_EMU_dma_v1 ANDROID_EMU_direct_mem ANDROID_EMU_host_composition_v1 ANDROID_EMU_host_composition_v2 ANDROID_EMU_vulkan ANDROID_EMU_deferred_vulkan_commands ANDROID_EMU_vulkan_null_optional_strings ANDROID_EMU_vulkan_create_resources_with_requirements ANDROID_EMU_YUV_Cache ANDROID_EMU_vulkan_ignored_handles ANDROID_EMU_has_shared_slots_host_memory_allocator ANDROID_EMU_vulkan_free_memory_sync ANDROID_EMU_vulkan_shader_float16_int8 ANDROID_EMU_vulkan_async_queue_submit ANDROID_EMU_sync_buffer_data ANDROID_EMU_vulkan_async_qsri ANDROID_EMU_read_color_buffer_dma ANDROID_EMU_hwc_color_transform ANDROID_EMU_hwc_display_power_mode GL_OES_EGL_image_external_essl3 GL_OES_vertex_array_object GL_KHR_texture_compression_astc_ldr ANDROID_EMU_host_side_tracing ANDROID_EMU_gles_max_version_3_0 
+11-20 07:41:10.045  7859  7859 I GabiFlixPlayer: pos 38543 spu=2 atraso=0
+11-20 07:41:10.449  7859  7859 I GabiFlixPlayer: pos 38800 spu=2 atraso=0
+11-20 07:41:10.850  7859  7859 I GabiFlixPlayer: pos 39335 spu=2 atraso=0
+11-20 07:41:11.139     0     0 D logd    : logdr: UID=0 GID=0 PID=8033 n tail=0 logMask=99 pid=0 start=0ns timeout=0ns
+11-20 07:41:11.170     0     0 D logd    : logdr: UID=0 GID=0 PID=8036 n tail=0 logMask=99 pid=0 start=0ns timeout=0ns
