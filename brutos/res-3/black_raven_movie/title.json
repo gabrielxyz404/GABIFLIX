@@ -1,0 +1,162 @@
+{
+ "id": "black_raven_movie",
+ "title": "The Black Raven",
+ "year": 1943,
+ "decade": 1940,
+ "kind": "old",
+ "imdb": "tt0035679",
+ "ia": "Black_Raven_movie",
+ "series": null,
+ "license": "http://creativecommons.org/publicdomain/mark/1.0/",
+ "collection": null,
+ "tag": null,
+ "media_file": "Black_Raven.ogv",
+ "media_size": 271617421,
+ "notes": [],
+ "sub_candidates": [
+  {
+   "k": 0,
+   "lang": "pob",
+   "src": "opensubtitles",
+   "id": "13924634",
+   "bytes": 47624,
+   "app": {
+    "file": "raw0.bin",
+    "bytes": 47624,
+    "decode_ms": 25,
+    "decoded": 1,
+    "vtt": 0,
+    "cues": 588,
+    "speech": 588,
+    "first": 2087,
+    "last": 3639350,
+    "unsorted": 0,
+    "overlap": 0,
+    "nodur": 0,
+    "mojibake": 0,
+    "pt": 1,
+    "lastCueEnd": 3639350
+   },
+   "py_cues": 588,
+   "text_lang": "por",
+   "pt_app": 1
+  },
+  {
+   "k": 1,
+   "lang": "eng",
+   "src": "opensubtitles",
+   "id": "9182766",
+   "bytes": 49594,
+   "app": {
+    "file": "raw1.bin",
+    "bytes": 49594,
+    "decode_ms": 22,
+    "decoded": 1,
+    "vtt": 0,
+    "cues": 633,
+    "speech": 630,
+    "first": 136320,
+    "last": 3632647,
+    "unsorted": 0,
+    "overlap": 0,
+    "nodur": 0,
+    "mojibake": 0,
+    "pt": 0,
+    "lastCueEnd": 3632647
+   },
+   "py_cues": 633,
+   "text_lang": "eng",
+   "pt_app": 0
+  }
+ ],
+ "download_s": 7.6,
+ "probe": {
+  "n_audio": 1,
+  "n_video": 1,
+  "audio": [
+   {
+    "codec": "vorbis",
+    "ch": 2,
+    "layout": "stereo",
+    "sr": "44100",
+    "lang": null,
+    "title": null
+   }
+  ],
+  "dur_s": 3668.539875,
+  "bitrate": "592317",
+  "container": "ogg"
+ },
+ "audio_s": 3667.8,
+ "long": false,
+ "silent_open_s": 0.0,
+ "ref_tries": [
+  {
+   "k": 0,
+   "lang": "pob",
+   "text_lang": "por",
+   "src": "opensubtitles",
+   "alass": "ok",
+   "alass_med_ms": 942,
+   "alass_p90dev_ms": 2081,
+   "alass_maxdev_ms": 2081,
+   "pairs": 588,
+   "alass_s": 1.7
+  },
+  {
+   "k": 1,
+   "lang": "eng",
+   "text_lang": "eng",
+   "src": "opensubtitles",
+   "alass": "ok",
+   "alass_med_ms": 8592,
+   "alass_p90dev_ms": 16430,
+   "alass_maxdev_ms": 20142,
+   "pairs": 633,
+   "alass_s": 1.8
+  }
+ ],
+ "ref": {
+  "k": 0,
+  "lang": "pob",
+  "text_lang": "por",
+  "pt_app": 1,
+  "src": "opensubtitles",
+  "cues": 588,
+  "alass_p90dev_ms": 2081,
+  "alass_med_ms": 942,
+  "alass_maxdev_ms": 2081,
+  "ffs_off_ms": -40,
+  "ffs_note": "ok",
+  "tier": "B"
+ },
+ "others": [
+  {
+   "id": "the_mickey_rooney_show_misc_ep_13_the_mickey_rooney_show_mis",
+   "lang": "und",
+   "cues": 507
+  },
+  {
+   "id": "the_man_in_the_white_suit_202105",
+   "lang": "pob",
+   "cues": 663
+  }
+ ],
+ "engines": {
+  "main": {
+   "rc": 0,
+   "s": 20.7,
+   "tail": ""
+  },
+  "drift": {
+   "rc": 0,
+   "s": 48.4,
+   "tail": ""
+  }
+ },
+ "run_s": 48.4,
+ "status": "ok",
+ "variants": 15,
+ "total_s": 73.6,
+ "shard": 3
+}
