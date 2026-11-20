@@ -1,0 +1,31 @@
+OK     pos0: swift accepted=1 off=0.0 raw=-3.6 k=1.000000 z=11.48 | esperado accepted=1 off=0.0 k=1.000000 z=11.48 | 226 ms | 
+OK     pos1: swift accepted=1 off=6997.5 raw=6997.5 k=1.000000 z=14.51 | esperado accepted=1 off=6997.5 k=1.000000 z=14.51 | 229 ms | 
+OK     pos2: swift accepted=1 off=-45000.9 raw=-45000.9 k=1.000000 z=13.20 | esperado accepted=1 off=-45000.9 k=1.000000 z=13.20 | 222 ms | 
+OK     pos3: swift accepted=1 off=119997.0 raw=119997.0 k=1.000000 z=14.93 | esperado accepted=1 off=119997.0 k=1.000000 z=14.93 | 263 ms | 
+OK     pos4: swift accepted=1 off=-56.0 raw=-56.0 k=1.042709 z=12.26 | esperado accepted=1 off=-56.0 k=1.042709 z=12.26 | 230 ms | 
+OK     pos5: swift accepted=1 off=12050.2 raw=12050.2 k=0.959040 z=10.37 | esperado accepted=1 off=12050.2 k=0.959040 z=10.37 | 238 ms | 
+OK     pos6: swift accepted=1 off=-2066.0 raw=-2066.0 k=1.041667 z=11.83 | esperado accepted=1 off=-2066.0 k=1.041667 z=11.83 | 279 ms | 
+OK     pos7: swift accepted=1 off=0.0 raw=-2.7 k=1.000000 z=14.18 | esperado accepted=1 off=0.0 k=1.000000 z=14.18 | 233 ms | 
+OK     neg8: swift accepted=0 off=-112627.1 raw=-112627.1 k=0.914273 z=5.81 | esperado accepted=0 off=-112627.1 k=0.914273 z=5.81 | 242 ms | z baixo; pico ambíguo; escala fora das razões de fps; janelas discordam; 
+OK     neg9: swift accepted=0 off=-300070.1 raw=-300070.1 k=0.934063 z=5.22 | esperado accepted=0 off=-300070.1 k=0.934063 z=5.22 | 270 ms | z baixo; pico ambíguo; escala fora das razões de fps; 
+OK     neg10: swift accepted=0 off=-75762.4 raw=-75762.4 k=0.926149 z=5.08 | esperado accepted=0 off=-75762.4 k=0.926149 z=5.08 | 235 ms | z baixo; pico ambíguo; escala fora das razões de fps; ajuste contradiz as janelas (> 1 s); 
+OK     neg11: swift accepted=0 off=-308648.8 raw=-308648.8 k=1.000000 z=5.39 | esperado accepted=0 off=-308648.8 k=1.000000 z=5.39 | 258 ms | z baixo; pico ambíguo; ajuste contradiz as janelas (> 1 s); janelas discordam; 
+OK     vetores do motor: 12, divergentes: 0
+OK     PLAN dense-5700000 => 1360000,90000 3000000,90000 3635000,90000
+OK     PLAN dense-2400000 => 195000,90000 1360000,90000 2020000,90000
+OK     PLAN uniform-5700000 => 810000,90000 2805000,90000 4800000,90000
+OK     PLAN dense-sparse-4800000 => 675000,90000 2355000,90000 4035000,90000
+OK     PLAN dense-short-600000 => 45000,90000 255000,90000 465000,90000
+OK     SRT 1000,3500,10,1
+OK     SRT 4250,6000,0,0
+OK     SRT 7500,9250,24,1
+OK     SRT 3723004,3725999,13,1
+OK     SRT 600000,602000,0,0
+OK     SRT 11000,11020,12,1
+OK     sinal sintético igual ao do Java (-5713243986401912247) [DSPPCM checksum=-5713243986401912247]
+DSP em 57 ms
+OK     DSP: 2000 quadros (esperado 2000)
+OK     DSP: média 0.415192 (esperado 0.415192)
+OK     DSP: maior diferença nas amostras 0.00000 (limite 0,002)
+OK     fuzz: 120 sessões aleatórias, reverificação, planos, SRT e DSP sem travar (0 aceitas) em 12946 ms
+TUDO CERTO
