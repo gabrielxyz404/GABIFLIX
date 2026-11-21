@@ -47,11 +47,16 @@ if topact | grep -qi "packageinstaller"; then ok 4-instalador SIM; else ok 4-ins
 
 # 4) segunda abertura, menos de 6 h depois: nenhum diálogo
 adb shell am force-stop com.google.android.packageinstaller; adb shell am force-stop com.android.packageinstaller
-adb shell input keyevent KEYCODE_HOME; sleep 1
-abrir
-sleep 25
+sleep 4
+for tentativa in 1 2 3; do
+  abrir; sleep 20
+  topact | grep -q "gabiflix/.MainActivity" && tem "Mais Tarde" && break
+  echo "5: o app não ficou à frente (tentativa $tentativa): $(topact)" >> $OUT/passos.txt
+done
+sleep 10
 snap 5-segunda-abertura-sem-dialogo 0.3
-if tem "Nova versão do FramePlay"; then ok 5-segunda-abertura-sem-dialogo "NAO (apareceu o diálogo)"; else ok 5-segunda-abertura-sem-dialogo SIM; fi
+if ! topact | grep -q "gabiflix/.MainActivity"; then ok 5-segunda-abertura-sem-dialogo "NAO (o app não estava à frente)"
+elif tem "Nova versão do FramePlay"; then ok 5-segunda-abertura-sem-dialogo "NAO (apareceu o diálogo)"; else ok 5-segunda-abertura-sem-dialogo SIM; fi
 
 # 5) botão Atualizar do menu do site (cópia do site da branch, servida pelo runner)
 adb shell appops set $PKG REQUEST_INSTALL_PACKAGES deny
