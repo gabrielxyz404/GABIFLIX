@@ -226,7 +226,9 @@ public final class AppUpdate {
     public static void checkAuto(Activity a, BooleanSupplier inFront) {
         SharedPreferences sp = a.getSharedPreferences(PREFS, Context.MODE_PRIVATE);
         long now = System.currentTimeMillis(), last = sp.getLong(KEY_LAST, 0);
-        if (last <= now && now - last < AUTO_EVERY_MS) return; // (relógio atrasado: last > now conta como vencido)
+        boolean cedo = last <= now && now - last < AUTO_EVERY_MS; // (relógio atrasado: last > now conta como vencido)
+        android.util.Log.i("GFUpdate", "checkAuto: " + (cedo ? "menos de 6 h desde a última, não procura" : "procura"));
+        if (cedo) return;
         check(a, inFront, false);
     }
 
@@ -240,12 +242,13 @@ public final class AppUpdate {
         Context app = a.getApplicationContext();
         IO.execute(() -> {
             Release rel = null;
-            try { rel = fetch(TAG_PHONE); } catch (Exception ignored) {}
+            try { rel = fetch(TAG_PHONE); } catch (Exception e) { android.util.Log.w("GFUpdate", "falhou a busca: " + e); }
             final Release r = rel;
             if (r != null) app.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit().putLong(KEY_LAST, System.currentTimeMillis()).apply();
             MAIN.post(() -> {
                 if (a.isFinishing() || a.isDestroyed()) return;
                 long mine = versionCode(a);
+                android.util.Log.i("GFUpdate", "release=" + (r == null ? "null" : r.latest + " " + r.url) + " minha=" + mine + " manual=" + manual + " frente=" + inFront.getAsBoolean());
                 if (r == null || r.url == null) {
                     if (manual) Toast.makeText(a, "Sem acesso às versões agora. Tente mais tarde.", Toast.LENGTH_LONG).show();
                     return;

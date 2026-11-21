@@ -70,6 +70,7 @@ if tem "Atualizar" && tocar "Atualizar"; then
   snap 9-depois-e-o-site-recarrega 0.3
   if tem "Nova versão do FramePlay"; then ok 9-depois-fecha-dialogo NAO; else ok 9-depois-fecha-dialogo SIM; fi
 else ok 8-menu-atualizar-dialogo "NAO (botão Atualizar não encontrado)"; fi
-adb logcat -d | grep -E "FATAL EXCEPTION|AndroidRuntime" | head -40 > $OUT/crash.txt
+adb logcat -d | grep -E "FATAL EXCEPTION" | head -40 > $OUT/crash.txt
+adb logcat -d | grep -E "GFUpdate" > $OUT/gfupdate-log.txt
 cat $RES
 exit 0
