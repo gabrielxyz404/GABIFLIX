@@ -119,6 +119,9 @@ public class MainActivity extends Activity {
             }
         });
 
+        // procura versão nova do app em segundo plano (no máximo de 6 em 6 horas); só aqui, nunca no player nem na TV
+        if (savedInstanceState == null) AppUpdate.checkAuto(this, () -> resumed);
+
         if (savedInstanceState != null) web.restoreState(savedInstanceState);
         else {
             // só para os testes automáticos: carrega o site de outro endereço (a cópia da branch, servida pelo runner)
@@ -210,11 +213,17 @@ public class MainActivity extends Activity {
         web.saveState(outState);
     }
 
+    private boolean resumed;
+
     @Override
     protected void onResume() {
         super.onResume();
+        resumed = true;
         web.onResume();
         deliverPlayerProgress();
+        // atualização do app: continua depois da permissão de instalar; mostra a versão nova achada enquanto o filme tocava
+        AppUpdate.resumeWaiting(this);
+        AppUpdate.showPendingOffer(this);
     }
 
     /** ao voltar do player, entrega ao site onde o vídeo parou (o site salva no Continuar assistindo do Stremio) */
@@ -234,6 +243,7 @@ public class MainActivity extends Activity {
 
     @Override
     protected void onPause() {
+        resumed = false;
         web.onPause();
         CookieManager.getInstance().flush();
         super.onPause();
@@ -280,6 +290,12 @@ public class MainActivity extends Activity {
                 i.putExtra(PlayerActivity.EXTRA_START, startFinal);
                 startActivity(i);
             });
+        }
+
+        /** botão "Atualizar" do site: procura a versão nova do app (release "android") e mostra o diálogo ou um aviso */
+        @JavascriptInterface
+        public void checkUpdate() {
+            runOnUiThread(() -> AppUpdate.checkManual(MainActivity.this, () -> resumed));
         }
 
         @JavascriptInterface

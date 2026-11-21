@@ -1,0 +1,71 @@
+name: Teste atualização no celular
+
+# APK com versionCode baixo (3) no emulador: diálogo automático, Instalar -> instalador do sistema, segunda abertura sem diálogo e botão Atualizar do menu.
+# Nunca publica o app.
+on:
+  push:
+    branches: [atualizar-run]
+  workflow_dispatch:
+    inputs:
+      out_branch:
+        description: branch onde as fotos são publicadas
+        default: atualizar-out
+
+permissions:
+  contents: write
+
+jobs:
+  teste:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 17
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+      - name: APK de teste (x86, versão 1.0.3)
+        env:
+          GABIFLIX_ABIS: x86,x86_64
+          GABIFLIX_VERSION_CODE: 3
+          GABIFLIX_VERSION_NAME: 1.0.3
+        run: |
+          set -o pipefail
+          gradle -p android assembleRelease --no-daemon 2>&1 | tee build.log
+      - name: Mostrar o erro (se houver)
+        if: failure()
+        run: |
+          grep -n -E "error:|What went wrong|Could not|FAILURE|e: |> .*" build.log | head -25 | while IFS= read -r line; do
+            echo "::error::$(echo "$line" | cut -c1-900)"
+          done
+      - name: Site da branch
+        run: |
+          nohup python3 -m http.server 8000 --bind 0.0.0.0 >/dev/null 2>&1 &
+          sleep 3; curl -sI http://127.0.0.1:8000/gabiflix/update.js | head -1
+      - name: KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules && sudo udevadm trigger --name-match=kvm
+      - name: Emulador de celular
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          target: google_apis
+          arch: x86_64
+          profile: pixel_4
+          disable-animations: false
+          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
+          script: bash tools/atualizar-telefone-test/run.sh android/app/build/outputs/apk/release/app-release.apk
+      - name: Resultado
+        if: always()
+        run: cat shots/resultado.txt || true
+      - name: Publicar as fotos
+        if: always()
+        run: |
+          cd shots || exit 0
+          git init -q -b x && git add -A
+          git -c user.name=ci -c user.email=ci@x commit -qm fotos
+          git push -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" x:${{ github.event.inputs.out_branch || 'atualizar-out' }}

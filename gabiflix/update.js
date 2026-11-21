@@ -17,6 +17,11 @@
     window.gfUpdateApp = function () {
         if (window.__gfUpdating) return;
         window.__gfUpdating = true;
+        // dentro do app Android (versão com a ponte): procura também o APK novo; o diálogo é nativo e a atualização do site segue igual
+        try {
+            var N = window.GabiFlixNative;
+            if (N && typeof N.checkUpdate === 'function' && /GabiFlixApp\//.test(navigator.userAgent) && !/GabiFlixApp\/mac/.test(navigator.userAgent)) N.checkUpdate();
+        } catch (e) {}
         overlay();
         var tasks = [];
         if ('serviceWorker' in navigator) {
