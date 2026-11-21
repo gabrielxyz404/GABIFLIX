@@ -121,7 +121,7 @@ public class MainActivity extends Activity {
 
         // procura versão nova do app em segundo plano (no máximo de 6 em 6 horas); só aqui, nunca no player nem na TV
         AppUpdate.testRelease(getIntent().getStringExtra("gfTestRelease"));
-        if (savedInstanceState == null) AppUpdate.checkAuto(this, () -> resumed);
+        if (savedInstanceState == null) AppUpdate.checkAuto(this, () -> resumed && focused);
 
         if (savedInstanceState != null) web.restoreState(savedInstanceState);
         else {
@@ -216,6 +216,15 @@ public class MainActivity extends Activity {
     }
 
     private boolean resumed;
+    private boolean focused;
+
+    /** o diálogo de atualização só aparece com a janela já à frente e com foco (na abertura a frio, mais cedo ele ficava invisível) */
+    @Override
+    public void onWindowFocusChanged(boolean hasFocus) {
+        super.onWindowFocusChanged(hasFocus);
+        focused = hasFocus;
+        if (hasFocus && resumed) AppUpdate.showPendingOffer(this);
+    }
     private boolean testWebHost;
 
     @Override
@@ -226,7 +235,6 @@ public class MainActivity extends Activity {
         deliverPlayerProgress();
         // atualização do app: continua depois da permissão de instalar; mostra a versão nova achada enquanto o filme tocava
         AppUpdate.resumeWaiting(this);
-        AppUpdate.showPendingOffer(this);
     }
 
     /** ao voltar do player, entrega ao site onde o vídeo parou (o site salva no Continuar assistindo do Stremio) */
@@ -298,7 +306,7 @@ public class MainActivity extends Activity {
         /** botão "Atualizar" do site: procura a versão nova do app (release "android") e mostra o diálogo ou um aviso */
         @JavascriptInterface
         public void checkUpdate() {
-            runOnUiThread(() -> AppUpdate.checkManual(MainActivity.this, () -> resumed));
+            runOnUiThread(() -> AppUpdate.checkManual(MainActivity.this, () -> resumed && focused));
         }
 
         @JavascriptInterface
