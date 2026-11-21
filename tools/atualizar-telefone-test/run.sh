@@ -25,10 +25,18 @@ ok() { echo "$1: $2" | tee -a $RES; }
 abrir() { adb shell am force-stop $PKG; sleep 1; adb shell am start -a android.intent.action.MAIN -c android.intent.category.LAUNCHER -n $PKG/.MainActivity --es gfTestRelease http://10.0.2.2:8000/test-release/ "$@" >/dev/null; }
 
 # 1) primeira abertura: diálogo automático
-abrir
-sleep 3; snap 1a-3s 0; adb shell dumpsys window windows | grep -iE "Window #|mHasSurface" | grep -i "gabiflix\|alert" > $OUT/1a-janelas.txt
-sleep 4; snap 1b-7s 0
-if esperar "Nova versão do FramePlay" 20; then ok 1-dialogo-automatico SIM; else ok 1-dialogo-automatico NAO; fi
+# (o emulador acabou de arrancar: espera o sistema assentar e, se o app não ficar à frente, recomeça do zero)
+adb wait-for-device; for i in $(seq 1 30); do [ "$(adb shell getprop sys.boot_completed | tr -d '\r')" = 1 ] && break; sleep 2; done
+sleep 20
+for tentativa in 1 2 3; do
+  adb shell pm clear $PKG >/dev/null 2>&1; adb shell appops set $PKG REQUEST_INSTALL_PACKAGES deny >/dev/null 2>&1
+  adb shell am broadcast -a android.intent.action.CLOSE_SYSTEM_DIALOGS >/dev/null 2>&1
+  abrir
+  sleep 4; snap 1a-4s 0
+  esperar "Nova versão do FramePlay" 14 && break
+  echo "1: sem diálogo na tentativa $tentativa: $(topact)" >> $OUT/passos.txt
+done
+if tem "Nova versão do FramePlay"; then ok 1-dialogo-automatico SIM; else ok 1-dialogo-automatico NAO; fi
 snap 1-dialogo-automatico 0.5
 dump | python3 $UI texts > $OUT/1-dialogo-textos.txt
 
