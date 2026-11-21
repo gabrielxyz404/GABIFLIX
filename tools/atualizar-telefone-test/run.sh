@@ -22,7 +22,7 @@ tem() { dump | python3 $UI texts | grep -qi "$1"; }
 esperar() { for i in $(seq 1 $2); do tem "$1" && return 0; sleep 2; done; return 1; }
 tocar() { local xy; xy=$(dump | python3 $UI xy "$1"); [ -n "$xy" ] && adb shell input tap $xy && return 0; echo "NAO ACHEI: $1" >> $RES; return 1; }
 ok() { echo "$1: $2" | tee -a $RES; }
-abrir() { adb shell am force-stop $PKG; sleep 1; adb shell am start -a android.intent.action.MAIN -c android.intent.category.LAUNCHER -n $PKG/.MainActivity "$@" >/dev/null; }
+abrir() { adb shell am force-stop $PKG; sleep 1; adb shell am start -a android.intent.action.MAIN -c android.intent.category.LAUNCHER -n $PKG/.MainActivity --es gfTestRelease http://10.0.2.2:8000/test-release/ "$@" >/dev/null; }
 
 # 1) primeira abertura: diálogo automático
 abrir

@@ -100,8 +100,16 @@ public final class AppUpdate {
         }
     }
 
+    // só para os testes automáticos: lê a release de uma pasta servida pelo runner (a API do GitHub limita os pedidos do mesmo IP)
+    private static volatile String testBase;
+
+    public static void testRelease(String base) {
+        if (base != null && base.startsWith("http://10.0.2.2")) testBase = base.endsWith("/") ? base : base + "/";
+    }
+
     /** lê a release pelo nome novo do repositório e, se não responder, pelo antigo. Chamar fora da thread principal. */
     public static String releaseJson(String tag) throws Exception {
+        if (testBase != null) return get(testBase + tag + ".json");
         Exception last = null;
         for (String r : Site.REPOS) {
             try { return get("https://api.github.com/repos/gabrielxyz404/" + r + "/releases/tags/" + tag); }

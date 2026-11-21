@@ -120,6 +120,7 @@ public class MainActivity extends Activity {
         });
 
         // procura versão nova do app em segundo plano (no máximo de 6 em 6 horas); só aqui, nunca no player nem na TV
+        AppUpdate.testRelease(getIntent().getStringExtra("gfTestRelease"));
         if (savedInstanceState == null) AppUpdate.checkAuto(this, () -> resumed);
 
         if (savedInstanceState != null) web.restoreState(savedInstanceState);
