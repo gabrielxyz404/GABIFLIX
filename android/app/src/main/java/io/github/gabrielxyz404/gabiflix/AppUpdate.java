@@ -227,8 +227,10 @@ public final class AppUpdate {
     // ------------------------------------------------------------------ celular: verificação automática e manual
 
     // versão nova encontrada enquanto o ecrã não estava à frente (o diálogo nunca aparece por cima do player)
+    // fica guardada até o utilizador responder (Instalar/Depois): se a tela for recriada ou fechada antes, a próxima a mostra de novo
     private static Release offer;
     private static long offerMine;
+    private static AlertDialog offerDialog;
 
     /** ao abrir o app: no máximo de 6 em 6 horas, procura em segundo plano e, se houver versão nova, mostra o diálogo. */
     public static void checkAuto(Activity a, BooleanSupplier inFront) {
@@ -254,42 +256,47 @@ public final class AppUpdate {
             final Release r = rel;
             if (r != null) app.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit().putLong(KEY_LAST, System.currentTimeMillis()).apply();
             MAIN.post(() -> {
-                if (a.isFinishing() || a.isDestroyed()) return;
                 long mine = versionCode(a);
+                boolean gone = a.isFinishing() || a.isDestroyed();
                 android.util.Log.i("GFUpdate", "release=" + (r == null ? "null" : r.latest + " " + r.url) + " minha=" + mine + " manual=" + manual + " frente=" + inFront.getAsBoolean());
                 if (r == null || r.url == null) {
-                    if (manual) Toast.makeText(a, "Sem acesso às versões agora. Tente mais tarde.", Toast.LENGTH_LONG).show();
+                    if (manual && !gone) Toast.makeText(a, "Sem acesso às versões agora. Tente mais tarde.", Toast.LENGTH_LONG).show();
                     return;
                 }
                 if (r.latest <= mine) {
-                    if (manual) Toast.makeText(a, "O app já está na versão mais recente.", Toast.LENGTH_LONG).show();
+                    if (manual && !gone) Toast.makeText(a, "O app já está na versão mais recente.", Toast.LENGTH_LONG).show();
                     return;
                 }
-                if (inFront.getAsBoolean()) showOffer(a, r, mine);
-                else { offer = r; offerMine = mine; }
+                offer = r; offerMine = mine;
+                if (!gone && inFront.getAsBoolean()) showPendingOffer(a);
             });
         });
     }
 
-    /** MainActivity volta à frente: mostra a versão nova encontrada enquanto estava atrás (por exemplo, durante um filme). */
-    public static void showPendingOffer(Activity a) {
-        Release r = offer;
-        if (r == null) return;
-        offer = null;
-        showOffer(a, r, offerMine);
+    /** a tela vai ser destruída: fecha o diálogo dela (a versão nova continua guardada e a próxima tela a mostra) */
+    public static void screenGone() {
+        AlertDialog d = offerDialog;
+        offerDialog = null;
+        if (d != null) { try { d.dismiss(); } catch (Exception ignored) {} }
     }
 
-    private static void showOffer(Activity a, Release r, long mine) {
+    /** MainActivity com a janela à frente e com foco: mostra a versão nova ainda por responder (achada com o ecrã atrás, por exemplo durante um filme). */
+    public static void showPendingOffer(Activity a) {
+        Release r = offer;
+        if (r == null || a.isFinishing() || a.isDestroyed()) return;
+        if (offerDialog != null && offerDialog.isShowing()) return;
         android.util.Log.i("GFUpdate", "showOffer " + r.latest);
-        new AlertDialog.Builder(a, android.R.style.Theme_DeviceDefault_Dialog_Alert)
-                .setOnDismissListener(d -> android.util.Log.i("GFUpdate", "diálogo fechado"))
+        offerDialog = new AlertDialog.Builder(a, android.R.style.Theme_DeviceDefault_Dialog_Alert)
                 .setTitle("Nova versão do FramePlay")
-                .setMessage("Versão 1.0." + r.latest + " disponível (a sua é 1.0." + mine + "). Instalar agora?")
+                .setMessage("Versão 1.0." + r.latest + " disponível (a sua é 1.0." + offerMine + "). Instalar agora?")
                 .setPositiveButton("Instalar", (d, w) -> {
+                    offer = null;
                     Toast.makeText(a, "A transferir…", Toast.LENGTH_SHORT).show();
                     download(a, r.url, Texts.phone(), true);
                 })
-                .setNegativeButton("Depois", null)
+                .setNegativeButton("Depois", (d, w) -> offer = null)
+                .setOnCancelListener(d -> offer = null)
+                .setOnDismissListener(d -> { android.util.Log.i("GFUpdate", "diálogo fechado (resposta=" + (offer == null) + ")"); offerDialog = null; })
                 .show();
     }
 }

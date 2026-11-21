@@ -39,6 +39,7 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (duplicateLauncher(this)) { CrashReporter.crumb("MainActivity: ícone tocado com o app já aberto: não abre outra página inicial"); finish(); return; }
+        android.util.Log.i("GFUpdate", "MainActivity.onCreate recriada=" + (savedInstanceState != null));
         CrashReporter.testHook(this);
         // na TV abre o app nativo da TV (o celular não muda nada)
         if (isTv(this)) {
@@ -262,6 +263,8 @@ public class MainActivity extends Activity {
 
     @Override
     protected void onDestroy() {
+        android.util.Log.i("GFUpdate", "MainActivity.onDestroy finishing=" + isFinishing());
+        AppUpdate.screenGone();
         if (web != null) {
             root.removeView(web);
             web.destroy();
