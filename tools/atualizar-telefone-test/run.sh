@@ -26,6 +26,8 @@ abrir() { adb shell am force-stop $PKG; sleep 1; adb shell am start -a android.i
 
 # 1) primeira abertura: diálogo automático
 abrir
+sleep 3; snap 1a-3s 0; adb shell dumpsys window windows | grep -iE "Window #|mHasSurface" | grep -i "gabiflix\|alert" > $OUT/1a-janelas.txt
+sleep 4; snap 1b-7s 0
 if esperar "Nova versão do FramePlay" 20; then ok 1-dialogo-automatico SIM; else ok 1-dialogo-automatico NAO; fi
 snap 1-dialogo-automatico 0.5
 dump | python3 $UI texts > $OUT/1-dialogo-textos.txt

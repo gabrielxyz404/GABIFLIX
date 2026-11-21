@@ -127,7 +127,7 @@ public class MainActivity extends Activity {
         else {
             // só para os testes automáticos: carrega o site de outro endereço (a cópia da branch, servida pelo runner)
             String testWeb = getIntent().getStringExtra("gfTestWeb");
-            if (testWeb != null && testWeb.startsWith("http://10.0.2.2")) web.loadUrl(testWeb);
+            if (testWeb != null && testWeb.startsWith("http://10.0.2.2")) { testWebHost = true; web.loadUrl(testWeb); }
             else {
                 // o site pode estar em /FramePlay/ ou em /GABIFLIX/ (o GitHub Pages não redireciona): usa o que responder
                 final android.os.Handler ui = new android.os.Handler(android.os.Looper.getMainLooper());
@@ -143,7 +143,8 @@ public class MainActivity extends Activity {
         String scheme = uri.getScheme() == null ? "" : uri.getScheme().toLowerCase();
 
         // 1) páginas do próprio FramePlay continuam dentro do app
-        if ((scheme.equals("http") || scheme.equals("https")) && APP_HOST.equalsIgnoreCase(uri.getHost())) {
+        // (só nos testes automáticos, com o site servido pelo runner em 10.0.2.2, o site da branch também fica dentro do app)
+        if ((scheme.equals("http") || scheme.equals("https")) && (APP_HOST.equalsIgnoreCase(uri.getHost()) || (testWebHost && "10.0.2.2".equals(uri.getHost())))) {
             return false;
         }
 
@@ -215,6 +216,7 @@ public class MainActivity extends Activity {
     }
 
     private boolean resumed;
+    private boolean testWebHost;
 
     @Override
     protected void onResume() {

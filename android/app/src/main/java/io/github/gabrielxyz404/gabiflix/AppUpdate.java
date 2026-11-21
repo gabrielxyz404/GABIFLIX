@@ -280,7 +280,9 @@ public final class AppUpdate {
     }
 
     private static void showOffer(Activity a, Release r, long mine) {
+        android.util.Log.i("GFUpdate", "showOffer " + r.latest);
         new AlertDialog.Builder(a, android.R.style.Theme_DeviceDefault_Dialog_Alert)
+                .setOnDismissListener(d -> android.util.Log.i("GFUpdate", "diálogo fechado"))
                 .setTitle("Nova versão do FramePlay")
                 .setMessage("Versão 1.0." + r.latest + " disponível (a sua é 1.0." + mine + "). Instalar agora?")
                 .setPositiveButton("Instalar", (d, w) -> {
