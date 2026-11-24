@@ -53,7 +53,7 @@ waitres() {  # espera uma resposta NOVA ao toque (depois da marca de markres), $
   note "TEMPO ESGOTADO esperando a resposta ao toque"; return 1
 }
 # espera a legenda externa ficar ativa (o motor de áudio loga) e o filme tocar
-wait_ext() { waitlog "AUDIOSYNC legenda ativa:" 180 && waitlog "legenda do app:|estado=3" 60; }
+wait_ext() { waitlog "AUDIOSYNC legenda ativa:" 180 && waitlog "estado=5 tempo=[0-9]{5,}" 60; }
 check() {  # $1 = nome, $2 = log, $3 = depois (epoch), resto = opções do check.py
   local nome=$1 lg=$2 dep=$3; shift 3
   python3 "$HERE/check.py" "$lg" "$CERTA" --depois "$dep" --nome "$nome" "$@" | tee -a "$OUT/conferencia.txt"
@@ -126,7 +126,7 @@ finish 2-corrida
 # ------------------------------------------------------------------ 3) legenda EMBUTIDA no MKV (o app lê o texto pelo índice e passa a desenhá-la)
 launch 3-emb film-emb.mkv - $BASE FP_AUDIO_START_SEC=900 FP_NO_REPORT=1
 waitlog "legenda PT embutida: faixa" 180 || FAIL=1
-waitlog "estado=3" 60
+waitlog "estado=5 tempo=[0-9]{5,}" 60
 sleep 5
 cmd "seek 300000" 7
 shot 3-emb-1-antes 0.5
