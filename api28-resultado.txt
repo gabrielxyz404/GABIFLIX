@@ -1,0 +1,88 @@
+aparelho: AOSP on IA Emulator api 28
+== post (antes de relançar)
+--------- beginning of main
+--------- beginning of system
+11-24 21:44:53.949  4859  4884 I GFCrash : corpo de TESTE:
+11-24 21:44:53.949  4859  4884 I GFCrash : FramePlay 1.0 | TESTE | processo main
+11-24 21:44:53.949  4859  4884 I GFCrash : Aparelho: Google AOSP on IA Emulator | Android 9 (API 28) | RAM 1999 MB, livre 1229 MB | tv=false
+11-24 21:44:53.949  4859  4884 I GFCrash : ABI: [x86, armeabi-v7a, armeabi] (64 bits: []) processo=32 bits
+11-24 21:44:53.949  4859  4884 I GFCrash : Envio de teste do relatório de erros (sem dados pessoais).
+11-24 21:44:54.180  4859  4884 I GFCrash : POST TESTE parte 1/1 (260 bytes) -> HTTP 200
+11-24 21:44:54.206  4859  4884 I GFCrash : teste post: ENVIADO (HTTP 2xx) HTTP 200
+== java (antes de relançar)
+--------- beginning of main
+--------- beginning of system
+--------- beginning of crash
+== java (depois de relançar)
+--------- beginning of main
+--------- beginning of system
+--------- beginning of crash
+11-24 21:45:20.651  5352  5368 I GFCrash : corpo de CRASH_JAVA:
+11-24 21:45:20.651  5352  5368 I GFCrash : FramePlay 1.0 | CRASH_JAVA | processo main
+11-24 21:45:20.651  5352  5368 I GFCrash : Aparelho: Google AOSP on IA Emulator | Android 9 (API 28) | RAM 1999 MB, livre 1229 MB | tv=false
+11-24 21:45:20.651  5352  5368 I GFCrash : ABI: [x86, armeabi-v7a, armeabi] (64 bits: []) processo=32 bits
+11-24 21:45:20.651  5352  5368 I GFCrash : Thread: main
+11-24 21:45:20.651  5352  5368 I GFCrash : Exceção: java.lang.IllegalStateException: queda de teste (Java)
+11-24 21:45:20.651  5352  5368 I GFCrash : 
+11-24 21:45:20.651  5352  5368 I GFCrash : Rasto:
+11-24 21:45:20.651  5352  5368 I GFCrash : java.lang.IllegalStateException: queda de teste (Java)
+11-24 21:45:20.651  5352  5368 I GFCrash : 	at io.github.gabrielxyz404.gabiflix.CrashReporter.lambda$testHook$8(CrashReporter.java:347)
+11-24 21:45:20.651  5352  5368 I GFCrash : 	at io.github.gabrielxyz404.gabiflix.CrashReporter$$ExternalSyntheticLambda9.run(D8$$SyntheticClass:0)
+11-24 21:45:20.651  5352  5368 I GFCrash : 	at android.os.Handler.handleCallback(Handler.java:873)
+11-24 21:45:20.651  5352  5368 I GFCrash : 	at android.os.Handler.dispatchMessage(Handler.java:99)
+11-24 21:45:20.651  5352  5368 I GFCrash : 	at android.os.Looper.loop(Looper.java:193)
+11-24 21:45:20.651  5352  5368 I GFCrash : 	at android.app.ActivityThread.main(ActivityThread.java:6669)
+11-24 21:45:20.651  5352  5368 I GFCrash : 	at java.lang.reflect.Method.invoke(Native Method)
+11-24 21:45:20.651  5352  5368 I GFCrash : 	at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:493)
+11-24 21:45:20.651  5352  5368 I GFCrash : 	at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:858)
+11-24 21:45:20.651  5352  5368 I GFCrash : 
+11-24 21:45:20.651  5352  5368 I GFCrash : 
+11-24 21:45:20.651  5352  5368 I GFCrash : Migalhas:
+11-24 21:45:20.651  5352  5368 I GFCrash : 21:45:07.599 processo main iniciado, versão 1.0, pid 5167
+11-24 21:45:20.651  5352  5368 I GFCrash : 21:45:07.863 MainActivity criada intent=268435456
+11-24 21:45:20.651  5352  5368 I GFCrash : 21:45:07.986 teste do relatório: java
+11-24 21:45:20.651  5352  5368 I GFCrash : 21:45:08.269 MainActivity iniciada
+11-24 21:45:20.651  5352  5368 I GFCrash : 21:45:08.269 MainActivity retomada
+11-24 21:45:20.651  5352  5368 I GFCrash : 21:45:09.518 EXCEÇÃO NÃO TRATADA em main
+11-24 21:45:20.720  5352  5368 I GFCrash : POST CRASH_JAVA parte 1/1 (1237 bytes) -> HTTP 200
+11-24 21:45:09.518  5167  5167 E AndroidRuntime: FATAL EXCEPTION: main
+== native (antes de relançar)
+--------- beginning of main
+--------- beginning of system
+--------- beginning of crash
+== native (depois de relançar)
+--------- beginning of main
+--------- beginning of system
+--------- beginning of crash
+11-24 21:45:36.855  5554  5554 F libc    : Fatal signal 6 (SIGABRT), code -6 (SI_TKILL) in tid 5554 (xyz404.gabiflix), pid 5554 (xyz404.gabiflix)
+== evento (antes de relançar)
+--------- beginning of main
+--------- beginning of system
+11-24 21:46:02.657  5810  5829 I GFCrash : corpo de TESTE_EVENTO:
+11-24 21:46:02.657  5810  5829 I GFCrash : FramePlay 1.0 | TESTE_EVENTO | processo main
+11-24 21:46:02.657  5810  5829 I GFCrash : Aparelho: Google AOSP on IA Emulator | Android 9 (API 28) | RAM 1999 MB, livre 1243 MB | tv=false
+11-24 21:46:02.657  5810  5829 I GFCrash : ABI: [x86, armeabi-v7a, armeabi] (64 bits: []) processo=32 bits
+11-24 21:46:02.657  5810  5829 I GFCrash : evento de teste
+11-24 21:46:02.657  5810  5829 I GFCrash : 
+11-24 21:46:02.657  5810  5829 I GFCrash : Migalhas:
+11-24 21:46:02.657  5810  5829 I GFCrash : 21:46:02.428 processo main iniciado, versão 1.0, pid 5810
+11-24 21:46:02.657  5810  5829 I GFCrash : 21:46:02.541 MainActivity criada intent=268435456
+11-24 21:46:02.657  5810  5829 I GFCrash : 21:46:02.541 teste do relatório: event
+11-24 21:46:02.657  5810  5829 I GFCrash : 21:46:02.541 EVENTO TESTE_EVENTO: evento de teste
+11-24 21:46:02.961  5810  5829 I GFCrash : POST TESTE_EVENTO parte 1/1 (433 bytes) -> HTTP 200
+== evento (depois de relançar)
+--------- beginning of main
+--------- beginning of system
+11-24 21:46:02.657  5810  5829 I GFCrash : corpo de TESTE_EVENTO:
+11-24 21:46:02.657  5810  5829 I GFCrash : FramePlay 1.0 | TESTE_EVENTO | processo main
+11-24 21:46:02.657  5810  5829 I GFCrash : Aparelho: Google AOSP on IA Emulator | Android 9 (API 28) | RAM 1999 MB, livre 1243 MB | tv=false
+11-24 21:46:02.657  5810  5829 I GFCrash : ABI: [x86, armeabi-v7a, armeabi] (64 bits: []) processo=32 bits
+11-24 21:46:02.657  5810  5829 I GFCrash : evento de teste
+11-24 21:46:02.657  5810  5829 I GFCrash : 
+11-24 21:46:02.657  5810  5829 I GFCrash : Migalhas:
+11-24 21:46:02.657  5810  5829 I GFCrash : 21:46:02.428 processo main iniciado, versão 1.0, pid 5810
+11-24 21:46:02.657  5810  5829 I GFCrash : 21:46:02.541 MainActivity criada intent=268435456
+11-24 21:46:02.657  5810  5829 I GFCrash : 21:46:02.541 teste do relatório: event
+11-24 21:46:02.657  5810  5829 I GFCrash : 21:46:02.541 EVENTO TESTE_EVENTO: evento de teste
+11-24 21:46:02.961  5810  5829 I GFCrash : POST TESTE_EVENTO parte 1/1 (433 bytes) -> HTTP 200
+envios HTTP 2xx: 5
