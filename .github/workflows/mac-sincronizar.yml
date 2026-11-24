@@ -32,24 +32,37 @@ jobs:
       - uses: actions/cache@v4
         with:
           path: film
-          key: sincronizar-film-v2-${{ hashFiles('tools/sincronizar/prep_film.py', 'tools/audio-integra/corpus/corpus.py') }}
-      - name: O filme de ~90 min e a legenda certa
+          key: sincronizar-film-v3-${{ hashFiles('tools/sincronizar/prep_film.py', 'tools/audio-integra/corpus/corpus.py', '.github/workflows/mac-sincronizar.yml') }}
+      - name: O filme de ~90 min e a legenda certa (só vale um filme em que o motor de referência, em Java, aceita a legenda de 25 fps + 4 s)
         run: |
           sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg >/dev/null
+          mkdir -p /tmp/ort /tmp/pc
+          curl -fsSL -o /tmp/ort/ort.jar https://repo1.maven.org/maven2/com/microsoft/onnxruntime/onnxruntime/1.20.0/onnxruntime-1.20.0.jar
+          D=android/app/src/main/java/io/github/gabrielxyz404/gabiflix/audiosync
+          javac -nowarn -d /tmp/pc -cp /tmp/ort/ort.jar $D/*.java tools/audio-integra/PreCheck.java
+          PRE="java -cp /tmp/pc:/tmp/ort/ort.jar PreCheck"; MODEL=$PWD/android/app/src/main/assets/silero_vad.onnx
           if [ ! -f film/film.mkv ] || [ ! -f film/certa.srt ]; then
-            rm -rf film
-            for s in his_girl_friday my_man_godfrey the_stranger night_of_the_living_dead scarlet_street doa; do
-              rm -rf film; python3 tools/sincronizar/prep_film.py $s film > prep-$s.log 2>&1 && { cp prep-$s.log prep.log; break; }
-              tail -5 prep-$s.log
+            rm -rf film film_*; : > precheck.txt; FIRST=""
+            for s in scarlet_street the_stranger night_of_the_living_dead doa my_man_godfrey his_girl_friday; do
+              rm -rf film_$s
+              python3 tools/sincronizar/prep_film.py $s film_$s > prep-$s.log 2>&1 || { echo "$s: não preparou"; tail -4 prep-$s.log; continue; }
+              [ -z "$FIRST" ] && FIRST=$s
+              python3 tools/deriva/mkdrift.py film_$s/certa.srt /tmp/sub25.srt 23.976/25 4000
+              R=$(SPREAD=1 $PRE film_$s/_work/audio16k.wav /tmp/sub25.srt $MODEL 2>/dev/null | grep ^SPREAD)
+              echo "$s -> $R" | tee -a precheck.txt
+              rm -rf film_$s/_work
+              if echo "$R" | grep -q "accepted=1"; then PICK=$s; break; fi
             done
-            [ -f film/film.mkv ] || { echo "::error::nenhum filme preparado"; exit 1; }
-            rm -rf film/_work
+            PICK=${PICK:-$FIRST}
+            [ -n "$PICK" ] || { echo "::error::nenhum filme preparado"; exit 1; }
+            echo "filme escolhido: $PICK"; mv film_$PICK film; rm -rf film_*
+            cp precheck.txt film/precheck.txt
           fi
-          cat film/info.json; ls -la film
+          cat film/info.json film/precheck.txt; ls -la film
       - name: Material derivado (25 fps + 4 s, MKV com a legenda embutida, vídeo sem fala)
         run: |
           mkdir -p media
-          cp film/film.mkv film/certa.srt media/
+          cp film/film.mkv film/certa.srt film/info.json film/precheck.txt media/ 2>/dev/null || cp film/film.mkv film/certa.srt media/
           python3 tools/deriva/mkdrift.py media/certa.srt media/sub25.srt 23.976/25 4000
           ffmpeg -nostdin -loglevel error -y -i media/film.mkv -i media/sub25.srt -map 0 -map 1 -c copy -c:s srt \
             -metadata:s:s:0 language=por -metadata:s:s:0 title="Português" media/film-emb.mkv

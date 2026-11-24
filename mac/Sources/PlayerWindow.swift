@@ -1284,6 +1284,7 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
         autoTicker = nil
         autoRunning = false
         log("sincronização: resultado=\(label) motivo=\(reason)")
+        if let rep = res?.report, !rep.isEmpty { log("ANALISE do botão (motor)\n" + rep) }
         notice(msg, seconds: 8)
         AnalysisReport.send(origin: "botao_sincronizar", result: label, reason: reason, scale: res?.scale ?? 1.0, offsetMs: res?.offsetMs ?? 0, z: res?.z ?? 0,
                             subSource: autoCtx.source, fpsHint: AnalysisReport.fpsHint(res?.scale ?? 1.0), url: url, durationMs: Int(player.media?.length.intValue ?? 0),
