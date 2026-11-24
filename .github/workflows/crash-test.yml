@@ -27,6 +27,8 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.9'
+      - name: Testes JVM (classificação dos avisos de erro)
+        run: gradle -p android testReleaseUnitTest --no-daemon
       - name: APK de teste (x86)
         env:
           GABIFLIX_ABIS: x86,x86_64
