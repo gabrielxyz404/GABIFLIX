@@ -395,7 +395,7 @@ final class AudioSyncAuto {
         if ra > 0 && now >= ra && !running {
             // o item de menu acabou de terminar: adota o resultado que ele guardou (sem nova captura)
             rescanAt.value = 0
-            s.st = .new; s.keySince = 0; s.attempts = 0; s.retryPending = false; s.retryFromRefusal = false
+            s.st = .new; s.keySince = Int.min / 4; s.attempts = 0; s.retryPending = false; s.retryFromRefusal = false
             trigger("botão-adotar-resultado", kk, "sem análise (só lê a marca que o botão guardou)")
         }
         switch s.st {
