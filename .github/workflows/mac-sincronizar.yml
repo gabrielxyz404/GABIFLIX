@@ -1,0 +1,149 @@
+name: Mac sincronizar (botão Sincronizar, sem publicar)
+
+# Prova do botão Sincronizar do player do Mac (macOS, VLCKit real, a janela de verdade) num substituto realista de um filme de ~90 min a 23,976 fps:
+# domínio público com fala real, servido por HTTP com Range (porta 11470, como o servidor de streaming do Stremio), legenda PT a 25 fps + 4 s como
+# legenda externa e a MESMA legenda embutida como faixa do MKV; mais um vídeo sem fala e um servidor que trava. Compara a versão ANTIGA (antes) com esta (depois).
+# Nunca publica o app. Fotos e registros no branch mac-sincronizar-out-<versao>.
+on:
+  push:
+    branches: [run-mac-sincronizar]
+  workflow_dispatch:
+    inputs:
+      real_report:
+        description: "1 = o cenário sem fala manda UM relatório ANALISE de verdade ao ntfy (prova do envio)"
+        default: "0"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: mac-sincronizar-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  ANTES: aac03457187d15baaef269a738ae183358648cbe
+
+jobs:
+  prep:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/cache@v4
+        with:
+          path: film
+          key: sincronizar-film-v2-${{ hashFiles('tools/sincronizar/prep_film.py', 'tools/audio-integra/corpus/corpus.py') }}
+      - name: O filme de ~90 min e a legenda certa
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg >/dev/null
+          if [ ! -f film/film.mkv ] || [ ! -f film/certa.srt ]; then
+            rm -rf film
+            for s in his_girl_friday my_man_godfrey the_stranger night_of_the_living_dead scarlet_street doa; do
+              rm -rf film; python3 tools/sincronizar/prep_film.py $s film > prep-$s.log 2>&1 && { cp prep-$s.log prep.log; break; }
+              tail -5 prep-$s.log
+            done
+            [ -f film/film.mkv ] || { echo "::error::nenhum filme preparado"; exit 1; }
+            rm -rf film/_work
+          fi
+          cat film/info.json; ls -la film
+      - name: Material derivado (25 fps + 4 s, MKV com a legenda embutida, vídeo sem fala)
+        run: |
+          mkdir -p media
+          cp film/film.mkv film/certa.srt media/
+          python3 tools/deriva/mkdrift.py media/certa.srt media/sub25.srt 23.976/25 4000
+          ffmpeg -nostdin -loglevel error -y -i media/film.mkv -i media/sub25.srt -map 0 -map 1 -c copy -c:s srt \
+            -metadata:s:s:0 language=por -metadata:s:s:0 title="Português" media/film-emb.mkv
+          ffmpeg -nostdin -loglevel error -y -f lavfi -i "testsrc2=size=320x180:rate=24000/1001:duration=1500" \
+            -f lavfi -i "sine=frequency=220:duration=1500" -f lavfi -i "sine=frequency=330:duration=1500" \
+            -filter_complex "[1:a][2:a]amix=inputs=2[a]" -map 0:v -map "[a]" -c:v libx264 -preset ultrafast -crf 40 -c:a aac -b:a 48k media/musica.mkv
+          ffprobe -loglevel error -show_entries stream=index,codec_name,codec_type:stream_tags=language,title -of compact media/film-emb.mkv
+          ffprobe -loglevel error -show_entries format=duration -of csv=p=0 media/film.mkv
+          python3 tools/sincronizar/mkvcues.py media/film-emb.mkv 3 | tail -5
+          ls -la media
+      - uses: actions/upload-artifact@v4
+        with:
+          name: media
+          path: media
+          retention-days: 3
+
+  app:
+    needs: prep
+    runs-on: macos-15
+    timeout-minutes: 150
+    strategy:
+      fail-fast: false
+      matrix:
+        versao: [antes, depois]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ matrix.versao == 'antes' && env.ANTES || github.sha }}
+      - uses: actions/checkout@v4
+        with:
+          path: tools-novas
+      - name: Ferramentas de prova (as da versão nova, nas duas)
+        run: |
+          rm -rf tools/sincronizar; mkdir -p tools; cp -R tools-novas/tools/sincronizar tools/sincronizar
+          cp tools-novas/tools/audio-integra/server.py tools/audio-integra/server.py
+      - uses: actions/download-artifact@v4
+        with:
+          name: media
+          path: /tmp/media
+      - name: Montar o FramePlay.app
+        env:
+          FRAMEPLAY_VERSION: 0.0.${{ github.run_number }}
+          FRAMEPLAY_BUILD: ${{ github.run_number }}
+        run: |
+          set -o pipefail
+          ./mac/build.sh 2>&1 | tee build.log
+      - name: Mostrar o erro (se houver)
+        if: failure()
+        run: |
+          grep -n -E "error:|fatal|No such|cannot find|VLCKit |framework:" build.log | sort -u -k2 | head -60 | while IFS= read -r line; do
+            echo "::error::$(echo "$line" | cut -c1-900)"
+          done
+      - name: Servidores dos vídeos (11470 normal, 11471 trava longe do começo)
+        run: |
+          ls -la /tmp/media
+          SZ=$(stat -f %z /tmp/media/film.mkv)
+          : > /tmp/server-bytes.log
+          nohup python3 tools/audio-integra/server.py /tmp/media 11470 >/tmp/server.out 2>&1 &
+          THROTTLE_KBPS=6 THROTTLE_FROM_BYTES=$((SZ / 5)) LOG=/tmp/server-slow.log nohup python3 tools/audio-integra/server.py /tmp/media 11471 >/tmp/server-slow.out 2>&1 &
+          sleep 2
+          curl -sI http://127.0.0.1:11470/film.mkv | head -4
+          curl -s -o /dev/null -w "range: %{http_code} %{size_download}\n" -r 1000-1999 http://127.0.0.1:11470/film.mkv
+      - name: Prova no app
+        env:
+          REAL_REPORT: ${{ matrix.versao == 'depois' && github.event.inputs.real_report == '1' && '1' || '0' }}
+        run: |
+          xattr -cr mac/build/FramePlay.app
+          mkdir -p shots
+          chmod +x tools/sincronizar/prova.sh
+          TAP=$([ "${{ matrix.versao }}" = "depois" ] && echo pill || echo autosync)
+          tools/sincronizar/prova.sh "$PWD/mac/build/FramePlay.app" /tmp/media "$PWD/shots" "$TAP" 2>&1 | tail -150
+      - name: Resumo
+        if: always()
+        run: |
+          cat shots/conferencia.txt 2>/dev/null || true
+          cat shots/passos.txt 2>/dev/null | tail -60 || true
+          cat shots/fim.txt 2>/dev/null || true
+      - name: Publicar as fotos e os registros
+        if: always()
+        run: |
+          mkdir -p shots; cp build.log shots/ 2>/dev/null || true
+          cp /tmp/server-slow.log /tmp/server-bytes.log shots/ 2>/dev/null || true
+          cd shots || exit 0
+          git init -q -b x && git add -A
+          git -c user.name=ci -c user.email=ci@x commit -qm fotos
+          git push -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" x:mac-sincronizar-out-${{ matrix.versao }}
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: provas-${{ matrix.versao }}
+          path: shots
+          retention-days: 5
+      - name: A versão nova tem de passar em tudo
+        if: matrix.versao == 'depois'
+        run: |
+          cat shots/fim.txt
+          grep -q "falha=0" shots/fim.txt

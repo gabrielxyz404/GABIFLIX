@@ -68,6 +68,8 @@ final class AudioSyncCore {
     var forceDsp = false
     private let runLock = NSRecursiveLock()
     var logger: ((String) -> Void)?
+    /** (janela atual, total) a cada captura: o botão mostra o andamento (chamado fora da thread principal) */
+    var progress: ((Int, Int) -> Void)?
 
     init() {
         dir = FileManager.default.temporaryDirectory.appendingPathComponent("frameplay-audiosync-\(ProcessInfo.processInfo.processIdentifier)")
@@ -259,6 +261,7 @@ final class AudioSyncCore {
             if self.cap.isCancelled { return nil }
             if !first { Thread.sleep(forTimeInterval: 1.0) }   // respiro entre as capturas: o player ao lado não disputa o tempo todo
             first = false
+            self.progress?(i + 1, total)
             guard let w = self.captureWindow(url, st, ln, o) else { failedAt = i + 1; return nil }
             o.st.windows += 1
             return w

@@ -12,6 +12,14 @@ struct AutoSyncResult {
     let note: String
     /** frase pronta para o usuário (português simples) com o motivo exato; nil = usa o texto padrão */
     var userMsg: String? = nil
+    /** modelo achado pelo áudio (tempo certo = scale * tempo da legenda + offsetMs); scale 1 = só um atraso. Só vale com .fixed vindo do áudio */
+    var scale = 1.0
+    var offsetMs = 0.0
+    /** z do alinhador (0 = sem medida) e o corpo do relatório do motor (só números; vai para o ntfy) */
+    var z = 0.0
+    var report = ""
+    /** o áudio foi quem decidiu (não a referência) */
+    var fromAudio = false
     static func failedMsg(_ note: String, _ msg: String) -> AutoSyncResult { AutoSyncResult(status: .failed, delayMs: 0, note: note, userMsg: msg) }
     static func fixed(_ ms: Int, _ note: String) -> AutoSyncResult { AutoSyncResult(status: .fixed, delayMs: ms, note: note) }
     static func ok(_ note: String) -> AutoSyncResult { AutoSyncResult(status: .ok, delayMs: 0, note: note) }

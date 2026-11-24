@@ -189,6 +189,25 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
     /** tempos das falas das referências (outros idiomas ou PT do hash), para a sincronização automática */
     private var refStartsAll: [[Int64]] = []
     private var autoRunning = false
+    private var autoCtx = AutoCtx()
+    /** geração da sincronização do botão: o resultado de uma geração antiga (desistida por tempo ou superada) é descartado */
+    private var autoGen = 0
+    private var autoStartedAt = Date.distantPast
+    private var autoTicker: Timer?
+    private var autoProgress = ""
+    private var autoAttempts = 0
+    /** ajustes manuais feitos pelo usuário (botões, teclado, lista de falas): a sincronização só descarta o resultado se este número mudou durante a análise */
+    private var userEdits = 0
+    /** motivo da última falha, mostrado no painel do ajuste manual que abre sozinho */
+    private var syncReason: String? = nil
+    /** legenda embutida cujo texto foi lido: nome da faixa -> (legenda virtual desenhada pelo app, faixa do VLC dela) */
+    private var embVirtual: [String: (SubtitleSync.Cand, Int)] = [:]
+    private var syncPill: GlassButton?
+    /** tempo máximo de um toque em Sincronizar (leitura da legenda embutida + áudio): passado isto a pessoa recebe a resposta e o ajuste manual */
+    private static let autoBudgetS: Double = {
+        if let v = ProcessInfo.processInfo.environment["FP_SYNC_BUDGET_SEC"], let n = Double(v), n > 0 { return n }   // só nos testes
+        return 300.0
+    }()
     /** sincronização pelo áudio (ver AudioSync/): corre fora da thread principal e só mexe no atraso da legenda */
     private var audioAuto: AudioSyncAuto?
     /** ajuste manual da legenda (ms; positivo = a legenda aparece mais tarde), lembrado por título */
@@ -392,6 +411,7 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
         let fs = glass("arrow.up.left.and.arrow.down.right", "Tela cheia", false, #selector(toggleFullScreen))
         scaleButton = scale
         optBtns = [syncB, subs, audio, scale, fs]
+        syncPill = syncB
         optsRow.orientation = .horizontal
         optsRow.alignment = .centerY
         optsRow.translatesAutoresizingMaskIntoConstraints = false
@@ -594,6 +614,8 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
             log: { [weak self] in self?.log($0) })
         let a = AudioSyncAuto(host: host)
         audioAuto = a
+        AnalysisReport.log = { [weak self] in self?.log($0) }
+        a.setProgress { [weak self] i, n in DispatchQueue.main.async { self?.autoProgress = n > 1 ? " (janela \(i) de \(n))" : "" } }
         a.start()
     }
 
@@ -1096,7 +1118,8 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
             if id == -1 { rows.append(("Desativado", id)); continue }
             if isDownloaded(id) {
                 nDown += 1
-                rows.append(("Português \(nDown)", id))
+                let virt = nDown - 1 < attached.count && (attached[nDown - 1].url ?? "").hasPrefix("emb:")
+                rows.append((virt ? "Português (do vídeo, sincronizável)" : "Português \(nDown)", id))
             } else if isPortuguese(name) {
                 nEmb += 1
                 let q = embeddedQualifiers(name)
@@ -1141,11 +1164,12 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
         let active = candForTrack(current)
         if autoRunning {
             menu.addItem(menuAction("A sincronizar…", #selector(autoSyncPicked), enabled: false))
-        } else if active != nil {
+        } else if current != -1 {
             menu.addItem(menuAction("Sincronizar automaticamente", #selector(autoSyncPicked)))
+            if active == nil { menu.addItem(greyItem("Legenda do vídeo: o app lê o texto dela antes de sincronizar")) }
         } else {
             menu.addItem(menuAction("Sincronizar automaticamente", #selector(autoSyncPicked), enabled: false))
-            menu.addItem(greyItem(current == -1 ? "Escolha uma legenda baixada para usar" : "Só funciona com legendas baixadas, não com as do vídeo"))
+            menu.addItem(greyItem("Escolha uma legenda em português para usar"))
         }
         // 3) ajuste manual
         menu.addItem(NSMenuItem.separator())
@@ -1175,6 +1199,18 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
     }
 
     // ---------- sincronização automática (motor pluggable: ver AutoSync.swift) ----------
+    // O toque em Sincronizar (botão da barra ou item do menu de legendas) SEMPRE termina numa resposta visível dentro de autoBudgetS segundos:
+    //   "Legenda sincronizada (+X,X s)" | "Legenda já estava certa" | "Não consegui confirmar pelo áudio — ajusta à mão" (e o painel do ajuste manual abre sozinho).
+    // Nunca ignora o toque em silêncio (durante uma análise responde "já estou a sincronizar"), nunca usa o resultado guardado (sempre analisa de novo)
+    // e funciona também com a legenda embutida no MKV (o texto dela é lido pelo índice do arquivo, ver EmbeddedSubs.swift).
+    private struct AutoCtx {
+        var track = -1
+        var edits = 0
+        var delayAtStart = 0
+        var source = "externa"
+        var what = "A sincronizar…"
+    }
+
     /** ponto único para ligar outro motor (por exemplo o do áudio) */
     private func makeAutoEngine() -> AutoSyncEngine {
         let ref = RefAutoSyncEngine(refs: refStartsAll, others: cands)
@@ -1185,35 +1221,221 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
 
     @objc private func autoSyncPicked() { runAutoSync() }
 
-    /** corre numa fila à parte, o vídeo continua a tocar; só no fim (de volta na principal) o atraso é aplicado e guardado como um ajuste manual.
-        Se a pessoa mexer à mão ou trocar de legenda durante a espera, o resultado é descartado. */
     private func runAutoSync() {
-        if autoRunning { return }
+        if finished { return }
+        if autoRunning {
+            let s = Int(Date().timeIntervalSince(autoStartedAt))
+            notice("Já estou a sincronizar… \(s) s\(autoProgress)", seconds: 4)
+            return
+        }
+        if !startedPlaying { notice("O vídeo ainda está a carregar. Tenta de novo daqui a pouco.", seconds: 5); return }
         let track = Int(player.currentVideoSubTitleIndex)
-        guard let active = candForTrack(track) else { notice("Escolha uma legenda baixada para sincronizar", seconds: 4); return }
+        if track == -1 { notice("Escolhe uma legenda em português (botão Legendas) e toca em Sincronizar de novo.", seconds: 6); return }
+        if !subsAttached { notice("Ainda estou a preparar as legendas. Tenta de novo daqui a pouco.", seconds: 5); return }
+        autoAttempts += 1
+        autoGen += 1
+        let gen = autoGen
         autoRunning = true
-        let delayAtStart = subDelayMs
-        let now = Int64(player.time.intValue)
-        let eng = makeAutoEngine()
-        notice("A sincronizar…", seconds: 60)
-        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
-            let r = eng.sync(active: active, videoTimeMs: now, currentDelayMs: delayAtStart)
-            DispatchQueue.main.async { self?.finishAutoSync(r, track, delayAtStart) }
+        autoStartedAt = Date()
+        autoProgress = ""
+        autoCtx = AutoCtx()
+        autoCtx.track = track
+        autoCtx.edits = userEdits
+        autoCtx.delayAtStart = subDelayMs
+        log("sincronização: toque #\(autoAttempts) faixa=\(track) atraso=\(subDelayMs) ms (sempre analisa de novo; limite \(Int(PlayerWindowController.autoBudgetS)) s)")
+        let t = Timer(timeInterval: 1.0, repeats: true) { [weak self] _ in self?.autoTick(gen) }
+        RunLoop.main.add(t, forMode: .common)
+        autoTicker?.invalidate()
+        autoTicker = t
+        showAutoProgress()
+        if let active = candForTrack(track) {
+            beginAnalysis(active, track, gen)
+        } else {
+            beginEmbedded(track, gen)
         }
     }
 
-    private func finishAutoSync(_ res: AutoSyncResult, _ track: Int, _ delayAtStart: Int) {
+    private func showAutoProgress() {
+        let el = Int(Date().timeIntervalSince(autoStartedAt))
+        noticeLabel.stringValue = "  \(autoCtx.what) \(el) s\(autoProgress)  "
+        noticeLabel.isHidden = false
+        noticeUntil = Date().addingTimeInterval(3)
+    }
+
+    /** a cada segundo: mantém o aviso "A sincronizar… N s" na tela e desiste ao passar do limite (nunca fica rodando para sempre) */
+    private func autoTick(_ gen: Int) {
+        guard gen == autoGen, autoRunning, !finished else { autoTicker?.invalidate(); autoTicker = nil; return }
+        let el = Date().timeIntervalSince(autoStartedAt)
+        if el >= PlayerWindowController.autoBudgetS {
+            autoGen += 1                    // o resultado que chegar depois é descartado
+            audioAuto?.cancelButton()
+            log("sincronização: tempo esgotado (\(Int(el)) s): desisto e entrego o ajuste manual")
+            concludeAutoSync("tempo_esgotado", "passou de \(Int(PlayerWindowController.autoBudgetS)) s sem terminar (rede lenta, o filme ainda a carregar ou o servidor não responde)", res: nil,
+                             msg: "Não consegui confirmar pelo áudio \u{2014} ajusta à mão",
+                             manual: "Demorou demais a ouvir o filme (rede lenta ou o filme ainda a carregar). Ajuste à mão ou toque em Sincronizar de novo mais tarde.")
+            return
+        }
+        showAutoProgress()
+    }
+
+    /** o fim de uma tentativa: aviso visível, relatório anônimo (ntfy) e, se não deu para confirmar, o painel do ajuste manual */
+    private func concludeAutoSync(_ label: String, _ reason: String, res: AutoSyncResult?, msg: String, manual: String?) {
+        autoTicker?.invalidate()
+        autoTicker = nil
         autoRunning = false
-        if finished { return }
-        log("sincronização automática: status=\(res.status) atraso=\(res.delayMs) ms (\(res.note))")
-        if Int(player.currentVideoSubTitleIndex) != track { noticeUntil = Date(); return }
-        if subDelayMs != delayAtStart { notice("Ajuste manual feito: não alterei.", seconds: 4); return }
+        log("sincronização: resultado=\(label) motivo=\(reason)")
+        notice(msg, seconds: 8)
+        AnalysisReport.send(origin: "botao_sincronizar", result: label, reason: reason, scale: res?.scale ?? 1.0, offsetMs: res?.offsetMs ?? 0, z: res?.z ?? 0,
+                            subSource: autoCtx.source, fpsHint: AnalysisReport.fpsHint(res?.scale ?? 1.0), url: url, durationMs: Int(player.media?.length.intValue ?? 0),
+                            attempt: autoAttempts, engineBody: res?.report ?? "")
+        if let m = manual, !finished {
+            syncReason = m
+            showSyncPanel()
+        }
+    }
+
+    /** a análise pelo áudio (a referência primeiro, depois o áudio) numa fila à parte; o vídeo continua a tocar */
+    private func beginAnalysis(_ active: SubtitleSync.Cand, _ track: Int, _ gen: Int) {
+        guard gen == autoGen, autoRunning, !finished else { return }
+        autoCtx.track = track
+        autoCtx.what = "A sincronizar…"
+        autoCtx.delayAtStart = subDelayMs
+        autoCtx.edits = userEdits
+        let delayAtStart = subDelayMs
+        let now = Int64(player.time.intValue)
+        let eng = makeAutoEngine()
+        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+            let r = eng.sync(active: active, videoTimeMs: now, currentDelayMs: delayAtStart)
+            DispatchQueue.main.async { self?.finishAutoSync(r, gen) }
+        }
+    }
+
+    private func finishAutoSync(_ res: AutoSyncResult, _ gen: Int) {
+        guard gen == autoGen, autoRunning else { log("sincronização: resultado de uma tentativa antiga (já respondida) descartado"); return }
+        if finished { autoRunning = false; return }
+        log("sincronização automática: status=\(res.status) atraso=\(res.delayMs) ms escala=\(res.scale) (\(res.note))")
+        if Int(player.currentVideoSubTitleIndex) != autoCtx.track {
+            concludeAutoSync("descartado", "a legenda foi trocada durante a análise", res: res, msg: "A legenda mudou durante a análise. Toca em Sincronizar de novo.", manual: nil)
+            return
+        }
+        if userEdits != autoCtx.edits {
+            concludeAutoSync("descartado", "o usuário mexeu no atraso à mão durante a análise", res: res, msg: "Ajuste manual feito: não alterei.", manual: nil)
+            return
+        }
         switch res.status {
         case .fixed:
-            setSubDelay(res.delayMs)
-            notice((res.note.hasPrefix("áudio") ? "Legenda acertada pelo áudio (" : "Legenda acertada (") + SubtitleSync.signedSecs(Int64(res.delayMs)) + ")", seconds: 4)
-        case .ok: notice("Já estava certa", seconds: 4)
-        case .failed: notice(res.userMsg.map { $0 + " Usa o ajuste manual." } ?? "Não consegui acertar \u{2014} usa o ajuste manual", seconds: 6)
+            let scaled = res.fromAudio && abs(res.scale - 1.0) > 1e-9
+            setSubDelay(res.delayMs)                 // guardado por fonte+legenda, como o ajuste manual
+            var shown = res.delayMs
+            if scaled {
+                // escala diferente de 1 (legenda de outro fps): o atraso certo AGORA, sem esperar o ciclo (que depois acompanha o modelo)
+                let lim = Double(PlayerWindowController.maxDelayMs)
+                let d = max(-lim, min(lim, ManualDrift.delayAt(res.scale, res.offsetMs, Double(player.time.intValue))))
+                shown = Int((d / 10.0).rounded()) * 10
+                applyAutoDelay(shown, persist: false)
+            }
+            audioAuto?.noteExternalDelay()
+            let hint = scaled ? " \u{2014} velocidade corrigida (\(AnalysisReport.fpsHint(res.scale)))" : ""
+            concludeAutoSync("sincronizada", res.note, res: res, msg: "Legenda sincronizada (" + SubtitleSync.signedSecs(Int64(shown)) + ")" + hint, manual: nil)
+        case .ok:
+            let extra = subDelayMs != 0 ? " (" + SubtitleSync.signedSecs(Int64(subDelayMs)) + " confere)" : ""
+            audioAuto?.noteExternalDelay()
+            concludeAutoSync("ja_certa", res.note, res: res, msg: "Legenda já estava certa" + extra, manual: nil)
+        case .failed:
+            let why = res.userMsg ?? "Não consegui acertar esta legenda."
+            concludeAutoSync("nao_confirmou", res.note + " | " + why, res: res, msg: "Não consegui confirmar pelo áudio \u{2014} ajusta à mão", manual: why + " Ajuste à mão com os botões abaixo.")
+        }
+    }
+
+    // ---------- legenda embutida: ler o texto pelo índice do MKV e desenhá-la pelo app (assim o atraso, a escala e a sincronização funcionam) ----------
+    private func beginEmbedded(_ track: Int, _ gen: Int) {
+        guard let name = subTracks().first(where: { $0.0 == track })?.1 else {
+            concludeAutoSync("erro", "faixa de legenda não encontrada", res: nil, msg: "Não consegui confirmar pelo áudio \u{2014} ajusta à mão", manual: "Não achei a legenda ativa.")
+            return
+        }
+        autoCtx.source = "embutida"
+        if let known = embVirtual[name], subTracks().contains(where: { $0.0 == known.1 }) {
+            log("legenda embutida já lida antes: uso o texto guardado")
+            switchToVirtual(known.0, known.1, name, gen)
+            return
+        }
+        let ids = subTracks().map { $0.0 }.filter { $0 != -1 && embeddedSubs.contains($0) }
+        let ordinal = ids.firstIndex(of: track) ?? -1
+        autoCtx.what = "A ler a legenda do vídeo…"
+        let u = url
+        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+            guard let src = EmbeddedSubs.source(for: u) else {
+                var o = EmbeddedSubs.Out()
+                o.why = "endereço do vídeo não suportado"
+                DispatchQueue.main.async { self?.embeddedRead(o, track, name, gen) }
+                return
+            }
+            let out = EmbeddedSubs.extract(source: src, ordinal: ordinal, cancelled: { [weak self] in (self?.autoGen ?? -1) != gen }, deadline: Date().addingTimeInterval(150),
+                                           log: { [weak self] m in DispatchQueue.main.async { self?.log(m) } })
+            src.close()
+            DispatchQueue.main.async { self?.embeddedRead(out, track, name, gen) }
+        }
+    }
+
+    private func embeddedRead(_ out: EmbeddedSubs.Out, _ track: Int, _ name: String, _ gen: Int) {
+        guard gen == autoGen, autoRunning, !finished else { return }
+        guard let srt = out.srt else {
+            autoCtx.source = "embutida(sem texto: \(out.why))"
+            log("legenda embutida: não deu para ler o texto: \(out.why)")
+            concludeAutoSync("nao_confirmou", "legenda embutida sem texto: \(out.why)", res: nil, msg: "Não consegui confirmar pelo áudio \u{2014} ajusta à mão",
+                             manual: "Não consegui ler o texto da legenda do vídeo (\(out.why)). Ela costuma já vir certa; se não estiver, ajuste à mão.")
+            return
+        }
+        autoCtx.source = "embutida(texto lido: \(out.cues) falas, \(out.codec), \(out.ms) ms)"
+        log("legenda embutida lida: \(out.cues) falas em \(out.ms) ms (\(out.codec)); passa a ser desenhada pelo app")
+        let n = embVirtual.count
+        let c = SubtitleSync.Cand()
+        c.url = "emb:" + name
+        c.text = srt
+        c.lastMs = SubtitleText.lastCueEnd(srt)
+        c.rank = 500 + n
+        let dir = FileManager.default.temporaryDirectory.appendingPathComponent("frameplay-legendas", isDirectory: true)
+        try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+        let blank = dir.appendingPathComponent("branco-emb-\(n + 1).srt")
+        try? Data("1\n00:00:00,000 --> 00:00:00,001\n\u{200B}\n".utf8).write(to: blank)
+        c.file = blank
+        overlayCues[c.rank] = OverlayCues.parse(srt)
+        let before = Set(subTracks().map { $0.0 })
+        _ = player.addPlaybackSlave(blank, type: .subtitle, enforce: false)
+        addedSubs += 1
+        attached.append(c)
+        awaitNewTrack(before: before, tries: 24) { [weak self] id in
+            guard let self = self, gen == self.autoGen, self.autoRunning, !self.finished else { return }
+            guard let tid = id else {
+                self.concludeAutoSync("erro", "o VLC não aceitou a legenda lida", res: nil, msg: "Não consegui confirmar pelo áudio \u{2014} ajusta à mão", manual: "O player não aceitou a legenda lida do vídeo. Ajuste à mão.")
+                return
+            }
+            self.embVirtual[name] = (c, tid)
+            self.switchToVirtual(c, tid, name, gen)
+        }
+    }
+
+    private func awaitNewTrack(before: Set<Int>, tries: Int, _ done: @escaping (Int?) -> Void) {
+        let now = Set(subTracks().map { $0.0 })
+        if let id = now.subtracting(before).sorted().last { done(id); return }
+        if tries <= 0 { done(nil); return }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) { [weak self] in self?.awaitNewTrack(before: before, tries: tries - 1, done) }
+    }
+
+    /** passa para a legenda virtual (a embutida com o texto lido, em branco no VLC e desenhada pelo app), mantém o atraso que a pessoa já tinha e analisa */
+    private func switchToVirtual(_ c: SubtitleSync.Cand, _ tid: Int, _ name: String, _ gen: Int) {
+        let carry = subDelayMs
+        userPickedSub = true
+        player.currentVideoSubTitleIndex = Int32(tid)
+        lastSyncKey = "\u{0}"
+        syncDelayToTrack(tid)
+        if carry != 0 && subDelayMs == 0 { setSubDelay(carry) }
+        log("legenda embutida \"\(name)\" agora desenhada pelo app (faixa \(tid)); atraso mantido: \(subDelayMs) ms")
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.6) { [weak self] in
+            guard let self = self, gen == self.autoGen, self.autoRunning, !self.finished else { return }
+            if Int(self.player.currentVideoSubTitleIndex) != tid { self.player.currentVideoSubTitleIndex = Int32(tid) }
+            self.syncDelayToTrack(tid)
+            self.beginAnalysis(c, tid, gen)
         }
     }
 
@@ -1319,7 +1541,7 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
         log("atraso da legenda: \(subDelayMs) ms (\(k ?? "sem legenda ativa, não guardado"))")
     }
 
-    private func changeSubDelay(_ delta: Int, reset: Bool) { setSubDelay(reset ? 0 : subDelayMs + delta) }
+    private func changeSubDelay(_ delta: Int, reset: Bool) { userEdits += 1; setSubDelay(reset ? 0 : subDelayMs + delta) }
 
     // ---------- painel "Sincronizar legenda" (por cima do vídeo; teclado: setas/Enter/Esc; mouse: clique, segurar repete) ----------
     private func panelLabel(_ s: String, _ size: CGFloat, bold: Bool = false, color: NSColor = .white) -> NSTextField {
@@ -1405,6 +1627,10 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
         let value = panelLabel(delayLabel(), 20, bold: true)
         syncValue = value
         var views: [NSView] = [panelLabel("Sincronizar legenda", 22, bold: true)]
+        if let why = syncReason {
+            views.append(panelLabel(why, 14, color: NSColor(red: 1, green: 0.78, blue: 0.34, alpha: 1)))
+            syncReason = nil
+        }
         var rows: [[SyncButton]] = []
         if let a = active, a.text != nil {
             // principal: acertar pela fala (só com legenda baixada ativa: a embutida não tem texto acessível)
@@ -1414,7 +1640,7 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
             views.append(buttonRow([sp]))
             views.append(panelLabel("Pause numa fala, escolha-a na lista e a legenda acerta sozinha.", 13, color: NSColor(white: 0.63, alpha: 1)))
         } else {
-            views.append(panelLabel("Sincronizar pela fala: ative uma legenda baixada (a embutida não permite). Use os botões abaixo.", 13, color: NSColor(red: 1, green: 0.78, blue: 0.34, alpha: 1)))
+            views.append(panelLabel("Sincronizar pela fala: só com legenda baixada ou depois de o app ler a legenda do vídeo (toque em Sincronizar). Use os botões abaixo.", 13, color: NSColor(red: 1, green: 0.78, blue: 0.34, alpha: 1)))
         }
         views.append(value)
         let m30 = stepButton("−30 s", -30000), m5 = stepButton("−5 s", -5000), m1 = stepButton("−1 s", -1000)
@@ -1576,6 +1802,7 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
         guard i >= 0 && i < speechCues.count else { return }
         let m = PlayerWindowController.maxDelayMs
         let nd = Int(max(Int64(-m), min(Int64(m), speechNow - speechCues[i].startMs)))
+        userEdits += 1
         setSubDelay(nd)
         notice("Atraso da legenda: " + SubtitleSync.signedSecs(Int64(nd)))
         closePanels() // retoma a reprodução
@@ -1609,7 +1836,17 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
         case "speech":
             showSyncPanel()
             if let c = candForTrack(Int(player.currentVideoSubTitleIndex)) { showSpeechPicker(c) }
-        case "delay": setSubDelay(n)
+        case "delay": userEdits += 1; setSubDelay(n)
+        case "pill":
+            // o toque de verdade no botão Sincronizar da barra (a mesma ação do mouse)
+            if let b = syncPill { log("toque no botão Sincronizar (visível=\(!b.isHidden && b.alphaValue > 0) enabled=\(b.isEnabled))"); b.performClick(nil) } else { log("toque no botão Sincronizar: sem botão") }
+        case "panelstate":
+            log("painel do ajuste manual: aberto=\(syncPanel != nil) botões=\(syncRows.map { $0.count }) atraso=\(subDelayMs) ms")
+        case "panelclick":
+            // toca no botão R,C do painel do ajuste manual (o mesmo caminho do clique)
+            let col = w.count > 2 ? Int(w[2]) ?? 0 : 0
+            if n < syncRows.count, col < syncRows[n].count { let before = subDelayMs; syncRows[n][col].onTap?(); log("painel: toque em \(n),\(col): atraso \(before) -> \(subDelayMs) ms") } else { log("painel: sem botão \(n),\(col)") }
+        case "embstate": log("embutidas lidas: \(embVirtual.keys.sorted()) faixaAtiva=\(player.currentVideoSubTitleIndex) legendaApp=\(candForTrack(Int(player.currentVideoSubTitleIndex))?.url ?? "nenhuma")")
         case "ref":
             // referência de tempo conhecida, só para teste: baixa uma legenda e guarda os tempos das falas
             if w.count > 1 { let u = w[1]; DispatchQueue.global().async { [weak self] in
@@ -2318,6 +2555,9 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
         barTimer?.invalidate()
         barTimer = nil
         stopOverlay()
+        autoGen += 1
+        autoTicker?.invalidate()
+        autoTicker = nil
         audioAuto?.stop()
         audioAuto = nil
         let t = Int64(player.time.intValue)

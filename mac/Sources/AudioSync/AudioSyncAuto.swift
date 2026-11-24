@@ -81,6 +81,8 @@ final class AudioSyncAuto {
     /** o áudio e o ajuste manual do usuário podem discordar até isto (ms) no instante da análise para a escala entrar em volta do ponto manual */
     private static let manualAgreeMs = 1500
     private static let driftMsg = "Legenda a desviar — corrigi a velocidade"
+    /** com escala diferente de 1 o atraso acompanha o modelo a cada tanto (ms): com 15 s a legenda de 25 fps num filme de 23,976 fps errava até 0,6 s entre dois passos */
+    private static let followMs = 2_000
     private static let ptsPrefix = "audio-sync-pts:"
     /** vigia dos ajustes manuais: o atraso que ESPERAMOS (o último que nós ou o player pusemos); qualquer outro valor é do usuário */
     private var expectDelay = 0
@@ -106,6 +108,8 @@ final class AudioSyncAuto {
     private var cur: Sub?
     private var key: String?
     private var running = false
+    /** token da análise automática em andamento (para o resultado atrasado de uma análise cancelada soltar o "running") */
+    private var runTok = -1
     private var lastStartAt = 0
     private let rescanAt = AudioBox<Int>(0)
     private let keyNow = AudioBox<String?>(nil)
@@ -192,6 +196,22 @@ final class AudioSyncAuto {
         return AudioChainEngine(auto: self, ref: ref, url: url, durationMs: durationMs)
     }
 
+    /** o botão desistiu (tempo esgotado) ou a janela fechou: derruba a captura em andamento; o resultado atrasado é descartado por quem chamou */
+    func cancelButton() {
+        token.value += 1
+        core.cancel()
+    }
+
+    /** andamento (janela atual, total) da análise do botão; chamado fora da thread principal */
+    func setProgress(_ f: ((Int, Int) -> Void)?) { core.progress = f }
+
+    /** o item do botão aplicou o atraso por conta própria: o vigia dos ajustes manuais não deve tomá-lo por um ajuste do usuário (chamar na thread principal) */
+    func noteExternalDelay() {
+        expectDelay = h.delayMs()
+        expectInit = true
+        editSeenAt = 0
+    }
+
     fileprivate func runForButton(ref: AutoSyncEngine, url: URL, durationMs: Int, active: SubtitleSync.Cand, videoTimeMs: Int64, currentDelayMs: Int) -> AutoSyncResult {
         let r1 = ref.sync(active: active, videoTimeMs: videoTimeMs, currentDelayMs: currentDelayMs)
         if stopped { return r1 }
@@ -202,27 +222,38 @@ final class AudioSyncAuto {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             if let kk = k, let s = self.subs[kk] { s.analyses += 1 }
-            self.trigger("botão-sincronizar", k, "análise")
+            self.trigger("botão-sincronizar", k, "análise (o botão ignora o resultado guardado: sempre analisa de novo)")
         }
         let o = core.run(url: url, subText: active.text, durMs: durationMs, nowMs: Int(videoTimeMs), currentDelay: d1, maxBytes: AudioSyncCore.noLimit)
         log("botão: \(o.note) | \(o.st.summary())")
+        let body = AudioSyncCore.reportBody(o, durationMs, "origem=botao_sincronizar\natraso_ao_iniciar_ms=\(d1)\n")
+        func tag(_ r: AutoSyncResult) -> AutoSyncResult {
+            var x = r
+            x.z = o.result?.z ?? 0
+            x.report = body
+            x.fromAudio = true
+            return x
+        }
         switch o.kind {
         case .fix:
             if let k = k { mark(k, "fix", o.scale, o.offsetMs, o.targetDelay) }   // o painel guarda este atraso como qualquer outro
-            rescanAt.value = AudioSyncAuto.now() + 6000
-            return AutoSyncResult.fixed(o.targetDelay, "áudio " + o.note)
+            rescanAt.value = AudioSyncAuto.now() + 1500
+            var r = AutoSyncResult.fixed(o.targetDelay, "áudio " + o.note)
+            r.scale = o.scale
+            r.offsetMs = o.offsetMs
+            return tag(r)
         case .ok:
             if let k = k { mark(k, "ok", 1.0, o.offsetMs, d1) }
-            rescanAt.value = AudioSyncAuto.now() + 6000
-            return r1.status == .fixed ? r1 : AutoSyncResult.ok("já estava certa (o áudio confirma)")
+            rescanAt.value = AudioSyncAuto.now() + 1500
+            return tag(r1.status == .fixed ? r1 : AutoSyncResult.ok("já estava certa (o áudio confirma)"))
         case .refused:
             if let k = k { mark(k, "no", 1.0, 0, 0) }
-            rescanAt.value = AudioSyncAuto.now() + 6000
-            return r1.status == .failed ? AutoSyncResult.failedMsg(r1.note, o.msg) : r1
+            rescanAt.value = AudioSyncAuto.now() + 1500
+            return tag(r1.status == .failed ? AutoSyncResult.failedMsg(r1.note + " | áudio: " + o.note, o.msg) : r1)
         case .cancelled:
             return r1
         default: // erro de captura, pulado: diz o motivo em vez de um "não consegui" genérico (se a referência já acertou, vale a referência)
-            return r1.status == .failed ? AutoSyncResult.failedMsg(r1.note, o.msg.isEmpty ? "Não consegui ouvir o áudio do filme." : o.msg) : r1
+            return tag(r1.status == .failed ? AutoSyncResult.failedMsg(r1.note + " | áudio: " + o.note, o.msg.isEmpty ? "Não consegui ouvir o áudio do filme." : o.msg) : r1)
         }
     }
 
@@ -303,6 +334,8 @@ final class AudioSyncAuto {
         if lastPosMs >= 0 && t > 0 {
             let expected = lastPosMs + (pl ? now - lastPosWall : 0)
             let jump = abs(t - expected)
+            // escala diferente de 1: depois de qualquer salto o atraso certo é outro (a deriva muda com a posição): acompanha o modelo já, sem esperar o próximo passo
+            if jump > 2500, let sc = cur, sc.st == .done, abs(sc.mScale - 1.0) > 1e-9 { sc.nextFollowAt = 0 }
             if jump > farSeekMs, let s = cur {
                 log("salto na linha do tempo de \(jump / 1000) s (de \(lastPosMs / 1000) s para \(t / 1000) s): só conta se o usuário também mexer no atraso à mão; sozinho não dispara análise")
                 s.farSeek = true
@@ -432,6 +465,7 @@ final class AudioSyncAuto {
         token.value += 1
         let tok = token.value
         running = true
+        runTok = tok
         s.analyses += 1
         s.retryPending = false
         s.retryFromRefusal = false
@@ -480,8 +514,10 @@ final class AudioSyncAuto {
     }
 
     private func finishRun(_ tok: Int, _ k: String, _ d0: Int, _ o: AudioSyncCore.Outcome) {
+        // BUG achado no teste do botão Sincronizar: o botão cancela a análise automática em andamento (token + 1); o resultado atrasado dela caía aqui
+        // e saía SEM soltar "running": o ciclo ficava parado para sempre, e a adoção do resultado do botão (escala/follow) nunca acontecia
+        if tok == runTok { running = false; runTok = -1 }
         if stopped || tok != token.value { log("resultado descartado (outra execução/legenda/tela): " + o.note); return }
-        running = false
         log("resultado: " + o.note + (o.cuts ? " [aviso: a legenda parece ter cortes]" : "") + " | " + o.st.summary())
         log(healthLine())
         guard let s = subs[k] else { return }
@@ -515,7 +551,7 @@ final class AudioSyncAuto {
                 s.lastWritten = d0
                 mark(k, "fix", o.scale, s.mOffset, d0)
                 s.st = .done; s.attempts = 0; s.manualEdited = false; s.farSeek = false
-                s.nextFollowAt = AudioSyncAuto.now() + 15_000
+                s.nextFollowAt = AudioSyncAuto.now() + AudioSyncAuto.followMs
                 h.notice(AudioSyncAuto.driftMsg)
                 log("aplicado em volta do ponto manual: escala \(o.scale), atraso \(d0) ms em \(tNow / 1000) s (o áudio daria \(jround(engineNow)) ms ali); não pula")
                 sendReport(o, s, d0, "aplicou_escala_ancorada_no_manual: escala \(o.scale) ancora=\(d0) ms em \(tNow / 1000) s")
@@ -532,7 +568,7 @@ final class AudioSyncAuto {
             s.attempts = 0
             s.manualEdited = false
             s.farSeek = false
-            s.nextFollowAt = AudioSyncAuto.now() + 15_000
+            s.nextFollowAt = AudioSyncAuto.now() + AudioSyncAuto.followMs
             // o atraso mudou de verdade: único caso com aviso (além da primeira confirmação do filme)
             if changed { h.notice(persist ? "Legenda acertada pelo áudio (" + AudioSyncAuto.secs(o.targetDelay) + ")" : (o.drift ? AudioSyncAuto.driftMsg : "Legenda acertada pelo áudio (velocidade e atraso)")) }
             log("aplicado: atraso \(o.targetDelay) ms, escala \(o.scale) (resultado confiante: não será reverificado)")
@@ -574,7 +610,7 @@ final class AudioSyncAuto {
     }
 
     private func follow(_ s: Sub, _ now: Int) {
-        s.nextFollowAt = now + 15_000
+        s.nextFollowAt = now + AudioSyncAuto.followMs
         let d = AudioSyncAuto.delayAt(s.mScale, s.mOffset, h.timeMs())
         if abs(d - h.delayMs()) < 100 { return }
         writeDelay(d, false)
@@ -626,7 +662,7 @@ final class AudioSyncAuto {
             // o modelo com escala está ativo e o usuário reajustou: o modelo passa por este novo ponto (mesma escala)
             s.mOffset = ManualDrift.anchorOffset(s.mScale, Double(d), Double(t))
             s.lastWritten = d
-            s.nextFollowAt = AudioSyncAuto.now() + 15_000
+            s.nextFollowAt = AudioSyncAuto.now() + AudioSyncAuto.followMs
             mark(k, "fix", s.mScale, s.mOffset, h.savedDelay(k))
             log("modelo com escala \(s.mScale) reancorado no ajuste manual (\(d) ms em \(t / 1000) s)")
             return
@@ -652,7 +688,7 @@ final class AudioSyncAuto {
         s.st = .done
         s.attempts = 0
         s.retryPending = false
-        s.nextFollowAt = AudioSyncAuto.now() + 15_000
+        s.nextFollowAt = AudioSyncAuto.now() + AudioSyncAuto.followMs
         mark(k, "fix", b.scale, b.offsetMs, h.savedDelay(k))
         h.notice(AudioSyncAuto.driftMsg)
         log("deriva pelos ajustes manuais: \(w.1) ms em \(w.0 / 1000) s e \(d) ms em \(t / 1000) s => escala \(b.scale) (inclinação " + String(format: "%.6f", b.slope) + ", erro \(jround(b.errMs)) ms); modelo ancorado no último ponto")
@@ -666,7 +702,10 @@ final class AudioSyncAuto {
     /** relatório de cada análise (no Mac vai para o registro, linha "AUDIOSYNC ANALISE ...") */
     private func sendReport(_ o: AudioSyncCore.Outcome, _ s: Sub, _ d0: Int, _ decision: String) {
         let extra = "decisao=\(decision)\natraso_ao_iniciar_ms=\(d0) atraso_manual_guardado=\(s.manualRun ? 1 : 0) tentativa=\(s.attempts + 1)\n" + manualLine(s) + "\n"
-        log("ANALISE\n" + AudioSyncCore.reportBody(o, h.durationMs(), extra))
+        let body = AudioSyncCore.reportBody(o, h.durationMs(), extra)
+        log("ANALISE\n" + body)
+        AnalysisReport.send(origin: "automatico", result: String(describing: o.kind), reason: decision, scale: o.scale, offsetMs: o.offsetMs, z: o.result?.z ?? 0,
+                            subSource: "externa", fpsHint: AnalysisReport.fpsHint(o.scale), url: h.url(), durationMs: h.durationMs(), attempt: s.attempts + 1, engineBody: body)
     }
 
     /** "+1,2 s" / "−3,0 s" (sinal de menos de verdade, vírgula decimal) */

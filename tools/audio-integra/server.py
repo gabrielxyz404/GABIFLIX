@@ -7,6 +7,7 @@ ROOT = sys.argv[1]
 PORT = int(sys.argv[2]) if len(sys.argv) > 2 else 8000
 LOG = os.environ.get('LOG', '/tmp/server-bytes.log')
 RATE = float(os.environ.get('THROTTLE_KBPS', '0')) * 1024   # bytes/s para TODAS as conexoes juntas (0 = sem limite)
+THROTTLE_FROM = int(os.environ.get('THROTTLE_FROM_BYTES', '0'))   # so limita as leituras que comecam depois desta posicao (o inicio do filme toca normal, os saltos para longe travam)
 rate_lock = threading.Lock()
 rate_next = [0.0]
 
@@ -64,7 +65,7 @@ class H(BaseHTTPRequestHandler):
                 while sent < n:
                     chunk = f.read(min(65536 if RATE else 262144, n - sent))
                     if not chunk: break
-                    throttle(len(chunk))
+                    if a >= THROTTLE_FROM: throttle(len(chunk))
                     self.wfile.write(chunk); sent += len(chunk)
         except Exception:
             pass
