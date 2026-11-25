@@ -1,0 +1,173 @@
+=== log-1-deriva.txt
+1795565102.837606 AUDIOSYNC estado: st=- executando=false faixa=-1 atraso=0 tempo=13
+1795565104.637903 atraso da legenda ativa (nenhuma): 0 ms
+1795565104.791041 AUDIOSYNC GATILHO motivo=troca-de-legenda legenda=f8ba22f5980|http://127.0.0.1:8000/deriva.srt#raw decisão=avaliar (espera 10 s tocando; se há resultado guardado, não analisa) [análises=0 sem_confiança=0 estado=nova]
+1795565105.028924 atraso da legenda ativa (d3:u|h:ff01af8ba22f5980|http://127.0.0.1:8000/deriva.srt#raw): 0 ms
+1795565115.796558 AUDIOSYNC GATILHO motivo=início legenda=f8ba22f5980|http://127.0.0.1:8000/deriva.srt#raw decisão=análise [análises=1 sem_confiança=0 estado=nova]
+1795565115.798904 AUDIOSYNC começando: posição 12 s, duração 1200 s, atraso atual 0 ms, sem limite de dados
+1795565123.8178458 AUDIOSYNC estado: st=nova executando=true faixa=2 atraso=0 tempo=20872
+1795565132.662643 AUDIOSYNC resultado: aceita z=16.8 janelas=7/7 escala=0.99900 deslocamento=-1464 ms (deriva provada pelas janelas) | vad=silero janelas=7 captura=6952 ms vad=2789 ms (cpu 2614) solve=0 ms (cpu 822) cpu_thread=3461 ms total=16863 ms leitura_estimada=8 MB rss=115->185 MB
+1795565132.6632 atraso da legenda (automático, não guardado): -1480 ms
+1795565132.663745 AVISO na tela: Legenda a desviar — corrigi a velocidade
+1795565132.663982 AUDIOSYNC aplicado: atraso -1480 ms, escala 0.999 (resultado confiante: não será reverificado)
+j1 inicio_s=270 centro_s=315 atraso_ms=-1728 ncc=0.44 segundo=0.38 z=2.3 confiavel=0
+j2 inicio_s=710 centro_s=755 atraso_ms=-2316 ncc=0.68 segundo=0.43 z=7.7 confiavel=1
+j3 inicio_s=1050 centro_s=1095 atraso_ms=-2556 ncc=0.61 segundo=0.49 z=3.9 confiavel=1
+j4 inicio_s=155 centro_s=200 atraso_ms=-1584 ncc=0.51 segundo=0.36 z=4.3 confiavel=1
+j5 inicio_s=495 centro_s=540 atraso_ms=-1992 ncc=0.83 segundo=0.80 z=2.1 confiavel=0
+j6 inicio_s=805 centro_s=850 atraso_ms=-2280 ncc=0.61 segundo=0.27 z=10.1 confiavel=1
+j7 inicio_s=955 centro_s=1000 atraso_ms=-2470 ncc=0.83 segundo=0.73 z=3.6 confiavel=1
+atraso_ao_iniciar_ms=0 atraso_manual_guardado=0 tentativa=1
+1795565133.8117452 atraso da legenda (automático, não guardado): -1600 ms
+1795565144.7973251 AUDIOSYNC estado: st=confiante executando=false faixa=2 atraso=-1600 tempo=141142
+1795565155.869852 estado: faixa=2 atraso=-1600 vlcDelay=-1600000 legendas=[(-1, "Disable"), (2, "Track 1")] escolhida=0
+1795565159.418684 legenda do app: t=1080000 atraso=-1600 "- Você não se incomoda, Charlie? / - Não, "
+1795565159.813822 AUDIOSYNC salto na linha do tempo de 924 s (de 154 s para 1080 s): só conta se o usuário também mexer no atraso à mão; sozinho não dispara análise
+1795565159.813919 atraso da legenda (automático, não guardado): -2550 ms
+1795565161.877263 legenda do app: t=1081506 atraso=-2550 nada
+1795565164.796331 AUDIOSYNC estado: st=confiante executando=false faixa=2 atraso=-2550 tempo=1084262
+1795565170.0132031 legenda do app: t=1089614 atraso=-2550 "Isto aqui foi você quem pintou?"
+1795565172.7060242 legenda do app: t=1092374 atraso=-2550 "Não, por favor, isto não é / um quadro, é "
+1795565176.4112139 legenda do app: t=1096006 atraso=-2550 "Não, por favor, isto não é / um quadro, é "
+1795565176.697509 legenda do app: t=1096320 atraso=-2550 "- Foi tirado de uma foto. / - Quem é?"
+1795565178.611927 legenda do app: t=1098268 atraso=-2550 nada
+1795565179.902978 legenda do app: t=1099480 atraso=-2550 "É o defunto de minha..."
+1795565181.379276 estado: faixa=2 atraso=-2550 vlcDelay=-2550000 legendas=[(-1, "Disable"), (2, "Track 1")] escolhida=0
+1795565181.957868 legenda do app: t=1101553 atraso=-2550 nada
+1795565182.78399 legenda do app: t=1102373 atraso=-2550 "O primeiro marido da sua mulher."
+1795565184.711429 legenda do app: t=1104318 atraso=-2550 "O primeiro marido da sua mulher. / O sarge"
+1795565184.8169088 AUDIOSYNC estado: st=confiante executando=false faixa=2 atraso=-2550 tempo=1104318
+=== log-2-antes.txt
+1795565196.6733809 AUDIOSYNC estado: st=- executando=false faixa=-1 atraso=0 tempo=550
+1795565197.7058492 atraso da legenda ativa (nenhuma): 0 ms
+1795565198.086985 atraso da legenda ativa (d3:u|h:ff01af8ba22f5980|http://127.0.0.1:8000/deriva.srt#raw): 0 ms
+1795565198.68382 AUDIOSYNC GATILHO motivo=troca-de-legenda legenda=f8ba22f5980|http://127.0.0.1:8000/deriva.srt#raw decisão=avaliar (espera 25 s tocando; se há resultado guardado, não analisa) [análises=0 sem_confiança=0 estado=nova]
+1795565199.173475 atraso da legenda: -1630 ms (d3:u|h:ff01af8ba22f5980|http://127.0.0.1:8000/deriva.srt#raw)
+1795565205.69564 estado: faixa=2 atraso=-1630 vlcDelay=-1630000 legendas=[(-1, "Disable"), (2, "Track 1")] escolhida=0
+1795565207.798709 legenda do app: t=1080000 atraso=-1630 "- Você não se incomoda, Charlie? / - Não, "
+1795565208.665973 AUDIOSYNC salto na linha do tempo de 942 s (de 136 s para 1080 s): só conta se o usuário também mexer no atraso à mão; sozinho não dispara análise
+1795565210.493653 legenda do app: t=1082617 atraso=-1630 nada
+1795565212.670804 estado: faixa=2 atraso=-1630 vlcDelay=-1630000 legendas=[(-1, "Disable"), (2, "Track 1")] escolhida=0
+=== log-3-manual-presente.txt
+1795565226.416432 AUDIOSYNC estado: st=- executando=false faixa=-1 atraso=0 tempo=606
+1795565227.431061 atraso da legenda ativa (nenhuma): 0 ms
+1795565227.835921 atraso da legenda ativa (d3:u|h:ff01af8ba22f5980|http://127.0.0.1:8000/deriva.srt#raw): 0 ms
+1795565228.4367409 AUDIOSYNC GATILHO motivo=troca-de-legenda legenda=f8ba22f5980|http://127.0.0.1:8000/deriva.srt#raw decisão=avaliar (espera 15 s tocando; se há resultado guardado, não analisa) [análises=0 sem_confiança=0 estado=nova]
+1795565233.963859 atraso da legenda: -1530 ms (d3:u|h:ff01af8ba22f5980|http://127.0.0.1:8000/deriva.srt#raw)
+1795565239.43061 AUDIOSYNC ajuste manual registrado: posição 35 s, atraso -1530 ms
+1795565239.431484 AUDIOSYNC ajuste manual: 1 ponto(s); nenhum par com mais de 10 min e mudança que bata com uma razão de fps conhecida
+1795565239.4330668 estado: faixa=2 atraso=-1530 vlcDelay=-1530000 legendas=[(-1, "Disable"), (2, "Track 1")] escolhida=0
+1795565244.4141788 AUDIOSYNC GATILHO motivo=início-com-atraso-manual(-1530 ms) legenda=f8ba22f5980|http://127.0.0.1:8000/deriva.srt#raw decisão=análise [análises=1 sem_confiança=0 estado=nova]
+1795565244.414658 AUDIOSYNC começando: posição 40 s, duração 1200 s, atraso atual -1530 ms, sem limite de dados
+1795565246.430059 AUDIOSYNC estado: st=nova executando=true faixa=2 atraso=-1530 tempo=42655
+1795565250.7348871 legenda do app: t=47081 atraso=-1530 "ALMAS PERVERSAS (1945)"
+1795565255.730719 legenda do app: t=52058 atraso=-1530 nada
+1795565261.1548262 AUDIOSYNC resultado: aceita z=16.9 janelas=7/7 escala=0.99900 deslocamento=-1464 ms (deriva provada pelas janelas) | vad=silero janelas=7 captura=6779 ms vad=2884 ms (cpu 2668) solve=0 ms (cpu 815) cpu_thread=3500 ms total=16740 ms leitura_estimada=8 MB rss=123->193 MB
+1795565261.156064 AVISO na tela: Legenda a desviar — corrigi a velocidade
+1795565261.156704 AUDIOSYNC aplicado em volta do ponto manual: escala 0.999, atraso -1530 ms em 57 s (o áudio daria -1523 ms ali); não pula
+j1 inicio_s=270 centro_s=315 atraso_ms=-1728 ncc=0.44 segundo=0.38 z=2.3 confiavel=0
+j2 inicio_s=710 centro_s=755 atraso_ms=-2316 ncc=0.68 segundo=0.43 z=7.7 confiavel=1
+j3 inicio_s=1050 centro_s=1095 atraso_ms=-2556 ncc=0.61 segundo=0.49 z=3.9 confiavel=1
+j4 inicio_s=155 centro_s=200 atraso_ms=-1584 ncc=0.51 segundo=0.36 z=4.3 confiavel=1
+j5 inicio_s=495 centro_s=540 atraso_ms=-1992 ncc=0.83 segundo=0.80 z=2.1 confiavel=0
+j6 inicio_s=805 centro_s=850 atraso_ms=-2280 ncc=0.61 segundo=0.27 z=10.1 confiavel=1
+j7 inicio_s=955 centro_s=1000 atraso_ms=-2470 ncc=0.83 segundo=0.73 z=3.6 confiavel=1
+atraso_ao_iniciar_ms=-1530 atraso_manual_guardado=1 tentativa=1
+manual pontos=[(t_s=35,atraso_ms=-1530,ha_s=21)]
+1795565264.4207978 estado: faixa=2 atraso=-1530 vlcDelay=-1530000 legendas=[(-1, "Disable"), (2, "Track 1")] escolhida=0
+1795565267.399029 AUDIOSYNC estado: st=confiante executando=false faixa=2 atraso=-1530 tempo=63606
+1795565268.0358129 legenda do app: t=1080000 atraso=-1530 "- Você não se incomoda, Charlie? / - Não, "
+1795565268.435714 AUDIOSYNC salto na linha do tempo de 1015 s (de 63 s para 1080 s): só conta se o usuário também mexer no atraso à mão; sozinho não dispara análise
+1795565268.436116 atraso da legenda (automático, não guardado): -2550 ms
+1795565270.8357081 legenda do app: t=1081672 atraso=-2550 nada
+1795565278.636177 legenda do app: t=1089537 atraso=-2550 "Isto aqui foi você quem pintou?"
+1795565281.4110708 legenda do app: t=1092354 atraso=-2550 "Não, por favor, isto não é / um quadro, é "
+1795565285.12972 legenda do app: t=1096014 atraso=-2550 "Não, por favor, isto não é / um quadro, é "
+1795565285.332127 legenda do app: t=1096281 atraso=-2550 "- Foi tirado de uma foto. / - Quem é?"
+1795565287.332213 legenda do app: t=1098276 atraso=-2550 nada
+1795565287.41291 AUDIOSYNC estado: st=confiante executando=false faixa=2 atraso=-2550 tempo=1098276
+1795565288.524893 legenda do app: t=1099460 atraso=-2550 "É o defunto de minha..."
+1795565289.96194 estado: faixa=2 atraso=-2550 vlcDelay=-2550000 legendas=[(-1, "Disable"), (2, "Track 1")] escolhida=0
+1795565290.815356 legenda do app: t=1101689 atraso=-2550 nada
+1795565291.3981252 legenda do app: t=1102272 atraso=-2550 "O primeiro marido da sua mulher."
+=== log-4-dois-pontos.txt
+1795565303.8063378 AUDIOSYNC estado: st=- executando=false faixa=-1 atraso=0 tempo=649
+1795565304.8601398 atraso da legenda ativa (nenhuma): 0 ms
+1795565305.20946 atraso da legenda ativa (d3:u|h:ff01af8ba22f5980|http://127.0.0.1:8000/deriva.srt#raw): 0 ms
+1795565305.8098779 AUDIOSYNC GATILHO motivo=troca-de-legenda legenda=f8ba22f5980|http://127.0.0.1:8000/deriva.srt#raw decisão=avaliar (espera 25 s tocando; se há resultado guardado, não analisa) [análises=0 sem_confiança=0 estado=nova]
+1795565314.813323 atraso da legenda: -1630 ms (d3:u|h:ff01af8ba22f5980|http://127.0.0.1:8000/deriva.srt#raw)
+1795565319.8105512 AUDIOSYNC ajuste manual registrado: posição 135 s, atraso -1630 ms
+1795565319.811568 AUDIOSYNC ajuste manual: 1 ponto(s); nenhum par com mais de 10 min e mudança que bata com uma razão de fps conhecida
+1795565323.784521 AUDIOSYNC salto na linha do tempo de 860 s (de 138 s para 1000 s): só conta se o usuário também mexer no atraso à mão; sozinho não dispara análise
+1795565324.811492 AUDIOSYNC estado: st=nova executando=false faixa=2 atraso=-1630 tempo=1001280
+1795565325.3080158 atraso da legenda: -2500 ms (d3:u|h:ff01af8ba22f5980|http://127.0.0.1:8000/deriva.srt#raw)
+1795565329.806567 AUDIOSYNC ajuste manual registrado: posição 1005 s, atraso -2500 ms
+1795565329.8081279 AVISO na tela: Legenda a desviar — corrigi a velocidade
+1795565329.808996 AUDIOSYNC deriva pelos ajustes manuais: -1630 ms em 135 s e -2500 ms em 1005 s => escala 0.999 (inclinação -0.001000, erro 1 ms); modelo ancorado no último ponto
+1795565335.413323 legenda do app: t=1100000 atraso=-2500 "É o defunto de minha..."
+1795565337.0963712 legenda do app: t=1101624 atraso=-2500 nada
+1795565337.694823 legenda do app: t=1102239 atraso=-2500 "O primeiro marido da sua mulher."
+1795565338.806583 atraso da legenda (automático, não guardado): -2600 ms
+1795565339.804844 legenda do app: t=1104248 atraso=-2600 "O primeiro marido da sua mulher. / O sarge"
+1795565340.096523 legenda do app: t=1104515 atraso=-2600 "O sargento detetive Higgins, / Homer Higgi"
+1795565344.5817308 legenda do app: t=1108990 atraso=-2600 "Chris, esta medalha / é de verdade?"
+1795565344.81475 AUDIOSYNC estado: st=confiante executando=false faixa=2 atraso=-2600 tempo=1109291
+1795565346.8462849 legenda do app: t=1111244 atraso=-2600 "Sim, eles a deram ã Adele."
+1795565349.682869 legenda do app: t=1114129 atraso=-2600 nada
+1795565350.8048658 legenda do app: t=1115251 atraso=-2600 "- À sua mulher? / - Sim."
+1795565352.979797 legenda do app: t=1117426 atraso=-2600 nada
+1795565353.59729 legenda do app: t=1118002 atraso=-2600 "Quando ele se afogou / no East River."
+1795565355.6952329 legenda do app: t=1120146 atraso=-2600 nada
+1795565356.807986 legenda do app: t=1121282 atraso=-2600 "Foi uma comenda póstuma."
+1795565357.30877 estado: faixa=2 atraso=-2600 vlcDelay=-2600000 legendas=[(-1, "Disable"), (2, "Track 1")] escolhida=0
+1795565358.6112351 legenda do app: t=1122979 atraso=-2600 nada
+=== log-5-certa.txt
+1795565371.027725 AUDIOSYNC estado: st=- executando=false faixa=-1 atraso=0 tempo=625
+1795565372.050901 atraso da legenda ativa (nenhuma): 0 ms
+1795565372.397934 atraso da legenda ativa (d3:u|h:ff01af8ba22f5980|http://127.0.0.1:8000/certa.srt#raw): 0 ms
+1795565373.020767 AUDIOSYNC GATILHO motivo=troca-de-legenda legenda=af8ba22f5980|http://127.0.0.1:8000/certa.srt#raw decisão=avaliar (espera 10 s tocando; se há resultado guardado, não analisa) [análises=0 sem_confiança=0 estado=nova]
+1795565383.02211 AUDIOSYNC GATILHO motivo=início legenda=af8ba22f5980|http://127.0.0.1:8000/certa.srt#raw decisão=análise [análises=1 sem_confiança=0 estado=nova]
+1795565383.023363 AUDIOSYNC começando: posição 12 s, duração 1200 s, atraso atual 0 ms, sem limite de dados
+1795565392.042584 AUDIOSYNC estado: st=nova executando=true faixa=2 atraso=0 tempo=21792
+1795565400.084968 AUDIOSYNC resultado: aceita z=17.7 janelas=7/7 escala=1.00000 deslocamento=39 ms | vad=silero janelas=7 captura=6991 ms vad=2779 ms (cpu 2603) solve=0 ms (cpu 892) cpu_thread=3518 ms total=17061 ms leitura_estimada=8 MB rss=122->190 MB
+1795565400.0863109 AVISO na tela: Legenda confirmada pelo áudio
+j1 inicio_s=270 centro_s=315 atraso_ms=99 ncc=0.45 segundo=0.38 z=2.4 confiavel=0
+j2 inicio_s=705 centro_s=750 atraso_ms=93 ncc=0.67 segundo=0.43 z=7.3 confiavel=1
+j3 inicio_s=1045 centro_s=1090 atraso_ms=26 ncc=0.53 segundo=0.41 z=3.8 confiavel=1
+j4 inicio_s=155 centro_s=200 atraso_ms=122 ncc=0.52 segundo=0.36 z=4.4 confiavel=1
+j5 inicio_s=535 centro_s=580 atraso_ms=-52 ncc=0.81 segundo=0.74 z=3.0 confiavel=0
+j6 inicio_s=800 centro_s=845 atraso_ms=55 ncc=0.61 segundo=0.28 z=11.0 confiavel=1
+j7 inicio_s=955 centro_s=1000 atraso_ms=-2 ncc=0.83 segundo=0.72 z=3.6 confiavel=1
+atraso_ao_iniciar_ms=0 atraso_manual_guardado=0 tentativa=1
+1795565403.521663 estado: faixa=2 atraso=0 vlcDelay=0 legendas=[(-1, "Disable"), (2, "Track 1")] escolhida=0
+=== log-6-outro.txt
+1795565417.329427 AUDIOSYNC estado: st=- executando=false faixa=-1 atraso=0 tempo=665
+1795565418.345611 atraso da legenda ativa (nenhuma): 0 ms
+1795565418.733001 atraso da legenda ativa (d3:u|h:ff01af8ba22f5980|http://127.0.0.1:8000/outro.srt#raw): 0 ms
+1795565419.3154821 AUDIOSYNC GATILHO motivo=troca-de-legenda legenda=af8ba22f5980|http://127.0.0.1:8000/outro.srt#raw decisão=avaliar (espera 10 s tocando; se há resultado guardado, não analisa) [análises=0 sem_confiança=0 estado=nova]
+1795565425.1502461 legenda do app: t=8582 atraso=0 "Agente?"
+1795565426.645296 legenda do app: t=10015 atraso=0 nada
+1795565426.810355 legenda do app: t=10279 atraso=0 "Como faço para / chegar a Três Rios?"
+1795565429.093554 legenda do app: t=12532 atraso=0 "Continue por 3 Km até / o primeiro cruzame"
+1795565429.317717 AUDIOSYNC GATILHO motivo=início legenda=af8ba22f5980|http://127.0.0.1:8000/outro.srt#raw decisão=análise [análises=1 sem_confiança=0 estado=nova]
+1795565429.318291 AUDIOSYNC começando: posição 12 s, duração 1200 s, atraso atual 0 ms, sem limite de dados
+1795565431.224618 legenda do app: t=14622 atraso=0 "Continue por 3 Km até / o primeiro cruzame"
+1795565431.5198631 legenda do app: t=14942 atraso=0 "e vire à esquerda. / Fica a uns 90 Km."
+1795565433.641469 legenda do app: t=17054 atraso=0 "Obrigado. / Que lugar é esse?"
+1795565435.473778 legenda do app: t=18964 atraso=0 "De Repente."
+1795565436.890479 legenda do app: t=20379 atraso=0 "- De Repente o quê? / - Nada, é o nome daq"
+1795565438.323113 AUDIOSYNC estado: st=nova executando=true faixa=2 atraso=0 tempo=21684
+1795565439.139985 legenda do app: t=22539 atraso=0 nada
+1795565439.390963 legenda do app: t=22809 atraso=0 "Que nome esquisito / para uma cidade."
+1795565441.307095 AUDIOSYNC resultado: recusada z=4.4 janelas=3/5 (z baixo; pico ambíguo; escala fora das razões de fps; ajuste contradiz as janelas (> 1 s); janelas discordam;) | vad=silero janelas=5 captura=5023 ms vad=1961 ms (cpu 1859) solve=0 ms (cpu 804) cpu_thread=2679 ms total=11988 ms leitura_estimada=8 MB rss=122->172 MB
+1795565441.311849 AUDIOSYNC o áudio não tem certeza: legenda deixada como estava
+j1 inicio_s=135 centro_s=180 atraso_ms=14869 ncc=0.22 segundo=0.18 z=2.9 confiavel=0
+j2 inicio_s=555 centro_s=600 atraso_ms=8988 ncc=0.17 segundo=0.15 z=2.2 confiavel=0
+j3 inicio_s=975 centro_s=1020 atraso_ms=-12795 ncc=0.18 segundo=0.15 z=2.1 confiavel=0
+j4 inicio_s=260 centro_s=305 atraso_ms=9554 ncc=0.22 segundo=0.18 z=2.3 confiavel=0
+j5 inicio_s=720 centro_s=765 atraso_ms=-2449 ncc=0.15 segundo=0.15 z=2.2 confiavel=0
+atraso_ao_iniciar_ms=0 atraso_manual_guardado=0 tentativa=1
+1795565441.316438 AUDIOSYNC GATILHO motivo=sem-confiança legenda=af8ba22f5980|http://127.0.0.1:8000/outro.srt#raw decisão=agendar UMA segunda tentativa em 1200 s: o áudio não tem certeza [análises=1 sem_confiança=1 estado=nova]
+1795565441.535932 legenda do app: t=25012 atraso=0 "É uma herança / de outros tempos."
+1795565443.8415642 legenda do app: t=27309 atraso=0 "Era como as coisas / aconteciam aqui, de r"
+1795565444.832796 estado: faixa=2 atraso=0 vlcDelay=0 legendas=[(-1, "Disable"), (2, "Track 1")] escolhida=0
