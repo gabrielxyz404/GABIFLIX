@@ -68,6 +68,8 @@ final class AudioSyncAuto {
         int audioTrackId();
         /** o estado da análise, em português simples, para a linha de estado do painel de legendas (null = nada a dizer); tom: 0 neutro, 1 bom, 2 aviso */
         void status(String text, int tone);
+        /** de onde vem o texto da legenda analisada: "externa" (baixada) ou "embutida(...)" (lida do próprio arquivo); só para o relatório */
+        String subSource();
     }
 
     static final int TONE_NEUTRAL = 0, TONE_GOOD = 1, TONE_WARN = 2;
@@ -76,6 +78,8 @@ final class AudioSyncAuto {
     /** NEW = ainda não analisada; DONE = resultado confiante (não se analisa de novo); HOLD = DONE mas o usuário mexeu no atraso à mão; OFF = parou */
     private static final int NEW = 0, DONE = 2, OFF = 3, HOLD = 4;
     private static final long TICK_MS = 1000;
+    /** com escala diferente de 1 o atraso acompanha o modelo a cada tanto (ms): com 15 s a legenda de 25 fps num filme de 23,976 fps errava até 0,6 s entre dois passos */
+    private static final long FOLLOW_MS = 2_000;
     /** quanto vale um resultado confiante guardado (fix/ok) */
     private static final long CONFIDENT_TTL_MS = 30L * 86_400_000L;
     /** "sem confiança" guardado vale por 3 dias */
@@ -125,6 +129,10 @@ final class AudioSyncAuto {
     private Sub cur;
     private String key;
     private boolean running;
+    /** token da análise automática em andamento (para o resultado atrasado de uma análise cancelada soltar o "running") */
+    private int runTok = -1;
+    /** o botão acabou de terminar e o ciclo vai ler a marca que ele guardou: não espera o tempo de início nem o "tocando há 30 s" (não há captura nenhuma) */
+    private boolean adopting;
     private long runStartedAt;
     private volatile long rescanAt;
     private volatile String keyNow;
@@ -224,9 +232,29 @@ final class AudioSyncAuto {
 
     // ------------------------------------------------------------ botão (o painel de legendas)
 
+    /** a chave (legenda) que o botão está analisando, posta pela tela na thread da interface; vale mais que a do ciclo (que pode ainda não ter visto a legenda recém-trocada) */
+    private volatile String buttonKey;
+    void setButtonKey(String k) { buttonKey = k; }
+
+    /** o botão desistiu (tempo esgotado) ou a tela fechou: derruba a captura em andamento; o resultado atrasado é descartado por quem chamou */
+    void cancelButton() {
+        token.incrementAndGet();
+        core.cancel();
+    }
+
+    /** andamento (janela atual, total) da análise do botão; chamado fora da thread principal */
+    void setProgress(AudioSyncCore.WinProgress f) { core.winProgress = f; }
+
+    /** o botão aplicou o atraso por conta própria: o vigia dos ajustes manuais não deve tomá-lo por um ajuste do usuário (chamar na thread da interface) */
+    void noteExternalDelay() {
+        expectDelay = h.delayMs();
+        expectInit = true;
+        editSeenAt = 0;
+    }
+
     /**
      * Motor do botão: a referência/consenso de sempre primeiro; depois o áudio confere e, se tem certeza, corrige (ele manda no atraso).
-     * Se o áudio recusa, vale o resultado de antes. Corre na thread própria do painel (fora da interface).
+     * Se o áudio recusa, vale o resultado de antes. Corre na thread própria do painel (fora da interface). Sempre analisa de novo: nunca usa a marca guardada.
      */
     AutoSync.Engine chain(final AutoSync.Engine ref) {
         return (active, videoTimeMs, currentDelayMs) -> {
@@ -237,31 +265,41 @@ final class AudioSyncAuto {
             final int d1 = r1.status == AutoSync.FIXED ? r1.delayMs : currentDelayMs;
             token.incrementAndGet();   // a execução automática em andamento (se houver) é descartada
             core.cancel();
-            String k = keyNow;
-            ui.post(() -> { Sub s = k == null ? null : subs.get(k); if (s != null) s.analyses++; trigger("botão-sincronizar", k, "análise"); });
+            final String k = buttonKey != null ? buttonKey : keyNow;
+            ui.post(() -> { Sub s = k == null ? null : subs.get(k); if (s != null) s.analyses++; trigger("botão-sincronizar", k, "análise (o botão ignora o resultado guardado: sempre analisa de novo)"); });
             core.audioTrackId = h.audioTrackId();
             AudioSyncCore.Outcome o = core.run(h.url(), active.text, h.durationMs(), videoTimeMs, d1, AudioSyncCore.NO_LIMIT);
             log("botão: " + o.note + " | " + o.st.summary());
-            try { CrashReporter.analise(AudioSyncCore.reportBody(o, h.durationMs(), "origem=botao_sincronizar\natraso_ao_iniciar_ms=" + d1 + "\n")); } catch (Throwable ignored) {}
+            final String body = AudioSyncCore.reportBody(o, h.durationMs(), "origem=botao_sincronizar\natraso_ao_iniciar_ms=" + d1 + "\n");
             switch (o.kind) {
-                case AudioSyncCore.Outcome.FIX:
+                case AudioSyncCore.Outcome.FIX: {
                     if (k != null) mark(k, "fix", o.scale, o.offsetMs, o.targetDelay); // o painel guarda este atraso como qualquer outro
-                    rescanAt = SystemClock.uptimeMillis() + 6000;
-                    return AutoSync.Result.fixed(o.targetDelay, "áudio " + o.note);
+                    rescanAt = SystemClock.uptimeMillis() + 1500;
+                    AutoSync.Result r = AutoSync.Result.fixed(o.targetDelay, "áudio " + o.note);
+                    r.scale = o.scale; r.offsetMs = o.offsetMs;
+                    return tag(r, o, body);
+                }
                 case AudioSyncCore.Outcome.OK:
                     if (k != null) mark(k, "ok", 1.0, o.offsetMs, d1);
-                    rescanAt = SystemClock.uptimeMillis() + 6000;
-                    return r1.status == AutoSync.FIXED ? r1 : AutoSync.Result.ok("já estava certa (o áudio confirma)");
+                    rescanAt = SystemClock.uptimeMillis() + 1500;
+                    return tag(r1.status == AutoSync.FIXED ? r1 : AutoSync.Result.ok("já estava certa (o áudio confirma)"), o, body);
                 case AudioSyncCore.Outcome.REFUSED:
                     if (k != null) mark(k, "no", 1.0, 0, 0);
-                    rescanAt = SystemClock.uptimeMillis() + 6000;
-                    return r1.status == AutoSync.FAILED ? AutoSync.Result.failedMsg(r1.note, o.msg) : r1;
+                    rescanAt = SystemClock.uptimeMillis() + 1500;
+                    return tag(r1.status == AutoSync.FAILED ? AutoSync.Result.failedMsg(r1.note + " | áudio: " + o.note, o.msg) : r1, o, body);
                 case AudioSyncCore.Outcome.CANCELLED:
                     return r1;
                 default: // erro de captura, pulado: diz o motivo em vez de um "não consegui" genérico (se a referência já acertou, vale a referência)
-                    return r1.status == AutoSync.FAILED ? AutoSync.Result.failedMsg(r1.note, o.msg.isEmpty() ? "Não consegui ouvir o áudio do filme." : o.msg) : r1;
+                    return tag(r1.status == AutoSync.FAILED ? AutoSync.Result.failedMsg(r1.note + " | áudio: " + o.note, o.msg.isEmpty() ? "Não consegui ouvir o áudio do filme." : o.msg) : r1, o, body);
             }
         };
+    }
+
+    private static AutoSync.Result tag(AutoSync.Result r, AudioSyncCore.Outcome o, String body) {
+        r.z = o.result == null ? 0 : o.result.z;
+        r.report = body;
+        r.fromAudio = true;
+        return r;
     }
 
     // ------------------------------------------------------------ marcas guardadas (cache por filme+legenda)
@@ -363,6 +401,8 @@ final class AudioSyncAuto {
         if (lastPosMs >= 0 && t > 0) {
             long expected = lastPosMs + (pl ? now - lastPosWall : 0);
             long jump = Math.abs(t - expected);
+            // escala diferente de 1: depois de qualquer salto o atraso certo é outro (a deriva muda com a posição): acompanha o modelo já, sem esperar o próximo passo
+            if (jump > 2500 && cur != null && cur.st == DONE && Math.abs(cur.mScale - 1.0) > 1e-9) cur.nextFollowAt = 0;
             if (jump > farSeekMs && cur != null) {
                 log("salto na linha do tempo de " + jump / 1000 + " s (de " + lastPosMs / 1000 + " s para " + t / 1000 + " s): só conta se o usuário também mexer no atraso à mão; sozinho não dispara análise");
                 cur.farSeek = true;
@@ -373,6 +413,7 @@ final class AudioSyncAuto {
 
     /** a legenda ativa mudou: o estado de cada legenda fica guardado (religar a faixa ou voltar a ela não recomeça do zero) */
     private void switchSub(String k, long now) {
+        adopting = false;
         if (running && k != null && key != null && !k.equals(key)) {
             token.incrementAndGet();
             core.cancel();
@@ -419,13 +460,19 @@ final class AudioSyncAuto {
         if (running && hBuf >= 2 && now - runStartedAt > 5000) abortForStall(s, k, now);
         if (rescanAt > 0 && now >= rescanAt && !running) {
             // o botão acabou de terminar: adota o resultado que ele guardou (sem nova captura)
-            rescanAt = 0; s.st = NEW; s.keySince = 0; s.attempts = 0; s.retryPending = false; s.retryFromRefusal = false;
-            trigger("botão-adotar-resultado", k, "sem análise (só lê a marca que o botão guardou)");
+            // (keySince muito antigo, não 0: "agora - 0" é o tempo desde o boot do aparelho e bloqueava a adoção nos primeiros 25 s, ou por horas com gfAudioStartSec grande)
+            rescanAt = 0;
+            if (readMark(k) != null) {
+                s.st = NEW; s.keySince = Long.MIN_VALUE / 4; s.attempts = 0; s.retryPending = false; s.retryFromRefusal = false; adopting = true;
+                trigger("botão-adotar-resultado", k, "sem análise (só lê a marca que o botão guardou)");
+            }
         }
         switch (s.st) {
             case NEW:
-                if (running || !pl || now - s.keySince < startAfterMs || now - playingSince < needPlayMs || (s.retryPending && now < s.retryAt)) return;
-                if (now - lastStallAt < 20_000 && lastStallAt > 0) return;
+                if (running || !pl || (s.retryPending && now < s.retryAt)) return;
+                if (!adopting && (now - s.keySince < startAfterMs || now - playingSince < needPlayMs)) return;
+                if (!adopting && now - lastStallAt < 20_000 && lastStallAt > 0) return;
+                adopting = false;
                 decideStart(s, cand, k, now);
                 break;
             case DONE:
@@ -496,6 +543,7 @@ final class AudioSyncAuto {
         if (running || core.busy()) { trigger(why, k, "ignorado: já há uma análise em andamento (nunca duas ao mesmo tempo)"); return; }
         final int tok = token.incrementAndGet();
         running = true;
+        runTok = tok;
         s.analyses++;
         s.retryPending = false;
         s.retryFromRefusal = false;
@@ -569,8 +617,10 @@ final class AudioSyncAuto {
     }
 
     private void finishRun0(int tok, String k, int d0, AudioSyncCore.Outcome o) {
+        // BUG achado no teste do botão Sincronizar (Mac, mesmo código aqui): o botão cancela a análise automática em andamento (token + 1); o resultado atrasado dela
+        // caía aqui e saía SEM soltar "running": o ciclo ficava parado para sempre e a adoção do resultado do botão (escala/acompanhamento) nunca acontecia
+        if (tok == runTok) { running = false; runTok = -1; }
         if (stopped || tok != token.get()) { log("resultado descartado (outra execução/legenda/tela): " + o.note); return; }
-        running = false;
         log("resultado: " + o.note + (o.cuts ? " [aviso: a legenda parece ter cortes]" : "") + " | " + o.st.summary());
         log(healthLine());
         Sub s = subs.get(k);
@@ -608,7 +658,7 @@ final class AudioSyncAuto {
                     s.lastWritten = d0;
                     mark(k, "fix", o.scale, s.mOffset, d0);
                     s.st = DONE; s.attempts = 0; s.manualEdited = false; s.farSeek = false;
-                    s.nextFollowAt = SystemClock.uptimeMillis() + 15_000;
+                    s.nextFollowAt = SystemClock.uptimeMillis() + FOLLOW_MS;
                     h.notice(DRIFT_MSG);
                     status(DRIFT_MSG + ".", TONE_GOOD);
                     log("aplicado em volta do ponto manual: escala " + o.scale + ", atraso " + d0 + " ms em " + tNow / 1000 + " s (o áudio daria " + Math.round(engineNow) + " ms ali); não pula");
@@ -626,7 +676,7 @@ final class AudioSyncAuto {
                 s.attempts = 0;
                 s.manualEdited = false;
                 s.farSeek = false;
-                s.nextFollowAt = SystemClock.uptimeMillis() + 15_000;
+                s.nextFollowAt = SystemClock.uptimeMillis() + FOLLOW_MS;
                 String fixMsg = !persist ? (o.drift ? DRIFT_MSG : "Legenda acertada pelo áudio (velocidade e atraso)") : "Legenda acertada pelo áudio (" + secs(o.targetDelay) + ")";
                 if (changed) h.notice(fixMsg);   // o atraso mudou de verdade: único caso em que há aviso (além da primeira confirmação do filme)
                 status(fixMsg + ".", TONE_GOOD);
@@ -725,7 +775,7 @@ final class AudioSyncAuto {
             // o modelo com escala está ativo e o usuário reajustou: o modelo passa por este novo ponto (mesma escala)
             s.mOffset = ManualDrift.anchorOffset(s.mScale, d, t);
             s.lastWritten = d;
-            s.nextFollowAt = SystemClock.uptimeMillis() + 15_000;
+            s.nextFollowAt = SystemClock.uptimeMillis() + FOLLOW_MS;
             mark(k, "fix", s.mScale, s.mOffset, h.savedDelay(k));
             log("modelo com escala " + s.mScale + " reancorado no ajuste manual (" + d + " ms em " + t / 1000 + " s)");
             return;
@@ -749,7 +799,7 @@ final class AudioSyncAuto {
         s.st = DONE;
         s.attempts = 0;
         s.retryPending = false;
-        s.nextFollowAt = SystemClock.uptimeMillis() + 15_000;
+        s.nextFollowAt = SystemClock.uptimeMillis() + FOLLOW_MS;
         mark(k, "fix", best.scale, best.offsetMs, h.savedDelay(k));
         h.notice(DRIFT_MSG);
         status(DRIFT_MSG + ".", TONE_GOOD);
@@ -770,19 +820,22 @@ final class AudioSyncAuto {
     private void sendReport(AudioSyncCore.Outcome o, Sub s, int d0, String decision) {
         try {
             String extra = "decisao=" + decision + "\natraso_ao_iniciar_ms=" + d0 + " atraso_manual_guardado=" + (s.manualRun ? 1 : 0) + " tentativa=" + (s.attempts + 1) + "\n" + manualLine(s) + "\n";
-            CrashReporter.analise(AudioSyncCore.reportBody(o, h.durationMs(), extra));
+            String body = AudioSyncCore.reportBody(o, h.durationMs(), extra);
+            CrashReporter.analise("automatico", o.kind == AudioSyncCore.Outcome.FIX ? "corrigir" : o.kind == AudioSyncCore.Outcome.OK ? "ja_certa" : o.kind == AudioSyncCore.Outcome.REFUSED ? "sem_confianca"
+                    : o.kind == AudioSyncCore.Outcome.CANCELLED ? "cancelado" : o.kind == AudioSyncCore.Outcome.SKIPPED ? "pulado" : "erro", decision, o.scale, o.offsetMs, o.result == null ? 0 : o.result.z,
+                    h.subSource(), h.url(), h.durationMs(), s.attempts + 1, body);
         } catch (Throwable ignored) {}
     }
 
     // ------------------------------------------------------------ escala diferente de 1: o atraso acompanha o modelo (sem nova análise)
 
-    private static int delayAt(double a, double off, long t) {
+    static int delayAt(double a, double off, long t) {
         double cue = (t - off) / a;
         return (int) Math.max(-600_000, Math.min(600_000, Math.round(((a - 1.0) * cue + off) / 10.0) * 10));
     }
 
     private void follow(Sub s, long now) {
-        s.nextFollowAt = now + 15_000;
+        s.nextFollowAt = now + FOLLOW_MS;
         int d = delayAt(s.mScale, s.mOffset, h.timeMs());
         if (Math.abs(d - h.delayMs()) < 100) return;
         writeDelay(d, false);

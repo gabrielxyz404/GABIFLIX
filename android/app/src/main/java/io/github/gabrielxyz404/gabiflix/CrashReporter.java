@@ -319,6 +319,52 @@ public final class CrashReporter {
      * escala/inclinação ajustadas, decisão e motivo, VAD usado, atrasos manuais. Sem título, sem endereço e sem nome de arquivo (os endereços que por acaso
      * apareçam num texto de erro são trocados por "<url>"). Não leva migalhas do registro (elas podem ter nomes).
      */
+    /** http / local (servidor de streaming no próprio aparelho ou na rede da casa) / https / arquivo: nunca o endereço */
+    static String streamType(String url) {
+        if (url == null) return "?";
+        String u = url.trim().toLowerCase(java.util.Locale.ROOT);
+        if (u.startsWith("file:") || u.startsWith("/") || u.startsWith("content:")) return "arquivo";
+        boolean https = u.startsWith("https:");
+        String rest = u.replaceFirst("^[a-z]+://", "");
+        int cut = rest.length();
+        for (char ch : new char[]{'/', '?', '#'}) { int i = rest.indexOf(ch); if (i >= 0 && i < cut) cut = i; }
+        String host = rest.substring(0, cut);
+        int at = host.lastIndexOf('@');
+        if (at >= 0) host = host.substring(at + 1);
+        if (host.startsWith("[")) { int e = host.indexOf(']'); host = e > 0 ? host.substring(1, e) : host; }
+        else { int c = host.lastIndexOf(':'); if (c > 0) host = host.substring(0, c); }
+        boolean local = host.equals("localhost") || host.equals("127.0.0.1") || host.equals("::1") || host.equals("10.0.2.2") || host.endsWith(".local")
+                || host.startsWith("192.168.") || host.startsWith("10.") || host.matches("172\\.(1[6-9]|2[0-9]|3[01])\\..*");
+        if (local) return "local(" + (https ? "https" : "http") + ")";
+        return https ? "https" : "http";
+    }
+
+    /** a razão de fps que a escala lembra (a legenda de 25 fps num filme de 23,976 fps é a mais comum) */
+    static String fpsHint(double scale) {
+        if (Math.abs(scale - 1.0) < 1e-6) return "sem escala";
+        double[][] known = {{25.0 / 23.976, 0}, {23.976 / 25.0, 1}, {24.0 / 23.976, 2}, {23.976 / 24.0, 3}, {25.0 / 24.0, 4}, {24.0 / 25.0, 5}};
+        String[] names = {"25/23.976", "23.976/25", "24/23.976", "23.976/24", "25/24", "24/25"};
+        for (double[] k : known) if (Math.abs(scale - k[0]) < 0.0008) return names[(int) k[1]];
+        return String.format(java.util.Locale.ROOT, "outra(%.5f)", scale);
+    }
+
+    /** o corpo do relatório de uma tentativa (igual ao do Mac, AnalysisReport.swift): só números e rótulos */
+    static String analiseBody(String origin, String result, String reason, double scale, double offsetMs, double z, String subSource, String url, long durationMs, int attempt, String engineBody) {
+        StringBuilder b = new StringBuilder();
+        b.append("origem=").append(origin).append(" tentativa=").append(attempt).append('\n');
+        b.append("resultado=").append(result).append('\n');
+        b.append("motivo=").append(reason).append('\n');
+        b.append(String.format(java.util.Locale.ROOT, "escala=%.6f deslocamento_ms=%.0f z=%.1f", scale, offsetMs, z)).append('\n');
+        b.append("legenda=").append(subSource).append(" fps_dica=").append(fpsHint(scale)).append('\n');
+        b.append("fluxo=").append(streamType(url)).append(" duracao_s=").append(durationMs / 1000).append('\n');
+        if (engineBody != null && !engineBody.isEmpty()) b.append('\n').append(engineBody);
+        return b.toString();
+    }
+
+    static void analise(String origin, String result, String reason, double scale, double offsetMs, double z, String subSource, String url, long durationMs, int attempt, String engineBody) {
+        analise(analiseBody(origin, result, reason, scale, offsetMs, z, subSource, url, durationMs, attempt, engineBody));
+    }
+
     static void analise(final String body) {
         if (app == null) return;
         final String clean = body.replaceAll("https?://\\S+", "<url>").replaceAll("[A-Za-z0-9_.-]+\\.(mkv|mp4|avi|srt|m4v|webm|ts)\\b", "<arquivo>");

@@ -89,6 +89,9 @@ final class AudioSyncCore {
     /** chamado da thread de trabalho: diz em que ponto a análise está (o painel mostra) */
     volatile Progress progress;
     private void say(String s) { Progress p = progress; if (p != null) { try { p.on(s); } catch (Throwable ignored) {} } }
+    interface WinProgress { void on(int window, int total); }
+    /** chamado da thread de trabalho a cada janela capturada (janela atual, total): o botão mostra "janela i de n" */
+    volatile WinProgress winProgress;
     private final Object lock = new Object();
 
     AudioSyncCore(Context ctx) {
@@ -346,6 +349,8 @@ final class AudioSyncCore {
                     if (cap != null && cap.isCancelled()) throw new InterruptedException();
                     if (!first[0]) Thread.sleep(300);
                     first[0] = false;
+                    WinProgress wp = winProgress;
+                    if (wp != null) { try { wp.on(i + 1, total); } catch (Throwable ignored) {} }
                     say(total > DRIFT_WIN && i >= DRIFT_WIN ? "A ouvir mais um trecho do filme (a legenda parece desviar)… " + (i + 1) + " de " + total : "A ouvir o filme… trecho " + (i + 1) + " de " + total);
                     Window w = captureWindow(url, st, ln, o);
                     if (w == null) { failedAt[0] = i + 1; return null; }

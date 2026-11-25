@@ -653,6 +653,7 @@ public class PlayerActivity extends Activity {
         // sincronização pelo áudio: o botão passa a usar o motor encadeado (referência primeiro, áudio confere) e o modo automático começa a vigiar
         try {
             audioSync = new AudioSyncAuto(this, audioHost);
+            audioSync.setProgress((i, n) -> ui.post(() -> autoProgress = n > 1 ? " (janela " + i + " de " + n + ")" : ""));
             autoEngine = audioSync.chain(autoEngine);
             audioSync.start();
         } catch (Throwable t) { glog("AUDIOSYNC não iniciou: " + t); }
@@ -680,7 +681,10 @@ public class PlayerActivity extends Activity {
                             if (player == null || cmd == null || val == null) return;
                             glog("teste: ação do usuário " + cmd + " " + val);
                             if (cmd.equals("seek")) player.setTime(Long.parseLong(val) * 1000L);
-                            else if (cmd.equals("delay")) setSubDelay(Integer.parseInt(val), panelValue);
+                            else if (cmd.equals("delay")) { userEdits++; setSubDelay(Integer.parseInt(val), panelValue); }
+                            else if (cmd.equals("sync")) startAutoSync(player.getSpuTrack(), false);   // só nos testes: o mesmo toque do botão, sem passar pelo painel
+                            else if (cmd.equals("panelstate")) glog("painel do ajuste manual: aberto=" + subPanelOpen + " estado=\"" + (panelStatus == null ? "" : panelStatus.getText()) + "\" atraso=" + subDelayMs + " ms");
+                            else if (cmd.equals("embstate")) glog("embutidas lidas: " + embVirtual.keySet() + " faixaAtiva=" + player.getSpuTrack() + " legendaApp=" + (candForTrack(player.getSpuTrack(), player.getSpuTracks()) != null) + " rodando=" + autoRunning);
                             else if (cmd.equals("track")) { userPickedSub = true; player.setSpuTrack(Integer.parseInt(val)); syncDelayToTrack(Integer.parseInt(val)); }
                             else if (cmd.equals("audionext")) { MediaPlayer.TrackDescription[] at = player.getAudioTracks(); if (at != null && at.length > 0) { int cur = player.getAudioTrack(), k = 0; for (int q = 0; q < at.length; q++) if (at[q].id == cur) k = q; player.setAudioTrack(at[(k + 1) % at.length].id); } }
                             else if (cmd.equals("spunext")) { userPickedSub = true; MediaPlayer.TrackDescription[] st = player.getSpuTracks(); if (st != null && st.length > 0) { int cur = player.getSpuTrack(), k = 0; for (int q = 0; q < st.length; q++) if (st[q].id == cur) k = q; for (int q = 1; q <= st.length; q++) { int id = st[(k + q) % st.length].id; if (id != -1) { player.setSpuTrack(id); syncDelayToTrack(id); break; } } } }
@@ -1529,9 +1533,13 @@ public class PlayerActivity extends Activity {
             audioTone = tone;
             ui.post(() -> {
                 if (!subPanelOpen || panelStatus == null) return;
-                if (autoRunning && text != null) setAutoStatus(text, toneColor(tone));   // o botão está rodando: o andamento aparece na linha de estado
-                else if (!statusFixed) refreshSubPanel();
+                if (autoRunning) return;   // o botão está rodando: a linha de estado mostra "A sincronizar… N s (janela i de n)" (showAutoProgress)
+                if (!statusFixed) refreshSubPanel();
             });
+        }
+        @Override public String subSource() {
+            SubtitleSync.Cand c = player == null ? null : candForTrack(player.getSpuTrack(), player.getSpuTracks());
+            return c != null && c.url != null && c.url.startsWith("emb:") ? autoSource : "externa";
         }
         @Override public long lostFrames() {
             // MediaPlayer.getMedia() faz retain() no Media (confirmado no bytecode do libVLC 3.6): quem chama tem de dar release(). Sem isso, a contagem do Media
@@ -1878,14 +1886,15 @@ public class PlayerActivity extends Activity {
         if (panelValue != null) panelValue.setText(delayLabel());
         SubtitleSync.Cand a = activeCand();
         boolean can = a != null && a.text != null;
-        panelAuto.setEnabled(can); // desligar o botão durante a espera tiraria o foco do controle: o clique é que é ignorado
+        boolean any = panelTrack != -1;
+        panelAuto.setEnabled(any); // desligar o botão durante a espera tiraria o foco do controle: o clique é que responde "já estou a sincronizar"
         styleAuto();
         if (!autoRunning && !statusFixed) {
             String as = audioStatus;
             if (can && as != null) { panelStatus.setTextColor(toneColor(audioTone)); panelStatus.setText(as); }
             else if (can) { panelStatus.setTextColor(0xFFC8C8C8); panelStatus.setText("Acerta o tempo da legenda sozinha, sem parar o filme."); }
             else if (panelTrack == -1) { panelStatus.setTextColor(0xFFC8C8C8); panelStatus.setText("Escolha uma legenda para a poder sincronizar."); }
-            else { panelStatus.setTextColor(0xFFFFC857); panelStatus.setText("Legenda do próprio vídeo — normalmente já vem certa. Se não estiver, usa os botões abaixo."); }
+            else { panelStatus.setTextColor(0xFFC8C8C8); panelStatus.setText("Legenda do próprio vídeo: o app lê o texto dela e acerta o tempo pelo áudio. Se não der, usa os botões abaixo."); }
         }
     }
 
@@ -1917,68 +1926,293 @@ public class PlayerActivity extends Activity {
     private String lastAutoMsg;
     private int lastAutoColor, lastAutoTrack = -2;
 
-    private void onAutoClick() {
-        SubtitleSync.Cand a = activeCand();
-        if (a == null || autoRunning) return;
-        runAutoSync(a);
-        // volta direto ao filme: a análise segue por trás e o resultado aparece como aviso sobre o filme
-        notice("A sincronizar a legenda pelo áudio…", 4000);
-        ui.postDelayed(() -> { if (subPanelOpen) closeSubPanel(); }, 1000);
+    // ---------- botão "Sincronizar automaticamente" ----------
+    // O toque SEMPRE termina numa resposta visível dentro de autoBudgetMs (300 s):
+    //   "Legenda sincronizada (+X,X s)" | "Legenda já estava certa" | "Não consegui confirmar pelo áudio — ajusta à mão" (e o painel do ajuste manual abre sozinho com o motivo).
+    // Nunca ignora o toque em silêncio (durante uma análise responde "Já estou a sincronizar…"), nunca usa o resultado guardado (sempre analisa de novo)
+    // e funciona também com a legenda EMBUTIDA no MKV (o texto dela é lido pelo índice do arquivo, ver EmbeddedSubs.java, e passa a ser desenhado pelo app).
+    /** tempo máximo de um toque (leitura da legenda embutida + áudio); só nos testes o intent gfSyncBudgetSec encurta */
+    private long autoBudgetMs = 300_000L;
+    /** geração do toque: o resultado de uma geração antiga (desistida por tempo ou superada) é descartado */
+    private int autoGen = 0, autoAttempts = 0, autoTrack = -1, autoEditsAtStart = 0;
+    private long autoStartedAt;
+    private volatile String autoProgress = "";
+    private String autoWhat = "A sincronizar…", autoSource = "externa";
+    /** ajustes manuais feitos pelo usuário (botões do painel, segurar, teclado): a sincronização só descarta o resultado se este número mudou durante a análise */
+    private int userEdits = 0;
+    /** legenda embutida cujo texto foi lido: nome da faixa -> {legenda virtual desenhada pelo app, id da faixa dela no libVLC} */
+    private final java.util.HashMap<String, Object[]> embVirtual = new java.util.HashMap<>();
+    private Runnable closePanelSoon;
+    private final Runnable autoTickRun = new Runnable() {
+        @Override public void run() {
+            if (!autoRunning || player == null || isFinishing()) return;
+            long el = SystemClock.uptimeMillis() - autoStartedAt;
+            if (el >= autoBudgetMs) {
+                autoGen++;                               // o resultado que chegar depois é descartado
+                if (audioSync != null) audioSync.cancelButton();
+                glog("sincronização: tempo esgotado (" + el / 1000 + " s): desisto e entrego o ajuste manual");
+                concludeAutoSync("tempo_esgotado", "passou de " + autoBudgetMs / 1000 + " s sem terminar (rede lenta, o filme ainda a carregar ou o servidor não responde)", null,
+                        "Não consegui confirmar pelo áudio — ajusta à mão",
+                        "Demorou demais a ouvir o filme (rede lenta ou o filme ainda a carregar). Ajuste à mão ou toque em Sincronizar de novo mais tarde.");
+                return;
+            }
+            showAutoProgress();
+            ui.postDelayed(this, 1000);
+        }
+    };
+
+    /** o aviso "A sincronizar… N s (janela i de n)" fica na tela enquanto dura a análise (e na linha de estado do painel, se ele estiver aberto) */
+    private void showAutoProgress() {
+        String t = autoWhat + " " + (SystemClock.uptimeMillis() - autoStartedAt) / 1000 + " s" + autoProgress;
+        noticeQuiet(t, 3000);
+        if (subPanelOpen && panelStatus != null) setAutoStatus(t, 0xFFFFFFFF);
     }
 
-    /**
-     * Sincronização automática da legenda ativa. Ponto único para ligar outro motor (AutoSync.Engine): corre numa thread à parte,
-     * o vídeo continua a tocar, e só no fim (de volta na thread da interface) o atraso é aplicado, guardado por fonte+legenda
-     * como qualquer ajuste manual. Se o utilizador mexer à mão ou trocar de legenda durante a espera, o resultado é descartado.
-     */
-    private void runAutoSync(final SubtitleSync.Cand active) {
-        if (autoRunning || player == null) return;
+    private void onAutoClick() { startAutoSync(panelTrack, true); }
+
+    private void startAutoSync(int track, boolean fromPanel) {
+        if (player == null || isFinishing()) return;
+        if (autoRunning) {
+            notice("Já estou a sincronizar… " + (SystemClock.uptimeMillis() - autoStartedAt) / 1000 + " s" + autoProgress, 4000);
+            return;
+        }
+        if (!playing || buffering) { notice("O vídeo ainda está a carregar. Tenta de novo daqui a pouco.", 5000); return; }
+        if (track == -1) { notice("Escolhe uma legenda em português (botão Legendas) e toca em Sincronizar de novo.", 6000); return; }
+        if (!subsAttached) { notice("Ainda estou a preparar as legendas. Tenta de novo daqui a pouco.", 5000); return; }
+        String bs = getIntent().getStringExtra("gfSyncBudgetSec");   // só nos testes
+        autoBudgetMs = 300_000L;
+        if (bs != null) try { autoBudgetMs = Math.max(5, Long.parseLong(bs)) * 1000L; } catch (NumberFormatException ignored) {}
+        autoAttempts++;
+        autoGen++;
+        final int gen = autoGen;
         autoRunning = true;
-        final int track = panelTrack, delayAtStart = subDelayMs;
+        autoStartedAt = SystemClock.uptimeMillis();
+        autoProgress = "";
+        autoWhat = "A sincronizar…";
+        autoSource = "externa";
+        autoTrack = track;
+        autoEditsAtStart = userEdits;
+        statusFixed = true;
+        glog("sincronização: toque #" + autoAttempts + " faixa=" + track + " atraso=" + subDelayMs + " ms (sempre analisa de novo; limite " + autoBudgetMs / 1000 + " s)");
+        ui.removeCallbacks(autoTickRun);
+        ui.postDelayed(autoTickRun, 1000);
+        if (panelAuto != null) styleAuto();
+        showAutoProgress();
+        SubtitleSync.Cand a = candForTrack(track, player.getSpuTracks());
+        if (a != null && a.text != null) beginAnalysis(a, track, gen);
+        else beginEmbedded(track, gen);
+        // volta direto ao filme: a análise segue por trás e o resultado aparece como aviso sobre o filme
+        if (fromPanel) {
+            if (closePanelSoon != null) ui.removeCallbacks(closePanelSoon);
+            closePanelSoon = () -> { if (subPanelOpen && autoRunning && gen == autoGen) closeSubPanel(); };
+            ui.postDelayed(closePanelSoon, 1000);
+        }
+    }
+
+    /** o fim de uma tentativa: aviso visível, relatório anônimo (ntfy) e, se não deu para confirmar, o painel do ajuste manual com o motivo */
+    private void concludeAutoSync(String label, String reason, AutoSync.Result res, String msg, String manual) {
+        ui.removeCallbacks(autoTickRun);
+        if (closePanelSoon != null) ui.removeCallbacks(closePanelSoon);
+        autoRunning = false;
+        glog("sincronização: resultado=" + label + " motivo=" + reason);
+        notice(msg, 8000);
+        try {
+            CrashReporter.analise("botao_sincronizar", label, reason, res == null ? 1.0 : res.scale, res == null ? 0 : res.offsetMs, res == null ? 0 : res.z, autoSource, url,
+                    player == null ? 0 : Math.max(0, player.getLength()), autoAttempts, res == null ? "" : res.report);
+        } catch (Throwable ignored) {}
+        lastAutoMsg = manual != null ? manual : msg;
+        lastAutoColor = manual != null ? 0xFFFFC857 : 0xFF7BD88F;
+        lastAutoTrack = autoTrack;
+        if (player == null || isFinishing()) return;
+        if (manual != null) {
+            if (!subPanelOpen) { panelTrack = player.getSpuTrack(); openSubPanel(); }
+            statusFixed = true;
+            setAutoStatus(manual, 0xFFFFC857);
+            if (panelAuto != null) styleAuto();
+            glog("painel do ajuste manual: aberto=" + subPanelOpen + " motivo=\"" + manual + "\" atraso=" + subDelayMs + " ms");
+        } else {
+            statusFixed = subPanelOpen;
+            if (subPanelOpen) { setAutoStatus(msg, 0xFF7BD88F); if (panelAuto != null) styleAuto(); }
+        }
+    }
+
+    /** a análise pelo áudio (a referência primeiro, depois o áudio) numa thread à parte; o vídeo continua a tocar */
+    private void beginAnalysis(final SubtitleSync.Cand active, int track, final int gen) {
+        if (gen != autoGen || !autoRunning || player == null) return;
+        autoTrack = track;
+        autoWhat = "A sincronizar…";
+        autoEditsAtStart = userEdits;
+        final int delayAtStart = subDelayMs;
         final long now = player.getTime();
         final AutoSync.Engine eng = autoEngine;
-        setAutoStatus("A sincronizar…", 0xFFFFFFFF);
-        if (panelAuto != null) styleAuto();
+        if (audioSync != null) audioSync.setButtonKey(delayKeyFor(track, player.getSpuTracks()));
         new Thread(() -> {
             AutoSync.Result r;
             try { r = eng.sync(active, now, delayAtStart); }
             catch (Throwable t) { r = AutoSync.Result.failed("erro: " + t); }
             final AutoSync.Result res = r;
-            ui.post(() -> finishAutoSync(res, track, delayAtStart));
+            ui.post(() -> finishAutoSync(res, gen));
         }, "gf-autosync").start();
     }
 
-    private void finishAutoSync(AutoSync.Result res, int track, int delayAtStart) {
-        autoRunning = false;
-        if (subPanelOpen && panelAuto != null) styleAuto();
-        if (player == null || isFinishing()) return;
-        glog("sincronização automática: status=" + res.status + " atraso=" + res.delayMs + " ms (" + res.note + ")");
-        if (panelTrack != track && subPanelOpen) { statusFixed = false; refreshSubPanel(); return; }
-        if (subDelayMs != delayAtStart) { // o utilizador mexeu à mão durante a espera: o manual manda
-            setAutoStatus("Ajuste manual feito: não alterei.", 0xFFC8C8C8);
-            if (subPanelOpen) refreshSubPanel();
+    private void finishAutoSync(AutoSync.Result res, int gen) {
+        if (gen != autoGen || !autoRunning) { glog("sincronização: resultado de uma tentativa antiga (já respondida) descartado"); return; }
+        if (player == null || isFinishing()) { autoRunning = false; return; }
+        glog("sincronização automática: status=" + res.status + " atraso=" + res.delayMs + " ms escala=" + res.scale + " (" + res.note + ")");
+        if (player.getSpuTrack() != autoTrack) {
+            concludeAutoSync("descartado", "a legenda foi trocada durante a análise", res, "A legenda mudou durante a análise. Toca em Sincronizar de novo.", null);
             return;
         }
-        String msg;
-        int color;
-        if (res.status == AutoSync.FIXED) {
-            int dBefore = subDelayMs;
-            setSubDelay(res.delayMs, panelValue);
-            reflushSubs(dBefore, subDelayMs);
-            msg = (res.note != null && res.note.startsWith("áudio") ? "Legenda acertada pelo áudio (" : "Legenda acertada (") + signedSecs(res.delayMs) + ")";
-            color = 0xFF7BD88F;
-            if (!subPanelOpen) notice(msg, 5000);
-        } else if (res.status == AutoSync.OK) {
-            msg = subDelayMs != 0 ? "Já estava certa: o atraso de " + signedSecs(subDelayMs) + " confere com o áudio." : "Já estava certa.";
-            color = 0xFF7BD88F;
-        } else {
-            msg = res.userMsg != null ? res.userMsg + " Usa o ajuste manual abaixo." : "Não consegui acertar — usa os botões abaixo";
-            color = 0xFFFFC857;
+        // BUG achado no Mac e igual aqui: o resultado do toque era descartado como "ajuste manual feito" quando o atraso mudava por QUALQUER motivo durante a análise
+        // (o acompanhamento da escala mexe no atraso sozinho); agora só vale o que o usuário fez de verdade (userEdits)
+        if (userEdits != autoEditsAtStart) {
+            concludeAutoSync("descartado", "o usuário mexeu no atraso à mão durante a análise", res, "Ajuste manual feito: não alterei.", null);
+            return;
         }
-        setAutoStatus(msg, color);
-        lastAutoMsg = msg; lastAutoColor = color; lastAutoTrack = track;
-        if (!subPanelOpen && res.status != AutoSync.FIXED) notice(res.status == AutoSync.OK ? "Legenda já estava certa" + (subDelayMs != 0 ? " (" + signedSecs(subDelayMs) + " confere com o áudio)" : "") : "Não consegui confirmar pelo áudio", 5000);
-        if (subPanelOpen) refreshSubPanel();
+        if (res.status == AutoSync.FIXED) {
+            boolean scaled = res.fromAudio && Math.abs(res.scale - 1.0) > 1e-9;
+            int dBefore = subDelayMs;
+            setSubDelay(res.delayMs, panelValue);   // guardado por fonte+legenda, como o ajuste manual
+            int shown = res.delayMs;
+            if (scaled) {
+                // escala diferente de 1 (legenda de outro fps): o atraso certo AGORA, sem esperar o ciclo (que depois acompanha o modelo)
+                shown = Math.max(-MAX_DELAY_MS, Math.min(MAX_DELAY_MS, AudioSyncAuto.delayAt(res.scale, res.offsetMs, player.getTime())));
+                subDelayMs = shown;
+                applySubDelay();
+                if (panelValue != null) panelValue.setText(delayLabel());
+            }
+            reflushSubs(dBefore, subDelayMs);
+            if (audioSync != null) audioSync.noteExternalDelay();
+            String hint = scaled ? " — velocidade corrigida (" + CrashReporter.fpsHint(res.scale) + ")" : "";
+            concludeAutoSync("sincronizada", res.note, res, "Legenda sincronizada (" + signedSecs(shown) + ")" + hint, null);
+        } else if (res.status == AutoSync.OK) {
+            String extra = subDelayMs != 0 ? " (" + signedSecs(subDelayMs) + " confere)" : "";
+            if (audioSync != null) audioSync.noteExternalDelay();
+            concludeAutoSync("ja_certa", res.note, res, "Legenda já estava certa" + extra, null);
+        } else {
+            String why = res.userMsg != null ? res.userMsg : "Não consegui acertar esta legenda.";
+            concludeAutoSync("nao_confirmou", res.note + " | " + why, res, "Não consegui confirmar pelo áudio — ajusta à mão", why + " Ajuste à mão com os botões abaixo.");
+        }
+    }
+
+    // ---------- legenda embutida: ler o texto pelo índice do MKV e desenhá-la pelo app (assim o atraso, a escala e a sincronização funcionam) ----------
+    private void beginEmbedded(final int track, final int gen) {
+        String found = null;
+        int ordinal = -1, n = 0;
+        MediaPlayer.TrackDescription[] all = player.getSpuTracks();
+        if (all != null) for (MediaPlayer.TrackDescription d : all) {
+            if (d.id == -1 || isDownloaded(d.id)) continue;
+            if (d.id == track) { found = d.name == null ? "" : d.name; ordinal = n; }
+            n++;
+        }
+        if (found == null) {
+            concludeAutoSync("erro", "faixa de legenda não encontrada", null, "Não consegui confirmar pelo áudio — ajusta à mão", "Não achei a legenda ativa.");
+            return;
+        }
+        final String name = found;
+        final int ord = ordinal;
+        autoSource = "embutida";
+        Object[] known = embVirtual.get(name);
+        if (known != null && trackExists((Integer) known[1])) {
+            glog("legenda embutida já lida antes: uso o texto guardado");
+            switchToVirtual((SubtitleSync.Cand) known[0], (Integer) known[1], name, gen);
+            return;
+        }
+        autoWhat = "A ler a legenda do vídeo…";
+        final String u = url;
+        final boolean small = tv;   // Fire TV Stick (32 bits, pouca RAM): menos conexões ao mesmo tempo
+        new Thread(() -> {
+            EmbeddedSubs.Src src = EmbeddedSubs.source(u);
+            EmbeddedSubs.Out out;
+            if (src == null) { out = new EmbeddedSubs.Out(); out.why = "endereço do vídeo não suportado"; }
+            else {
+                out = EmbeddedSubs.extract(src, ord, () -> autoGen != gen, SystemClock.uptimeMillis() + 150_000L, small ? 3 : 4, m -> ui.post(() -> glog(m)));
+                src.close();
+            }
+            final EmbeddedSubs.Out o = out;
+            ui.post(() -> embeddedRead(o, track, name, gen));
+        }, "gf-embsubs-main").start();
+    }
+
+    private boolean trackExists(int id) {
+        MediaPlayer.TrackDescription[] all = player == null ? null : player.getSpuTracks();
+        if (all != null) for (MediaPlayer.TrackDescription d : all) if (d.id == id) return true;
+        return false;
+    }
+
+    private void embeddedRead(EmbeddedSubs.Out out, int track, String name, int gen) {
+        if (gen != autoGen || !autoRunning || player == null || isFinishing()) return;
+        if (out.srt == null) {
+            autoSource = "embutida(sem texto: " + out.why + ")";
+            glog("legenda embutida: não deu para ler o texto: " + out.why);
+            concludeAutoSync("nao_confirmou", "legenda embutida sem texto: " + out.why, null, "Não consegui confirmar pelo áudio — ajusta à mão",
+                    "Não consegui ler o texto da legenda do vídeo (" + out.why + "). Ela costuma já vir certa; se não estiver, ajuste à mão.");
+            return;
+        }
+        autoSource = "embutida(texto lido: " + out.cues + " falas, " + out.codec + ", " + out.ms + " ms)";
+        glog("legenda embutida lida: " + out.cues + " falas em " + out.ms + " ms (" + out.codec + "); passa a ser desenhada pelo app");
+        int n = embVirtual.size();
+        final SubtitleSync.Cand c = new SubtitleSync.Cand();
+        c.url = "emb:" + name;
+        c.text = out.srt;
+        c.lastMs = lastCueEnd(out.srt);
+        c.rank = 500 + n;
+        Uri b = blankSubtitle(101 + n);   // "app-N.srt": o app desenha a legenda e o libVLC recebe a faixa em branco
+        if (b == null) { concludeAutoSync("erro", "sem espaço para o arquivo em branco", null, "Não consegui confirmar pelo áudio — ajusta à mão", "Não consegui preparar a legenda lida do vídeo. Ajuste à mão."); return; }
+        c.uri = b;
+        final java.util.HashSet<Integer> before = trackIds();
+        try { player.addSlave(0 /* legenda */, b, false); }
+        catch (Throwable t) { concludeAutoSync("erro", "o libVLC não aceitou a legenda lida: " + t, null, "Não consegui confirmar pelo áudio — ajusta à mão", "O player não aceitou a legenda lida do vídeo. Ajuste à mão."); return; }
+        addedSubs++;
+        attached.add(c);
+        subLabels.add("Português (do vídeo, sincronizável)");
+        awaitNewTrack(before, 24, id -> {
+            if (gen != autoGen || !autoRunning || player == null || isFinishing()) return;
+            if (id == null) {
+                concludeAutoSync("erro", "o libVLC não mostrou a faixa nova", null, "Não consegui confirmar pelo áudio — ajusta à mão", "O player não aceitou a legenda lida do vídeo. Ajuste à mão.");
+                return;
+            }
+            embVirtual.put(name, new Object[]{c, id});
+            switchToVirtual(c, id, name, gen);
+        });
+    }
+
+    private java.util.HashSet<Integer> trackIds() {
+        java.util.HashSet<Integer> ids = new java.util.HashSet<>();
+        MediaPlayer.TrackDescription[] all = player == null ? null : player.getSpuTracks();
+        if (all != null) for (MediaPlayer.TrackDescription d : all) ids.add(d.id);
+        return ids;
+    }
+
+    private interface IdDone { void on(Integer id); }
+
+    private void awaitNewTrack(final java.util.HashSet<Integer> before, final int tries, final IdDone done) {
+        Integer found = null;
+        MediaPlayer.TrackDescription[] all = player == null ? null : player.getSpuTracks();
+        if (all != null) for (MediaPlayer.TrackDescription d : all) if (!before.contains(d.id) && (found == null || d.id > found)) found = d.id;
+        if (found != null) { done.on(found); return; }
+        if (tries <= 0 || player == null) { done.on(null); return; }
+        ui.postDelayed(() -> awaitNewTrack(before, tries - 1, done), 250);
+    }
+
+    /** passa para a legenda virtual (a embutida com o texto lido, em branco no libVLC e desenhada pelo app), mantém o atraso que a pessoa já tinha e analisa */
+    private void switchToVirtual(final SubtitleSync.Cand c, final int tid, String name, final int gen) {
+        final int carry = subDelayMs;
+        userPickedSub = true;
+        player.setSpuTrack(tid);
+        panelTrack = tid;
+        lastSyncKey = "\u0000";
+        syncDelayToTrack(tid);
+        if (carry != 0 && subDelayMs == 0) setSubDelay(carry, panelValue);
+        glog("legenda embutida \"" + name + "\" agora desenhada pelo app (faixa " + tid + "); atraso mantido: " + subDelayMs + " ms");
+        autoWhat = "A sincronizar…";
+        ui.postDelayed(() -> {
+            if (gen != autoGen || !autoRunning || player == null || isFinishing()) return;
+            if (player.getSpuTrack() != tid) player.setSpuTrack(tid);
+            lastSyncKey = "\u0000";
+            syncDelayToTrack(tid);
+            beginAnalysis(c, tid, gen);
+        }, 1600);
     }
 
     // ---------- ajuste manual do atraso da legenda ----------
@@ -2047,6 +2281,11 @@ public class PlayerActivity extends Activity {
 
     private void notice(String s, long ms) {
         glog("AVISO na tela: " + s);
+        noticeQuiet(s, ms);
+    }
+
+    /** o mesmo aviso, sem linha no registro (o andamento da sincronização se repete a cada segundo) */
+    private void noticeQuiet(String s, long ms) {
         if (noticeLabel == null) return;
         noticeLabel.setText(s);
         noticeLabel.setVisibility(View.VISIBLE);
@@ -2130,6 +2369,7 @@ public class PlayerActivity extends Activity {
     }
 
     private void changeSubDelay(int deltaMs, boolean reset, TextView label) {
+        userEdits++;
         setSubDelay(reset ? 0 : subDelayMs + deltaMs, label);
         if (statusFixed && !autoRunning && subPanelOpen) { statusFixed = false; refreshSubPanel(); }
     }
@@ -2461,6 +2701,7 @@ public class PlayerActivity extends Activity {
         java.lang.ref.WeakReference<PlayerActivity> cr = current;
         if (cr != null && cr.get() == this) current = null;
         if (barThread != null) { barThread.quit(); barThread = null; }
+        autoGen++;
         if (audioSync != null) audioSync.stop();
         if (testRx != null) { try { unregisterReceiver(testRx); } catch (Throwable ignored) {} testRx = null; }
         if (player != null) {

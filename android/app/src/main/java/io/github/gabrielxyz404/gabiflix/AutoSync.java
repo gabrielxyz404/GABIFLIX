@@ -23,6 +23,13 @@ final class AutoSync {
         final String note;
         /** frase pronta para o usuário (português simples) com o motivo exato; null = o painel usa o texto padrão */
         final String userMsg;
+        /** modelo achado pelo áudio (tempo certo = scale * tempo da legenda + offsetMs); scale 1 = só um atraso. Só vale com FIXED vindo do áudio */
+        double scale = 1.0, offsetMs;
+        /** z do alinhador (0 = sem medida) e o corpo do relatório do motor (só números; vai para o ntfy) */
+        double z;
+        String report = "";
+        /** o áudio foi quem decidiu (não a referência) */
+        boolean fromAudio;
         Result(int status, int delayMs, String note) { this(status, delayMs, note, null); }
         Result(int status, int delayMs, String note, String userMsg) { this.status = status; this.delayMs = delayMs; this.note = note; this.userMsg = userMsg; }
         static Result failedMsg(String note, String userMsg) { return new Result(FAILED, 0, note, userMsg); }
