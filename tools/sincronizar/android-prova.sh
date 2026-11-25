@@ -54,7 +54,19 @@ click() {
   sleep 1
 }
 # toque de verdade no botão do painel de legendas (o mesmo caminho do usuário)
-tap_sync() { pause_v; show_controls; open_subs; sleep 1.5; texts "$1-painel"; click "Sincronizar automaticamente"; play_v; }
+# TV: o foco começa na legenda atual (a lista pode ter 3 linhas): anda para a direita/cima até o foco estar no botão
+click_auto() {
+  if [ "$P" = tel ]; then click "Sincronizar automaticamente"; return; fi
+  for t in $(seq 1 12); do
+    f=$(dump | python3 $UI focus)
+    if [ "$f" = "Sincronizar automaticamente" ]; then adb shell input keyevent DPAD_CENTER; sleep 1; return; fi
+    if [ $((t % 2)) = 1 ]; then adb shell input keyevent DPAD_RIGHT; else adb shell input keyevent DPAD_UP; fi
+    sleep 0.7
+  done
+  echo "TV: NAO CHEGUEI em 'Sincronizar automaticamente' (foco: $f)" >> $OUT/passos.txt
+  click "Sincronizar automaticamente"
+}
+tap_sync() { pause_v; show_controls; open_subs; sleep 1.5; texts "$1-painel"; click_auto; play_v; }
 
 # a resposta ao toque: o aviso na tela (versão nova) ou o registro da sincronização (a antiga nem sempre mostra aviso)
 RES_RE='AVISO na tela: (Legenda sincronizada|Legenda acertada|Legenda já estava certa|Já estava certa|Não consegui|Ajuste manual feito|A legenda mudou)|sincronização automática: status='
@@ -70,7 +82,7 @@ waitlog() {  # $1 = padrão, $2 = segundos
   for i in $(seq 1 $n); do glog | grep -q -E "$1" && return 0; sleep 2; done
   note "TEMPO ESGOTADO esperando: $1"; return 1
 }
-lastep() { glog | grep -E "$1" | tail -1 | cut -d' ' -f1; }
+lastep() { glog | grep -E "$1" | tail -1 | awk '{print $1}'; }
 launch() {  # $1 = nome, $2 = vídeo, $3 = legenda externa ("none" = nenhuma), $4 = base, resto = extras "--es chave valor"
   local name=$1 video=$2 sub=$3 base=$4; shift 4
   adb shell am force-stop $PKG; sleep 1; adb shell pm clear $PKG >/dev/null 2>&1; sleep 2
