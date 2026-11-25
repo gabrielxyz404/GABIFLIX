@@ -185,9 +185,19 @@ public final class CrashReporter {
                     count++;
                     String name = reasonName(r);
                     String p = i.getProcessName() == null ? "?" : i.getProcessName();
-                    String pn = p.contains(":") ? p.substring(p.indexOf(':') + 1) : "main";
-                    StringBuilder b = new StringBuilder(header(name, p));
-                    b.append("Código: ").append(r).append("  estado: ").append(i.getStatus()).append("  importância: ").append(i.getImportance()).append('\n');
+                    boolean isMain = !p.contains(":");
+                    String pn = isMain ? "main" : p.substring(p.indexOf(':') + 1);
+                    int imp = i.getImportance();
+                    String crumbsPn = readCrumbsPrev(pn);
+                    // o player vive no processo principal: num processo auxiliar (:audiocap) as migalhas dele não têm a tela do player, por isso vale também as do principal
+                    boolean alive = playerWasAlive(crumbsPn) || (!isMain && playerWasAlive(readCrumbsPrev("main")));
+                    boolean notice1 = shouldNotice(r, imp, isMain, alive);
+                    boolean bgNormal = (r == ApplicationExitInfo.REASON_LOW_MEMORY || r == ApplicationExitInfo.REASON_SIGNALED) && !notice1;
+                    String sendName = bgNormal ? name + " em segundo plano normal" : name;
+                    StringBuilder b = new StringBuilder(header(sendName, p));
+                    if (bgNormal) b.append("Classificação: em segundo plano (normal) - o sistema recuperou memória; sem aviso na tela.\n");
+                    b.append("Código: ").append(r).append("  estado: ").append(i.getStatus()).append("  importância: ").append(imp).append(" (").append(importanceName(imp)).append(")")
+                            .append("  player vivo: ").append(alive ? "sim" : "não").append("  processo principal: ").append(isMain ? "sim" : "não").append('\n');
                     b.append("Hora da morte: ").append(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.ROOT).format(new Date(i.getTimestamp()))).append('\n');
                     b.append("Descrição: ").append(i.getDescription()).append("\nPSS: ").append(i.getPss()).append(" kB  RSS: ").append(i.getRss()).append(" kB\n");
                     if (r == ApplicationExitInfo.REASON_CRASH_NATIVE || r == ApplicationExitInfo.REASON_ANR) {
@@ -198,12 +208,9 @@ public final class CrashReporter {
                     if (r == ApplicationExitInfo.REASON_CRASH_NATIVE) {   // o Android 11 não dá o rasto: o próprio processo escreveu "Fatal signal" no registo do sistema
                         b.append("\nRegisto de queda do sistema (logcat, filtrado):\n").append(crashLogcat(i.getPid())).append('\n');
                     }
-                    b.append("\nMigalhas do processo ").append(pn).append(" antes da morte:\n").append(readCrumbsPrev(pn));
-                    if (send(name, b.toString())) markSent(id);
-                    boolean serious = r == ApplicationExitInfo.REASON_CRASH || r == ApplicationExitInfo.REASON_CRASH_NATIVE || r == ApplicationExitInfo.REASON_ANR
-                            || r == ApplicationExitInfo.REASON_LOW_MEMORY || r == ApplicationExitInfo.REASON_SIGNALED || r == ApplicationExitInfo.REASON_INITIALIZATION_FAILURE
-                            || r == ApplicationExitInfo.REASON_EXCESSIVE_RESOURCE_USAGE;
-                    if (serious && System.currentTimeMillis() - i.getTimestamp() < 6 * 3600_000L && !sp.getString("noticed", "").contains(id)) {
+                    b.append("\nMigalhas do processo ").append(pn).append(" antes da morte:\n").append(crumbsPn);
+                    if (send(sendName, b.toString())) markSent(id);
+                    if (notice1 && System.currentTimeMillis() - i.getTimestamp() < 6 * 3600_000L && !sp.getString("noticed", "").contains(id)) {
                         notice.add(name + "-" + shortId(i.getTimestamp()));
                         sp.edit().putString("noticed", id).apply();
                     }
@@ -213,12 +220,57 @@ public final class CrashReporter {
             if (!notice.isEmpty()) {
                 final String code = notice.get(0);
                 new Handler(Looper.getMainLooper()).post(() -> {
-                    try { Toast.makeText(app, "A app fechou por um erro (código " + code + ")", Toast.LENGTH_LONG).show(); } catch (Throwable ignored) {}
+                    try { Toast.makeText(app, noticeText(code), Toast.LENGTH_LONG).show(); } catch (Throwable ignored) {}
                 });
             }
         } catch (Throwable t) {
             crumb("relatório: erro " + t);
         }
+    }
+
+    /** importância (ApplicationExitInfo.getImportance) até a qual o processo ainda era visível para o utilizador: foreground, serviço em primeiro plano, visível ou perceptível */
+    static final int IMPORTANCE_PERCEPTIBLE_MAX = 230;
+
+    /**
+     * Decide se uma morte de processo merece o aviso na tela (a notificação ntfy é sempre enviada, isto só decide o toast).
+     * CRASH, CRASH_NATIVE, ANR, falha de inicialização e uso excessivo de recursos contam sempre.
+     * LOW_MEMORY e SIGNALED (o sistema ou o lmkd a recuperar memória) só contam se o processo estava em primeiro plano ou visível (importância <= 230);
+     * em segundo plano/cache é o comportamento normal do Android. Num processo auxiliar (:audiocap...) exige ainda que o player estivesse aberto.
+     */
+    static boolean shouldNotice(int reason, int importance, boolean isMainProcess, boolean playerAlive) {
+        switch (reason) {
+            case ApplicationExitInfo.REASON_CRASH:
+            case ApplicationExitInfo.REASON_CRASH_NATIVE:
+            case ApplicationExitInfo.REASON_ANR:
+            case ApplicationExitInfo.REASON_INITIALIZATION_FAILURE:
+            case ApplicationExitInfo.REASON_EXCESSIVE_RESOURCE_USAGE:
+                return true;
+            case ApplicationExitInfo.REASON_LOW_MEMORY:
+            case ApplicationExitInfo.REASON_SIGNALED:
+                if (importance > IMPORTANCE_PERCEPTIBLE_MAX) return false;
+                return isMainProcess || playerAlive;
+            default:
+                return false;
+        }
+    }
+
+    /** texto do aviso; o código "LOW_MEMORY-xxxx" é a morte por falta de memória em primeiro plano */
+    static String noticeText(String code) {
+        if (code != null && code.startsWith("LOW_MEMORY-")) return "O sistema fechou a app por falta de memória (código " + code + ")";
+        return "A app fechou por um erro (código " + code + ")";
+    }
+
+    static String importanceName(int imp) {
+        if (imp <= 0) return "DESCONHECIDA";
+        if (imp <= 100) return "FOREGROUND";
+        if (imp <= 125) return "FOREGROUND_SERVICE";
+        if (imp <= 150) return "TOP_SLEEPING";
+        if (imp <= 200) return "VISIBLE";
+        if (imp <= 230) return "PERCEPTIBLE";
+        if (imp <= 300) return "SERVICE";
+        if (imp <= 325) return "CANT_SAVE_STATE";
+        if (imp < 1000) return "CACHED";
+        return "GONE";
     }
 
     /** nas migalhas do processo anterior: a última tela do player foi criada e nunca destruída */
