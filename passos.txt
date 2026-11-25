@@ -1,0 +1,59 @@
+1795572088 === 1-ext: film.mkv legenda=sub25.srt base=http://10.0.2.2:8000 (--es gfRx 1 --es gfAudioStartSec 900 --es gfNoReport true --es gfSeekSec 300) uptime=52.45
+1795572107 foto 01 1-ext-1-antes
+1795572127 foto 02 1-ext-2-a-sincronizar
+1795572144 resultado 1:          1795572142.758  4890  4890 I GabiFlixPlayer: AVISO na tela: Legenda acertada pelo áudio (+9,2 s)
+1795572145 foto 03 1-ext-3-depois-aviso
+1795572173 foto 04 1-ext-4-30min
+1795572191 foto 05 1-ext-4-60min
+1795572209 foto 06 1-ext-4-85min
+1795572209 FALHA: as linhas não batem com a fala (1-ext)
+1795572237 TEMPO ESGOTADO esperando: AVISO na tela: Já estou a sincronizar
+1795572237 o toque durante a análise não respondeu (versão antiga?)
+1795572239 foto 07 1-ext-5-segundo-toque
+1795572253 análises do botão: 1 -> 2 (o 2º toque tem de somar 1)
+1795572255 foto 08 1-ext-6-depois-segundo-toque
+1795572255 app vivo (1-ext)
+1795572258 === 2-corrida: film.mkv legenda=sub25.srt base=http://10.0.2.2:8000 (--es gfRx 1 --es gfAudioStartSec 3 --es gfNoReport true --es gfSeekSec 300) uptime=221.93
+1795572266 a análise automática começou
+1795572270 foto 09 2-corrida-0-antes
+1795572295 foto 10 2-corrida-1-a-sincronizar
+1795572295 resultado 2:          1795572285.930  6854  6854 I GabiFlixPlayer: AVISO na tela: Legenda acertada pelo áudio (velocidade e atraso)
+1795572308 foto 11 2-corrida-2-depois
+1795572326 foto 12 2-corrida-3-30min
+1795572344 foto 13 2-corrida-3-60min
+1795572362 foto 14 2-corrida-3-85min
+1795572362 FALHA: as linhas não batem com a fala (2-corrida)
+1795572362 app vivo (2-corrida)
+1795572365 === 3-emb: film-emb.mkv legenda=none base=http://10.0.2.2:8000 (--es gfRx 1 --es gfAudioStartSec 900 --es gfNoReport true --es gfSeekSec 300) uptime=329.27
+1795572381 foto 15 3-emb-1-antes
+1795572403 foto 16 3-emb-2-a-ler-a-legenda
+1795572495 TEMPO ESGOTADO esperando a resposta ao toque (90 s)
+1795572495 resultado 3: 
+1795572497 foto 17 3-emb-3-depois-aviso
+1795572525 foto 18 3-emb-4-30min
+1795572542 foto 19 3-emb-4-60min
+1795572560 foto 20 3-emb-4-85min
+1795572560 FALHA: as linhas não batem com a fala (3-emb)
+1795572666 TEMPO ESGOTADO esperando a resposta ao toque (90 s)
+1795572666 foto 21 3-emb-5-segundo-toque
+1795572667 app vivo (3-emb)
+1795572670 === 4-musica: musica.mkv legenda=sub25.srt base=http://10.0.2.2:8000 (--es gfRx 1 --es gfAudioStartSec 900 --es gfNoReport true --es gfSeekSec 300) uptime=633.78
+1795572701 foto 22 4-musica-0-a-sincronizar
+1795572713 resultado 4:          1795572710.804  8145  8145 I GabiFlixPlayer: AVISO na tela: Não consegui confirmar pelo áudio
+1795572713 ok: mensagem clara
+1795572713 FALHA: sem '— ajusta à mão' na mensagem
+1795572718 foto 23 4-musica-1-mensagem-e-ajuste-manual
+1795572719 FALHA: o painel do ajuste manual não abriu sozinho
+NAO ACHEI: +1 s
+1795572742 foto 24 4-musica-2-depois-do-ajuste
+1795572742 app vivo (4-musica)
+1795572745 === 5-lento: film.mkv legenda=sub25.srt base=http://10.0.2.2:8001 (--es gfRx 1 --es gfAudioStartSec 900 --es gfNoReport true --es gfSeekSec 200 --es gfSyncBudgetSec 45) uptime=709.13
+1795572799 TEMPO ESGOTADO esperando: AVISO na tela: Já estou a sincronizar
+1795572799 sem resposta durante a análise (versão antiga?)
+1795572800 foto 25 5-lento-1-a-sincronizar
+1795572954 TEMPO ESGOTADO esperando a resposta ao toque (150 s)
+1795572954 FALHA: o toque não terminou numa resposta (rede travada)
+1795572954 resultado 5 após 185 s: 
+1795572958 foto 26 5-lento-2-tempo-esgotado
+1795572962 app vivo (5-lento (continua respondendo))
+1795572962 quedas: 0
