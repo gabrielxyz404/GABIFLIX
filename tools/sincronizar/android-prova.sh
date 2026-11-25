@@ -118,7 +118,7 @@ markres
 tap_sync 1-ext-2o
 sleep 3
 RX panelstate x
-tap_sync 1-ext-3o
+RX sync x      # 3º toque durante a análise (o mesmo toque do botão, sem passar pelo painel)
 waitlog "AVISO na tela: Já estou a sincronizar" 8 && note "ok: o toque durante a análise respondeu" || note "o toque durante a análise não respondeu (versão antiga?)"
 snap 1-ext-5-segundo-toque 0.5
 texts 1-ext-segundo-toque
@@ -208,8 +208,8 @@ sleep 8
 T5=$(date +%s)
 markres
 tap_sync 5-lento
-sleep 12
-tap_sync 5-lento-2o      # toque durante a análise
+sleep 6
+RX sync x      # toque durante a análise
 waitlog "AVISO na tela: Já estou a sincronizar" 8 && note "ok: respondeu durante a análise" || note "sem resposta durante a análise (versão antiga?)"
 snap 5-lento-1-a-sincronizar 0.5
 texts 5-lento-a-sincronizar

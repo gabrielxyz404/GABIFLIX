@@ -37,7 +37,7 @@ for blk in re.split(r"\n\s*\n", txt):
         cues.append((ms(m.group(1)), ms(m.group(2)), norm(m.group(3))))
 cues.sort()
 
-PRE = r"^(\d+\.\d+)\s+\d+\s+\d+\s+[A-Z]\s+\S+\s*:\s*"
+PRE = r"^\s*(\d+\.\d+)\s+\d+\s+\d+\s+[A-Z]\s+\S+\s*:\s*"
 seeks = []
 lines = []
 for ln in open(a.log, encoding="utf-8", errors="replace"):
