@@ -225,7 +225,7 @@ final class SubtitleOverlayView: NSView {
     override func draw(_ dirtyRect: NSRect) {
         guard let t = text, !t.isEmpty, let ctx = NSGraphicsContext.current?.cgContext else { return }
         // pixels por ponto da tela onde se desenha (2 na Retina): as posições vão para a grade de pixels, o texto fica nítido
-        let k = max(1.0, abs(ctx.userSpaceToDeviceSpace(CGSize(width: 1, height: 0)).width))
+        let k = max(1.0, abs(ctx.convertToDeviceSpace(CGSize(width: 1, height: 0)).width))
         func snap(_ v: CGFloat) -> CGFloat { return (v * k).rounded() / k }
         let size = max(Self.minSize, (bounds.height * Self.sizeOfHeight).rounded())
         let font = Self.font(size)

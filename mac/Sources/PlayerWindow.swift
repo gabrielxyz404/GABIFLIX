@@ -1914,7 +1914,15 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
             log("menu aberto: " + m.items.map { $0.isSeparatorItem ? "-----" : (($0.state == .on ? "[x] " : "") + $0.title + ($0.isEnabled ? "" : " (desativado)")) }.joined(separator: " | "))
             let t = Timer(timeInterval: Double(n > 0 ? n : 4), repeats: false) { [weak m] _ in m?.cancelTracking() }
             RunLoop.main.add(t, forMode: .common)
+            let lt = Timer(timeInterval: 1.0, repeats: true) { [weak self] _ in self?.refreshSyncMenuItem() }   // o mesmo relógio do menu de verdade
+            RunLoop.main.add(lt, forMode: .common)
             if let v = window?.contentView { m.popUp(positioning: nil, at: NSPoint(x: v.bounds.width - 330, y: v.bounds.height - 60), in: v) }
+            lt.invalidate()
+            syncMenuItem = nil
+        case "reporttest":
+            // só na prova: manda UM relatório de verdade ao ntfy (ou ao FP_REPORT_URL) para ver o caminho de envio funcionar
+            AnalysisReport.send(origin: "teste_ci", result: "teste", reason: "teste do envio do relatório (CI), pode ignorar", scale: 1.0, offsetMs: 0, z: 0, subSource: "externa",
+                                fpsHint: "-", url: url, durationMs: Int(player.media?.length.intValue ?? 0), attempt: 0, engineBody: "")
         case "menuclick":
             // clica no item do menu cujo título começa com o texto dado (mesmo caminho do clique real)
             let want = line.dropFirst(cmd.count + 1).trimmingCharacters(in: .whitespaces)
