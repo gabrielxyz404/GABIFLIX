@@ -1,0 +1,17 @@
+name: ler-ntfy
+on:
+  push:
+    branches: [ler-ntfy]
+permissions:
+  contents: read
+jobs:
+  ler:
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          curl -sf "https://ntfy.sh/frameplay-crash-7f3k9q2w/json?poll=1&since=all" -o ntfy.jsonl || true
+          wc -l ntfy.jsonl
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ntfy
+          path: ntfy.jsonl
