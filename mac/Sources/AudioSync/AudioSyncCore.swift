@@ -22,10 +22,16 @@ final class AudioSyncCore {
         var captureWallMs = 0, vadMs = 0, vadCpuMs = 0, solveMs = 0, solveCpuMs = 0, totalCpuMs = 0, totalWallMs = 0
         var estBytes = 0
         var rssStartKb = 0, rssEndKb = 0
+        /** rede: latência do servidor (ms até o primeiro byte), velocidade (KB/s), janela escolhida (s) e quantas vieram cortadas pelo tempo */
+        var linkTtfbMs = -1, linkKBps = -1, winLenS = 0, partialWindows = 0
+        /** a análise parou por falta de tempo (o que já tinha foi resolvido) */
+        var outOfTime = false
+        var planned = 0, solves = 0
 
         func summary() -> String {
             return String(format: "vad=%@ janelas=%d captura=%d ms vad=%d ms (cpu %d) solve=%d ms (cpu %d) cpu_thread=%d ms total=%d ms leitura_estimada=%d MB rss=%d->%d MB",
                           vad, windows, captureWallMs, vadMs, vadCpuMs, solveMs, solveCpuMs, totalCpuMs, totalWallMs, estBytes >> 20, rssStartKb >> 10, rssEndKb >> 10)
+                + String(format: " rede: ttfb=%d ms vel=%d KB/s janela=%d s cortadas=%d planejadas=%d resolvidas=%d sem_tempo=%d", linkTtfbMs, linkKBps, winLenS, partialWindows, planned, solves, outOfTime ? 1 : 0)
         }
     }
 
@@ -140,6 +146,76 @@ final class AudioSyncCore {
         return len
     }
 
+    /** primeira resposta visível desejada numa rede lenta (ms): o tamanho das janelas é escolhido para as 3 primeiras caberem aqui */
+    static let firstAnswerTargetMs = 85_000
+
+    struct Link {
+        var ttfbMs = -1
+        var kbps = -1
+        var size = -1
+        var http = false
+        /** velocidade da rede / débito do filme: segundos de filme que chegam por segundo (0 = não se sabe) */
+        func rate(durMs: Int) -> Double {
+            if kbps <= 0 || size <= 0 || durMs <= 0 { return 0 }
+            return Double(kbps) * 1024.0 / (Double(size) / (Double(durMs) / 1000.0))
+        }
+    }
+
+    /** Mede a rede em ~1-3 s: um pedido Range de 1,5 MB na posição do filme (segue redirecionamentos); mede o primeiro byte e a velocidade. Também aquece o
+        caminho (o servidor de torrent começa a buscar essas peças, que a primeira janela vai pedir). Arquivo local ou sem resposta: tudo -1. */
+    static func probeLink(_ url: URL, posMs: Int, durMs: Int, budgetMs: Int) -> Link {
+        var l = Link()
+        guard let sc = url.scheme, sc.hasPrefix("http") else { return l }
+        l.http = true
+        let tSize = Date()
+        let size = probe(url, head: false)   // 1 pedido Range de 1 byte: o tamanho (Content-Range) e a latência de uma ida-e-volta (sem o HEAD, que muitos servidores recusam)
+        let sizeMs = Int(Date().timeIntervalSince(tSize) * 1000)
+        l.size = size
+        if size <= 0 { return l }
+        let at = max(0, min(size - 1_600_000, Int(Double(size) * Double(max(0, posMs)) / Double(max(1, durMs)))))
+        var req = URLRequest(url: url)
+        req.timeoutInterval = Double(budgetMs) / 1000.0
+        req.setValue("bytes=\(at)-\(at + 1_500_000 - 1)", forHTTPHeaderField: "Range")
+        req.setValue("Mozilla/5.0 (Macintosh) FramePlay", forHTTPHeaderField: "User-Agent")
+        let pr = LinkProbe(limit: 1_500_000)
+        let cfg = URLSessionConfiguration.ephemeral
+        cfg.timeoutIntervalForRequest = Double(budgetMs) / 1000.0
+        let sess = URLSession(configuration: cfg, delegate: pr, delegateQueue: nil)
+        let t0 = Date()
+        let task = sess.dataTask(with: req)
+        task.resume()
+        _ = pr.sem.wait(timeout: .now() + .milliseconds(budgetMs))
+        task.cancel()
+        sess.invalidateAndCancel()
+        pr.lock.lock()
+        defer { pr.lock.unlock() }
+        l.ttfbMs = sizeMs
+        if let f = pr.firstAt {
+            l.ttfbMs = min(sizeMs, Int(f.timeIntervalSince(t0) * 1000))
+            let end = pr.lastAt ?? f
+            // velocidade depois do primeiro pedaço (o primeiro marca o fim da latência)
+            let span = end.timeIntervalSince(f)
+            if pr.bytes > pr.firstBytes && span > 0.05 { l.kbps = Int(Double(pr.bytes - pr.firstBytes) / span / 1024.0) }
+            else if pr.bytes > 0 { l.kbps = Int(Double(pr.bytes) / max(0.05, end.timeIntervalSince(t0)) / 1024.0) }
+        }
+        return l
+    }
+
+    /** tamanho das janelas: a maior de 90/75/60/45 s cujas 3 janelas (com a latência de cada busca) cabem em targetMs; 90 s se a rede é rápida,
+        60 s se não se conseguiu medir (nem todo servidor deixa), 45 s no mínimo */
+    static func windowLenMs(_ link: Link, durMs: Int, targetMs: Int) -> Int {
+        let rate = link.rate(durMs: durMs)
+        if !link.http { return 90_000 }                       // arquivo local: rápido
+        if link.ttfbMs < 0 || rate <= 0 { return 60_000 }     // http sem medida (servidor que não deixa): 60 s
+        // cada janela custa ~4 idas-e-voltas (cabeçalho, índice, busca, dados) + len / rate
+        let lat = Double(max(link.ttfbMs, 30)) * 4.0 / 1000.0
+        for len in [90_000, 75_000, 60_000, 45_000] {
+            let t = 3.0 * (lat + Double(len) / 1000.0 / rate) * 1000.0
+            if t <= Double(targetMs) { return len }
+        }
+        return 45_000
+    }
+
     /** leitura estimada (bytes) para `seconds` s de filme: o tamanho do arquivo repartido pela duração; -1 se não deu para saber */
     static func estimateBytes(_ url: URL, _ durMs: Int, _ seconds: Int) -> Int {
         let len = contentLength(url)
@@ -177,22 +253,34 @@ final class AudioSyncCore {
 
     /** por que a última captura falhou (frase curta, para o registro e para o aviso) */
     private var lastCapFail = ""
+    /** quanto demorou (s) a última captura que veio (para saber se cabe mais uma no tempo que resta) */
+    private var lastWallS = 0.0
 
-    private func captureWindow(_ url: URL, _ startMs: Int, _ lenMs: Int, _ o: Outcome) -> AudioWindow? {
+    private func captureWindow(_ url: URL, _ startMs: Int, _ lenMs: Int, _ o: Outcome, deadline: Int? = nil) -> AudioWindow? {
         let wav = dir.appendingPathComponent("w\(startMs).wav")
         let t0 = AudioSyncCore.nowMs()
-        var co = cap.capture(url: url, startMs: startMs, durMs: lenMs, out: wav, timeoutS: 420)
-        if !co.ok && !cap.isCancelled {
+        // com prazo (análise do botão e automática): nenhuma leitura de rede pode passar do prazo; sem prazo (reverificação) é o comportamento de sempre
+        func budgetS() -> Double { return deadline.map { Double($0 - AudioSyncCore.nowMs()) / 1000.0 } ?? 420 }
+        func doCapture() -> AudioCap.Out {
+            if deadline == nil { return self.cap.capture(url: url, startMs: startMs, durMs: lenMs, out: wav, timeoutS: 420) }
+            // primeiro dado em 30 s, parada de 20 s, e uma janela cortada com pelo menos 40% do áudio ainda serve (o alinhador aceita janelas curtas)
+            return self.cap.capture(url: url, startMs: startMs, durMs: lenMs, out: wav, timeoutS: max(5, budgetS()), firstDataS: 30, stallS: 20,
+                                    minPartialS: Double(lenMs) / 1000.0 * 0.4)
+        }
+        var co = doCapture()
+        if !co.ok && !self.cap.isCancelled && (deadline == nil || budgetS() > 45) {
             log("captura falhou em \(startMs / 1000) s (tentativa 1): \(co.end)")
             Thread.sleep(forTimeInterval: 2.0)
-            co = cap.capture(url: url, startMs: startMs, durMs: lenMs, out: wav, timeoutS: 420)
+            co = doCapture()
         }
+        if co.partial { o.st.partialWindows += 1 }
         o.st.captureWallMs += AudioSyncCore.nowMs() - t0
         defer { try? FileManager.default.removeItem(at: wav) }
         if !co.ok { lastCapFail = co.end; log("captura falhou em \(startMs / 1000) s: \(co.end)"); return nil }
-        log(String(format: "captura %d s +%d s: %.2f s de PCM em %.2f s (%@)", startMs / 1000, lenMs / 1000, co.pcmS, co.wallS, co.end))
+        log(String(format: "captura %d s +%d s: %.2f s de PCM em %.2f s (%@%@) primeiro_dado=%.1f s", startMs / 1000, lenMs / 1000, co.pcmS, co.wallS, co.end, co.partial ? ", cortada" : "", co.firstDataS))
+        lastWallS = co.wallS
         let pcm = AudioCap.readWav(wav)
-        if pcm.count < 16000 * (lenMs / 1000) / 3 { return nil }
+        if pcm.count < 16000 * (lenMs / 1000) / 3 { lastCapFail = "áudio curto demais"; return nil }
         let c0 = AudioSyncCore.threadCpuMs(), w0 = AudioSyncCore.nowMs()
         var vd = theVad()
         var p = vd.speechProb(pcm, pcm.count, 16000)
@@ -225,7 +313,7 @@ final class AudioSyncCore {
      * nowMs: posição do vídeo agora; currentDelay: atraso aplicado agora (a decisão de mexer compara com ele);
      * maxBytes: pula (.skipped) se a leitura estimada das 3 janelas passar disto; noLimit = botão do usuário (nunca pula)
      */
-    func run(url: URL, subText: String?, durMs: Int, nowMs: Int, currentDelay: Int, maxBytes: Int) -> Outcome {
+    func run(url: URL, subText: String?, durMs: Int, nowMs: Int, currentDelay: Int, maxBytes: Int, budgetMs: Int = 240_000) -> Outcome {
         runLock.lock()
         defer { runLock.unlock() }
         setBusy(true)
@@ -252,25 +340,52 @@ final class AudioSyncCore {
             return o
         }
         let P = AudioAligner.Params()
-        // 3 janelas espalhadas pelo filme (o que mostra a deriva da escala) e, se as janelas confiáveis sugerem deriva sem prova ainda, até 2 extras
-        var first = true
-        var failedAt = 0
+        // PRAZO: a análise inteira acaba (com resposta) em budgetMs, qualquer que seja a rede. Antes eram ~9 janelas de 90 s espalhadas pelo filme
+        // (≈ 12 min de áudio, cada uma com busca longe do começo): numa rede lenta (torrent, link direto com redirecionamentos) passava dos 300 s sempre.
+        // Agora: mede a rede, escolhe o tamanho das janelas, ouve 3 janelas à frente da posição atual e só vai mais longe se o alinhador não aceitar.
+        let deadline = AudioSyncCore.nowMs() + budgetMs
+        let reserveMs = 12_000   // resolver (alinhador) + VAD da última janela
+        let link = AudioSyncCore.probeLink(url, posMs: nowMs, durMs: durMs, budgetMs: min(12_000, budgetMs / 8))
+        o.st.linkTtfbMs = link.ttfbMs
+        o.st.linkKBps = link.kbps
+        let lenMs = AudioSyncCore.windowLenMs(link, durMs: durMs, targetMs: min(AudioSyncCore.firstAnswerTargetMs, budgetMs / 2))
+        o.st.winLenS = lenMs / 1000
+        log("rede: primeiro byte \(link.ttfbMs) ms, \(link.kbps) KB/s, arquivo \(link.size >> 20) MB, janelas de \(lenMs / 1000) s (prazo \(budgetMs / 1000) s)")
         var used: [AudioWindow] = []
+        var stats = AudioSyncSession.NearStats()
+        var failedAt = 0
+        var first = true
         let c0 = AudioSyncCore.threadCpuMs(), w0 = AudioSyncCore.nowMs()
-        let res = AudioSyncSession.analyze(cues, durMs, AudioSyncCore.driftWin, AudioSyncCore.winMs, { st, ln, i, total in
+        let res = AudioSyncSession.analyzeNear(cues, durMs, lenMs, nowMs, 180_000, { st, ln, i, total in
             if self.cap.isCancelled { return nil }
-            if !first { Thread.sleep(forTimeInterval: 1.0) }   // respiro entre as capturas: o player ao lado não disputa o tempo todo
+            if !first { Thread.sleep(forTimeInterval: 0.5) }   // respiro entre as capturas: o player ao lado não disputa o tempo todo
             first = false
             self.progress?(i + 1, total)
-            guard let w = self.captureWindow(url, st, ln, o) else { failedAt = i + 1; return nil }
+            guard let w = self.captureWindow(url, st, ln, o, deadline: deadline - reserveMs) else { failedAt = i + 1; return nil }
             o.st.windows += 1
             return w
-        }, P, spread: true, dense: AudioSyncCore.nWin, used: &used)
+        }, P, stop: {
+            if self.cap.isCancelled { return true }
+            // cabe mais uma janela? (o que a última demorou + folga) senão resolve já com o que tem
+            let left = deadline - reserveMs - AudioSyncCore.nowMs()
+            let need = Int(self.lastWallS * 1000 * 1.15) + 4000
+            if o.st.windows > 0 && left < need { o.st.outOfTime = true; return true }
+            if left < 8000 { o.st.outOfTime = true; return true }
+            return false
+        }, used: &used, stats: &stats)
+        o.st.planned = stats.planned
+        o.st.solves = stats.solves
+        log("janelas usadas: \(used.map { "\($0.startMs / 1000)s" }.joined(separator: ",")) | etapa 1 aceita=\(stats.stage1Accepted) | sem tempo=\(o.st.outOfTime) | falhas=\(stats.failed)")
         guard let r = res else {
             if cap.isCancelled { o.kind = .cancelled; o.note = "cancelado"; return o }
             o.kind = .error
-            o.note = "captura da janela \(failedAt) falhou: \(lastCapFail)"
-            o.msg = "Não consegui ouvir o áudio do filme (\(lastCapFail))."
+            if o.st.outOfTime {
+                o.note = "sem tempo: só \(used.count) janela(s) em \(budgetMs / 1000) s (rede lenta)"
+                o.msg = "A rede está lenta: não deu para ouvir o filme a tempo. Tenta de novo mais tarde ou ajusta à mão."
+            } else {
+                o.note = "captura da janela \(max(1, failedAt)) falhou: \(lastCapFail)"
+                o.msg = "Não consegui ouvir o áudio do filme (\(lastCapFail))."
+            }
             return o
         }
         o.windows = used
@@ -297,6 +412,7 @@ final class AudioSyncCore {
             b += "motivo=" + r.reason.trimmingCharacters(in: .whitespaces) + " | " + r.driftNote + "\n"
         }
         b += "resultado=\(o.kind) nota=\(o.note)\n"
+        b += "estat: " + o.st.summary() + "\n"
         return b + extra
     }
 
@@ -403,5 +519,37 @@ final class AudioSyncCore {
         let curDelay = jround((scale - 1.0) * ((Double(posMs) - offsetMs) / scale) + offsetMs)
         AudioSyncCore.fill(o, r, posMs, curDelay, P)
         return o
+    }
+}
+
+/** delegado do probeLink: marca o primeiro dado, o último e o total (para em `limit` bytes) */
+final class LinkProbe: NSObject, URLSessionDataDelegate {
+    let sem = DispatchSemaphore(value: 0)
+    let lock = NSLock()
+    let limit: Int
+    var firstAt: Date?
+    var lastAt: Date?
+    var bytes = 0, firstBytes = 0
+    private var done = false
+    init(limit: Int) { self.limit = limit }
+
+    func urlSession(_ session: URLSession, dataTask: URLSessionDataTask, didReceive data: Data) {
+        lock.lock()
+        let now = Date()
+        if firstAt == nil { firstAt = now; firstBytes = data.count }
+        lastAt = now
+        bytes += data.count
+        let finished = bytes >= limit && !done
+        if finished { done = true }
+        lock.unlock()
+        if finished { sem.signal() }
+    }
+
+    func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
+        lock.lock()
+        let fin = !done
+        done = true
+        lock.unlock()
+        if fin { sem.signal() }
     }
 }

@@ -12,6 +12,10 @@ final class AudioCap {
         var end = "?"
         var wallS = 0.0
         var pcmS = 0.0
+        /** segundos até chegar o primeiro dado (a latência do servidor + a busca no arquivo); -1 = nunca chegou */
+        var firstDataS = -1.0
+        /** a captura foi cortada (tempo ou leitura parada) mas já tinha áudio suficiente: vale como janela mais curta */
+        var partial = false
     }
 
     private var player: VLCMediaPlayer?
@@ -45,8 +49,10 @@ final class AudioCap {
         DispatchQueue.main.async { pl.stop() }
     }
 
-    /** Bloqueia até terminar (ou cancelar/estourar o tempo). Chamar só fora da thread principal. */
-    func capture(url: URL, startMs: Int, durMs: Int, out: URL, timeoutS: Double) -> Out {
+    /** Bloqueia até terminar (ou cancelar/estourar o tempo). Chamar só fora da thread principal.
+        firstDataS: quanto esperar pelo PRIMEIRO dado (a busca no arquivo remoto); stallS: quanto aceitar sem crescer depois disso (rede ou servidor travado);
+        minPartialS: se o tempo ou a leitura acabar com pelo menos tanto áudio, vale como janela mais curta (0 = só a janela inteira). */
+    func capture(url: URL, startMs: Int, durMs: Int, out: URL, timeoutS: Double, firstDataS: Double = 60, stallS: Double = 30, minPartialS: Double = 0) -> Out {
         var r = Out()
         try? FileManager.default.removeItem(at: out)
         if isCancelled { r.end = "cancelado"; return r }
@@ -75,7 +81,8 @@ final class AudioCap {
                 if sz > lastSz { lastSz = sz; lastGrow = Date() }
             }
             // antes do primeiro dado a busca no arquivo remoto pode demorar (60 s); depois, 30 s parado = rede ou servidor travou
-            if Date().timeIntervalSince(lastGrow) > (lastSz > 44 ? 30.0 : 60.0) { why = lastSz > 44 ? "a leitura parou" : "sem dados do servidor"; break }
+            if lastSz > 44 && r.firstDataS < 0 { r.firstDataS = Date().timeIntervalSince(t0) }
+            if Date().timeIntervalSince(lastGrow) > (lastSz > 44 ? stallS : firstDataS) { why = lastSz > 44 ? "a leitura parou" : "sem dados do servidor"; break }
             let st = pl.state
             if Date().timeIntervalSince(t0) > 1.5 {
                 if st == .error { why = "erro"; break }
@@ -99,7 +106,12 @@ final class AudioCap {
         }
         if let at = try? FileManager.default.attributesOfItem(atPath: out.path), let sz = at[.size] as? Int {
             r.pcmS = Double(max(0, sz - 44)) / 32000.0
-            r.ok = r.pcmS > 0 && !isCancelled
+            if minPartialS <= 0 || why == "fim" {
+                r.ok = r.pcmS > 0 && !isCancelled
+            } else if r.pcmS >= minPartialS && why != "cancelado" && why != "erro" {
+                r.ok = true
+                r.partial = true
+            }
         }
         return r
     }

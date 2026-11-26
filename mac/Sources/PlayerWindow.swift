@@ -196,6 +196,10 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
     private var autoTicker: Timer?
     private var autoProgress = ""
     private var autoAttempts = 0
+    /** o item "A sincronizar…" do menu de legendas aberto (atualizado a cada segundo) e o texto final da última tentativa */
+    private var syncMenuItem: NSMenuItem?
+    private var autoDoneText = ""
+    private var menuLiveTimer: Timer?
     /** ajustes manuais feitos pelo usuário (botões, teclado, lista de falas): a sincronização só descarta o resultado se este número mudou durante a análise */
     private var userEdits = 0
     /** motivo da última falha, mostrado no painel do ajuste manual que abre sozinho */
@@ -615,6 +619,8 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
         let a = AudioSyncAuto(host: host)
         audioAuto = a
         AnalysisReport.log = { [weak self] in self?.log($0) }
+        AnalysisReport.flushPending()
+        log("FramePlay \(AnalysisReport.appVersion())")
         a.setProgress { [weak self] i, n in DispatchQueue.main.async { self?.autoProgress = n > 1 ? " (janela \(i) de \(n))" : "" } }
         a.start()
     }
@@ -1055,7 +1061,10 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
             overlayCues[c.rank] = OverlayCues.parse(c.text ?? "")
             let blank = f.deletingLastPathComponent().appendingPathComponent("branco-\(c.rank + 1).srt")
             let blankText = "1\n00:00:00,000 --> 00:00:00,001\n\u{200B}\n"
-            let slave = (try? Data(blankText.utf8).write(to: blank)) != nil ? blank : f
+            // a legenda em branco é o que impede o VLC de desenhar o texto (o app o desenha): se não deu para gravá-la NÃO se anexa a legenda de verdade
+            // (antes caía no arquivo real e o texto saía duas vezes: a do VLC e a do app)
+            guard (try? Data(blankText.utf8).write(to: blank)) != nil else { log("legenda em branco não gravada: não anexo a legenda \(c.rank + 1) (evita texto duplicado)"); continue }
+            let slave = blank
             _ = player.addPlaybackSlave(slave, type: .subtitle, enforce: i == 0 && !embeddedFirst)
             addedSubs += 1
             attached.append(c)
@@ -1162,8 +1171,16 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
         // 2) sincronização automática (só com legenda baixada ativa)
         menu.addItem(NSMenuItem.separator())
         let active = candForTrack(current)
+        syncMenuItem = nil
         if autoRunning {
-            menu.addItem(menuAction("A sincronizar…", #selector(autoSyncPicked), enabled: false))
+            let it = menuAction(syncStatusText(), #selector(autoSyncPicked), enabled: false)
+            syncMenuItem = it
+            menu.addItem(it)
+        } else if let live = audioAuto?.liveStatus() {
+            // a análise automática (a que começa sozinha ao abrir o filme) também aparece: antes o menu não dizia nada
+            let it = menuAction("Sincronização automática: " + live.lowercased(), #selector(autoSyncPicked), enabled: false)
+            syncMenuItem = it
+            menu.addItem(it)
         } else if current != -1 {
             menu.addItem(menuAction("Sincronizar automaticamente", #selector(autoSyncPicked)))
             if active == nil { menu.addItem(greyItem("Legenda do vídeo: o app lê o texto dela antes de sincronizar")) }
@@ -1180,12 +1197,36 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
         }
         menu.addItem(menuAction("Repor", #selector(manualReset), enabled: canAdjust))
         menu.addItem(greyItem("Atraso: " + (subDelayMs == 0 ? "0,0 s" : SubtitleSync.signedSecs(Int64(subDelayMs))) + " · \u{2212} mais cedo, + mais tarde"))
+        menu.addItem(NSMenuItem.separator())
+        menu.addItem(greyItem("FramePlay " + AnalysisReport.appVersion()))
         return menu
+    }
+
+    /** o texto do item do menu enquanto o botão sincroniza ("A sincronizar… 37 s (trecho 2 de 3)"): atualizado a cada segundo MESMO com o menu aberto */
+    private func syncStatusText() -> String {
+        let el = Int(Date().timeIntervalSince(autoStartedAt))
+        return "\(autoCtx.what) \(el) s\(autoProgress)"
+    }
+
+    /** chamado a cada segundo: mantém vivo o item do menu aberto (o NSMenu não se reconstrói sozinho) */
+    private func refreshSyncMenuItem() {
+        guard let it = syncMenuItem else { return }
+        if autoRunning { it.title = syncStatusText() }
+        else if let live = audioAuto?.liveStatus() { it.title = "Sincronização automática: " + live.lowercased() }
+        else { it.title = autoDoneText.isEmpty ? "Sincronizar automaticamente" : autoDoneText; it.isEnabled = false; syncMenuItem = nil }
     }
 
     @objc private func chooseSubtitles(_ sender: NSButton) {
         let menu = buildSubtitleMenu()
+        // o menu aberto não se reconstrói: um relógio (modo comum, corre durante o menu) atualiza o item "A sincronizar… N s" e o resultado
+        menuLiveTimer?.invalidate()
+        let lt = Timer(timeInterval: 1.0, repeats: true) { [weak self] _ in self?.refreshSyncMenuItem() }
+        RunLoop.main.add(lt, forMode: .common)
+        menuLiveTimer = lt
         menu.popUp(positioning: nil, at: NSPoint(x: 0, y: sender.bounds.height + 4), in: sender)
+        menuLiveTimer?.invalidate()
+        menuLiveTimer = nil
+        syncMenuItem = nil
         showControls()
     }
 
@@ -1216,7 +1257,9 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
         let ref = RefAutoSyncEngine(refs: refStartsAll, others: cands)
         guard let a = audioAuto else { return ref }
         // primeiro a referência/consenso de sempre; depois o áudio confere e, se tem certeza, corrige
-        return a.chain(ref: ref, url: url, durationMs: Int(player.media?.length.intValue ?? 0))
+        // o motor tem prazo próprio, 40 s mais curto que o do botão: acaba ele mesmo com a resposta (e o relatório) antes de o cronômetro do botão desistir
+        let engineBudgetMs = Int(max(20.0, PlayerWindowController.autoBudgetS - 40.0) * 1000)
+        return a.chain(ref: ref, url: url, durationMs: Int(player.media?.length.intValue ?? 0), budgetMs: engineBudgetMs)
     }
 
     @objc private func autoSyncPicked() { runAutoSync() }
@@ -1276,6 +1319,7 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
             return
         }
         showAutoProgress()
+        refreshSyncMenuItem()
     }
 
     /** o fim de uma tentativa: aviso visível, relatório anônimo (ntfy) e, se não deu para confirmar, o painel do ajuste manual */
@@ -1283,7 +1327,9 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
         autoTicker?.invalidate()
         autoTicker = nil
         autoRunning = false
-        log("sincronização: resultado=\(label) motivo=\(reason)")
+        autoDoneText = msg
+        refreshSyncMenuItem()
+        log("sincronização: resultado=\(label) motivo=\(reason) em \(Int(Date().timeIntervalSince(autoStartedAt))) s")
         if let rep = res?.report, !rep.isEmpty { log("ANALISE do botão (motor)\n" + rep) }
         notice(msg, seconds: 8)
         AnalysisReport.send(origin: "botao_sincronizar", result: label, reason: reason, scale: res?.scale ?? 1.0, offsetMs: res?.offsetMs ?? 0, z: res?.z ?? 0,

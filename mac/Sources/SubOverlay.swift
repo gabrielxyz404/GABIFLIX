@@ -157,28 +157,134 @@ final class OverlayCues {
     }
 }
 
-/** vista da legenda: branca com contorno preto, centrada, com quebra de linha, encostada em baixo */
+/** vista da legenda no estilo de um bom player de streaming: texto branco, contorno preto limpo (traçado por TRÁS do preenchimento, junções redondas) e uma
+    sombra suave; as letras são caminhos vetoriais (CoreText), então ficam nítidas em Retina (2x) e em qualquer tamanho. Centrada, com quebra de linha
+    equilibrada (a fala de duas linhas fica com as duas parecidas, em vez de uma comprida e uma curta), encostada em baixo. */
 final class SubtitleOverlayView: NSView {
     var text: String? { didSet { if text != oldValue { needsDisplay = true } } }
     var bottomMargin: CGFloat = 40 { didSet { if bottomMargin != oldValue { needsDisplay = true } } }
     override var isFlipped: Bool { false }
     override func hitTest(_ point: NSPoint) -> NSView? { nil }
 
+    // proporções (da altura do vídeo e do tamanho da letra)
+    static let sizeOfHeight: CGFloat = 0.046
+    static let minSize: CGFloat = 16
+    static let lineHeightK: CGFloat = 1.18
+    /** espessura total do traço do contorno (metade fica por baixo do preenchimento): o que se vê é metade disto */
+    static let outlineK: CGFloat = 0.115
+
+    /** uma linha já quebrada, pronta para desenhar */
+    struct Line { let ct: CTLine; let width: CGFloat }
+
+    static func font(_ size: CGFloat) -> CTFont {
+        // semibold do sistema (SF Pro): mais legível que o negrito e sem engrossar os "ã", "ç", "é"
+        let f = NSFont.systemFont(ofSize: size, weight: .semibold)
+        return f as CTFont
+    }
+
+    /** quebra o texto em linhas de no máximo maxW; falas que ficam em 2 linhas são equilibradas (largura mínima que ainda dá o mesmo número de linhas) */
+    static func layout(_ t: String, font: CTFont, maxW: CGFloat) -> [Line] {
+        func lines(_ para: String, _ w: CGFloat) -> [CTLine] {
+            let attr = NSAttributedString(string: para, attributes: [.font: font as Any, .foregroundColor: NSColor.white])
+            let ts = CTTypesetterCreateWithAttributedString(attr)
+            var out: [CTLine] = []
+            var start = 0
+            let n = attr.length
+            while start < n {
+                var cnt = CTTypesetterSuggestLineBreak(ts, start, Double(w))
+                if cnt <= 0 { cnt = 1 }
+                out.append(CTTypesetterCreateLine(ts, CFRange(location: start, length: cnt)))
+                start += cnt
+            }
+            return out
+        }
+        func width(_ l: CTLine) -> CGFloat {
+            // largura sem os espaços do fim (a quebra deixa um espaço pendurado que descentraria a linha)
+            return CGFloat(CTLineGetTypographicBounds(l, nil, nil, nil)) - CGFloat(CTLineGetTrailingWhitespaceWidth(l))
+        }
+        var res: [Line] = []
+        for para in t.components(separatedBy: "\n") {
+            let p = para.trimmingCharacters(in: .whitespaces)
+            if p.isEmpty { continue }
+            var ls = lines(p, maxW)
+            if ls.count == 2 {
+                // equilibra: procura a menor largura que continua dando 2 linhas
+                var lo = max(width(ls[0]), width(ls[1])) * 0.5, hi = maxW
+                for _ in 0..<12 {
+                    let mid = (lo + hi) / 2
+                    if lines(p, mid).count <= 2 { hi = mid } else { lo = mid }
+                }
+                let bal = lines(p, hi + 1)
+                if bal.count == 2 { ls = bal }
+            }
+            for l in ls { res.append(Line(ct: l, width: width(l))) }
+        }
+        return res
+    }
+
     override func draw(_ dirtyRect: NSRect) {
-        guard let t = text, !t.isEmpty else { return }
-        let size = max(15, (bounds.height * 0.046).rounded())
-        let para = NSMutableParagraphStyle()
-        para.alignment = .center
-        para.lineBreakMode = .byWordWrapping
-        let attrs: [NSAttributedString.Key: Any] = [
-            .font: NSFont.boldSystemFont(ofSize: size), .foregroundColor: NSColor.white,
-            .strokeColor: NSColor.black, .strokeWidth: -6.0, .paragraphStyle: para]
-        let margin = bounds.width * 0.03
-        let w = max(50, bounds.width - 2 * margin)
-        let s = NSAttributedString(string: t, attributes: attrs)
-        let r = s.boundingRect(with: NSSize(width: w, height: bounds.height), options: [.usesLineFragmentOrigin, .usesFontLeading])
-        // o texto nunca passa do topo da vista: se for muito comprido, sobe só até ao limite
-        let h = min(ceil(r.height) + 4, bounds.height - bottomMargin)
-        s.draw(with: NSRect(x: margin, y: bottomMargin, width: w, height: h), options: [.usesLineFragmentOrigin, .usesFontLeading])
+        guard let t = text, !t.isEmpty, let ctx = NSGraphicsContext.current?.cgContext else { return }
+        // pixels por ponto da tela onde se desenha (2 na Retina): as posições vão para a grade de pixels, o texto fica nítido
+        let k = max(1.0, abs(ctx.userSpaceToDeviceSpace(CGSize(width: 1, height: 0)).width))
+        func snap(_ v: CGFloat) -> CGFloat { return (v * k).rounded() / k }
+        let size = max(Self.minSize, (bounds.height * Self.sizeOfHeight).rounded())
+        let font = Self.font(size)
+        let margin = bounds.width * 0.06
+        let maxW = max(50, bounds.width - 2 * margin)
+        let lines = Self.layout(t, font: font, maxW: maxW)
+        if lines.isEmpty { return }
+        let desc = CTFontGetDescent(font)
+        let step = snap(size * Self.lineHeightK)
+        // o bloco nunca passa do topo da vista: se for muito comprido, sobe só até ao limite (as linhas de cima somem em vez de sair da tela)
+        let room = bounds.height - bottomMargin
+        let maxLines = max(1, Int((room - desc) / step))
+        let shown = Array(lines.suffix(maxLines))
+        let stroke = size * Self.outlineK
+        ctx.saveGState()
+        ctx.setAllowsAntialiasing(true)
+        ctx.setShouldAntialias(true)
+        ctx.setLineJoin(.round)
+        ctx.setLineCap(.round)
+        ctx.setMiterLimit(2)
+        // desenha de baixo para cima: a última linha fica na margem de baixo
+        var paths: [CGPath] = []
+        for (i, ln) in shown.reversed().enumerated() {
+            let base = snap(bottomMargin + desc + CGFloat(i) * step)
+            let x = snap((bounds.width - ln.width) / 2)
+            let path = CGMutablePath()
+            for run in (CTLineGetGlyphRuns(ln.ct) as? [CTRun]) ?? [] {
+                let attrs = CTRunGetAttributes(run) as NSDictionary
+                let rf: CTFont = (attrs[kCTFontAttributeName as String] as AnyObject?).map { unsafeBitCast($0, to: CTFont.self) } ?? font
+                let n = CTRunGetGlyphCount(run)
+                if n == 0 { continue }
+                var glyphs = [CGGlyph](repeating: 0, count: n)
+                var pos = [CGPoint](repeating: .zero, count: n)
+                CTRunGetGlyphs(run, CFRange(location: 0, length: n), &glyphs)
+                CTRunGetPositions(run, CFRange(location: 0, length: n), &pos)
+                for g in 0..<n {
+                    guard let gp = CTFontCreatePathForGlyph(rf, glyphs[g], nil) else { continue }
+                    path.addPath(gp, transform: CGAffineTransform(translationX: x + pos[g].x, y: base + pos[g].y))
+                }
+            }
+            paths.append(path)
+        }
+        // 1) sombra suave por baixo de tudo (só do contorno: o preenchimento não projeta sombra por cima do contorno)
+        ctx.saveGState()
+        ctx.setShadow(offset: CGSize(width: 0, height: -size * 0.045), blur: size * 0.16, color: NSColor.black.withAlphaComponent(0.55).cgColor)
+        ctx.setStrokeColor(NSColor.black.withAlphaComponent(0.92).cgColor)
+        ctx.setLineWidth(stroke)
+        for p in paths { ctx.addPath(p) }
+        ctx.strokePath()
+        ctx.restoreGState()
+        // 2) o contorno de novo, nítido e sem sombra (junções redondas: nada de pontas)
+        ctx.setStrokeColor(NSColor.black.withAlphaComponent(0.92).cgColor)
+        ctx.setLineWidth(stroke)
+        for p in paths { ctx.addPath(p) }
+        ctx.strokePath()
+        // 3) o preenchimento branco por cima: o contorno fica TODO por trás (não come a letra)
+        ctx.setFillColor(NSColor(calibratedWhite: 0.99, alpha: 1).cgColor)
+        for p in paths { ctx.addPath(p) }
+        ctx.fillPath()
+        ctx.restoreGState()
     }
 }
