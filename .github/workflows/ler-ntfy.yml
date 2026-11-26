@@ -3,15 +3,14 @@ on:
   push:
     branches: [ler-ntfy]
 permissions:
-  contents: read
+  contents: write
 jobs:
   ler:
     runs-on: ubuntu-latest
     steps:
       - run: |
+          mkdir o && cd o
           curl -sf "https://ntfy.sh/frameplay-crash-7f3k9q2w/json?poll=1&since=all" -o ntfy.jsonl || true
-          wc -l ntfy.jsonl
-      - uses: actions/upload-artifact@v4
-        with:
-          name: ntfy
-          path: ntfy.jsonl
+          git init -q -b ntfy-out && git add ntfy.jsonl
+          git -c user.name=ci -c user.email=ci@x commit -qm ntfy
+          git push -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" ntfy-out
