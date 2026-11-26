@@ -201,19 +201,19 @@ final class AudioSyncCore {
         return l
     }
 
-    /** tamanho das janelas: a maior de 90/75/60/45 s cujas 3 janelas (com a latência de cada busca) cabem em targetMs; 90 s se a rede é rápida,
-        60 s se não se conseguiu medir (nem todo servidor deixa), 45 s no mínimo */
+    /** tamanho das janelas: a maior de 90/75/60 s (menos de 60 s não passa no alinhador: estudo em Java, 40 s nunca aceitou) cujas 3 janelas (com a latência de cada busca) cabem em targetMs; 90 s se a rede é rápida,
+        60 s se não se conseguiu medir (nem todo servidor deixa), 60 s no mínimo */
     static func windowLenMs(_ link: Link, durMs: Int, targetMs: Int) -> Int {
         let rate = link.rate(durMs: durMs)
         if !link.http { return 90_000 }                       // arquivo local: rápido
         if link.ttfbMs < 0 || rate <= 0 { return 60_000 }     // http sem medida (servidor que não deixa): 60 s
         // cada janela custa ~4 idas-e-voltas (cabeçalho, índice, busca, dados) + len / rate
         let lat = Double(max(link.ttfbMs, 30)) * 4.0 / 1000.0
-        for len in [90_000, 75_000, 60_000, 45_000] {
+        for len in [90_000, 75_000, 60_000] {
             let t = 3.0 * (lat + Double(len) / 1000.0 / rate) * 1000.0
             if t <= Double(targetMs) { return len }
         }
-        return 45_000
+        return 60_000
     }
 
     /** leitura estimada (bytes) para `seconds` s de filme: o tamanho do arquivo repartido pela duração; -1 se não deu para saber */
@@ -356,7 +356,7 @@ final class AudioSyncCore {
         var failedAt = 0
         var first = true
         let c0 = AudioSyncCore.threadCpuMs(), w0 = AudioSyncCore.nowMs()
-        let res = AudioSyncSession.analyzeNear(cues, durMs, lenMs, nowMs, 180_000, { st, ln, i, total in
+        let res = AudioSyncSession.analyzeNear(cues, durMs, lenMs, nowMs, 300_000, { st, ln, i, total in
             if self.cap.isCancelled { return nil }
             if !first { Thread.sleep(forTimeInterval: 0.5) }   // respiro entre as capturas: o player ao lado não disputa o tempo todo
             first = false
