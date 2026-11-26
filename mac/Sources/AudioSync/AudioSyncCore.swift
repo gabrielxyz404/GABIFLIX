@@ -161,7 +161,7 @@ final class AudioSyncCore {
         }
     }
 
-    /** Mede a rede em ~1-3 s: um pedido Range de 1,5 MB na posição do filme (segue redirecionamentos); mede o primeiro byte e a velocidade. Também aquece o
+    /** Mede a rede em ~1-3 s: um pedido Range de 700 kB na posição do filme (segue redirecionamentos); mede o primeiro byte e a velocidade. Também aquece o
         caminho (o servidor de torrent começa a buscar essas peças, que a primeira janela vai pedir). Arquivo local ou sem resposta: tudo -1. */
     static func probeLink(_ url: URL, posMs: Int, durMs: Int, budgetMs: Int) -> Link {
         var l = Link()
@@ -172,12 +172,12 @@ final class AudioSyncCore {
         let sizeMs = Int(Date().timeIntervalSince(tSize) * 1000)
         l.size = size
         if size <= 0 { return l }
-        let at = max(0, min(size - 1_600_000, Int(Double(size) * Double(max(0, posMs)) / Double(max(1, durMs)))))
+        let at = max(0, min(size - 800_000, Int(Double(size) * Double(max(0, posMs)) / Double(max(1, durMs)))))
         var req = URLRequest(url: url)
         req.timeoutInterval = Double(budgetMs) / 1000.0
-        req.setValue("bytes=\(at)-\(at + 1_500_000 - 1)", forHTTPHeaderField: "Range")
+        req.setValue("bytes=\(at)-\(at + 700_000 - 1)", forHTTPHeaderField: "Range")
         req.setValue("Mozilla/5.0 (Macintosh) FramePlay", forHTTPHeaderField: "User-Agent")
-        let pr = LinkProbe(limit: 1_500_000)
+        let pr = LinkProbe(limit: 700_000)
         let cfg = URLSessionConfiguration.ephemeral
         cfg.timeoutIntervalForRequest = Double(budgetMs) / 1000.0
         let sess = URLSession(configuration: cfg, delegate: pr, delegateQueue: nil)
