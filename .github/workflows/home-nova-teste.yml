@@ -126,6 +126,52 @@ jobs:
           git -c user.name=ci -c user.email=ci@x commit -qm fotos
           git push -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" x:home-nova-out-${{ github.ref_name }}-${{ matrix.perfil }}-${{ matrix.versao }}
 
+  tv-comparar:
+    if: ${{ !contains(github.ref_name, 'mac') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          path: antes
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 17
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+      - name: APKs antes e depois (x86)
+        env:
+          GABIFLIX_ABIS: x86,x86_64
+        run: |
+          gradle -p antes/android assembleRelease --no-daemon -q
+          gradle -p android assembleRelease --no-daemon -q
+          mkdir -p /tmp/apk && cp antes/android/app/build/outputs/apk/release/app-release.apk /tmp/apk/antes.apk && cp android/app/build/outputs/apk/release/app-release.apk /tmp/apk/depois.apk
+      - name: KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules && sudo udevadm trigger --name-match=kvm
+      - name: Emulador de TV (as duas versões no mesmo)
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 30
+          target: android-tv
+          arch: x86
+          profile: tv_1080p
+          disable-animations: false
+          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
+          script: bash tools/home-nova-test/tv-compare.sh /tmp/apk/antes.apk /tmp/apk/depois.apk 3
+      - name: Publicar
+        if: always()
+        run: |
+          cd shots || exit 0
+          git init -q -b x && git add -A
+          git -c user.name=ci -c user.email=ci@x commit -qm fotos
+          git push -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" x:home-nova-out-${{ github.ref_name }}-tv-comparar
+
   compila-android:
     runs-on: ubuntu-latest
     timeout-minutes: 40
