@@ -177,24 +177,30 @@ public class TvDetailActivity extends TvBase {
             {"globoplay", "Globoplay", "#c8d23a"}, {"clarovideo", "Claro Video", "#ff2a2a"}};
 
     private void loadWhere() {
-        String id = meta.optString("id");
-        Net.async(() -> {
-            List<String[]> found = new ArrayList<>();
-            for (String[] s : SVC) if (Stremio.ids(s[0]).contains(id)) found.add(s);
-            return found;
-        }, (found, err) -> {
-            if (isFinishing() || found == null) return;
-            android.text.SpannableStringBuilder b = new android.text.SpannableStringBuilder();
-            if (found.isEmpty()) found.add(new String[]{"cinemateca", "CineTime", "#e9c46a"});
-            for (int i = 0; i < found.size() && i < 2; i++) {
-                if (i > 0) b.append("  ·  ");
-                int start = b.length();
-                b.append(found.get(i)[1]);
-                b.setSpan(new android.text.style.ForegroundColorSpan(Ui.parseColor(found.get(i)[2], 0xFFFFFFFF)), start, b.length(), 0);
-            }
-            where.setText(b);
-            fadeIn(where);
-        });
+        final String id = meta.optString("id");
+        // os 8 arquivos de códigos (um por serviço) são pedidos ao mesmo tempo; antes vinham um a um e o nome do serviço
+        // só aparecia depois do 8º download (a soma de 8 idas e voltas à rede, na primeira vez que se abre um título)
+        final boolean[] has = new boolean[SVC.length];
+        final int[] left = {SVC.length};
+        for (int i = 0; i < SVC.length; i++) {
+            final int k = i;
+            Net.async(() -> Stremio.ids(SVC[k][0]).contains(id), (yes, err) -> {
+                if (yes != null && yes) has[k] = true;
+                if (--left[0] > 0 || isFinishing()) return;   // as respostas chegam todas na thread principal: sem corrida
+                List<String[]> found = new ArrayList<>();
+                for (int j = 0; j < SVC.length; j++) if (has[j]) found.add(SVC[j]);
+                android.text.SpannableStringBuilder b = new android.text.SpannableStringBuilder();
+                if (found.isEmpty()) found.add(new String[]{"cinemateca", "CineTime", "#e9c46a"});
+                for (int j = 0; j < found.size() && j < 2; j++) {
+                    if (j > 0) b.append("  ·  ");
+                    int start = b.length();
+                    b.append(found.get(j)[1]);
+                    b.setSpan(new android.text.style.ForegroundColorSpan(Ui.parseColor(found.get(j)[2], 0xFFFFFFFF)), start, b.length(), 0);
+                }
+                where.setText(b);
+                fadeIn(where);
+            });
+        }
     }
 
     // ---------- dados ----------
