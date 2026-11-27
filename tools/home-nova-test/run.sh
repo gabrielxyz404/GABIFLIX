@@ -10,8 +10,9 @@ UI=tools/android-subs-test/ui.py
 adb install -r "$APK"
 adb shell settings put global hide_error_dialogs 1
 adb shell settings put system screen_off_timeout 600000
+adb shell pm disable-user --user 0 com.google.android.apps.nexuslauncher >/dev/null 2>&1  # o launcher do emulador trava e tapa a tela (ANR)
 if [ "$P" = tel ]; then adb shell wm size 1080x2400; adb shell wm density 420; fi
-snap() { sleep "${2:-1}"; adb exec-out screencap -p > "$OUT/$L-$P-$1.png"; }
+snap() { sleep "${2:-1}"; adb shell am broadcast -a android.intent.action.CLOSE_SYSTEM_DIALOGS >/dev/null 2>&1; adb exec-out screencap -p > "$OUT/$L-$P-$1.png"; }
 focus() { adb shell uiautomator dump /sdcard/f.xml >/dev/null 2>&1; echo "$1: $(adb shell cat /sdcard/f.xml 2>/dev/null | python3 $UI focus)" >> $OUT/$L-$P-foco.txt; }
 topact() { adb shell dumpsys activity activities 2>/dev/null | grep -E "topResumedActivity|mResumedActivity" | head -1 | tr -s ' '; }
 adb logcat -c
