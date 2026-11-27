@@ -11,6 +11,7 @@ on:
 
 permissions:
   contents: write
+  actions: read
 
 env:
   D: android/app/src/main/java/io/github/gabrielxyz404/gabiflix
@@ -25,6 +26,8 @@ jobs:
       maxpar: ${{ steps.c.outputs.maxpar }}
       main_sha: ${{ steps.c.outputs.main_sha }}
       drift_sha: ${{ steps.c.outputs.drift_sha }}
+      src_run: ${{ steps.c.outputs.src_run }}
+      out_branch: ${{ steps.c.outputs.out_branch }}
     steps:
       - uses: actions/checkout@v4
       - id: c
@@ -35,6 +38,8 @@ jobs:
           echo "maxpar=${MAXPAR:-8}" >> $GITHUB_OUTPUT
           echo "main_sha=${MAIN_SHA:-main}" >> $GITHUB_OUTPUT
           echo "drift_sha=${DRIFT_SHA:-run-deriva}" >> $GITHUB_OUTPUT
+          echo "src_run=${SRC_RUN:-${{ github.run_id }}}" >> $GITHUB_OUTPUT
+          echo "out_branch=${OUT_BRANCH:-bench-300-out}" >> $GITHUB_OUTPUT
           python3 -c "import json,os; print('shards='+json.dumps(list(range(int(os.environ['NSHARDS'])))))" >> $GITHUB_OUTPUT
           cat tools/bench300/run.conf
 
@@ -137,6 +142,8 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           path: arts
+          run-id: ${{ needs.config.outputs.src_run }}
+          github-token: ${{ github.token }}
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
@@ -154,4 +161,4 @@ jobs:
         run: |
           cd out && git init -q -b x && git add -A
           git -c user.name=ci -c user.email=ci@x commit -qm "bench300 run ${{ github.run_number }}"
-          git push -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" x:bench-300-out
+          git push -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" x:${{ needs.config.outputs.out_branch }}
