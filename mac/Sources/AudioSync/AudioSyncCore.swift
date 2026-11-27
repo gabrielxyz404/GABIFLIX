@@ -332,7 +332,7 @@ final class AudioSyncCore {
      * nowMs: posição do vídeo agora; currentDelay: atraso aplicado agora (a decisão de mexer compara com ele);
      * maxBytes: pula (.skipped) se a leitura estimada das 3 janelas passar disto; noLimit = botão do usuário (nunca pula)
      */
-    func run(url: URL, subText: String?, durMs: Int, nowMs: Int, currentDelay: Int, maxBytes: Int, budgetMs: Int = 285_000) -> Outcome {
+    func run(url: URL, subText: String?, durMs: Int, nowMs: Int, currentDelay: Int, maxBytes: Int, budgetMs: Int = 285_000, planMs: Int? = nil) -> Outcome {
         runLock.lock()
         defer { runLock.unlock() }
         setBusy(true)
@@ -381,7 +381,7 @@ final class AudioSyncCore {
         var slots: [Int: Slot] = [:]
         let slotLock = NSLock()
         let par = parallel
-        let res = AudioSyncSession.analyzeNear(cues, durMs, lenMs, nowMs, 300_000, { st, ln, i, total in
+        let res = AudioSyncSession.analyzeNear(cues, durMs, lenMs, planMs ?? nowMs, 300_000, { st, ln, i, total in
             if self.cap.isCancelled { return nil }
             slotLock.lock(); let sl = slots[st]; slotLock.unlock()
             self.progress?(i + 1, total)

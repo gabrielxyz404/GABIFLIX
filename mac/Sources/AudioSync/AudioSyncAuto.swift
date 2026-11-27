@@ -66,6 +66,8 @@ final class AudioSyncAuto {
         /** análises que terminaram sem confiança (recusada, erro): no máximo 2 */
         var attempts = 0
         var retryPending = false, retryFromRefusal = false
+        /** a recusa por falta de evidência já teve a sua nova tentativa rápida (uma só) / a próxima análise olha janelas longe do ponto atual */
+        var quickUsed = false, shiftNext = false
         var retryAt = 0, keySince = 0
         var mScale = 1.0, mOffset = 0.0
         var lastWritten = 0
@@ -102,6 +104,8 @@ final class AudioSyncAuto {
     private var startAfterMs = 25_000
     /** depois de um resultado sem confiança: uma segunda e última tentativa daqui a tanto (teste: FP_AUDIO_RETRY_SEC encurta) */
     private var retryMs = 20 * 60_000
+    /** depois da PRIMEIRA recusa (o áudio não achou evidência suficiente): uma nova tentativa já, com janelas noutro ponto do filme, sem esperar 20 min (teste: FP_AUDIO_QUICK_SEC) */
+    private var quickMs = 45_000
     /** salto na linha do tempo que conta como "salto grande" (teste: FP_AUDIO_FARSEEK_SEC) */
     private var farSeekMs = 600_000
     /** prazo da análise automática (ms): passado isto resolve com o que ouviu (teste: FP_AUDIO_BUDGET_SEC) */
@@ -136,6 +140,7 @@ final class AudioSyncAuto {
         autoOn = env["FP_AUDIO_AUTO"] != "false"
         if let v = env["FP_AUDIO_START_SEC"], let n = Int(v) { startAfterMs = n * 1000 }
         if let v = env["FP_AUDIO_RETRY_SEC"], let n = Int(v) { retryMs = n * 1000 }
+        if let v = env["FP_AUDIO_QUICK_SEC"], let n = Int(v) { quickMs = n * 1000 }
         if let v = env["FP_AUDIO_FARSEEK_SEC"], let n = Int(v) { farSeekMs = n * 1000 }
         if let v = env["FP_AUDIO_BUDGET_SEC"], let n = Int(v), n > 10 { autoBudgetMs = n * 1000 }
         if env["FP_AUDIO_DSP"] == "true" { core.forceDsp = true }
@@ -516,6 +521,16 @@ final class AudioSyncAuto {
         resetHealth()
         maxTickGapMs = 0
         let budget = autoBudget()
+        // nova tentativa depois de uma recusa: as janelas perto do ponto são outras (12 min à frente, ou atrás se não couber); o atraso final continua
+        // calculado na posição real (pos). Mesmas regras de aceitação.
+        var planPos: Int? = nil
+        if s.shiftNext {
+            s.shiftNext = false
+            var q = pos + 12 * 60_000
+            if q > dur * 85 / 100 { q = pos - 12 * 60_000 }
+            planPos = max(dur / 25, q)
+            log("nova tentativa: janelas planeadas a partir de \(planPos! / 1000) s (posição \(pos / 1000) s)")
+        }
         log("começando: posição \(pos / 1000) s, duração \(dur / 1000) s, atraso atual \(d0) ms, sem limite de dados, prazo \(autoBudgetMs / 1000) s")
         live.value = "A ouvir o filme…"
         liveSince = AudioSyncAuto.now()
@@ -523,7 +538,7 @@ final class AudioSyncAuto {
         queue.async { [weak self] in
             guard let self = self else { return }
             self.core.parallel = 1
-            let o = self.core.run(url: url, subText: text, durMs: dur, nowMs: pos, currentDelay: d0, maxBytes: budget, budgetMs: bud)
+            let o = self.core.run(url: url, subText: text, durMs: dur, nowMs: pos, currentDelay: d0, maxBytes: budget, budgetMs: bud, planMs: planPos)
             DispatchQueue.main.async { self.finishRun(tok, k, d0, o) }
         }
     }
@@ -629,6 +644,19 @@ final class AudioSyncAuto {
             if firstCheckOfFilm(k) { h.notice("Legenda confirmada pelo áudio") }   // confirmação silenciosa: só na primeira conferência do filme
             sendReport(o, s, d0, "ja_certa: nao_mexeu")
         case .refused:
+            if !s.quickUsed && hBuf < 2 && !o.note.hasPrefix("poucas falas") {
+                // primeira recusa: pode ser só falta de evidência nestas janelas. Tenta logo outra vez com janelas noutro ponto (sem aviso, sem marca de "recusada");
+                // se falhar de novo, segue o caminho de sempre (aviso com o botão Sincronizar e uma última tentativa daqui a 20 min)
+                s.quickUsed = true
+                s.shiftNext = true
+                s.st = .new
+                s.retryPending = true
+                s.retryFromRefusal = true
+                s.retryAt = AudioSyncAuto.now() + quickMs
+                log("sem evidência suficiente nestas janelas: nova tentativa já em \(quickMs / 1000) s, com janelas noutro ponto do filme")
+                sendReport(o, s, d0, "recusou: nova_tentativa_rapida")
+                return
+            }
             mark(k, "no", 1.0, 0, 0)
             log("o áudio não tem certeza: legenda deixada como estava")
             sendReport(o, s, d0, "recusou: manteve" + (s.manualRun ? "_o_manual" : ""))

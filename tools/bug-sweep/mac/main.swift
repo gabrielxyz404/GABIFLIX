@@ -123,5 +123,53 @@ let yt = SubtitleText.decode(fileBytes("\(fx)/vtt-rolling-youtube.in")) ?? ""
 eqS("vtt limpo e idempotente", yt, J.str(SubtitleText.normalize(J.u16(yt)) ?? []))
 eq("rolling caption: 3 falas e nenhuma tag de tempo", true, AudioCue.parseSrt(yt).count == 3 && !yt.contains("<0"))
 
+// ---------- noite do filme novo: codificações e formatos que as legendas PT/BR trazem na prática ----------
+let acentos = "Ação, emoção e coração: à noite, até às seis. Você não é tão ágil, tênis, órgão, útil, pingüim, ÁGUA, ÊXITO, ÍNDIA, ÓTIMO, ÚLTIMO, ÇA, Ñ, ª e º. “Aspas” e ‘aspas’ — travessão… ok."
+func srtDe(_ t: String) -> String { return "1\n00:00:01,000 --> 00:00:04,000\n" + t + "\n\n2\n00:00:05,000 --> 00:00:08,000\nSegunda fala longa o suficiente, não é? Estou aqui, você também.\n" }
+let base = srtDe(acentos)
+func limpo(_ name: String, _ bytes: [UInt8]) {
+    let t = SubtitleText.decode(bytes) ?? "(nil)"
+    let c = cues(t)
+    let got = c.at(2000) ?? "(nada)"
+    eqS("noite \(name): acentos intactos", acentos, got)
+    eq("noite \(name): sem mojibake nem U+FFFD", false, got.contains("Ã") || got.contains("\u{FFFD}") || got.contains("â€"))
+    eq("noite \(name): 2 falas", 2, c.count)
+}
+limpo("utf8", utf8(base))
+limpo("utf8 com BOM", [0xEF, 0xBB, 0xBF] + utf8(base))
+limpo("utf8 CRLF", utf8(base.replacingOccurrences(of: "\n", with: "\r\n")))
+limpo("utf8 CR antigo", utf8(base.replacingOccurrences(of: "\n", with: "\r")))
+limpo("utf16le BOM", [0xFF, 0xFE] + enc(base, .utf16LittleEndian))
+limpo("utf16be BOM", [0xFE, 0xFF] + enc(base, .utf16BigEndian))
+limpo("utf16le sem BOM", enc(base, .utf16LittleEndian))
+limpo("utf16be sem BOM", enc(base, .utf16BigEndian))
+// cp1252 de verdade: as aspas curvas, travessão e reticências existem nele; o resto (ª º Ñ ç ...) também
+limpo("cp1252", enc(base, .windowsCP1252))
+// ISO-8859-1 não tem aspas curvas: o texto de teste muda (só o que o ISO-8859-1 tem)
+let acentosL1 = "Ação, emoção e coração: à noite, até às seis. Você não é tão ágil, tênis, órgão, útil, ÁGUA, ÊXITO, ÍNDIA, ÓTIMO, ÚLTIMO, ÇA, Ñ, ª e º. ok."
+let l1 = SubtitleText.decode(enc(srtDe(acentosL1), .isoLatin1)) ?? "(nil)"
+eqS("noite iso-8859-1: acentos intactos", acentosL1, cues(l1).at(2000) ?? "(nada)")
+// tempos e formatos
+eqS("tempo com ponto e 1 casa", "ponto", cues("1\n00:00:01.5 --> 00:00:03.0\nponto\n").at(2000) ?? "(nada)")
+eqS("sem linha em branco + CRLF", "Dois", cues("1\r\n00:00:01,000 --> 00:00:03,000\r\nUm\r\n2\r\n00:00:04,000 --> 00:00:06,000\r\nDois\r\n").at(5000) ?? "(nada)")
+eqS("{\\an8} e {\\i1} em SRT", "Em cima em itálico", cues("1\n00:00:01,000 --> 00:00:03,000\n{\\an8}Em cima {\\i1}em itálico{\\i0}\n").at(2000) ?? "(nada)")
+eqS("<i> e <b> e <u> e <font>", "tudo junto", cues("1\n00:00:01,000 --> 00:00:03,000\n<i><b>tudo</b></i> <u>junto</u><font color=\"red\"></font>\n").at(2000) ?? "(nada)")
+eqS("VTT com id de fala e horas", "Com id", cues("WEBVTT\n\nfala-1\n01:00:01.000 --> 01:00:03.000\nCom id\n").at(3601500) ?? "(nada)")
+eqS("VTT sem horas, ponto", "Curto", cues("WEBVTT\n\n00:01.000 --> 00:03.000\nCurto\n").at(2000) ?? "(nada)")
+// ASS e SSA (formato v4 sem camada) com acentos em cp1252
+func assDe(_ header: String, _ fmt: String, _ pre: String) -> String {
+    var a = header + "\n[Events]\nFormat: " + fmt + "\n"
+    for i in 0..<6 { a += "Dialogue: \(pre)0:00:\(String(format: "%02d", i * 3 + 1)).50,0:00:\(String(format: "%02d", i * 3 + 3)).00,Default,,0,0,0,,{\\an8}{\\i1}Ação \(i), você não vê?{\\i0}\\Nsegunda linha, até já\n" }
+    return a
+}
+let assV4p = assDe("[Script Info]\nScriptType: v4.00+\n\n[V4+ Styles]\nFormat: Name\nStyle: Default", "Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text", "0,")
+let ssaV4 = assDe("[Script Info]\nScriptType: v4.00\n\n[V4 Styles]\nFormat: Name\nStyle: Default", "Marked, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text", "Marked=0,")
+for (nm, a) in [("ass", assV4p), ("ssa", ssaV4)] {
+    for (en, bytes) in [("utf8", utf8(a)), ("cp1252", enc(a, .windowsCP1252)), ("utf16le", [0xFF, 0xFE] + enc(a, .utf16LittleEndian))] {
+        let t = SubtitleText.decode(bytes) ?? "(nil)"
+        eqS("noite \(nm) \(en): texto limpo", "Ação 0, você não vê?\nsegunda linha, até já", cues(t).at(2000) ?? "(nada \(t.prefix(80)))")
+    }
+}
+
 print("\n\(runs - fails)/\(runs) casos ok")
 if fails > 0 { print("\(fails) FALHARAM"); exit(1) }
