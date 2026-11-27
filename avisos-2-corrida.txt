@@ -1,0 +1,11 @@
+1795809205.876291 AUDIOSYNC GATILHO motivo=troca-de-legenda legenda=443a6938c8e|http://127.0.0.1:11470/sub25.srt#raw decisão=avaliar (espera 3 s tocando; se há resultado guardado, não analisa) [análises=0 sem_confiança=0 estado=nova]
+1795809208.897572 AUDIOSYNC GATILHO motivo=início legenda=443a6938c8e|http://127.0.0.1:11470/sub25.srt#raw decisão=análise [análises=1 sem_confiança=0 estado=nova]
+1795809216.840416 AVISO na tela: Legenda a desviar — corrigi a velocidade
+1795809216.840685 AUDIOSYNC aplicado: atraso -3510 ms, escala 1.0427093760427095 (resultado confiante: não será reverificado)
+1795809217.89008 sincronização: toque #1 faixa=2 atraso=8580 ms (sempre analisa de novo; limite 300 s)
+1795809217.894884 AUDIOSYNC GATILHO motivo=botão-sincronizar legenda=443a6938c8e|http://127.0.0.1:11470/sub25.srt#raw decisão=análise (o botão ignora o resultado guardado: sempre analisa de novo) [análises=2 sem_confiança=0 estado=confiante]
+1795809222.385869 AUDIOSYNC botão: aceita z=12.5 janelas=3/4 escala=1.04271 deslocamento=-3850 ms (deriva provada pelas janelas) | vad=silero janelas=4 captura=4052 ms vad=1228 ms (cpu 1219) solve=0 ms (cpu 155) cpu_thread=1395 ms total=4493 ms leitura_estimad
+1795809222.386963 sincronização: resultado=sincronizada motivo=áudio aceita z=12.5 janelas=3/4 escala=1.04271 deslocamento=-3850 ms (deriva provada pelas janelas) em 4 s
+1795809222.387175 AVISO na tela: Legenda sincronizada (+8,9 s) — velocidade corrigida (25/23.976)
+1795809223.9083471 AUDIOSYNC GATILHO motivo=botão-adotar-resultado legenda=443a6938c8e|http://127.0.0.1:11470/sub25.srt#raw decisão=sem análise (só lê a marca que o botão guardou) [análises=2 sem_confiança=0 estado=nova]
+1795809223.908647 AUDIOSYNC GATILHO motivo=início legenda=443a6938c8e|http://127.0.0.1:11470/sub25.srt#raw decisão=ignorado: resultado confiante guardado (fix, há 0 dias): sem captura e sem reverificação [análises=2 sem_confiança=0 estado=confiante]

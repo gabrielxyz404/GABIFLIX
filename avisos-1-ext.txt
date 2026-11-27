@@ -1,0 +1,13 @@
+1795809091.836244 sincronização: toque #1 faixa=2 atraso=0 ms (sempre analisa de novo; limite 300 s)
+1795809091.837672 AUDIOSYNC GATILHO motivo=botão-sincronizar legenda=443a6938c8e|http://127.0.0.1:11470/sub25.srt#raw decisão=análise (o botão ignora o resultado guardado: sempre analisa de novo) [análises=1 sem_confiança=0 estado=nova]
+1795809096.693537 AUDIOSYNC botão: aceita z=12.0 janelas=3/3 escala=1.04271 deslocamento=-3847 ms (deriva provada pelas janelas) | vad=silero janelas=4 captura=4665 ms vad=1522 ms (cpu 1367) solve=0 ms (cpu -37) cpu_thread=1344 ms total=4856 ms leitura_estimad
+1795809096.6947222 sincronização: resultado=sincronizada motivo=áudio aceita z=12.0 janelas=3/3 escala=1.04271 deslocamento=-3847 ms (deriva provada pelas janelas) em 4 s
+1795809096.695418 AVISO na tela: Legenda sincronizada (+9,1 s) — velocidade corrigida (25/23.976)
+1795809098.838163 AUDIOSYNC GATILHO motivo=botão-adotar-resultado legenda=443a6938c8e|http://127.0.0.1:11470/sub25.srt#raw decisão=sem análise (só lê a marca que o botão guardou) [análises=1 sem_confiança=0 estado=nova]
+1795809157.34389 sincronização: toque #2 faixa=2 atraso=205850 ms (sempre analisa de novo; limite 300 s)
+1795809157.3463569 AUDIOSYNC GATILHO motivo=botão-sincronizar legenda=443a6938c8e|http://127.0.0.1:11470/sub25.srt#raw decisão=análise (o botão ignora o resultado guardado: sempre analisa de novo) [análises=2 sem_confiança=0 estado=confiante]
+1795809160.334766 AVISO na tela: Já estou a sincronizar… 2 s (janela 4 de 6)
+1795809172.698341 AUDIOSYNC botão: recusada z=16.0 janelas=7/8 () | vad=silero janelas=8 captura=8224 ms vad=2549 ms (cpu 2521) solve=0 ms (cpu 3342) cpu_thread=5877 ms total=15353 ms leitura_estimada=3 MB rss=137->203 MB rede: ttfb=1 ms vel=13671 KB/s janela=
+1795809172.698934 sincronização: resultado=nao_confirmou motivo=sem referência de tempo | áudio: recusada z=16.0 janelas=7/8 () | Sem confiança: o áudio não confirma esta legenda (pode ser de outra versão do filme). em 15 s
+1795809172.699144 AVISO na tela: Não consegui confirmar pelo áudio — ajusta à mão
+1795809174.841687 AUDIOSYNC GATILHO motivo=botão-adotar-resultado legenda=443a6938c8e|http://127.0.0.1:11470/sub25.srt#raw decisão=sem análise (só lê a marca que o botão guardou) [análises=2 sem_confiança=0 estado=nova]
