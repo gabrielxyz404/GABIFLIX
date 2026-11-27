@@ -346,6 +346,19 @@ public final class AudioAligner {
 
     static double alphaOf(double scale) { return 1.0 - 1.0 / scale; }
 
+    static boolean isKnownScale(double scale, Params P) {
+        for (double ks : P.knownScales) if (Math.abs(ks - scale) < 1e-9) return true;
+        return false;
+    }
+
+    /** inclinação livre (mínimos quadrados ponderados) de y = a + b*x; NaN se os x não têm dispersão */
+    static double freeSlope(double[] x, double[] y, double[] w, int n) {
+        double sw = 0, sx = 0, sy = 0, sxx = 0, sxy = 0;
+        for (int i = 0; i < n; i++) { sw += w[i]; sx += w[i] * x[i]; sy += w[i] * y[i]; sxx += w[i] * x[i] * x[i]; sxy += w[i] * x[i] * y[i]; }
+        double den = sw * sxx - sx * sx;
+        return den > 1e-6 * sw * sw ? (sw * sxy - sx * sy) / den : Double.NaN;
+    }
+
     // ------------------------------------------------------------------ exato (10 ms)
     static final class Fine {
         double bestDelta;      // ms (já com interpolação)
@@ -647,14 +660,18 @@ public final class AudioAligner {
         // o centro da pesquisa de cada janela: o modelo do ajuste grosso se ele é de escala ~1 (a faixa é de +-10 s em volta dele); se não, atraso 0 (+-15 s):
         // o modelo errado do ajuste grosso não pode impedir a prova (a legenda com deriva é justamente a que o ajuste grosso encaixa mal)
         final boolean nearUnitModel = Math.abs(R.scale - 1.0) < 0.0035;
+        final boolean modelKnown = !nearUnitModel && R.scaleKnown && isKnownScale(R.scale, P);
         for (int w = 0; w < W; w++) {
             Result.Win wi = new Result.Win();
             double uc = ws[w].startMs + ws[w].p.length * 5.0;
-            double d0 = nearUnitModel ? uc - (uc - R.offsetMs) / R.scale : 0;
-            Fine f = fineWindow(ps[w], ws[w].startMs, fine, 1.0, d0, nearUnitModel ? 1000 : 1500);
+            double d0 = nearUnitModel || modelKnown ? uc - (uc - R.offsetMs) / R.scale : 0;
+            // razão de fps conhecida longe de 1 (25/24, 25/23,976...): a janela é medida com a escala do modelo grosso (a 1,0 uma deriva de 4% borraria o pico em ~3,6 s por janela);
+            // o desvio medido (relativo ao modelo) vira atraso sem escala: d0 + delta / escala
+            Fine f = modelKnown ? fineWindow(ps[w], ws[w].startMs, fine, R.scale, R.offsetMs, 1000)
+                    : fineWindow(ps[w], ws[w].startMs, fine, 1.0, d0, nearUnitModel ? 1000 : 1500);
             wi.startMs = ws[w].startMs;
             wi.centerMs = uc;
-            wi.delayMs = d0 + f.bestDelta;
+            wi.delayMs = modelKnown ? d0 + f.bestDelta / R.scale : d0 + f.bestDelta;
             wi.ncc = f.ncc;
             wi.z = f.z;
             wi.speech = f.speechFrac >= P.minSpeechFrac;
@@ -694,14 +711,18 @@ public final class AudioAligner {
             if (den > 1e-6 * sw * sw) R.driftSlope = (sw * sxy - sx * sy) / den;
         }
 
-        final double[] ks = {24.0 / 23.976, 23.976 / 24.0};
+        // todas as razões de fps conhecidas (menos 1,0): a família 1,001 (24 x 23,976, 30 x 29,97) e as de deriva grande (PAL 25 x 24 / 23,976, 30 x 25...)
+        int nk = 0;
+        double[] ks = new double[P.knownScales.length];
+        for (double k : P.knownScales) if (Math.abs(k - 1.0) > 1e-9 && Math.abs(alphaOf(k)) <= P.maxAlpha) ks[nk++] = k;
         int best = -1;
         double bestRes = Double.MAX_VALUE, bestBeta = 0, bestSpan = 0;
         int bestN = 0, bestDrop = -1;
         boolean nearMiss = false;
         String why = "";
-        for (int c = 0; c < 2; c++) {
+        for (int c = 0; c < nk; c++) {
             double al = alphaOf(ks[c]);
+            final boolean family = Math.abs(ks[c] - 1.0) < P.nearUnitEps;
             // melhor subconjunto: todas as janelas confiáveis; se a reta não fecha e há folga, tira UMA (a que mais atrapalha)
             int drop = -1;
             double[] fr = fitFixedAlpha(x, y, wt, n, al);
@@ -723,6 +744,12 @@ public final class AudioAligner {
             double[] un = fitFixedAlpha(xs, ys, ws2, nn, 0.0);
             double meas = Math.abs(al) * span, content = Math.abs(al) * durMs;
             boolean fits = fr[1] <= P.driftMaxResMs && 2 * fr[1] <= un[1] && meas >= 2 * Math.max(fr[1], P.driftResFloorMs);
+            if (fits && !family) {
+                // razões de deriva grande: o mesmo rigor da porta relaxada (resíduo sem escala >= driftRelaxRatio x o da reta) e a inclinação livre das janelas tem de
+                // encaixar na razão (snapAlpha); sem isso uma reta que por acaso passa perto de poucas janelas não vira escala
+                double sl = freeSlope(xs, ys, ws2, nn);
+                fits = un[1] >= P.driftRelaxRatio * Math.max(fr[1], P.driftResFloorMs) && !Double.isNaN(sl) && Math.abs(sl - al) <= P.snapAlpha;
+            }
             boolean spanOk = span >= Math.max((double) P.driftMinSpanMs, P.driftMinSpanFrac * durMs);
             boolean safe = fr[1] <= P.driftSafeResMs;
             boolean ok = fits && safe && nn >= P.driftMinWins && spanOk && meas >= P.driftRatio * Math.max(fr[1], P.driftResFloorMs) && content >= P.driftContentMs;
