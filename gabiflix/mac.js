@@ -12,7 +12,7 @@
     window.gfMacFullscreen = function (on) { if (on) root.setAttribute('data-gf-fs', '1'); else root.removeAttribute('data-gf-fs'); };
 
     // ---------- arrastar a janela pelo cabeçalho (como a barra de título) e duplo clique = zoom ----------
-    var INTERACTIVE = 'a,button,input,textarea,select,label,[tabindex],[role="button"],[class*="button-container"],[class*="search-bar"]';
+    var INTERACTIVE = 'a,button,input,textarea,select,label,[tabindex],[role="button"],[class*="button-container"],[class*="search-bar"],[class*="logo-container"]';
     document.addEventListener('mousedown', function (e) {
         if (e.button !== 0 || !H) return;
         var t = e.target;
@@ -93,9 +93,45 @@
         window.addEventListener('resize', upd);
     }
 
+    // ---------- V2: "Pesquisar" no topo da Início, logótipo da barra lateral volta à Início, "Mais Tarde" no menu ☰ ----------
+    function onHomeGrid() { return root.getAttribute('data-gf-route') === 'home' && root.getAttribute('data-gf-view') !== 'catalog'; }
+    function openSearch() { if (window.gfGo) window.gfGo('#/search'); else location.hash = '#/search'; }
+    document.addEventListener('click', function (e) {
+        var t = e.target;
+        if (!t || !t.closest) return;
+        if (t.closest('[class*="horizontal-nav-bar-container"] [class*="logo-container"]') && onHomeGrid()) { e.preventDefault(); openSearch(); return; }
+        var side = t.closest('[class*="vertical-nav-bar-container"]');
+        if (side && !t.closest('a')) { var home = side.querySelector('a[href="#/"]'); if (home) home.click(); }
+    }, true);
+    document.addEventListener('keydown', function (e) {
+        var t = e.target;
+        if ((e.key === 'Enter' || e.key === ' ') && t && t.closest && t.closest('[class*="horizontal-nav-bar-container"] [class*="logo-container"]') && onHomeGrid()) { e.preventDefault(); openSearch(); }
+    }, true);
+    function topSearch() {
+        var logo = document.querySelector('[class*="horizontal-nav-bar-container"] [class*="logo-container"]');
+        if (!logo) return;
+        if (onHomeGrid()) { logo.setAttribute('tabindex', '0'); logo.setAttribute('role', 'button'); logo.setAttribute('aria-label', 'Pesquisar'); }
+        else if (logo.getAttribute('role') === 'button') { logo.removeAttribute('tabindex'); logo.removeAttribute('role'); logo.removeAttribute('aria-label'); }
+    }
+    function menuLibrary() {
+        var menu = document.querySelector('[class*="nav-menu-container"]');
+        if (!menu || menu.querySelector('[data-gf-lib]')) return;
+        var settings = menu.querySelector('a[href="#/settings"]');
+        if (!settings) return;
+        var lib = settings.cloneNode(true); // mesma aparência da opção Configurações; abre a mesma tela do antigo ícone da barra lateral
+        lib.setAttribute('href', '#/library');
+        lib.setAttribute('data-gf-lib', '1');
+        lib.removeAttribute('title');
+        var label = lib.querySelector('[class*="nav-menu-option-label"]') || lib;
+        label.textContent = 'Mais Tarde';
+        settings.parentNode.insertBefore(lib, settings);
+    }
+
     var pending = false;
     function scan() {
         pending = false;
+        topSearch();
+        menuLibrary();
         fixVersion();
         var tabs = document.querySelectorAll('.gf-src-tabs');
         for (var i = 0; i < tabs.length; i++) tabsHint(tabs[i]);

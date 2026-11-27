@@ -535,7 +535,7 @@
                 else if (e.key === 'Escape') inp.blur();
             });
             lab.appendChild(inp);
-            head.appendChild(lab);
+            if (!v2) head.appendChild(lab); // V2: a pesquisa fica no topo da janela ("Pesquisar")
             page.appendChild(head);
         }
         page.appendChild(hero);

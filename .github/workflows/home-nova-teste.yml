@@ -237,6 +237,26 @@ jobs:
               web "js 'destaque abriu '+location.hash+' '+(window.__id&&location.hash.indexOf(window.__id)>=0?'OK':'ERRO')" 1
               web "js history.back(); 'ok'" 3
             done
+            # V2: botão Ver legível, topo "Pesquisar" abre a pesquisa e encontra um título, menu ☰ com Mais Tarde e Configurações
+            web "js (function(){var b=document.querySelector('.gf-nv-hero .gf-nv-btn.is-main');if(!b)return 'sem Ver';var c=getComputedStyle(b);return 'Ver: texto '+c.color+' fundo '+c.backgroundColor})()" 1
+            web "js (function(){var l=document.querySelector('[class*=horizontal-nav-bar-container] [class*=logo-container]');if(!l)return 'sem topo';l.click();return 'clicou topo: '+getComputedStyle(l,'::after').content})()" 3
+            web "js 'Pesquisar abriu '+location.hash+' '+(/#\/search/.test(location.hash)?'OK':'ERRO')" 1
+            web "js location.hash='#/search?search=matrix'; 'ok'" 8
+            shot $V-mac-06-pesquisa-matrix
+            web "js 'pesquisa matrix: '+(/Matrix/i.test(document.body.innerText)?'encontrou OK':'nao encontrou ERRO')" 1
+            web "js location.hash='#/'; 'ok'" 3
+            web "js (function(){var m=document.querySelector('[class*=horizontal-nav-bar-container] [class*=menu-button]');if(m)m.click();return 'menu'})()" 2
+            shot $V-mac-07-menu
+            web "js 'menu: '+[].map.call(document.querySelectorAll('[class*=nav-menu-container] a[href]'),function(a){return a.textContent.trim()+'='+a.getAttribute('href')}).join(', ')" 1
+            web "js (function(){var a=document.querySelector('[class*=nav-menu-container] a[href=\"#/library\"]');if(!a)return 'sem Mais Tarde ERRO';a.click();return 'ok'})()" 3
+            web "js 'Mais Tarde abriu '+location.hash" 1
+            shot $V-mac-08-mais-tarde
+            web "js (function(){var v=document.querySelector('[class*=vertical-nav-bar-container]');if(v)v.click();return 'logotipo da barra lateral'})()" 3
+            web "js 'voltou a '+(location.hash||'#/')" 1
+            web "js (function(){var m=document.querySelector('[class*=horizontal-nav-bar-container] [class*=menu-button]');if(m)m.click();return 'menu'})()" 2
+            web "js (function(){var a=document.querySelector('[class*=nav-menu-container] a[href=\"#/settings\"]');if(!a)return 'sem Configuracoes ERRO';a.click();return 'ok'})()" 3
+            web "js 'Configuracoes abriu '+location.hash" 1
+            web "js location.hash='#/'; 'ok'" 4
             if [ $V = depois-hist ]; then
               shot $V-mac-05-continuar-a-ver
               web "js (function(){var c=document.querySelector('.gf-nv-cw .gf-nv-wide');if(!c)return 'sem continuar';c.click();return 'clicou '+c.getAttribute('aria-label')})()" 4

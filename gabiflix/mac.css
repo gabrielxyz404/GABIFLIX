@@ -65,3 +65,26 @@ html[data-gf-app="mac"] [contenteditable="true"],
 html[data-gf-app="mac"] .gf-d-desc,
 html[data-gf-app="mac"] .gf-sheet-d { -webkit-user-select: text; user-select: text; }
 html[data-gf-app="mac"] img { -webkit-user-drag: none; user-drag: none; }
+
+/* ---------- V2: barra lateral só com o logótipo e o nome; o topo da Início diz "Pesquisar" (abre a pesquisa) ----------
+   As entradas da barra lateral ficam escondidas (não apagadas): Mais Tarde e Configurações estão no menu ☰ (mac.js), a pesquisa no topo. */
+html[data-gf-app="mac"] .vertical-nav-bar-container-UPAkA > * { display: none !important; }
+html[data-gf-app="mac"] .vertical-nav-bar-container-UPAkA { align-items: center; justify-content: flex-start; padding-top: 1.4rem; gap: 0.5rem; }
+html[data-gf-app="mac"] .vertical-nav-bar-container-UPAkA::before {
+    content: ""; display: block; flex: none; width: 2.6rem; height: 2.6rem;
+    background: url('../images/stremio_symbol.png') center / contain no-repeat;
+}
+html[data-gf-app="mac"] .vertical-nav-bar-container-UPAkA::after {
+    content: "FramePlay"; display: block; flex: none;
+    font-family: 'Outfit', system-ui, sans-serif; font-size: 0.8rem; font-weight: 700; letter-spacing: 0.01em; color: #F4F4F6;
+}
+html[data-gf-app="mac"][data-gf-route="home"]:not([data-gf-view="catalog"]) .horizontal-nav-bar-container-Y_zvK .logo-container-jteMT { cursor: pointer; }
+html[data-gf-app="mac"][data-gf-route="home"]:not([data-gf-view="catalog"]) .horizontal-nav-bar-container-Y_zvK .logo-container-jteMT .logo-oPx1q { display: none; }
+html[data-gf-app="mac"][data-gf-route="home"]:not([data-gf-view="catalog"]) .horizontal-nav-bar-container-Y_zvK .logo-container-jteMT::before {
+    content: ""; display: block; flex: none; width: 1.5rem; height: 1.5rem; background: #F4F4F6;
+    -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.4' stroke-linecap='round'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='M20 20l-4-4'/%3E%3C/svg%3E") center / contain no-repeat;
+            mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.4' stroke-linecap='round'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='M20 20l-4-4'/%3E%3C/svg%3E") center / contain no-repeat;
+}
+html[data-gf-app="mac"][data-gf-route="home"]:not([data-gf-view="catalog"]) .horizontal-nav-bar-container-Y_zvK .logo-container-jteMT::after { content: "Pesquisar"; }
+html[data-gf-app="mac"][data-gf-route="home"]:not([data-gf-view="catalog"]) .horizontal-nav-bar-container-Y_zvK .logo-container-jteMT:hover::after { color: #fff; text-decoration: underline; text-underline-offset: 0.25em; }
+html[data-gf-app="mac"] .horizontal-nav-bar-container-Y_zvK .logo-container-jteMT:focus-visible { outline: 2px solid #fff; outline-offset: 4px; border-radius: 0.6rem; }

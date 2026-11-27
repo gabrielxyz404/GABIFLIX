@@ -190,20 +190,33 @@ html[data-gf-nova][data-gf-route="home"][data-gf-view="grid"] div[class^="board-
 .gf-nova-phone.gf-v2 .gf-nv-wide { width: 220px; height: 124px; }
 
 /* Mac: cabe em 1440×900 e 1024×768 sem rolar */
-.gf-nova-mac.gf-v2 { gap: 18px; padding-bottom: 20px; }
-.gf-nova-mac.gf-v2 .gf-nv-hero { height: clamp(200px, calc(100vh - 566px), 290px); padding-top: 26px; padding-bottom: 52px; }
+.gf-nova-mac.gf-v2 { --nv-s: clamp(100px, 15.5vh, 140px); gap: 18px; padding-bottom: 20px; } /* --nv-s: altura dos serviços e dos cartões de Continuar a ver */
+.gf-nova-mac.gf-v2 .gf-nv-hero { height: clamp(186px, calc(100vh - 280px - 2 * var(--nv-s)), 380px); padding-top: 26px; padding-bottom: 52px; }
 .gf-nova-mac.gf-v2 .gf-nv-sec { gap: 12px; }
-.gf-nova-mac.gf-v2 .gf-nv-img { top: 26px; bottom: 26px; }
+.gf-nova-mac.gf-v2 .gf-nv-img { top: 22px; bottom: 22px; right: 22px; width: min(720px, 54%); }
+.gf-nova-mac.gf-v2 .gf-nv-copy { max-width: min(520px, 42%); }
 .gf-nova-mac.gf-v2 .gf-nv-pager { left: 34px; bottom: 14px; }
-.gf-nova-mac.gf-v2 .gf-nv-svc { height: clamp(92px, 13.5vh, 130px); font-size: clamp(0.85rem, 1.15vw, 1.05rem); }
+.gf-nova-mac.gf-v2 .gf-nv-svc { height: var(--nv-s); font-size: clamp(0.8rem, 1.2vw, 1.15rem); white-space: nowrap; }
 .gf-nova-mac.gf-v2 .gf-nv-cw[hidden] { display: none; }
-.gf-nova-mac.gf-v2 .gf-nv-row { display: flex; align-items: flex-start; gap: 14px; overflow-x: auto; overflow-y: hidden; scrollbar-width: none; padding: 4px; margin: -4px; }
+.gf-nova-mac.gf-v2 .gf-nv-row { height: auto; display: flex; align-items: flex-start; gap: 14px; overflow-x: auto; overflow-y: hidden; scrollbar-width: none; padding: 4px; margin: -4px; }
 .gf-nova-mac.gf-v2 .gf-nv-row::-webkit-scrollbar { display: none; }
-.gf-nova-mac.gf-v2 .gf-nv-wide { flex: none; width: max(180px, min(320px, calc((100% - 42px) / 4), calc(24vh * 16 / 9))); height: auto; aspect-ratio: 16 / 9; }
+.gf-nova-mac.gf-v2 .gf-nv-wide { flex: none; height: var(--nv-s); width: calc(var(--nv-s) * 16 / 9); }
 /* sem "Continuar a ver" o destaque fica mais alto (a tela não fica vazia em baixo) */
-.gf-nova-mac.gf-v2:not(.has-cw) .gf-nv-hero { height: clamp(240px, calc(100vh - 400px), 520px); }
+.gf-nova-mac.gf-v2:not(.has-cw) .gf-nv-hero { height: clamp(260px, calc(100vh - 222px - var(--nv-s)), 560px); }
 .gf-nova-mac.gf-v2 .gf-nv-wide:hover { border-color: #fff; }
 .gf-nova-mac.gf-v2 .gf-nv-wide:focus-visible { outline: 3px solid #fff; outline-offset: 2px; }
 @media (min-width: 861px) and (max-width: 1100px) {
     .gf-nova-mac.gf-v2 .gf-nv-svcs { grid-template-columns: repeat(9, minmax(0, 1fr)); gap: 10px; }
 }
+
+/* o botão principal do destaque é sempre branco com texto escuro (legível em qualquer estado) */
+.gf-nova .gf-nv-hero .gf-nv-btn.is-main, .gf-nova .gf-nv-hero .gf-nv-btn.is-main:hover, .gf-nova .gf-nv-hero .gf-nv-btn.is-main:focus, .gf-nova .gf-nv-hero .gf-nv-btn.is-main:focus-visible, .gf-nova .gf-nv-hero .gf-nv-btn.is-main:active {
+    background: #F4F4F6; color: #0B0B0F; -webkit-text-fill-color: #0B0B0F;
+}
+.gf-nova .gf-nv-hero .gf-nv-btn.is-main svg, .gf-nova .gf-nv-hero .gf-nv-btn.is-main svg path { fill: #0B0B0F; color: #0B0B0F; }
+.gf-nova .gf-nv-hero .gf-nv-btn.is-main:hover { background: #FFFFFF; }
+.gf-nova .gf-nv-hero .gf-nv-btn.is-main:focus-visible { outline: 3px solid #fff; outline-offset: 3px; }
+.gf-nova .gf-nv-hero .gf-nv-btn:not(.is-main):hover { background: #30303C; }
+/* Mac V2: a página tem só a altura do conteúdo (sem espaço extra que obrigue a rolar) */
+html[data-gf-nova][data-gf-app="mac"][data-gf-route="home"][data-gf-view="grid"] #gf-home { min-height: 0; }
+.gf-nova-mac.gf-v2 { min-height: 0; }

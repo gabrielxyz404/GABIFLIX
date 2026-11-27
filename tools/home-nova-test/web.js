@@ -59,8 +59,9 @@ async function run(name, P, browser, mode) {
   await page.waitForSelector('[data-service]', { timeout: 30000 }).catch(() => log(tag, 'SEM cartões de serviço'));
   await sleep(4000);
   await page.screenshot({ path: `${OUT}/${tag}-01-inicio.png` });
-  const fit = await page.evaluate(() => { const sc = document.getElementById('gf-home').parentNode; return sc.scrollHeight + ' / ' + sc.clientHeight; });
+  const fit = await page.evaluate(() => { const sc = document.getElementById('gf-home').parentNode; const n = document.querySelector('.gf-nova'); let far = ''; let mx = 0; sc.querySelectorAll('*').forEach(e => { const b = e.getBoundingClientRect().bottom; if (b > mx && getComputedStyle(e).display !== 'none') { mx = b; far = (e.className && e.className.baseVal === undefined ? e.className : e.tagName) + ''; } }); return sc.scrollHeight + ' / ' + sc.clientHeight + (n ? ' (fim da página ' + Math.round(n.getBoundingClientRect().bottom) + ', mais baixo: ' + far.slice(0, 40) + ' ' + Math.round(mx) + ')' : ''); });
   log(tag, 'altura do conteúdo / janela:', fit);
+  log(tag, 'rola até:', await page.evaluate(() => { const sc = document.getElementById('gf-home').parentNode; sc.scrollTop = 9999; const t = sc.scrollTop; sc.scrollTop = 0; return t + ' px; páginas .gf-nova: ' + document.querySelectorAll('.gf-nova').length + '; partes: ' + [...document.querySelector('.gf-nova').children].map(c => c.className.split(' ').pop() + ':' + Math.round(c.getBoundingClientRect().top) + '-' + Math.round(c.getBoundingClientRect().bottom)).join(' '); }));
   const n = await page.evaluate(() => document.querySelectorAll('[data-service]').length);
   log(tag, 'serviços na página:', n, n === 9 ? 'OK' : 'ERRO');
   const nova = await page.evaluate(() => !!document.querySelector('.gf-nova'));
@@ -95,6 +96,37 @@ async function run(name, P, browser, mode) {
     const hash = await page.evaluate(() => location.hash);
     log(tag, 'capa em alta abriu:', ok, hash, /#\/detail\//.test(hash) ? 'OK' : 'ERRO');
     await page.evaluate(() => history.back()); await sleep(2000);
+  }
+  if (nova && v2 && P.mac) {
+    // Mac V2: botão Ver legível, topo "Pesquisar" abre a pesquisa e encontra um título, menu ☰ com Mais Tarde e Configurações, barra lateral sem ícones
+    const ver = await page.evaluate(() => { const b = document.querySelector('.gf-nv-hero .gf-nv-btn.is-main'); if (!b) return 'sem'; const cs = getComputedStyle(b); return cs.color + ' em ' + cs.backgroundColor; });
+    log(tag, 'botão Ver (texto em fundo):', ver, /rgb\(11, 11, 15\)/.test(ver) ? 'OK' : 'ERRO');
+    const side = await page.evaluate(() => { const v = document.querySelector('[class*="vertical-nav-bar-container"]'); return v ? [...v.children].filter(c => getComputedStyle(c).display !== 'none').length + ' itens visíveis, texto: ' + getComputedStyle(v, '::after').content : 'sem barra'; });
+    log(tag, 'barra lateral:', side);
+    await page.click('[class*="horizontal-nav-bar-container"] [class*="logo-container"]');
+    await sleep(2500);
+    log(tag, 'Pesquisar no topo abriu:', await page.evaluate(() => location.hash), /#\/search/.test(await page.evaluate(() => location.hash)) ? 'OK' : 'ERRO');
+    await page.evaluate(() => { location.hash = '#/search?search=matrix'; }); await sleep(7000);
+    const found = await page.evaluate(() => { const t = document.body.innerText; return /Matrix/i.test(t) ? 'encontrou Matrix' : 'NÃO encontrou'; });
+    log(tag, 'pesquisa "matrix":', found, /encontrou Matrix/.test(found) ? 'OK' : 'ERRO');
+    await page.screenshot({ path: `${OUT}/${tag}-08-pesquisa.png` });
+    await page.evaluate(() => { location.hash = '#/'; }); await sleep(3000);
+    const menuBtn = await page.$('[class*="horizontal-nav-bar-container"] [class*="menu-button"]');
+    if (menuBtn) { await menuBtn.click(); await sleep(1000); }
+    const opts = await page.evaluate(() => [...document.querySelectorAll('[class*="nav-menu-container"] a[href]')].map(a => a.textContent.trim() + '=' + a.getAttribute('href')).join(', '));
+    log(tag, 'menu ☰:', opts, /Mais Tarde=#\/library/.test(opts) && /Configurações=#\/settings/.test(opts) ? 'OK' : 'ERRO');
+    await page.screenshot({ path: `${OUT}/${tag}-09-menu.png` });
+    for (const [h, nome] of [['#/library', 'Mais Tarde'], ['#/settings', 'Configurações']]) {
+      if (!(await page.$('[class*="nav-menu-container"]')) && menuBtn) { await menuBtn.click(); await sleep(800); }
+      await page.evaluate(x => { const a = document.querySelector('[class*="nav-menu-container"] a[href="' + x + '"]'); if (a) a.click(); }, h);
+      await sleep(2500);
+      const hh = await page.evaluate(() => location.hash);
+      log(tag, 'menu ' + nome + ' abriu:', hh, hh.indexOf(h) === 0 ? 'OK' : 'ERRO');
+      await page.evaluate(() => { const v = document.querySelector('[class*="vertical-nav-bar-container"]'); if (v) v.click(); }); await sleep(2500);
+      log(tag, 'logótipo da barra lateral voltou a:', await page.evaluate(() => location.hash || '#/'));
+    }
+    await page.waitForSelector('.gf-nova', { timeout: 15000 }).catch(() => {});
+    await sleep(2000);
   }
   if (nova && v2) {
     // destaque V2: Ver e i abrem o título do destaque; deslizar e a troca automática mudam de serviço
