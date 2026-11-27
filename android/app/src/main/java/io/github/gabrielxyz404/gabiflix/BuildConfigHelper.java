@@ -12,4 +12,10 @@ final class BuildConfigHelper {
             return "1";
         }
     }
+
+    /** para diagnóstico (relatórios, registos): "2.0 (build 121)"; o utilizador vê só versionName */
+    static String versionLabel(Context c) {
+        long code = AppUpdate.versionCode(c);
+        return versionName(c) + (code > 0 ? " (build " + code + ")" : "");
+    }
 }

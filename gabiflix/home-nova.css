@@ -146,10 +146,17 @@ html[data-gf-nova][data-gf-route="home"][data-gf-view="grid"] div[class^="board-
 
 .gf-nova-phone .gf-nv-svcs { display: flex; gap: 10px; padding: 18px 20px 2px; overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
 .gf-nova-phone .gf-nv-svcs::-webkit-scrollbar { display: none; }
-.gf-nova-phone .gf-nv-svc { flex: none; width: 56px; height: 56px; border-radius: 28px; background: var(--nv-bg); border: 1px solid color-mix(in srgb, var(--nv-fg) 25%, transparent); color: var(--nv-fg); font-weight: 700; font-size: 18px; }
-.gf-nova-phone .gf-nv-svc:active { transform: scale(0.96); }
+.gf-nova-phone .gf-nv-svc { flex: none; width: 64px; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.gf-nova-phone .gf-nv-dot { display: flex; align-items: center; justify-content: center; width: 56px; height: 56px; border-radius: 28px; background: var(--nv-bg); border: 1px solid color-mix(in srgb, var(--nv-fg) 25%, transparent); color: var(--nv-fg); font-weight: 700; font-size: 18px; }
+.gf-nova-phone .gf-nv-svc-name { max-width: 64px; font-size: 11px; font-weight: 500; line-height: 1.2; color: var(--nv-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.gf-nova-phone .gf-nv-svc:active .gf-nv-dot { transform: scale(0.96); }
+/* a fila de serviços desliza até ao último (CineTime) com a mesma margem do início */
+.gf-nova-phone .gf-nv-svcs::after { content: ""; flex: none; width: 10px; }
 
-.gf-nova-phone .gf-nv-cw { padding: 20px 20px 0; gap: 10px; }
+.gf-nova-phone .gf-nv-cw, .gf-nova-phone .gf-nv-trend { padding: 20px 20px 0; gap: 10px; }
+.gf-nova-phone .gf-nv-trend[hidden] { display: none; }
+.gf-nova-phone .gf-nv-trend .gf-nv-h { font-size: 16px; }
+.gf-nova-phone .gf-nv-trend .gf-nv-poster { height: 165px; }
 .gf-nova-phone .gf-nv-cw[hidden] { display: none; }
 .gf-nova-phone .gf-nv-cw .gf-nv-h { font-size: 16px; }
 .gf-nova-phone .gf-nv-row { display: flex; gap: 10px; margin: 0 -20px; padding: 0 20px; overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
@@ -159,3 +166,5 @@ html[data-gf-nova][data-gf-route="home"][data-gf-view="grid"] div[class^="board-
 .gf-nova .gf-nv-wide::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 60px; background: linear-gradient(to top, rgba(11, 11, 15, 0.85), transparent); pointer-events: none; }
 .gf-nova .gf-nv-wide-name { position: absolute; left: 10px; right: 10px; bottom: 16px; z-index: 1; font-size: 12px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .gf-nova .gf-nv-wide .gf-nv-bar { z-index: 1; }
+.gf-nova .gf-nv-wide .gf-nv-bar { width: auto; }
+.gf-nova-phone .gf-nv-row::after { content: ""; flex: none; width: 10px; }

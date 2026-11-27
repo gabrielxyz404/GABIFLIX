@@ -1604,7 +1604,7 @@ public class PlayerActivity extends Activity {
         StringBuilder b = new StringBuilder();
         try {
             android.net.ConnectivityManager cm = (android.net.ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
-            b.append("FramePlay ").append(BuildConfigHelper.versionName(this)).append(" · ").append(android.os.Build.MANUFACTURER).append(' ').append(android.os.Build.MODEL)
+            b.append("FramePlay ").append(BuildConfigHelper.versionLabel(this)).append(" · ").append(android.os.Build.MANUFACTURER).append(' ').append(android.os.Build.MODEL)
                     .append(" · Android ").append(android.os.Build.VERSION.RELEASE).append(" · ").append(android.os.Build.SUPPORTED_ABIS.length > 0 ? android.os.Build.SUPPORTED_ABIS[0] : "?")
                     .append(" · rede ").append(cm != null && cm.isActiveNetworkMetered() ? "com limite de dados" : "sem limite").append('\n');
         } catch (Throwable ignored) {}

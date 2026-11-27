@@ -75,7 +75,7 @@ public final class CrashReporter {
         writerThread = new HandlerThread("gf-crumbs", android.os.Process.THREAD_PRIORITY_BACKGROUND);
         writerThread.start();
         writer = new Handler(writerThread.getLooper());
-        crumb("processo " + proc + " iniciado, versão " + BuildConfigHelper.versionName(app) + ", pid " + android.os.Process.myPid());
+        crumb("processo " + proc + " iniciado, versão " + BuildConfigHelper.versionLabel(app) + ", pid " + android.os.Process.myPid());
 
         final Thread.UncaughtExceptionHandler old = Thread.getDefaultUncaughtExceptionHandler();
         Thread.setDefaultUncaughtExceptionHandler((t, e) -> {
@@ -614,7 +614,7 @@ public final class CrashReporter {
 
     private static String header(String kind, String procName) {
         StringBuilder b = new StringBuilder();
-        b.append("FramePlay ").append(BuildConfigHelper.versionName(app)).append(" | ").append(kind).append(" | processo ").append(procName).append('\n');
+        b.append("FramePlay ").append(BuildConfigHelper.versionLabel(app)).append(" | ").append(kind).append(" | processo ").append(procName).append('\n');
         b.append("Aparelho: ").append(Build.MANUFACTURER).append(' ').append(Build.MODEL).append(" | Android ").append(Build.VERSION.RELEASE).append(" (API ").append(Build.VERSION.SDK_INT).append(")");
         try {
             ActivityManager am = (ActivityManager) app.getSystemService(Context.ACTIVITY_SERVICE);
@@ -660,7 +660,7 @@ public final class CrashReporter {
                 c.setDoOutput(true);
                 c.setRequestProperty("Content-Type", "text/plain; charset=utf-8");
                 c.setRequestProperty("User-Agent", "FramePlay-crash");
-                c.setRequestProperty("Title", "FramePlay " + BuildConfigHelper.versionName(app) + " " + kind.replaceAll("[^A-Za-z0-9_ -]", "") + (parts > 1 ? " (" + (p + 1) + "/" + parts + ")" : ""));
+                c.setRequestProperty("Title", "FramePlay " + BuildConfigHelper.versionLabel(app) + " " + kind.replaceAll("[^A-Za-z0-9_ -]", "") + (parts > 1 ? " (" + (p + 1) + "/" + parts + ")" : ""));
                 c.setRequestProperty("Tags", tag);
                 try (OutputStream os = c.getOutputStream()) { os.write(chunk); }
                 int code = c.getResponseCode();

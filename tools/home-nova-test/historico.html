@@ -1,0 +1,18 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Histórico de teste</title>
+<script>
+// Só para os testes: põe dois títulos em "Continuar a ver" na biblioteca local de convidado (sem conta) e abre a app.
+(function () {
+  var iso = function (d) { return new Date(Date.now() - d * 86400000).toISOString(); };
+  var it = function (id, name, day) {
+    return { _id: id, name: name, type: 'movie', poster: 'https://images.metahub.space/poster/small/' + id + '/img', posterShape: 'poster', removed: false, temp: false, _ctime: iso(day + 1), _mtime: iso(day),
+      state: { lastWatched: iso(day), timeWatched: 3600000, timeOffset: 3600000, overallTimeWatched: 3600000, timesWatched: 0, flaggedWatched: 0, duration: 10140000, video_id: id, watched: null, noNotif: false },
+      behaviorHints: { defaultVideoId: id, featuredVideoId: null, hasScheduledVideos: false } };
+  };
+  var m = { tt0816692: it('tt0816692', 'Interstellar', 1), tt1375666: it('tt1375666', 'Inception', 5) };
+  localStorage.setItem('library', JSON.stringify({ uid: null, items: m }));
+  localStorage.setItem('library_recent', JSON.stringify({ uid: null, items: m }));
+  location.replace('../../index.html');
+})();
+</script>

@@ -86,6 +86,13 @@ async function run(name, P, browser, mode) {
     await page.evaluate(() => history.back()); await sleep(1500);
     await page.screenshot({ path: `${OUT}/${tag}-03-teclado.png` });
   }
+  if (nova && !P.mac) {
+    const ok = await page.evaluate(() => { const b = document.querySelector('.gf-nv-trend .gf-nv-poster'); if (!b) return 'sem capas'; b.click(); return 'ok'; });
+    await sleep(2500);
+    const hash = await page.evaluate(() => location.hash);
+    log(tag, 'capa em alta abriu:', ok, hash, /#\/detail\//.test(hash) ? 'OK' : 'ERRO');
+    await page.evaluate(() => history.back()); await sleep(2000);
+  }
   if (nova && mode === 'user') {
     // Retomar abre o título certo (Interstellar)
     const label = await page.evaluate(() => { const b = document.querySelector('.gf-nv-hero .gf-nv-btn.is-main'); return b ? b.textContent.trim() + ' | ' + document.querySelector('.gf-nv-title').textContent : 'sem botão'; });
