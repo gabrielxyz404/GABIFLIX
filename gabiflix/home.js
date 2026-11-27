@@ -31,6 +31,7 @@
         root.innerHTML = '';
         // apps (celular Android e Mac): os botões viram um carrossel, um serviço por vez
         var appKind = document.documentElement.getAttribute('data-gf-app');
+        if (novaOn()) { renderNova(root, appKind); return; } // Mac e celular: a Início nova
         var android = appKind === 'android'; // só o celular tem o carrossel
         var mac = appKind === 'mac'; // Mac: todos os serviços de uma vez numa grade (mouse e teclado), com o visual dos cartões do celular
         var grid = el('div', android ? 'gf-grid gf-pager' : (mac ? 'gf-grid gf-mac-grid' : 'gf-grid'));
@@ -187,6 +188,307 @@
             var c = cards[gridIndex >= 0 && gridIndex < cards.length ? gridIndex : 0];
             if (c) { try { c.focus({ preventScroll: true }); c.scrollIntoView({ block: 'nearest' }); } catch (er) {} }
         });
+    }
+
+    // ---------- Início novo: Mac "Cinema" e celular "Capa" ----------
+    // O destaque é o último título de "Continuar a ver" (o que vem do histórico do app); sem histórico, um título em alta do primeiro serviço.
+    // Os serviços abrem o mesmo catálogo de sempre (open). Na TV a Início é outra (nativa): tv/TvHomeActivity.
+    // Voltar ao desenho antigo (para testes): localStorage.setItem('gf-home', 'old')
+    var NV_COLORS = { // [texto, fundo do cartão] de cada serviço
+        netflix: ['#FF4D55', '#2A0D10'], disney: ['#7DB4FF', '#0D1A33'], prime: ['#4FD1E8', '#0A2329'],
+        hbo: ['#B98CFF', '#1E1233'], appletv: ['#F4F4F6', '#202027'], paramount: ['#6FA0FF', '#0E1A38'],
+        globoplay: ['#E3D25A', '#26240C'], clarovideo: ['#FF6B5E', '#2C110E'], cinemateca: ['#E7C07A', '#2A2213']
+    };
+
+    function novaOn() {
+        var k = document.documentElement.getAttribute('data-gf-app');
+        if (k !== 'android' && k !== 'mac') return false;
+        try { if (localStorage.getItem('gf-home') === 'old') return false; } catch (e) {}
+        return true;
+    }
+
+    function greeting() {
+        var h = new Date().getHours();
+        return h >= 5 && h < 12 ? 'Bom dia' : (h >= 12 && h < 20 ? 'Boa tarde' : 'Boa noite');
+    }
+
+    function progressPct(item) {
+        var st = item.state || {};
+        var pct = typeof item.progress === 'number' ? item.progress : (st.duration > 0 && st.timeOffset > 0 ? st.timeOffset / st.duration * 100 : 0);
+        return Math.min(100, Math.max(0, pct));
+    }
+
+    // imagem larga (backdrop) de um item do "Continuar a ver"; sem código do IMDb, cai na capa
+    function backdropOf(item, size) {
+        return /^tt\d+/.test(item._id || '') ? 'https://images.metahub.space/background/' + (size || 'medium') + '/' + encodeURIComponent(item._id) + '/img' : (item.poster || '');
+    }
+
+    function novaImg(src, eager) {
+        var img = el('img');
+        img.alt = '';
+        img.decoding = 'async';
+        if (eager) img.setAttribute('fetchpriority', 'high'); else img.loading = 'lazy';
+        img.onload = function () { img.classList.add('is-ready'); };
+        img.onerror = function () { img.remove(); };
+        if (src) img.src = src; else img.remove();
+        return img;
+    }
+
+    // retoma de onde parou (o mesmo atalho do Continuar assistindo dos catálogos); sem atalho abre a página do título
+    function resumeItem(item) {
+        var link = item.deepLinks && (item.deepLinks.player || item.deepLinks.metaDetailsStreams || item.deepLinks.metaDetailsVideos);
+        if (!link) { openTitle({ id: item._id, type: item.type, name: item.name }); return; }
+        if (window.gfPlayNative && /^#?\/player\//.test(link) && window.gfPlayNative(link)) return;
+        window.gfGo(link);
+    }
+
+    // o destaque: { kind: 'continue', item } ou { kind: 'trend', meta, service }
+    function pickFeatured() {
+        return getContinueItems().then(function (items) {
+            var it = items.filter(function (x) { return x && x._id && x.type !== 'other'; })[0];
+            if (it) return { kind: 'continue', item: it, meta: { id: it._id, type: it.type, name: it.name, poster: it.poster } };
+            var s = SERVICES[0];
+            return loadHome(s.id).then(function (h) {
+                var list = (h.top10 || []).concat(h.movie || []).concat(h.series || []);
+                var m = list.filter(function (x) { return x && x.id && x.name && (x.background || /^tt/.test(x.id)); })[0];
+                return m ? { kind: 'trend', meta: m, service: s } : null;
+            });
+        }).catch(function () { return null; });
+    }
+
+    function svgIcon(path, size, fill) {
+        var ns = 'http://www.w3.org/2000/svg';
+        var s = document.createElementNS(ns, 'svg');
+        s.setAttribute('viewBox', '0 0 24 24'); s.setAttribute('width', size); s.setAttribute('height', size); s.setAttribute('aria-hidden', 'true');
+        var p = document.createElementNS(ns, 'path');
+        p.setAttribute('d', path);
+        if (fill) p.setAttribute('fill', 'currentColor'); else { p.setAttribute('fill', 'none'); p.setAttribute('stroke', 'currentColor'); p.setAttribute('stroke-width', '2.2'); p.setAttribute('stroke-linecap', 'round'); p.setAttribute('stroke-linejoin', 'round'); }
+        s.appendChild(p);
+        return s;
+    }
+    var PLAY_D = 'M7 4l13 8-13 8z', INFO_D = 'M12 11v6M12 7.2v.1';
+
+    // preenche o destaque (Mac: cartão grande com a imagem à direita; celular: capa a ecrã inteiro)
+    function fillNovaHero(hero, feat, mac) {
+        hero.innerHTML = '';
+        var copy = el('div', 'gf-nv-copy');
+        if (!feat) {
+            hero.classList.add('is-empty');
+            copy.appendChild(el('span', 'gf-nv-tag', 'FRAMEPLAY'));
+            copy.appendChild(el('h2', 'gf-nv-title', 'Escolhe um serviço'));
+            hero.appendChild(copy);
+            return;
+        }
+        var cont = feat.kind === 'continue';
+        var meta = feat.meta;
+        var src = cont ? backdropOf(feat.item, 'medium') : (meta.background || ('https://images.metahub.space/background/medium/' + encodeURIComponent(meta.id) + '/img'));
+        var frame = el('div', 'gf-nv-img');
+        frame.appendChild(novaImg(src, true));
+        hero.appendChild(frame);
+        copy.appendChild(el('span', 'gf-nv-tag', cont ? 'CONTINUAR A VER' : 'EM ALTA NA ' + feat.service.name.toUpperCase()));
+        copy.appendChild(el('h2', 'gf-nv-title', meta.name || ''));
+        if (cont) {
+            var bar = el('div', 'gf-nv-bar');
+            var fill = el('i');
+            fill.style.width = Math.max(3, progressPct(feat.item)).toFixed(1) + '%';
+            bar.appendChild(fill);
+            copy.appendChild(bar);
+        }
+        var act = el('div', 'gf-nv-actions');
+        var main = el('button', 'gf-nv-btn is-main');
+        main.type = 'button';
+        main.appendChild(svgIcon(PLAY_D, 16, true));
+        main.appendChild(document.createTextNode(cont ? 'Retomar' : 'Ver'));
+        main.addEventListener('click', function () { if (cont) resumeItem(feat.item); else openTitle(meta); });
+        act.appendChild(main);
+        var second = el('button', 'gf-nv-btn' + (mac ? '' : ' is-round'));
+        second.type = 'button';
+        if (mac) {
+            second.textContent = 'Detalhes';
+            second.addEventListener('click', function () { openTitle(meta); });
+        } else {
+            second.setAttribute('aria-label', 'Detalhes');
+            second.appendChild(svgIcon(INFO_D, 20, false));
+            second.addEventListener('click', function () { openTitle(meta); });
+        }
+        act.appendChild(second);
+        copy.appendChild(act);
+        hero.appendChild(copy);
+    }
+
+    function novaPoster(meta) {
+        var b = el('button', 'gf-nv-poster');
+        b.type = 'button';
+        b.setAttribute('aria-label', meta.name || 'Título');
+        b.appendChild(novaImg(meta.poster || ('https://images.metahub.space/poster/small/' + encodeURIComponent(meta.id) + '/img'), false));
+        b.addEventListener('click', function () { openTitle(meta); });
+        return b;
+    }
+
+    // "Continuar a ver" do celular: cartões largos com a linha de progresso; segurar remove, como nos catálogos
+    function novaContinueCard(item, section) {
+        var b = el('button', 'gf-nv-wide');
+        b.type = 'button';
+        b.setAttribute('aria-label', item.name || 'Título');
+        b.appendChild(novaImg(backdropOf(item, 'small') || item.poster, false));
+        b.appendChild(el('span', 'gf-nv-wide-name', item.name || ''));
+        var bar = el('span', 'gf-nv-bar');
+        var fill = el('i');
+        fill.style.width = Math.max(3, progressPct(item)).toFixed(1) + '%';
+        bar.appendChild(fill);
+        b.appendChild(bar);
+        var pressed = false;
+        onLongPress(b, function () { pressed = true; continueMenu(item, b); });
+        b._gfRemoved = function () { if (!section.querySelector('.gf-nv-wide')) section.hidden = true; };
+        b.addEventListener('click', function (e) {
+            if (pressed) { pressed = false; e.preventDefault(); return; }
+            resumeItem(item);
+        });
+        return b;
+    }
+
+    function renderNova(root, appKind) {
+        var mac = appKind === 'mac';
+        var page = el('div', 'gf-nova ' + (mac ? 'gf-nova-mac' : 'gf-nova-phone'));
+        var hero = el('section', 'gf-nv-hero');
+        hero.setAttribute('aria-label', 'Destaque');
+        hero.classList.add('is-loading');
+
+        // serviços: cartões com a cor de cada um (Mac) ou círculos com a inicial (celular)
+        function serviceButtons() {
+            return SERVICES.map(function (s) {
+                var c = NV_COLORS[s.id] || ['#F4F4F6', '#202027'];
+                var b = el('button', 'gf-nv-svc');
+                b.type = 'button';
+                b.setAttribute('data-service', s.id);
+                b.setAttribute('aria-label', s.name);
+                b.style.setProperty('--nv-fg', c[0]);
+                b.style.setProperty('--nv-bg', c[1]);
+                b.textContent = mac ? s.name : s.name.charAt(0);
+                b.addEventListener('pointerdown', function () { prefetch(s); }, { passive: true });
+                b.addEventListener('click', function () { open(s.id, true); });
+                return b;
+            });
+        }
+        var svcs = serviceButtons();
+        var svcBox = el('div', 'gf-nv-svcs');
+        svcs.forEach(function (b) { svcBox.appendChild(b); });
+        var svcSec = el('section', 'gf-nv-sec');
+        svcSec.setAttribute('aria-label', 'Serviços');
+        if (mac) svcSec.appendChild(el('h3', 'gf-nv-h', 'Os teus serviços'));
+        svcSec.appendChild(svcBox);
+
+        var rowSec = el('section', 'gf-nv-sec');
+        var rowBox = el('div', 'gf-nv-row');
+        var rowTitle = el('h3', 'gf-nv-h', mac ? 'Em alta na ' + SERVICES[0].name : 'Continuar a ver');
+
+        if (mac) {
+            var head = el('header', 'gf-nv-head');
+            head.appendChild(el('h1', 'gf-nv-greet', greeting()));
+            var lab = el('label', 'gf-nv-search');
+            lab.appendChild(svgIcon('M11 4a7 7 0 1 0 0 14a7 7 0 0 0 0-14zM20 20l-4-4', 18, false));
+            var inp = el('input');
+            inp.type = 'search';
+            inp.placeholder = 'Filmes, séries, atores';
+            inp.setAttribute('aria-label', 'Pesquisar');
+            inp.autocomplete = 'off';
+            inp.addEventListener('keydown', function (e) {
+                if (e.key === 'Enter' && inp.value.trim()) window.gfGo('#/search?search=' + encodeURIComponent(inp.value.trim()));
+                else if (e.key === 'Escape') inp.blur();
+            });
+            lab.appendChild(inp);
+            head.appendChild(lab);
+            page.appendChild(head);
+            page.appendChild(hero);
+            page.appendChild(svcSec);
+            rowSec.appendChild(rowTitle);
+            rowSec.appendChild(rowBox);
+            page.appendChild(rowSec);
+        } else {
+            page.appendChild(hero);
+            page.appendChild(svcSec);
+            rowSec.hidden = true;
+            rowSec.className = 'gf-nv-sec gf-nv-cw';
+            rowSec.appendChild(rowTitle);
+            rowSec.appendChild(rowBox);
+            page.appendChild(rowSec);
+        }
+        root.appendChild(page);
+
+        // dados: o destaque (histórico ou em alta), a fila "Em alta" do Mac e o "Continuar a ver" do celular
+        pickFeatured().then(function (feat) {
+            if (!page.isConnected) return;
+            hero.classList.remove('is-loading');
+            fillNovaHero(hero, feat, mac);
+            focusNovaStart();
+        });
+        if (mac) {
+            loadHome(SERVICES[0].id).then(function (h) {
+                if (!page.isConnected) return;
+                var frag = document.createDocumentFragment();
+                (h.top10 || []).concat(h.movie || []).slice(0, 14).forEach(function (m) { frag.appendChild(novaPoster(m)); });
+                rowBox.appendChild(frag);
+            }).catch(function () { rowSec.hidden = true; });
+        } else {
+            getContinueItems().then(function (items) {
+                if (!page.isConnected) return;
+                var list = items.filter(function (x) { return x && x._id && x.type !== 'other'; }).slice(0, 12);
+                if (!list.length) return;
+                var frag = document.createDocumentFragment();
+                list.forEach(function (it) { frag.appendChild(novaContinueCard(it, rowSec)); });
+                rowBox.appendChild(frag);
+                rowSec.hidden = false;
+            });
+        }
+
+        // celular: os círculos começam no serviço onde o usuário estava
+        if (!mac) requestAnimationFrame(function () {
+            var c = svcs[gridIndex] || svcs[0];
+            if (gridIndex > 1 && c) svcBox.scrollLeft = Math.max(0, c.offsetLeft - 40);
+        });
+        svcs.forEach(function (c, i) { c.addEventListener('focus', function () { gridIndex = i; }); });
+
+        if (gridKeyHandler) { document.removeEventListener('keydown', gridKeyHandler, true); gridKeyHandler = null; }
+        if (mac) setupNovaKeys(page, svcs);
+
+        function focusNovaStart() {
+            if (!mac) return;
+            var ae = document.activeElement;
+            if (ae && ae !== document.body && page.contains(ae)) return; // o usuário já está a navegar
+            var c = svcs[gridIndex >= 0 && gridIndex < svcs.length ? gridIndex : 0];
+            if (c) { try { c.focus({ preventScroll: true }); } catch (er) {} }
+        }
+        if (mac) requestAnimationFrame(focusNovaStart);
+    }
+
+    // Mac: ← → ↑ ↓ andam pelo destaque (botões), pelos serviços e pelas capas; Enter abre; ao voltar o foco fica no serviço de onde veio
+    function setupNovaKeys(page, svcs) {
+        function rows() {
+            return [
+                [].slice.call(page.querySelectorAll('.gf-nv-hero .gf-nv-btn:not(:disabled)')),
+                svcs,
+                [].slice.call(page.querySelectorAll('.gf-nv-poster'))
+            ].filter(function (r) { return r.length; });
+        }
+        gridKeyHandler = function (e) {
+            if (!document.body.contains(page) || e.metaKey || e.ctrlKey || e.altKey || e.shiftKey) return;
+            var de = document.documentElement;
+            if (de.getAttribute('data-gf-route') !== 'home' || de.getAttribute('data-gf-view') !== 'grid') return;
+            var t = e.target, tag = t && t.tagName;
+            if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || (t && t.isContentEditable)) return;
+            if (e.key.indexOf('Arrow') !== 0) return;
+            var rs = rows(), ae = document.activeElement, r = -1, i = -1, k;
+            for (k = 0; k < rs.length; k++) { i = rs[k].indexOf(ae); if (i >= 0) { r = k; break; } }
+            if (r < 0) { e.preventDefault(); var home = rows()[1] || rs[0]; if (home) home[Math.max(0, Math.min(home.length - 1, gridIndex))].focus(); return; }
+            var to = null;
+            if (e.key === 'ArrowRight') to = rs[r][Math.min(rs[r].length - 1, i + 1)];
+            else if (e.key === 'ArrowLeft') to = rs[r][Math.max(0, i - 1)];
+            else if (e.key === 'ArrowDown' && r + 1 < rs.length) to = rs[r + 1][Math.min(rs[r + 1].length - 1, r === 0 ? gridIndex : i)];
+            else if (e.key === 'ArrowUp' && r > 0) to = rs[r - 1][Math.min(rs[r - 1].length - 1, r === 1 ? 0 : i)];
+            e.preventDefault();
+            if (to) { try { to.focus(); to.scrollIntoView({ block: 'nearest', inline: 'nearest' }); } catch (er) {} }
+        };
+        document.addEventListener('keydown', gridKeyHandler, true);
     }
 
     // Abas de cada serviço (categorias típicas de cada app)
@@ -686,6 +988,7 @@
             close();
             var row = poster.closest('.gf-row');
             poster.remove();
+            if (poster._gfRemoved) poster._gfRemoved();
             if (row && !row.querySelector('.gf-poster')) row.hidden = true;
         });
         list.appendChild(rm);
@@ -729,6 +1032,8 @@
     // o VLC do app salvou o progresso: atualiza a fileira Continuar assistindo que estiver na tela
     window.gfRefreshContinue = function () {
         var root = document.getElementById('gf-home');
+        // na Início nova (sem catálogo aberto) refaz o destaque e o "Continuar a ver"
+        if (root && !current && root.querySelector('.gf-nova')) { setTimeout(function () { if (!current && document.getElementById('gf-home') === root) render(); }, 300); return; }
         var s = current && find(current);
         if (!root || !s) return;
         var old = [].filter.call(root.querySelectorAll('.gf-row'), function (r) {
@@ -833,6 +1138,7 @@
     markRoute();
     function markView() {
         document.documentElement.setAttribute('data-gf-view', current ? 'catalog' : 'grid');
+        if (novaOn()) document.documentElement.setAttribute('data-gf-nova', '1'); else document.documentElement.removeAttribute('data-gf-nova');
     }
     function syncTheme() {
         markRoute();

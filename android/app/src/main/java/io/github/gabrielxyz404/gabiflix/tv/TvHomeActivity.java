@@ -7,63 +7,103 @@ import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.Gravity;
+import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
-/** Tela inicial da TV: os serviços em cartões altos, lado a lado, com rolagem infinita para a direita e a esquerda. */
+import java.util.concurrent.ConcurrentHashMap;
+
+/**
+ * Tela inicial da TV, desenho "Prateleira": em cima o título em destaque do serviço selecionado (imagem, nome e sinopse);
+ * embaixo a fila de serviços, com o selecionado maior e com contorno branco. Navega-se só com as setas e o OK.
+ * Leve para a TV de 32 bits: uma só imagem grande de cada vez (só depois de o foco parar um instante), sem camadas de placa de vídeo
+ * e só o aumento do cartão selecionado como animação.
+ */
 public class TvHomeActivity extends TvBase {
 
-    private View accountBtn;
-    private View rootView;
-    private FrameLayout stage;
-    private View bgFront, bgBack;   // camada de fundo visível e a que vai aparecer
-    private String bgId = "";
-    private android.graphics.drawable.Drawable bgNow = new android.graphics.drawable.ColorDrawable(0xFF0B0B0D);
-    private RecyclerView list;
+    private static final int BG = 0xFF07070A;
     private static final int N = Services.ALL.size();
-    private static final int MIDDLE = (Integer.MAX_VALUE / 2) - ((Integer.MAX_VALUE / 2) % Services.ALL.size());
+
+    private View accountBtn;
+    private RecyclerView list;
+    private ImageView heroImg;
+    private TextView heroTag, heroTitle, heroText;
+    private int lastFocused = 0;          // serviço selecionado por último (o foco volta a ele depois dos ícones do topo)
+    private Runnable heroImageTask;
+    private String heroImageUrl = "";
+
+    /** o título em destaque de um serviço */
+    private static final class Feature { String title = "", text = "", image = "", info = ""; }
+    private final ConcurrentHashMap<String, Feature> features = new ConcurrentHashMap<>();
+    private final java.util.Set<String> loading = java.util.Collections.newSetFromMap(new ConcurrentHashMap<String, Boolean>());
+
+    /** cores de cada serviço: {texto, fundo do cartão} (as mesmas do desenho aprovado) */
+    static int[] look(String id) {
+        switch (id) {
+            case "netflix": return new int[]{0xFFFF4D55, 0xFF2A0D10};
+            case "disney": return new int[]{0xFF7DB4FF, 0xFF0D1A33};
+            case "prime": return new int[]{0xFF4FD1E8, 0xFF0A2329};
+            case "hbo": return new int[]{0xFFB98CFF, 0xFF1E1233};
+            case "appletv": return new int[]{0xFFF4F4F6, 0xFF202027};
+            case "paramount": return new int[]{0xFF6FA0FF, 0xFF0E1A38};
+            case "globoplay": return new int[]{0xFFE3D25A, 0xFF26240C};
+            case "clarovideo": return new int[]{0xFFFF6B5E, 0xFF2C110E};
+            default: return new int[]{0xFFE7C07A, 0xFF2A2213};
+        }
+    }
 
     @Override
     protected void onCreate(Bundle b) {
         super.onCreate(b);
         if (io.github.gabrielxyz404.gabiflix.MainActivity.duplicateLauncher(this)) { finish(); return; }   // ícone tocado com o app (e o filme) já abertos: não cobre a tarefa
         new Thread(io.github.gabrielxyz404.gabiflix.Site::resolve).start(); // descobre já qual endereço do site responde
+        getWindow().getDecorView().setBackgroundColor(BG);
         LinearLayout root = new LinearLayout(this);
         root.setOrientation(LinearLayout.VERTICAL);
-        root.setPadding(0, Ui.dp(this, 22), 0, Ui.dp(this, 14));
-        rootView = root;
+        root.setBackgroundColor(BG);
         root.setClipChildren(false);
-        // o fundo fica em duas camadas por trás (cada uma vira uma textura da placa de vídeo): trocar de serviço é só esmaecer uma sobre a outra
-        stage = new FrameLayout(this);
-        bgBack = new View(this);
-        bgFront = new View(this);
-        for (View v : new View[]{bgBack, bgFront}) {
-            v.setLayerType(View.LAYER_TYPE_HARDWARE, null);
-            stage.addView(v, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
-        }
-        bgFront.setBackground(bgNow);
 
-        // topo: logo + "Home" à esquerda, ícones à direita
+        // ---------- metade de cima: o destaque do serviço selecionado ----------
+        FrameLayout hero = new FrameLayout(this);
+        hero.setClipChildren(false);
+        heroImg = new ImageView(this);
+        heroImg.setScaleType(ImageView.ScaleType.CENTER_CROP);
+        heroImg.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
+        hero.addView(heroImg, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+        // escurece a esquerda (onde está o texto) e a parte de baixo (onde começa a fila de serviços); estáticos, sem custo
+        View left = new View(this);
+        left.setBackground(new GradientDrawable(GradientDrawable.Orientation.LEFT_RIGHT, new int[]{0xFF07070A, 0xD907070A, 0x0007070A}));
+        hero.addView(left, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+        View bottom = new View(this);
+        bottom.setBackground(new GradientDrawable(GradientDrawable.Orientation.BOTTOM_TOP, new int[]{0xFF07070A, 0x9907070A, 0x0007070A}));
+        hero.addView(bottom, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, Ui.dp(this, 150), Gravity.BOTTOM));
+        View topShade = new View(this);
+        topShade.setBackground(new GradientDrawable(GradientDrawable.Orientation.TOP_BOTTOM, new int[]{0xB307070A, 0x0007070A}));
+        hero.addView(topShade, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, Ui.dp(this, 100), Gravity.TOP));
+
+        // topo: logo e nome à esquerda, ícones à direita
         LinearLayout top = new LinearLayout(this);
         top.setOrientation(LinearLayout.HORIZONTAL);
         top.setGravity(Gravity.CENTER_VERTICAL);
-        top.setPadding(Ui.dp(this, 34), Ui.dp(this, 6), Ui.dp(this, 34), Ui.dp(this, 6));
+        top.setPadding(Ui.dp(this, 48), Ui.dp(this, 22), Ui.dp(this, 48), Ui.dp(this, 6));
         top.setClipChildren(false); // o ícone selecionado cresce sem ser cortado
         top.setClipToPadding(false);
-        android.widget.ImageView logo = new android.widget.ImageView(this);
+        ImageView logo = new ImageView(this);
         logo.setImageResource(io.github.gabrielxyz404.gabiflix.R.mipmap.ic_launcher);
-        top.addView(logo, new LinearLayout.LayoutParams(Ui.dp(this, 40), Ui.dp(this, 40)));
-        top.addView(Ui.space(this, 14, 1));
-        TextView home = Ui.text(this, "Home", 26, true, Ui.TEXT);
-        outfit(home, 600);
+        top.addView(logo, new LinearLayout.LayoutParams(Ui.dp(this, 36), Ui.dp(this, 36)));
+        top.addView(Ui.space(this, 12, 1));
+        TextView home = Ui.text(this, "FramePlay", 22, true, Ui.TEXT);
+        outfit(home, 700);
         top.addView(home, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
         View later = iconButton("later", "Mais Tarde");
         later.setId(View.generateViewId());
@@ -79,34 +119,64 @@ public class TvHomeActivity extends TvBase {
         accountBtn = iconButton("account", "Conta");
         accountBtn.setOnClickListener(v -> onAccount());
         top.addView(accountBtn);
-        root.addView(top);
+        for (View v : new View[]{later, search, update, accountBtn}) { // para baixo, o foco volta ao serviço onde estava
+            v.setOnKeyListener((x, code, ev) -> {
+                if (code == KeyEvent.KEYCODE_DPAD_DOWN && ev.getAction() == KeyEvent.ACTION_DOWN) { focusCard(lastFocused, 0); return true; }
+                return false;
+            });
+        }
+        hero.addView(top, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.TOP));
 
-        // cartões dos serviços (infinitos: depois do último vem o primeiro)
+        // texto do destaque
+        LinearLayout info = new LinearLayout(this);
+        info.setOrientation(LinearLayout.VERTICAL);
+        heroTag = Ui.text(this, "", 11, true, 0xFFFF4D55);
+        outfit(heroTag, 600);
+        heroTag.setLetterSpacing(0.12f);
+        heroTitle = Ui.text(this, "", 36, true, Ui.TEXT);
+        outfit(heroTitle, 700);
+        heroTitle.setMaxLines(2);
+        heroTitle.setEllipsize(TextUtils.TruncateAt.END);
+        heroText = Ui.text(this, "", 13, false, 0xFFC4C4CC);
+        outfit(heroText, 400);
+        heroText.setMaxLines(2);
+        heroText.setEllipsize(TextUtils.TruncateAt.END);
+        heroText.setLineSpacing(0, 1.25f);
+        info.addView(heroTag);
+        info.addView(Ui.space(this, 1, 8));
+        info.addView(heroTitle);
+        info.addView(Ui.space(this, 1, 10));
+        info.addView(heroText);
+        FrameLayout.LayoutParams il = new FrameLayout.LayoutParams(Ui.dp(this, 470), ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.BOTTOM | Gravity.START);
+        il.setMargins(Ui.dp(this, 48), 0, 0, Ui.dp(this, 22));
+        hero.addView(info, il);
+        root.addView(hero, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f));
+
+        // ---------- metade de baixo: os serviços ----------
+        LinearLayout shelf = new LinearLayout(this);
+        shelf.setOrientation(LinearLayout.VERTICAL);
+        shelf.setClipChildren(false);
+        shelf.setPadding(0, Ui.dp(this, 4), 0, Ui.dp(this, 14));
+        TextView head = Ui.text(this, "Serviços", 14, true, 0xFFC4C4CC);
+        outfit(head, 600);
+        LinearLayout.LayoutParams hl = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        hl.setMargins(Ui.dp(this, 48), 0, 0, 0);
+        shelf.addView(head, hl);
         list = PosterAdapter.list(this);
-        list.setPadding(Ui.dp(this, 24), Ui.dp(this, 30), Ui.dp(this, 24), Ui.dp(this, 26));
+        list.setClipChildren(false);
+        list.setPadding(Ui.dp(this, 40), 0, Ui.dp(this, 40), 0);
         PosterAdapter.Linear hlm = new PosterAdapter.Linear(this, RecyclerView.HORIZONTAL);
-        hlm.smooth = true; // os cartões deslizam ao mudar de catálogo
+        hlm.smooth = false;
         list.setLayoutManager(hlm);
         list.setHasFixedSize(true);
         list.setItemViewCacheSize(N + 2);
         list.setAdapter(new Cards());
-        root.addView(list, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f));
-        stage.addView(root, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
-        setContentView(stage);
-        ((PosterAdapter.Linear) list.getLayoutManager()).scrollToPositionWithOffset(MIDDLE, 0);
-        focusCard(MIDDLE, 0);
+        shelf.addView(list, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+        root.addView(shelf, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+        setContentView(root);
+        showHero(0, true);
+        focusCard(0, 0);
         prefetch();
-        Net.async(() -> Stremio.data("service-art"), (d, e) -> {
-            if (d == null || isFinishing()) return;
-            artData = d;
-            for (int i = 0; i < list.getChildCount(); i++) {
-                RecyclerView.ViewHolder vh = list.getChildViewHolder(list.getChildAt(i));
-                if (vh instanceof Cards.CH) {
-                    int p = vh.getBindingAdapterPosition();
-                    if (p >= 0) bindArt((Cards.CH) vh, Services.ALL.get(p % N).id);
-                }
-            }
-        });
         String crash = takeCrash(this);
         if (crash != null) {
             new AlertDialog.Builder(this, android.R.style.Theme_DeviceDefault_Dialog_Alert)
@@ -120,7 +190,7 @@ public class TvHomeActivity extends TvBase {
 
     private void prefetchSoon() { list.postDelayed(this::prefetch, 1500); }
 
-    /** baixa já os dados do Início de cada catálogo: ao entrar, abre na hora */
+    /** baixa já os dados do Início de cada catálogo (ao entrar, abre na hora) e o título em destaque de cada serviço */
     private void prefetch() {
         Net.async(() -> {
             for (Services.Service s : Services.ALL) {
@@ -128,10 +198,78 @@ public class TvHomeActivity extends TvBase {
                     if (s.id.equals("cinemateca")) { Stremio.data("cine-cinemas"); Stremio.data("cine-classicos"); }
                     else Stremio.data(s.id + "-home");
                     if (s.id.equals("netflix")) { Stremio.data("netflix-top10-br-series"); Stremio.data("netflix-top10-br-movie"); }
+                    features.put(s.id, loadFeature(s));
                 } catch (Exception ignored) {}
+                final int idx = Services.ALL.indexOf(s);
+                Net.MAIN.post(() -> { if (!isFinishing() && idx == lastFocused) showHero(idx, false); });
             }
             return true;
         }, (ok, e) -> {});
+    }
+
+    /** o primeiro título em alta do serviço, com a sinopse em português */
+    private static Feature loadFeature(Services.Service s) throws Exception {
+        boolean cine = s.id.equals("cinemateca");
+        JSONArray arr = cine ? Stremio.data("cine-cinemas").optJSONArray("metas") : Stremio.data(s.id + "-home").optJSONArray("top10");
+        if ((arr == null || arr.length() == 0) && !cine) arr = Stremio.data(s.id + "-home").optJSONArray("movie");
+        Feature f = new Feature();
+        if (arr == null) return f;
+        for (int i = 0; i < arr.length() && i < 10; i++) {
+            JSONObject m = arr.optJSONObject(i);
+            if (m == null || m.optString("name").isEmpty()) continue;
+            String id = m.optString("id");
+            String bg = m.optString("background", "");
+            if (bg.isEmpty() && id.startsWith("tt")) bg = "https://images.metahub.space/background/medium/" + id + "/img";
+            if (bg.isEmpty()) continue;
+            f.title = m.optString("name");
+            f.image = bg;
+            f.info = m.optString("releaseInfo", "");
+            String d = Stremio.ptDescription(id);
+            f.text = d != null ? d : "";
+            break;
+        }
+        return f;
+    }
+
+    /** mostra o destaque do serviço (o texto já; a imagem só depois de o foco parar um instante) */
+    private void showHero(int pos, boolean now) {
+        Services.Service s = Services.ALL.get(pos);
+        int[] look = look(s.id);
+        Feature f = features.get(s.id);
+        boolean cine = s.id.equals("cinemateca");
+        heroTag.setText(s.name.toUpperCase() + (cine ? "  ·  NOS CINEMAS" : "  ·  EM ALTA"));
+        heroTag.setTextColor(look[0]);
+        if (f != null && !f.title.isEmpty()) {
+            heroTitle.setText(f.title);
+            heroText.setText(f.text.isEmpty() ? f.info : f.text);
+        } else {
+            heroTitle.setText(s.name);
+            heroText.setText(cine ? "Cinema, clássicos e o que não está nos streamings" : "Ver catálogo");
+            if (f == null) loadFeatureNow(s, pos);
+        }
+        if (heroImageTask != null) list.removeCallbacks(heroImageTask);
+        final String url = f != null ? f.image : "";
+        if (url.isEmpty() || url.equals(heroImageUrl)) return;
+        heroImageTask = () -> {
+            if (isFinishing() || lastFocused != pos) return;
+            heroImageUrl = url;
+            android.util.DisplayMetrics dm = getResources().getDisplayMetrics();
+            int w = Math.min(dm.widthPixels, 1280);
+            int h = Math.round(w * (dm.heightPixels * 0.62f) / dm.widthPixels);
+            Ui.imageSized(heroImg, url, w, h);
+        };
+        list.postDelayed(heroImageTask, now ? 0 : 150);
+    }
+
+    /** o destaque ainda não chegou (internet lenta): busca já este e mostra quando chegar, se o foco ainda estiver nele */
+    private void loadFeatureNow(Services.Service s, int pos) {
+        if (!loading.add(s.id)) return;
+        Net.async(() -> loadFeature(s), (f, e) -> {
+            loading.remove(s.id);
+            if (f == null || isFinishing()) return;
+            features.put(s.id, f);
+            if (lastFocused == pos) showHero(pos, false);
+        });
     }
 
     /** só para os testes automáticos: abre um vídeo direto no player */
@@ -219,112 +357,47 @@ public class TvHomeActivity extends TvBase {
         });
     }
 
-    private static final int ART_H = 124; // 220 dp de largura em 16:9
-
-    /** imagem com a ponta de cima esmaecida (some para a cor do cartão) */
-    static final class FadeImage extends android.widget.ImageView {
-        private final android.graphics.Paint mask = new android.graphics.Paint();
-        FadeImage(Context c) {
-            super(c);
-            mask.setXfermode(new android.graphics.PorterDuffXfermode(android.graphics.PorterDuff.Mode.DST_IN));
-        }
-        @Override protected void onSizeChanged(int w, int h, int ow, int oh) {
-            super.onSizeChanged(w, h, ow, oh);
-            mask.setShader(new android.graphics.LinearGradient(0, 0, 0, h,
-                    new int[]{0x00000000, 0xE6000000, 0xFF000000}, new float[]{0f, 0.45f, 1f}, android.graphics.Shader.TileMode.CLAMP));
-        }
-        @Override protected void onDraw(android.graphics.Canvas cv) {
-            int sc = cv.saveLayer(0, 0, getWidth(), getHeight(), null);
-            super.onDraw(cv);
-            cv.drawRect(0, 0, getWidth(), getHeight(), mask);
-            cv.restoreToCount(sc);
-        }
-    }
-
-    private JSONObject artData; // data/service-art.json: backdrops por serviço (renovados todo dia)
-
-    /** coloca o backdrop do dia no cartão (a imagem muda de um dia para o outro, entre as 4 do serviço) */
-    private void bindArt(Cards.CH h, String serviceId) {
-        if (artData == null) return;
-        org.json.JSONArray a = artData.optJSONArray(serviceId);
-        if (a == null || a.length() == 0) { h.artUrl = ""; h.art.setImageDrawable(null); return; }
-        JSONObject pick = a.optJSONObject((int) ((System.currentTimeMillis() / 86400000L) % a.length()));
-        String url = pick != null ? pick.optString("url", "") : "";
-        if (url.equals(h.artUrl)) return;
-        h.artUrl = url;
-        Context c = h.itemView.getContext();
-        Ui.imageSized(h.art, url, Ui.dp(c, 220), Ui.dp(c, ART_H));
-    }
-
     private final class Cards extends RecyclerView.Adapter<Cards.CH> {
         final class CH extends RecyclerView.ViewHolder {
-            final ServiceIcon accent;
-            final TextView name, tabs;
-            final FadeImage art;
-            String artUrl = "";
-            CH(View v, ServiceIcon accent, TextView name, TextView tabs, FadeImage art) { super(v); this.accent = accent; this.name = name; this.tabs = tabs; this.art = art; }
+            final TextView name;
+            final GradientDrawable fill;
+            CH(View v, TextView name, GradientDrawable fill) { super(v); this.name = name; this.fill = fill; }
         }
 
         @NonNull @Override
         public CH onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
             Context c = parent.getContext();
             FrameLayout f = new FrameLayout(c);
-            RecyclerView.LayoutParams lp = new RecyclerView.LayoutParams(Ui.dp(c, 220), ViewGroup.LayoutParams.MATCH_PARENT);
-            lp.setMargins(Ui.dp(c, 14), 0, Ui.dp(c, 14), 0);
+            RecyclerView.LayoutParams lp = new RecyclerView.LayoutParams(Ui.dp(c, 80), Ui.dp(c, 76));
+            lp.setMargins(Ui.dp(c, 7), Ui.dp(c, 16), Ui.dp(c, 7), Ui.dp(c, 16)); // espaço para o cartão crescer sem ser cortado
             f.setLayoutParams(lp);
-            f.setForeground(Ui.focusRing(c, 20));
+            GradientDrawable fill = new GradientDrawable();
+            fill.setCornerRadius(Ui.dp(c, 12));
+            f.setBackground(fill);
+            f.setForeground(Ui.focusRing(c, 12));
             f.setFocusable(true);
             f.setClickable(true);
-            // imagem de fundo (backdrop de um título em alta) bem escura, por baixo do símbolo e do nome
-            f.setClipToOutline(true);
-            final float radius = Ui.dp(c, 20);
-            f.setOutlineProvider(new android.view.ViewOutlineProvider() {
-                @Override public void getOutline(View v, android.graphics.Outline o) { o.setRoundRect(0, 0, v.getWidth(), v.getHeight(), radius); }
-            });
-            // a imagem 16:9 aparece inteira, na largura do cartão (220 x 124), na parte de baixo e esmaecendo para cima
-            FadeImage art = new FadeImage(c);
-            art.setScaleType(android.widget.ImageView.ScaleType.CENTER_CROP);
-            art.setAlpha(0.55f);
-            f.addView(art, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, Ui.dp(c, ART_H), Gravity.BOTTOM));
-
-            LinearLayout col = new LinearLayout(c);
-            col.setOrientation(LinearLayout.VERTICAL);
-            col.setGravity(Gravity.CENTER_HORIZONTAL);
-            col.setPadding(Ui.dp(c, 18), 0, Ui.dp(c, 18), 0);
-            ServiceIcon accent = new ServiceIcon(c);
-            col.addView(accent, new LinearLayout.LayoutParams(Ui.dp(c, 78), Ui.dp(c, 78)));
-            col.addView(Ui.space(c, 1, 18));
-            TextView name = Ui.text(c, "", 31, false, Ui.TEXT);
-            outfit(name, 500);
-            name.setLetterSpacing(0.005f);
+            TextView name = Ui.text(c, "", 12, true, Ui.TEXT);
+            outfit(name, 700);
             name.setGravity(Gravity.CENTER);
             name.setMaxLines(2);
-            col.addView(name, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
-            col.addView(Ui.space(c, 1, 12));
-            TextView tabs = Ui.text(c, "", 14, false, 0xA6FFFFFF);
-            outfit(tabs, 400);
-            tabs.setGravity(Gravity.CENTER);
-            tabs.setMaxLines(3);
-            tabs.setEllipsize(TextUtils.TruncateAt.END);
-            tabs.setLineSpacing(0, 1.2f);
-            col.addView(tabs, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
-            FrameLayout.LayoutParams cl = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.TOP);
-            cl.topMargin = Ui.dp(c, 70); // símbolo e nome na mesma altura em todos os cartões
-            f.addView(col, cl);
-
-            CH h = new CH(f, accent, name, tabs, art);
-            // selecionado: cresce suavemente e o fundo da tela ganha a cor do serviço
+            name.setEllipsize(TextUtils.TruncateAt.END);
+            name.setPadding(Ui.dp(c, 4), 0, Ui.dp(c, 4), 0);
+            f.addView(name, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT, Gravity.CENTER));
+            CH h = new CH(f, name, fill);
+            // selecionado: cresce (só escala, sem refazer o desenho) e o destaque de cima muda para o serviço
             f.setOnFocusChangeListener((v, has) -> {
-                v.animate().scaleX(has ? 1.08f : 1f).scaleY(has ? 1.08f : 1f)
-                        .setDuration(200).setInterpolator(new android.view.animation.DecelerateInterpolator()).start();
+                float sc = has ? 1.28f : 1f;
+                v.animate().scaleX(sc).scaleY(sc).setDuration(110).setInterpolator(new android.view.animation.DecelerateInterpolator()).start();
+                v.setTranslationZ(has ? Ui.dp(c, 8) : 0); // o selecionado fica por cima dos vizinhos
                 int p = h.getBindingAdapterPosition();
-                if (has && p >= 0) paintBackground(Services.ALL.get(p % N));
+                if (has && p >= 0) { lastFocused = p; showHero(p, false); }
             });
             f.setOnClickListener(v -> {
                 int p = h.getBindingAdapterPosition();
                 if (p < 0) return;
                 Intent i = new Intent(TvHomeActivity.this, TvCatalogActivity.class);
-                i.putExtra("service", Services.ALL.get(p % N).id);
+                i.putExtra("service", Services.ALL.get(p).id);
                 startActivity(i);
             });
             return h;
@@ -332,98 +405,20 @@ public class TvHomeActivity extends TvBase {
 
         @Override
         public void onBindViewHolder(@NonNull CH h, int position) {
-            Services.Service s = Services.ALL.get(position % N);
-            int color = Ui.parseColor(s.color, 0xFFFFFFFF);
+            Services.Service s = Services.ALL.get(position);
+            int[] look = look(s.id);
             Context c = h.itemView.getContext();
-            int color2 = s.id.equals("globoplay") ? 0xFF3ECF6B : color;
-            int color1 = s.id.equals("globoplay") ? 0xFFF5C518 : color;
-            h.itemView.setBackground(cardBackground(c, color1, color2));
-            h.accent.set(s.id, color == 0xFFF5F5F7 ? Ui.TEXT : color);
-            float sc = h.itemView.hasFocus() ? 1.08f : 1f;
+            h.fill.setColor(look[1]);
+            h.fill.setStroke(Ui.dp(c, 1), (look[0] & 0x00FFFFFF) | 0x4D000000);
+            h.name.setText(s.name);
+            h.name.setTextColor(look[0]);
+            h.itemView.setContentDescription(s.name);
+            float sc = h.itemView.hasFocus() ? 1.28f : 1f;
             h.itemView.setScaleX(sc);
             h.itemView.setScaleY(sc);
-            h.name.setText(s.name);
-            h.name.getPaint().setShader(null);
-            h.name.setTextColor(color);
-            if (s.id.equals("globoplay")) {
-                // nome em degradê amarelo → verde, como no celular
-                float w = h.name.getPaint().measureText(s.name);
-                h.name.post(() -> {
-                    float start = (h.name.getWidth() - w) / 2f;
-                    h.name.getPaint().setShader(new android.graphics.LinearGradient(start, 0, start + w, 0, color1, color2, android.graphics.Shader.TileMode.CLAMP));
-                    h.name.invalidate();
-                });
-            }
-            h.tabs.setVisibility(View.GONE); // sem o texto "Ver catálogo": só o símbolo e o nome
-            bindArt(h, s.id);
         }
 
-        @Override public int getItemCount() { return Integer.MAX_VALUE; }
-    }
-
-    /** fundo igual ao do celular: quase preto, com um brilho da cor no canto de cima e outro no canto de baixo */
-    private static android.graphics.drawable.Drawable cardBackground(Context c, int color1, int color2) {
-        float r = Ui.dp(c, 20);
-        GradientDrawable base = Ui.round(0xFF0B0B0D, r);
-        GradientDrawable glow1 = new GradientDrawable();
-        glow1.setGradientType(GradientDrawable.RADIAL_GRADIENT);
-        glow1.setGradientCenter(0f, 0f);
-        glow1.setGradientRadius(Ui.dp(c, 330));
-        glow1.setColors(new int[]{alpha(color1, 0.34f), alpha(color1, 0.12f), 0x00000000});
-        glow1.setCornerRadius(r);
-        GradientDrawable glow2 = new GradientDrawable();
-        glow2.setGradientType(GradientDrawable.RADIAL_GRADIENT);
-        glow2.setGradientCenter(1f, 1f);
-        glow2.setGradientRadius(Ui.dp(c, 300));
-        glow2.setColors(new int[]{alpha(color2, 0.20f), 0x00000000});
-        glow2.setCornerRadius(r);
-        GradientDrawable border = new GradientDrawable();
-        border.setColor(0x00000000);
-        border.setCornerRadius(r);
-        border.setStroke(Ui.dp(c, 1), alpha(color1, 0.45f));
-        return new android.graphics.drawable.LayerDrawable(new android.graphics.drawable.Drawable[]{base, glow1, glow2, border});
-    }
-
-    private static int alpha(int color, float a) {
-        return (Math.round(a * 255) << 24) | (color & 0x00FFFFFF);
-    }
-
-    /** fundo da tela na cor do serviço selecionado (troca suave) */
-    private void paintBackground(Services.Service s) {
-        // o mesmo visual dos cartões, na tela inteira: quase preto com brilho da cor no canto de cima
-        // e outro mais fraco no canto de baixo (a Globoplay mistura amarelo e verde)
-        if (s.id.equals(bgId)) return;
-        bgId = s.id;
-        boolean globo = s.id.equals("globoplay");
-        int c1 = globo ? 0xFFF5C518 : Ui.parseColor(s.color, 0xFFFFFFFF);
-        int c2 = globo ? 0xFF3ECF6B : c1;
-        float w = getResources().getDisplayMetrics().widthPixels;
-        GradientDrawable base = new GradientDrawable();
-        base.setColor(0xFF0B0B0D);
-        GradientDrawable g1 = new GradientDrawable();
-        g1.setGradientType(GradientDrawable.RADIAL_GRADIENT);
-        g1.setGradientCenter(0f, 0f);
-        g1.setGradientRadius(w * 0.95f);
-        g1.setColors(new int[]{alpha(c1, 0.34f), alpha(c1, 0.12f), 0x00000000});
-        GradientDrawable g2 = new GradientDrawable();
-        g2.setGradientType(GradientDrawable.RADIAL_GRADIENT);
-        g2.setGradientCenter(1f, 1f);
-        g2.setGradientRadius(w * 0.75f);
-        g2.setColors(new int[]{alpha(c2, 0.20f), 0x00000000});
-        android.graphics.drawable.Drawable next = new android.graphics.drawable.LayerDrawable(new android.graphics.drawable.Drawable[]{base, g1, g2});
-        // a camada que estava atrás recebe o novo fundo, sobe por cima da atual e aparece suavemente (esmaecer pela placa de vídeo: leve)
-        View incoming = bgBack, old = bgFront;
-        incoming.animate().cancel();
-        old.animate().cancel();
-        old.setAlpha(1f);
-        incoming.setBackground(next);
-        incoming.setAlpha(0f);
-        stage.bringChildToFront(incoming);
-        stage.bringChildToFront(rootView);
-        incoming.animate().alpha(1f).setDuration(220).setInterpolator(new android.view.animation.DecelerateInterpolator()).start();
-        bgFront = incoming;
-        bgBack = old;
-        bgNow = next;
+        @Override public int getItemCount() { return N; }
     }
 
     /** aplica a fonte Outfit com o peso pedido (a fonte é variável: o peso vai por "wght") */
