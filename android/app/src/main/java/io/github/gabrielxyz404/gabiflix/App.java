@@ -18,7 +18,7 @@ public final class App extends Application {
      */
     @Override public void onTrimMemory(int level) {
         super.onTrimMemory(level);
-        CrashReporter.crumb("onTrimMemory nível " + level + " " + CrashReporter.memLine());
+        CrashReporter.crumbMem("onTrimMemory nível " + level);
         if (level == TRIM_MEMORY_RUNNING_CRITICAL) trimCritical.incrementAndGet();
         else if (level == TRIM_MEMORY_RUNNING_LOW) trimLow.incrementAndGet();
         else trimOther.incrementAndGet();
@@ -27,7 +27,7 @@ public final class App extends Application {
 
     @Override public void onLowMemory() {
         super.onLowMemory();
-        CrashReporter.crumb("onLowMemory " + CrashReporter.memLine());
+        CrashReporter.crumbMem("onLowMemory");
     }
 
     @Override public void onCreate() {
