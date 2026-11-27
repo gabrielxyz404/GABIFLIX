@@ -26,6 +26,10 @@ import java.util.ArrayList;
  * Os vídeos abrem no player embutido (PlayerActivity, com VLC) pela ponte window.GabiFlixNative.playSession.
  */
 public class MainActivity extends Activity {
+    /** horas (relógio desde o arranque) das últimas reaberturas da página depois de o processo da WebView morrer */
+    private static final long[] RENDER_RESTARTS = new long[3];
+    private static int renderRestartSlot = 0;
+
 
     static final String APP_HOST = Site.HOST;
 
@@ -90,6 +94,32 @@ public class MainActivity extends Activity {
             @SuppressWarnings("deprecation")
             public boolean shouldOverrideUrlLoading(WebView view, String url) {
                 return handleUrl(url);
+            }
+
+            /**
+             * O processo da página (WebView) morreu: o sistema fechou-o por falta de memória ou falhou. Sem isto o Android fecha o app inteiro.
+             * Tira a WebView morta e abre a página de novo (no máximo 3 vezes por minuto; depois disso deixa o sistema tratar, como antes).
+             */
+            @Override
+            public boolean onRenderProcessGone(WebView view, android.webkit.RenderProcessGoneDetail detail) {
+                boolean crashed = android.os.Build.VERSION.SDK_INT >= 26 && detail != null && detail.didCrash();
+                long now = android.os.SystemClock.elapsedRealtime();
+                int recent = 0;
+                for (int i = 0; i < RENDER_RESTARTS.length; i++) if (RENDER_RESTARTS[i] != 0 && now - RENDER_RESTARTS[i] < 60_000) recent++;
+                CrashReporter.crumb("MainActivity: a página " + (crashed ? "falhou" : "foi fechada pelo sistema (memória)") + "; reaberturas no último minuto=" + recent);
+                if (recent >= RENDER_RESTARTS.length) return false;
+                RENDER_RESTARTS[renderRestartSlot++ % RENDER_RESTARTS.length] = now;
+                if (view != null) {
+                    if (view.getParent() == root) root.removeView(view);
+                    view.destroy();
+                }
+                if (!isFinishing()) {
+                    Intent again = new Intent(MainActivity.this, MainActivity.class);
+                    again.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
+                    finish();
+                    startActivity(again);
+                }
+                return true;
             }
         });
 
