@@ -10,7 +10,7 @@ let outDir = args[1], prefix = args[2]
 let frames = Array(args[3...])
 try? FileManager.default.createDirectory(atPath: outDir, withIntermediateDirectories: true)
 
-let ptW: CGFloat = 1440, ptH: CGFloat = 810      // área de vídeo de uma MacBook de 13-14" em tela cheia, em pontos
+let ptW: CGFloat = CGFloat(Int(ProcessInfo.processInfo.environment["RENDER_W"] ?? "1440") ?? 1440), ptH: CGFloat = CGFloat(Int(ProcessInfo.processInfo.environment["RENDER_H"] ?? "810") ?? 810)      // área de vídeo de uma MacBook de 13-14" em tela cheia, em pontos
 let scale = Int(ProcessInfo.processInfo.environment["RENDER_SCALE"] ?? "2") ?? 2
 
 let cases: [(String, String)] = [
@@ -20,6 +20,23 @@ let cases: [(String, String)] = [
     ("longa", "Quando a cidade dormia, ele atravessava a ponte devagar, a pensar em tudo o que tinha perdido e no pouco que ainda lhe restava para recomeçar a vida."),
 ]
 
+// o mesmo texto com acentos em cada codificação em que as legendas PT/BR chegam: passa por SubtitleText.decode + OverlayCues.parse (o caminho do app)
+let acentosPT = "Ação, emoção e coração: à noite, até às seis.\nVocê não é tão ágil: órgão, ÁGUA, ÍNDIA, Ç, ª e º."
+let srtPT = "1\n00:00:01,000 --> 00:00:04,000\n" + acentosPT + "\n\n2\n00:00:05,000 --> 00:00:08,000\nSegunda fala longa o suficiente, não é? Estou aqui.\n"
+func enc(_ e: String.Encoding, bom: [UInt8] = []) -> [UInt8] { return bom + Array(srtPT.data(using: e) ?? Data()) }
+let encCases: [(String, [UInt8])] = [
+    ("enc-utf8", Array(srtPT.utf8)), ("enc-utf8bom", [0xEF, 0xBB, 0xBF] + Array(srtPT.utf8)),
+    ("enc-cp1252", enc(.windowsCP1252)), ("enc-latin1", enc(.isoLatin1)),
+    ("enc-utf16le-bom", enc(.utf16LittleEndian, bom: [0xFF, 0xFE])), ("enc-utf16be-bom", enc(.utf16BigEndian, bom: [0xFE, 0xFF])),
+    ("enc-utf16le", enc(.utf16LittleEndian)), ("enc-utf16be", enc(.utf16BigEndian)),
+]
+var allCases = cases
+for (n, b) in encCases {
+    let t = SubtitleText.decode(b) ?? ""
+    let txt = OverlayCues.parse(t).at(2000) ?? "(FALHOU: sem texto)"
+    print("\(n): \(txt == acentosPT ? "igual ao original" : "DIFERENTE: " + txt.debugDescription)")
+    allCases.append((n, txt))
+}
 func bitmap() -> NSBitmapImageRep {
     let rep = NSBitmapImageRep(bitmapDataPlanes: nil, pixelsWide: Int(ptW) * scale, pixelsHigh: Int(ptH) * scale, bitsPerSample: 8, samplesPerPixel: 4,
                                hasAlpha: true, isPlanar: false, colorSpaceName: .deviceRGB, bytesPerRow: 0, bitsPerPixel: 0)!
@@ -34,7 +51,7 @@ func png(_ rep: NSBitmapImageRep, _ path: String) {
 for fpath in frames {
     guard let img = NSImage(contentsOfFile: fpath) else { print("não abriu \(fpath)"); continue }
     let fname = (fpath as NSString).lastPathComponent.replacingOccurrences(of: ".png", with: "")
-    for (cname, text) in cases {
+    for (cname, text) in allCases where !cname.hasPrefix("enc-") || fpath == frames[0] {
         let rep = bitmap()
         guard let gctx = NSGraphicsContext(bitmapImageRep: rep) else { continue }
         NSGraphicsContext.saveGraphicsState()

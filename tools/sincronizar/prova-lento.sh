@@ -105,12 +105,16 @@ wait_ext || FAIL=1
 TA=$(lastep "AUDIOSYNC legenda ativa:")
 note "legenda ativa em $TA; esperando a análise automática (até 420 s)"
 ANS=""
-for i in $(seq 1 420); do
-  if grep -q -E "$RESULT_RE|AUDIOSYNC aplicado|AUDIOSYNC a legenda já estava certa|AUDIOSYNC o áudio não tem certeza|ANALISE" "$LOG"; then ANS=$(grep -E "$RESULT_RE|AUDIOSYNC aplicado|AUDIOSYNC a legenda já estava certa|AUDIOSYNC o áudio não tem certeza|ANALISE" "$LOG" | head -1 | cut -d' ' -f1); break; fi
+OKRE='AVISO na tela: (Legenda sincronizada|Legenda acertada|Legenda já estava certa|Já estava certa)|AUDIOSYNC aplicado|AUDIOSYNC a legenda já estava certa'
+ANYRE="$RESULT_RE|AUDIOSYNC aplicado|AUDIOSYNC a legenda já estava certa|AUDIOSYNC o áudio não tem certeza|ANALISE"
+# espera a resposta CERTA (aceita); só desiste dela aos 700 s (recusa + nova tentativa rápida cabem) e cai na primeira resposta qualquer
+for i in $(seq 1 700); do
+  if grep -q -E "$OKRE" "$LOG"; then ANS=$(grep -E "$OKRE" "$LOG" | head -1 | cut -d' ' -f1); break; fi
   sleep 1
 done
+[ -n "$ANS" ] || ANS=$(grep -E "$ANYRE" "$LOG" | head -1 | cut -d' ' -f1)
 if [ -n "$ANS" ]; then
-  medida "cenario=auto resposta_s=$(dif "$ANS" "$TA") (desde a legenda ativa; a análise espera 25 s tocando) primeira_linha=\"$(grep -E "$RESULT_RE|AUDIOSYNC aplicado|AUDIOSYNC a legenda já estava certa|AUDIOSYNC o áudio não tem certeza|ANALISE" "$LOG" | head -1 | cut -c1-160)\""
+  medida "cenario=auto resposta_s=$(dif "$ANS" "$TA") (desde a legenda ativa; a análise espera 25 s tocando) primeira_linha=\"$(grep -E "$ANYRE" "$LOG" | head -1 | cut -c1-160)\" recusas_antes=$(grep -c "nova tentativa já" "$LOG" || true)"
 else
   medida "cenario=auto resposta_s=SEM_RESPOSTA"; ANS=$(date +%s)
 fi

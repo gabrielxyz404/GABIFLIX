@@ -89,13 +89,18 @@ jobs:
           mkdir -p b
           cp tools-novas/tools/mac-subs-render/render.swift b/main.swift
           cp mac/Sources/SubOverlay.swift b/SubOverlay.swift
-          swiftc -O -target arm64-apple-macos11.0 b/main.swift b/SubOverlay.swift -o render 2>&1 | tail -30
+          cp tools-novas/mac/Sources/SubText.swift b/SubText.swift
+          swiftc -O -target arm64-apple-macos11.0 b/main.swift b/SubOverlay.swift b/SubText.swift -o render 2>&1 | tail -30
           ls -la render
       - name: Desenhar a 2x
         run: |
           mkdir -p out
           ./render out ${{ matrix.versao }} quadros/*.png
           ls out | head -80
+      - name: Janela pequena (960x540) e tela larga (2560x1080), com os mesmos quadros
+        run: |
+          RENDER_W=960 RENDER_H=540 ./render out ${{ matrix.versao }}-pequena quadros/real1.png quadros/claro.png | tail -3
+          RENDER_W=2560 RENDER_H=1080 ./render out ${{ matrix.versao }}-larga quadros/real1.png | tail -3
       - name: Publicar os PNGs
         if: always()
         run: |
