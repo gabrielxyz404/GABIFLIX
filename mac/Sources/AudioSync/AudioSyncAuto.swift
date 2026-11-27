@@ -434,7 +434,9 @@ final class AudioSyncAuto {
         switch s.st {
         case .new:
             if running || !pl || now - s.keySince < startAfterMs || (s.retryPending && now < s.retryAt) { return }
-            if lastStallAt > 0 && now - lastStallAt < 20_000 { return }
+            // adotar uma marca guardada (o resultado do botão) não captura nada: não espera o descanso depois de um engasgo (senão, num salto logo depois
+            // do botão, a legenda ficava com o atraso de antes por até 20 s)
+            if lastStallAt > 0 && now - lastStallAt < 20_000 && readMark(kk) == nil { return }
             decideStart(s, cd, kk)
         case .done:
             if h.delayMs() != s.lastWritten && abs(s.mScale - 1.0) > 1e-9 { return }   // modelo com escala: o ajuste manual em andamento é tratado em watchManual (reancora o modelo no ponto)

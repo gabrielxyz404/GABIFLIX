@@ -147,7 +147,7 @@ jobs:
           export NEWVER=$([ "${{ matrix.versao }}" = "depois" ] && echo 1 || echo 0)
           tools/sincronizar/prova-lento.sh "$PWD/mac/build/FramePlay.app" "$PWD/shots" 2>&1 | tail -120
       - name: Envio real de um relatório ao ntfy (só a versão nova, só se pedido)
-        if: matrix.versao == 'depois'
+        if: matrix.versao == 'depois' && github.event.inputs.real_report == '1'
         run: |
           pkill -x FramePlay || true; sleep 2
           rm -f /tmp/frameplay-player.log /tmp/gf-cmd
