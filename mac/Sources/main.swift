@@ -13,20 +13,33 @@ let APP_URL = TEST_URL ?? SITE_ANTIGO
 /// (o novo tem preferência). A origem é a mesma (gabrielxyz404.github.io), então o login e os dados guardados continuam.
 func resolveSite(_ done: @escaping (URL) -> Void) {
     if let t = TEST_URL { done(t); return }
-    var ok = [false, false]
+    // testa os dois ao mesmo tempo, mas NÃO espera pelo antigo quando o novo (preferido) já respondeu: um endereço lento
+    // não segura mais a abertura do app (antes esperava sempre pelos dois, até 4 s)
+    var state: [Bool?] = [nil, nil]
+    var finished = false
     let lock = NSLock()
-    let group = DispatchGroup()
+    func settle() { // chamado com o lock tomado
+        if finished { return }
+        let pick: URL?
+        if state[0] == true { pick = SITE_NOVO }
+        else if state[0] == false, state[1] == true { pick = SITE_ANTIGO }
+        else if state[0] == false, state[1] == false { pick = lastSite ?? SITE_ANTIGO }
+        else { pick = nil } // o novo ainda não respondeu: espera
+        guard let url = pick else { return }
+        finished = true
+        DispatchQueue.main.async { done(url) }
+    }
     for (i, base) in [SITE_NOVO, SITE_ANTIGO].enumerated() {
-        group.enter()
         var req = URLRequest(url: base.appendingPathComponent("manifest.json"), timeoutInterval: 4)
         req.httpMethod = "HEAD"
         req.cachePolicy = .reloadIgnoringLocalCacheData
         URLSession.shared.dataTask(with: req) { _, resp, _ in
-            lock.lock(); ok[i] = (resp as? HTTPURLResponse)?.statusCode == 200; lock.unlock()
-            group.leave()
+            lock.lock()
+            state[i] = (resp as? HTTPURLResponse)?.statusCode == 200
+            settle()
+            lock.unlock()
         }.resume()
     }
-    group.notify(queue: .main) { done(ok[0] ? SITE_NOVO : (ok[1] ? SITE_ANTIGO : (lastSite ?? SITE_ANTIGO))) }
 }
 var lastSite: URL?
 let APP_HOST = TEST_URL?.host ?? "gabrielxyz404.github.io"
@@ -614,7 +627,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate, WKScriptMessageHandler
         panel.center()
         panel.makeKeyAndOrderFront(nil)
         updatePanel = panel
-        URLSession.shared.downloadTask(with: zip) { [weak self] tmp, resp, err in
+        // sessão própria com prazo: sem rede a meio do download a janela "A baixar…" não fica presa para sempre
+        let cfg = URLSessionConfiguration.ephemeral
+        cfg.timeoutIntervalForRequest = 30
+        cfg.timeoutIntervalForResource = 600
+        URLSession(configuration: cfg).downloadTask(with: zip) { [weak self] tmp, resp, err in
             var dest: URL?
             let code = (resp as? HTTPURLResponse)?.statusCode ?? 200
             if let tmp = tmp, err == nil, code < 400 {
@@ -695,7 +712,18 @@ final class AppDelegate: NSObject, NSApplicationDelegate, WKScriptMessageHandler
         completionHandler(a.runModal() == .alertFirstButtonReturn)
     }
 
-    func webViewWebContentProcessDidTerminate(_ webView: WKWebView) { webView.reload() }
+    /// o processo da página morreu (pouca memória, falha): recarrega, mas no máximo 3 vezes por minuto, para não entrar em ciclo
+    private static var reloadTimes: [Date] = []
+    func webViewWebContentProcessDidTerminate(_ webView: WKWebView) {
+        let now = Date()
+        AppDelegate.reloadTimes = AppDelegate.reloadTimes.filter { now.timeIntervalSince($0) < 60 }
+        if AppDelegate.reloadTimes.count >= 3 {
+            overlay?.showError("A página parou várias vezes.\nFeche e abra o FramePlay de novo.")
+            return
+        }
+        AppDelegate.reloadTimes.append(now)
+        webView.reload()
+    }
 }
 
 /** tela de abertura: o logo do app e "carregando"; se o site não abrir mostra o erro e um botão para tentar de novo */
