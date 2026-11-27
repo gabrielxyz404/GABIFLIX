@@ -10,7 +10,6 @@ UI=tools/android-subs-test/ui.py
 adb install -r "$APK"
 adb shell settings put global hide_error_dialogs 1
 adb shell settings put system screen_off_timeout 600000
-adb shell pm disable-user --user 0 com.google.android.apps.nexuslauncher >/dev/null 2>&1  # o launcher do emulador trava e tapa a tela (ANR)
 if [ "$P" = tel ]; then adb shell wm size 1080x2400; adb shell wm density 420; fi
 snap() { sleep "${2:-1}"; adb shell am broadcast -a android.intent.action.CLOSE_SYSTEM_DIALOGS >/dev/null 2>&1; adb exec-out screencap -p > "$OUT/$L-$P-$1.png"; }
 focus() { adb shell uiautomator dump /sdcard/f.xml >/dev/null 2>&1; echo "$1: $(adb shell cat /sdcard/f.xml 2>/dev/null | python3 $UI focus)" >> $OUT/$L-$P-foco.txt; }
@@ -42,7 +41,7 @@ if [ "$P" = tv ]; then
     [ $i = 0 ] || [ $i = 8 ] && snap 08-catalogo-$i 0.3
   done
 else
-  adb shell am start -n $PKG/.MainActivity --es gfTestWeb "http://10.0.2.2:8099/index.html"
+  adb shell am start -n $PKG/.MainActivity --es gfTestWeb "http://10.0.2.2:8099/index.html" --es gfTestRelease "http://10.0.2.2:8099/sem-release/"  # sem a janela de versão nova por cima
   snap 01-abertura 4
   snap 02-inicio 25
   adb shell uiautomator dump /sdcard/u.xml >/dev/null 2>&1; adb shell cat /sdcard/u.xml 2>/dev/null | python3 $UI texts > $OUT/$L-$P-textos-inicio.txt
@@ -51,7 +50,10 @@ else
   adb shell dumpsys gfxinfo $PKG > $OUT/$L-$P-gfxinfo.txt
   snap 03-depois-rolar 1
   # toca num serviço (antes: o cartão grande; depois: o círculo) e fotografa o catálogo
+  adb shell uiautomator dump /sdcard/u.xml >/dev/null 2>&1
   xy=$(adb shell cat /sdcard/u.xml | python3 $UI xy "Netflix")
+  [ -z "$xy" ] && xy=$(adb shell cat /sdcard/u.xml | python3 $UI xy "N")
+  case "$xy" in ""|"0 "*) xy="540 1300";; esac
   echo "toque Netflix em: $xy" >> $OUT/$L-$P-foco.txt
   if [ -n "$xy" ]; then adb shell input tap $xy; else adb shell input tap 540 1100; fi
   snap 04-catalogo 10
