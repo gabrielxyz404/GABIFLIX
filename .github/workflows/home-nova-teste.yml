@@ -1,0 +1,202 @@
+name: Teste da página inicial nova (antes e depois)
+
+# Fotos e provas da Início (Mac, celular, TV) em main (antes) e neste commit (depois); compila Android e Mac. Nunca publica o app.
+# Dispara ao enviar um branch chamado home-nova-run-<nome>; as fotos vão para os branches home-nova-out-<nome>-<perfil>-<versao>.
+on:
+  push:
+    branches: ['home-nova-run-**']
+
+permissions:
+  contents: write
+
+jobs:
+  web:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    strategy:
+      fail-fast: false
+      matrix:
+        versao: [antes, depois]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: ferramentas
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ matrix.versao == 'antes' && 'main' || github.sha }}
+          path: appsrc
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Playwright
+        run: |
+          mkdir -p /tmp/pw && cd /tmp/pw && npm init -y >/dev/null && npm i playwright@1.49.1 >/dev/null
+          npx playwright install --with-deps chromium >/dev/null
+          (npx playwright install --with-deps webkit >/tmp/wk.log 2>&1 || tail -5 /tmp/wk.log)
+      - name: Servir o site
+        run: |
+          cd appsrc && nohup python3 -m http.server 8099 >/tmp/srv.log 2>&1 &
+          sleep 2; curl -sI http://localhost:8099/index.html | head -1
+      - name: Provas
+        env:
+          NODE_PATH: /tmp/pw/node_modules
+          BASE: http://localhost:8099/index.html
+          OUT: /tmp/out
+          LABEL: ${{ matrix.versao }}
+        run: |
+          node ferramentas/tools/home-nova-test/web.js
+          ENGINE=webkit PROFILES=mac1440,mac1024 node ferramentas/tools/home-nova-test/web.js || true
+      - name: Guardar
+        if: always()
+        run: |
+          cd /tmp/out || exit 0
+          git init -q -b x && git add -A
+          git -c user.name=ci -c user.email=ci@x commit -qm fotos
+          git push -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" x:home-nova-out-${{ github.ref_name }}-web-${{ matrix.versao }}
+
+  emulador:
+    if: ${{ !contains(github.ref_name, 'mac') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+    strategy:
+      fail-fast: false
+      matrix:
+        perfil: [tel, tv]
+        versao: [antes, depois]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ matrix.versao == 'antes' && 'main' || github.sha }}
+          path: appsrc
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 17
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+      - name: APK de teste (x86)
+        env:
+          GABIFLIX_ABIS: x86,x86_64
+        run: |
+          set -o pipefail
+          gradle -p appsrc/android assembleRelease --no-daemon 2>&1 | tee build.log
+      - name: Mostrar o erro (se houver)
+        if: failure()
+        run: |
+          grep -n -E "error:|What went wrong|Could not|FAILURE|e: " build.log | head -25 | while IFS= read -r line; do
+            echo "::error::$(echo "$line" | cut -c1-900)"
+          done
+      - name: Servir o site da versão (celular)
+        run: |
+          cd appsrc && nohup python3 -m http.server 8099 --bind 0.0.0.0 >/tmp/srv.log 2>&1 &
+          sleep 2; curl -sI http://localhost:8099/index.html | head -1
+      - name: KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules && sudo udevadm trigger --name-match=kvm
+      - name: Emulador de celular
+        if: matrix.perfil == 'tel'
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          target: google_apis
+          arch: x86_64
+          profile: pixel_4
+          disable-animations: false
+          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
+          script: bash tools/home-nova-test/run.sh tel appsrc/android/app/build/outputs/apk/release/app-release.apk ${{ matrix.versao }}
+      - name: Emulador de TV
+        if: matrix.perfil == 'tv'
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 30
+          target: android-tv
+          arch: x86
+          profile: tv_1080p
+          disable-animations: false
+          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
+          script: bash tools/home-nova-test/run.sh tv appsrc/android/app/build/outputs/apk/release/app-release.apk ${{ matrix.versao }}
+      - name: Publicar as fotos
+        if: always()
+        run: |
+          cd shots || exit 0
+          git init -q -b x && git add -A
+          git -c user.name=ci -c user.email=ci@x commit -qm fotos
+          git push -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" x:home-nova-out-${{ github.ref_name }}-${{ matrix.perfil }}-${{ matrix.versao }}
+
+  compila-android:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 17
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+      - name: Testes JVM e APK completo
+        run: |
+          gradle -p android testReleaseUnitTest --no-daemon
+          gradle -p android assembleRelease --no-daemon
+
+  compila-mac:
+    runs-on: macos-15-intel
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - name: Montar o FramePlay.app
+        env:
+          FRAMEPLAY_VERSION: 0.0.${{ github.run_number }}
+          FRAMEPLAY_BUILD: ${{ github.run_number }}
+          FRAMEPLAY_ARCH: x86_64
+        run: |
+          set -o pipefail
+          ./mac/build.sh 2>&1 | tee build.log
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          path: antes
+      - name: App real do Mac com o site antes (main) e depois (este commit)
+        run: |
+          xattr -cr mac/build/FramePlay.app
+          mkdir -p /tmp/telas
+          (cd antes && nohup python3 -m http.server 8098 >/tmp/srv-a.log 2>&1 &)
+          nohup python3 -m http.server 8099 >/tmp/srv-d.log 2>&1 &
+          sleep 2
+          APP=mac/build/FramePlay.app/Contents/MacOS/FramePlay
+          shot() { screencapture -x "/tmp/telas/$1.png" || true; }
+          web() { rm -f /tmp/gf-web.out; echo "$1" > /tmp/gf-web; sleep "${2:-2.5}"; echo "$V $1 => $(cat /tmp/gf-web.out 2>/dev/null)" | cut -c1-600 >> /tmp/telas/mac-app.txt; }
+          for V in antes depois; do
+            P=8099; [ $V = antes ] && P=8098
+            defaults delete FramePlay 2>/dev/null || true
+            $APP --gf-test-url "http://localhost:$P/index.html" --gf-test-web > /tmp/telas/$V-app.log 2>&1 &
+            sleep 30
+            web "resize 1440 900" 4
+            web "js document.documentElement.getAttribute('data-gf-app') + ' nova=' + !!document.querySelector('.gf-nova') + ' servicos=' + document.querySelectorAll('[data-service]').length + ' ' + innerWidth + 'x' + innerHeight"
+            shot $V-mac-01-inicio-1440
+            web "resize 1024 700" 3
+            shot $V-mac-02-inicio-1024
+            web "resize 1440 900" 3
+            for id in netflix disney prime hbo appletv paramount globoplay clarovideo cinemateca; do
+              web "js (function(){var b=document.querySelector('[data-service=$id]');if(!b)return 'sem botao';b.click();return 'ok'})()" 4
+              web "js (function(){var h=document.querySelector('#gf-home .gf-svc-name');return '$id -> '+(h?h.textContent:'nada')})()" 1
+              [ $id = netflix ] && shot $V-mac-03-catalogo-netflix
+              web "js history.back(); 'ok'" 3
+            done
+            web "js (function(){var s=[];var b=document.querySelector('[data-service]');if(!b)return 'sem';b.focus();for(var i=0;i<9;i++){s.push(document.activeElement.getAttribute('data-service'));document.dispatchEvent(new KeyboardEvent('keydown',{key:'ArrowRight',bubbles:true}));}return s.join(',')})()" 2
+            shot $V-mac-04-foco-teclado
+            pkill -x FramePlay || true
+            sleep 3
+          done
+          cat /tmp/telas/mac-app.txt
+      - name: Guardar
+        if: always()
+        run: |
+          cd /tmp/telas || exit 0
+          git init -q -b x && git add -A
+          git -c user.name=ci -c user.email=ci@x commit -qm fotos
+          git push -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" x:home-nova-out-${{ github.ref_name }}-mac-app
