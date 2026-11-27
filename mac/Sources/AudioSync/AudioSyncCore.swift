@@ -313,7 +313,7 @@ final class AudioSyncCore {
      * nowMs: posição do vídeo agora; currentDelay: atraso aplicado agora (a decisão de mexer compara com ele);
      * maxBytes: pula (.skipped) se a leitura estimada das 3 janelas passar disto; noLimit = botão do usuário (nunca pula)
      */
-    func run(url: URL, subText: String?, durMs: Int, nowMs: Int, currentDelay: Int, maxBytes: Int, budgetMs: Int = 240_000) -> Outcome {
+    func run(url: URL, subText: String?, durMs: Int, nowMs: Int, currentDelay: Int, maxBytes: Int, budgetMs: Int = 285_000) -> Outcome {
         runLock.lock()
         defer { runLock.unlock() }
         setBusy(true)
@@ -368,7 +368,7 @@ final class AudioSyncCore {
             if self.cap.isCancelled { return true }
             // cabe mais uma janela? (o que a última demorou + folga) senão resolve já com o que tem
             let left = deadline - reserveMs - AudioSyncCore.nowMs()
-            let need = Int(self.lastWallS * 1000 * 1.15) + 4000
+            let need = Int(self.lastWallS * 1000) + 3000
             if o.st.windows > 0 && left < need { o.st.outOfTime = true; return true }
             if left < 8000 { o.st.outOfTime = true; return true }
             return false

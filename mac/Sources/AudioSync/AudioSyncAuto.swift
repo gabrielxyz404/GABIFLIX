@@ -105,7 +105,7 @@ final class AudioSyncAuto {
     /** salto na linha do tempo que conta como "salto grande" (teste: FP_AUDIO_FARSEEK_SEC) */
     private var farSeekMs = 600_000
     /** prazo da análise automática (ms): passado isto resolve com o que ouviu (teste: FP_AUDIO_BUDGET_SEC) */
-    private var autoBudgetMs = 240_000
+    private var autoBudgetMs = 285_000
     /** o que o menu de legendas mostra enquanto a análise automática corre (nil = nada a correr); escrito de qualquer thread */
     private let live = AudioBox<String?>(nil)
     private var liveSince = 0

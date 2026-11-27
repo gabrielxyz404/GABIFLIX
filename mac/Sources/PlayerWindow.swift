@@ -1257,8 +1257,8 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
         let ref = RefAutoSyncEngine(refs: refStartsAll, others: cands)
         guard let a = audioAuto else { return ref }
         // primeiro a referência/consenso de sempre; depois o áudio confere e, se tem certeza, corrige
-        // o motor tem prazo próprio, 40 s mais curto que o do botão: acaba ele mesmo com a resposta (e o relatório) antes de o cronômetro do botão desistir
-        let engineBudgetMs = Int(max(20.0, PlayerWindowController.autoBudgetS - 40.0) * 1000)
+        // o motor tem prazo próprio, 15 s mais curto que o do botão: acaba ele mesmo com a resposta (e o relatório) antes de o cronômetro do botão desistir
+        let engineBudgetMs = Int(max(20.0, PlayerWindowController.autoBudgetS - 15.0) * 1000)
         return a.chain(ref: ref, url: url, durationMs: Int(player.media?.length.intValue ?? 0), budgetMs: engineBudgetMs)
     }
 
