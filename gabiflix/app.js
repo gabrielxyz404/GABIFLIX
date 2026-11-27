@@ -145,12 +145,15 @@
         if (mediaUrl && s.stream && s.stream.url && s.stream.url !== mediaUrl) return;
         saving = true;
         if (ended && length > 0) time = length;
-        c.dispatch({ action: 'Load', args: { model: 'Player', args: {
-            stream: s.stream,
-            streamRequest: s.streamBase && s.type && s.videoId ? { base: s.streamBase, path: { resource: 'stream', type: s.type, id: s.videoId, extra: [] } } : null,
-            metaRequest: s.metaBase && s.type && s.id ? { base: s.metaBase, path: { resource: 'meta', type: s.type, id: s.id, extra: [] } } : null,
-            subtitlesPath: null
-        } } }, 'player');
+        // se o Stremio recusar o pedido (ainda sem estar pronto), "saving" não pode ficar ligado: senão NENHUM progresso seguinte seria salvo até fechar o app
+        try {
+            c.dispatch({ action: 'Load', args: { model: 'Player', args: {
+                stream: s.stream,
+                streamRequest: s.streamBase && s.type && s.videoId ? { base: s.streamBase, path: { resource: 'stream', type: s.type, id: s.videoId, extra: [] } } : null,
+                metaRequest: s.metaBase && s.type && s.id ? { base: s.metaBase, path: { resource: 'meta', type: s.type, id: s.id, extra: [] } } : null,
+                subtitlesPath: null
+            } } }, 'player');
+        } catch (e) { saving = false; return; }
         var tries = 0;
         (function wait() {
             Promise.resolve(c.getState('player')).then(function (st) {
