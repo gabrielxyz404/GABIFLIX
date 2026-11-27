@@ -225,7 +225,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, WKScriptMessageHandler
 
         let appItem = NSMenuItem()
         let appMenu = NSMenu()
-        appMenu.addItem(withTitle: "Sobre o FramePlay", action: #selector(NSApplication.orderFrontStandardAboutPanel(_:)), keyEquivalent: "")
+        appMenu.addItem(withTitle: "Sobre o FramePlay", action: #selector(AppDelegate.showAbout), keyEquivalent: "")
         appMenu.addItem(withTitle: "Procurar atualizações…", action: #selector(checkUpdatesMenu), keyEquivalent: "")
         appMenu.addItem(.separator())
         appMenu.addItem(menuItem("Configurações…", #selector(goSettings), ","))
@@ -527,6 +527,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate, WKScriptMessageHandler
     static let releaseAPIs = ["FramePlay", "GABIFLIX"].map { URL(string: "https://api.github.com/repos/gabrielxyz404/\($0)/releases/tags/mac")! }
 
     @objc func checkUpdatesMenu() { checkForUpdates(silent: false) }
+
+    /// "Sobre": só a versão "2.0", sem o número do build entre parênteses
+    @objc func showAbout() {
+        NSApp.activate(ignoringOtherApps: true)
+        NSApp.orderFrontStandardAboutPanel(options: [.applicationVersion: APP_VERSION, .version: ""])
+    }
 
     func checkForUpdates(silent: Bool) {
         if checkingUpdate { return }

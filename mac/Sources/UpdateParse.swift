@@ -19,7 +19,7 @@ enum UpdateParse {
         // marcador novo "build 1.0.46" ou formato antigo "1.0.45": os dois acabam em 1.0.<build>
         let build = firstGroup("1\\.0\\.(\\d+)", in: text).flatMap { Int($0) } ?? -1
         // versão de marketing: "Versão X.Y" no corpo (no formato antigo dá "1.0.45")
-        let marketing =firstGroup("Vers[ãa]o\\s+(\\d+(?:\\.\\d+)+)", in: body)
+        let marketing = firstGroup("Vers[ãa]o\\s+(\\d+(?:\\.\\d+)+)", in: body)
         return (build, marketing)
     }
 }
