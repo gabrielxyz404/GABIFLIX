@@ -51,10 +51,10 @@ html[data-gf-nova][data-gf-route="home"][data-gf-view="grid"] div[class^="board-
 .gf-nv-bar { display: block; height: 4px; border-radius: 2px; background: #2A2A35; overflow: hidden; }
 .gf-nv-bar > i { display: block; height: 100%; border-radius: 2px; background: var(--nv-acc); }
 .gf-nv-actions { display: flex; gap: 12px; }
-.gf-nv-btn { flex: none; white-space: nowrap; display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 46px; padding: 0 22px; border-radius: 23px; background: #24242E; color: var(--nv-text); font-size: 15px; font-weight: 500; }
-.gf-nv-btn.is-main { background: var(--nv-text); color: var(--nv-bg); font-weight: 600; }
-.gf-nv-btn.is-done { background: var(--nv-acc); }
-.gf-nv-btn svg { flex: none; }
+.gf-nova .gf-nv-btn { flex: none; white-space: nowrap; display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 46px; padding: 0 22px; border-radius: 23px; background: #24242E; color: var(--nv-text); font-size: 15px; font-weight: 500; }
+.gf-nova .gf-nv-btn.is-main { background: var(--nv-text); color: var(--nv-bg); font-weight: 600; }
+.gf-nova .gf-nv-btn.is-done { background: var(--nv-acc); }
+.gf-nova .gf-nv-btn svg { flex: none; }
 
 /* ---------- Mac: "Cinema" ---------- */
 .gf-nova-mac {
@@ -104,12 +104,12 @@ html[data-gf-nova][data-gf-route="home"][data-gf-view="grid"] div[class^="board-
     overflow-wrap: normal;
 }
 .gf-nova-mac .gf-nv-svc:hover { border-color: var(--nv-fg); }
-.gf-nova-mac .gf-nv-svc:focus-visible { outline: 3px solid var(--nv-fg); outline-offset: 2px; }
+.gf-nova-mac .gf-nv-svc:focus-visible { outline: 3px solid var(--nv-fg); outline-offset: -3px; border-color: transparent; }
 
 .gf-nova-mac .gf-nv-row { display: flex; gap: 14px; height: clamp(170px, 25vh, 222px); overflow-x: auto; overflow-y: hidden; scrollbar-width: none; scroll-padding-inline: 4px; padding: 4px 4px 6px; margin: -4px -4px -6px; }
 .gf-nova-mac .gf-nv-row::-webkit-scrollbar { display: none; }
-.gf-nv-poster { flex: none; height: 100%; aspect-ratio: 2 / 3; border-radius: 12px; background: #1A1A22; border: 1px solid var(--nv-line); overflow: hidden; }
-.gf-nv-poster:hover { border-color: #fff; }
+.gf-nova .gf-nv-poster { flex: none; height: 100%; aspect-ratio: 2 / 3; border-radius: 12px; background: #1A1A22; border: 1px solid var(--nv-line); overflow: hidden; }
+.gf-nova .gf-nv-poster:hover { border-color: #fff; }
 
 /* janela estreita: serviços em duas linhas e o destaque sem a imagem por cima do texto */
 @media (max-width: 1100px) {
@@ -154,8 +154,8 @@ html[data-gf-nova][data-gf-route="home"][data-gf-view="grid"] div[class^="board-
 .gf-nova-phone .gf-nv-cw .gf-nv-h { font-size: 16px; }
 .gf-nova-phone .gf-nv-row { display: flex; gap: 10px; margin: 0 -20px; padding: 0 20px; overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
 .gf-nova-phone .gf-nv-row::-webkit-scrollbar { display: none; }
-.gf-nv-wide { position: relative; flex: none; width: 200px; height: 112px; border-radius: 12px; background: #1A1A22; border: 1px solid var(--nv-line); overflow: hidden; text-align: left; -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
-.gf-nv-wide .gf-nv-bar { position: absolute; left: 10px; right: 10px; bottom: 8px; height: 3px; background: rgba(255, 255, 255, 0.25); }
-.gf-nv-wide::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 60px; background: linear-gradient(to top, rgba(11, 11, 15, 0.85), transparent); pointer-events: none; }
-.gf-nv-wide-name { position: absolute; left: 10px; right: 10px; bottom: 16px; z-index: 1; font-size: 12px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.gf-nv-wide .gf-nv-bar { z-index: 1; }
+.gf-nova .gf-nv-wide { position: relative; flex: none; width: 200px; height: 112px; border-radius: 12px; background: #1A1A22; border: 1px solid var(--nv-line); overflow: hidden; text-align: left; -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
+.gf-nova .gf-nv-wide .gf-nv-bar { position: absolute; left: 10px; right: 10px; bottom: 8px; height: 3px; background: rgba(255, 255, 255, 0.25); }
+.gf-nova .gf-nv-wide::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 60px; background: linear-gradient(to top, rgba(11, 11, 15, 0.85), transparent); pointer-events: none; }
+.gf-nova .gf-nv-wide-name { position: absolute; left: 10px; right: 10px; bottom: 16px; z-index: 1; font-size: 12px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.gf-nova .gf-nv-wide .gf-nv-bar { z-index: 1; }
