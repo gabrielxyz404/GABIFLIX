@@ -112,12 +112,12 @@ FIM=OK
 # ====================================================================================================================================================
 HEREPY=tools/sincronizar
 devnow() { adb shell date +%s | tr -d "\r"; }
-mkman() {  # $1 = nome; passos manuais: +10,+5,+1,-1 (s) pelo painel; fotos do painel e da legenda (painel fechado); depois 30 s e depois de um salto
-  local nome=$1
+mkman() {  # $1 = nome, $2 = botões (4), $3 = passos em ms, $4 = inclinação; os botões pelo painel; fotos do painel e da legenda (painel fechado); depois 30 s e depois de um salto
+  local nome=$1 b1=$2 b2=$3 b3=$4 b4=$5 passos=$6 incl=${7:-0}
   pause_v; show_controls; open_subs; sleep 2
   texts "$nome-painel-0"; snap "$nome-m0-painel-antes" 0.3
   local T0=$(devnow)
-  click "+10 s"; click "+5 s"; click "+1 s"; click "−1 s"
+  click "$b1"; click "$b2"; click "$b3"; click "$b4"
   sleep 1; local T1=$(devnow)
   sleep 1; texts "$nome-painel-1"; snap "$nome-m1-painel-depois-dos-toques" 0.3
   note "$nome: valor do painel: $(grep -E '^[+−-]?[0-9]+,[0-9] s$|^0,0 s$' $OUT/$P-$V-$nome-painel-1.txt | tr '\n' ' ')"
@@ -125,13 +125,14 @@ mkman() {  # $1 = nome; passos manuais: +10,+5,+1,-1 (s) pelo painel; fotos do p
   snap "$nome-m2-legenda-logo-depois" 0.5
   sleep 30
   snap "$nome-m3-legenda-30s-depois" 0.5
+  local TS=$(devnow)
   RX seek 3000; sleep 15; RX estado; snap "$nome-m4-legenda-depois-do-salto" 0.5
   sleep 20; snap "$nome-m5-legenda-20s-depois-do-salto" 0.5
   save "$nome-manual"
-  python3 $HEREPY/android-manual-check.py "$OUT/log-$P-$V-$nome-manual.txt" --de "$T0" --ate "$T1" --passos 10000,5000,1000,-1000 --nome "$nome" | tee -a $OUT/conferencia.txt
+  python3 $HEREPY/android-manual-check.py "$OUT/log-$P-$V-$nome-manual.txt" --de "$T0" --ate "$T1" --passos "$passos" --inclinacao "$incl" --nome "$nome" | tee -a $OUT/conferencia.txt
   [ ${PIPESTATUS[0]} = 0 ] || { note "FALHA: o ajuste manual não ficou ($nome)"; FAIL=1; }
   # com +15 s a legenda de 14 s adiantada fica a ~1 s (mais a deriva do começo): a linha mostrada tem de bater com a fala (tolerância 2,5 s)
-  python3 tools/sincronizar/android-check.py "$OUT/log-$P-$V-$nome-manual.txt" "$CERTA" --depois "$T1" --so-ate "$(devnow)" --tol 2500 --apos-salto 8 --nome "$nome (linhas depois do ajuste manual)" --min 0.8 | tee -a $OUT/conferencia.txt || true
+  python3 tools/sincronizar/android-check.py "$OUT/log-$P-$V-$nome-manual.txt" "$CERTA" --depois "$T1" --so-ate "$TS" --tol 2500 --apos-salto 8 --nome "$nome (linhas depois do ajuste manual)" --min 0.8 | tee -a $OUT/conferencia.txt || true
 }
 
 # ------------------------------------------------------------------ A) deriva 24/23,976 + 14 s: o toque tem de aceitar e as linhas têm de bater com a fala em todo o filme
@@ -158,7 +159,7 @@ launch B-manual film.mkv sub24.srt $BASE --es gfRx 1 --es gfAudioStartSec 9000 -
 waitlog "AUDIOSYNC legenda ativa:" 180 || FAIL=1
 sleep 10
 snap B-manual-0-antes 0.5
-mkman B-manual
+mkman B-manual "+10 s" "+5 s" "+1 s" "−1 s" 10000,5000,1000,-1000 0
 alive B-manual
 
 # ------------------------------------------------------------------ C) ajuste manual DEPOIS de o toque ter acertado (escala ativa): o manual vence e a escala continua
@@ -170,7 +171,7 @@ tap_sync C-manual-escala
 waitres $WAIT || FAIL=1
 note "resultado C: $(glog | grep -E "$RES_RE" | tail -1 | cut -c1-220)"
 sleep 6
-mkman C-manual-escala
+mkman C-manual-escala "+10 s" "−5 s" "−5 s" "+1 s" 10000,-5000,-5000,1000 -0.001001
 alive C-manual-escala
 
 adb logcat -d | grep -E "FATAL EXCEPTION|ANR in|Fatal signal" | head -20 > $OUT/crash.txt

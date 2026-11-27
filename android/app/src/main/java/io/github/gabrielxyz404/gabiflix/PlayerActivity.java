@@ -479,6 +479,13 @@ public class PlayerActivity extends Activity {
     private void overlayTick() {
         if (subOverlay == null) return;
         if (ovTicks++ % 5 == 0) {
+            if (delayUnsaved && player != null) {
+                // o atraso foi posto antes de a legenda ativa ser conhecida: guarda agora (o ajuste manual persiste por fonte+legenda)
+                try {
+                    String dk = delayKeyFor(player.getSpuTrack(), player.getSpuTracks());
+                    if (dk != null) { delayUnsaved = false; lastSyncKey = dk; getSharedPreferences(DELAY_PREFS, MODE_PRIVATE).edit().putInt(dk, subDelayMs).apply(); glog("atraso da legenda guardado depois: " + subDelayMs + " ms (" + dk + ")"); }
+                } catch (Throwable ignored) {}
+            }
             SubtitleSync.Cand c = null;
             try { c = candForTrack(player.getSpuTrack(), player.getSpuTracks()); } catch (Throwable ignored) {}
             if (c != ovCand) {
@@ -2361,16 +2368,24 @@ public class PlayerActivity extends Activity {
         String k = player == null ? null : delayKeyFor(player.getSpuTrack(), player.getSpuTracks());
         if (k != null) {
             lastSyncKey = k;
+            delayUnsaved = false;
             try { getSharedPreferences(DELAY_PREFS, MODE_PRIVATE).edit().putInt(k, subDelayMs).apply(); } catch (Exception ignored) {}
-        }
+        } else delayUnsaved = true;
         applySubDelay();
         if (label != null) label.setText(delayLabel());
         glog("atraso da legenda: " + subDelayMs + " ms (" + (k == null ? "sem legenda ativa, não guardado" : k) + ")");
     }
 
+    /** o atraso foi mexido sem haver chave de legenda (ainda desconhecida): guarda assim que ela ficar conhecida (overlayTick) */
+    private boolean delayUnsaved = false;
+
     private void changeSubDelay(int deltaMs, boolean reset, TextView label) {
         userEdits++;
+        int was = subDelayMs;
         setSubDelay(reset ? 0 : subDelayMs + deltaMs, label);
+        // o ajuste manual sempre vence e se vê na hora: redesenha a fala já com o atraso novo (sem esperar o próximo ciclo) e deixa o estado no registro (Detalhes)
+        try { if (subOverlay != null && player != null) overlayTick(); } catch (Throwable ignored) {}
+        glog("ajuste manual: " + was + " -> " + subDelayMs + " ms (legenda do app " + (appSubs ? "ligada" : "desligada: o libVLC desenha") + ", falas=" + (ovCues == null ? 0 : ovCues.size()) + ", tempo " + (player == null ? -1 : player.getTime()) + " ms)");
         if (statusFixed && !autoRunning && subPanelOpen) { statusFixed = false; refreshSubPanel(); }
     }
 
