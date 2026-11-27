@@ -1,4 +1,4 @@
-name: Auditoria - telemóvel: processo da página morre (antes x depois)
+name: "Auditoria - telemóvel, o processo da página morre (antes x depois)"
 
 # Só para a auditoria. Compila o APK no commit ANTES da correção do onRenderProcessGone (o pai do commit, achado pela mensagem) e no DEPOIS (HEAD),
 # e mata o processo da WebView no emulador de telemóvel com o app aberto. NUNCA publica nada. Resultados no branch auditoria-out-render-<sha>.
