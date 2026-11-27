@@ -393,6 +393,12 @@ public class TvHomeActivity extends TvBase {
                 int p = h.getBindingAdapterPosition();
                 if (has && p >= 0) { lastFocused = p; showHero(p, false); }
             });
+            // nas pontas da fila o foco fica no cartão (não salta para os ícones do topo)
+            f.setOnKeyListener((v, code, ev) -> {
+                if (ev.getAction() != KeyEvent.ACTION_DOWN) return false;
+                int p = h.getBindingAdapterPosition();
+                return (code == KeyEvent.KEYCODE_DPAD_LEFT && p == 0) || (code == KeyEvent.KEYCODE_DPAD_RIGHT && p == N - 1);
+            });
             f.setOnClickListener(v -> {
                 int p = h.getBindingAdapterPosition();
                 if (p < 0) return;
