@@ -78,10 +78,13 @@ public class PlayerActivity extends Activity {
 
     private void trimCaches(int level) {
         try {
-            glog("memória: o sistema pediu memória (nível " + level + "); soltando caches. " + CrashReporter.memLine());
+            // a linha de memória (Debug.getPss lê o smaps inteiro) é medida na thread que já existe para a coleta, não na da tela
             synchronized (barRowSamples) { barRowSamples.clear(); barColSamples.clear(); }   // amostras de barras pretas (bitmaps pequenos já foram soltos; aqui as listas)
             io.github.gabrielxyz404.gabiflix.tv.TvCaches.release(this);                      // JSON do catálogo e bitmaps dos pôsteres que a navegação deixou
-            Thread gc = new Thread(() -> { Runtime.getRuntime().gc(); System.runFinalization(); }, "gf-trim-gc");
+            Thread gc = new Thread(() -> {
+                glog("memória: o sistema pediu memória (nível " + level + "); soltando caches. " + CrashReporter.memLine());
+                Runtime.getRuntime().gc(); System.runFinalization();
+            }, "gf-trim-gc");
             gc.setPriority(Thread.MIN_PRIORITY);
             gc.start();
         } catch (Throwable t) { glog("memória: não soltou os caches: " + t); }
