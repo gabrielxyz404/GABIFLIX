@@ -582,7 +582,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, WKScriptMessageHandler
         if latest > mine, let zip = zip {
             let a = NSAlert()
             a.messageText = "Nova versão do FramePlay"
-            a.informativeText = "Está disponível o FramePlay \(marketing ?? "novo"). O FramePlay baixa, instala e abre sozinho."
+            a.informativeText = "Está disponível a versão \(marketing ?? "nova"). O FramePlay baixa, instala e abre sozinho."
             a.addButton(withTitle: "Atualizar agora")
             a.addButton(withTitle: "Agora não")
             if a.runModal() == .alertFirstButtonReturn { installUpdate(zip: zip) }

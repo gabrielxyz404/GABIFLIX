@@ -1,7 +1,7 @@
 import Foundation
 
 /// Lê a release "mac" da API: o número do build (inteiro, o do run) e a versão de marketing ("2.0").
-/// Formato novo: título "FramePlay 2.0 para Mac", corpo "Versão 2.0 — …" + marcador invisível `<!-- build 1.0.46 -->`.
+/// Formato novo: título "FramePlay para Mac", corpo "Versão 2.1 — …" + marcador invisível `<!-- build 1.0.46 -->`.
 /// O marcador mantém o formato "1.0.<build>" que os Macs antigos (≤ 1.0.45) procuram com o regex `1\.0\.(\d+)`.
 /// Formato antigo: "Versão 1.0.45 — …" (o build é o último número).
 enum UpdateParse {
@@ -18,9 +18,8 @@ enum UpdateParse {
         let text = "\(name) \(body)"
         // marcador novo "build 1.0.46" ou formato antigo "1.0.45": os dois acabam em 1.0.<build>
         let build = firstGroup("1\\.0\\.(\\d+)", in: text).flatMap { Int($0) } ?? -1
-        // versão de marketing: "Versão X.Y" no corpo (no formato antigo dá "1.0.45"); senão "FramePlay X.Y para Mac" no título
-        var marketing = firstGroup("Vers[ãa]o\\s+(\\d+(?:\\.\\d+)+)", in: body)
-        if marketing == nil { marketing = firstGroup("FramePlay\\s+(\\d+\\.\\d+)\\s+para", in: name) }
+        // versão de marketing: "Versão X.Y" no corpo (no formato antigo dá "1.0.45")
+        let marketing =firstGroup("Vers[ãa]o\\s+(\\d+(?:\\.\\d+)+)", in: body)
         return (build, marketing)
     }
 }

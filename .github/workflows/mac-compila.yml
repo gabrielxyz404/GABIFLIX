@@ -20,7 +20,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Testar o leitor da release (atualizador)
-        run: ./mac/tests/updateparse/run.sh
+        run: |
+          ./mac/tests/updateparse/run.sh
+          python3 mac/tests/nextversion/test.py
       - name: Montar o FramePlay.app
         env:
           FRAMEPLAY_BUILD: ${{ github.run_number }}
@@ -33,7 +35,7 @@ jobs:
           v=$(/usr/libexec/PlistBuddy -c "Print :CFBundleShortVersionString" mac/build/FramePlay.app/Contents/Info.plist)
           b=$(/usr/libexec/PlistBuddy -c "Print :CFBundleVersion" mac/build/FramePlay.app/Contents/Info.plist)
           echo "::notice::versão=$v build=$b"
-          [ "$v" = "2.0" ] && [ "$b" = "${{ github.run_number }}" ]
+          [ "$v" = "$(tr -d "[:space:]" < mac/VERSION)" ] && [ "$b" = "${{ github.run_number }}" ]
       - name: Mostrar o erro (se houver)
         if: failure()
         run: |
