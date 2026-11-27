@@ -95,7 +95,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, WKScriptMessageHandler
         content.add(self, name: "gabiflix")
         content.add(self, name: "gfmac") // comandos do site (arrastar a janela pelo cabeçalho, tela cheia)
         config.userContentController = content
-        config.preferences.setValue(true, forKey: "developerExtrasEnabled")
+        // Web Inspector só nos testes automáticos ou quando ligado à mão (defaults write io.github.gabrielxyz404.gabiflix gf-devtools -bool YES)
+        let devTools = UserDefaults.standard.bool(forKey: "gf-devtools") || CommandLine.arguments.contains(where: { $0.hasPrefix("--gf-test") })
+        if devTools { config.preferences.setValue(true, forKey: "developerExtrasEnabled") }
 
         web = WKWebView(frame: .zero, configuration: config)
         web.navigationDelegate = self
@@ -148,12 +150,18 @@ final class AppDelegate: NSObject, NSApplicationDelegate, WKScriptMessageHandler
         }
 
         // procura versão nova alguns segundos depois de abrir (não no teste automático)
-        if !CommandLine.arguments.contains("--gf-test-play") && !CommandLine.arguments.contains("--gf-test-web") {
+        if !CommandLine.arguments.contains("--gf-test-play") && !CommandLine.arguments.contains("--gf-test-web") && !AppDelegate.TEST_UPDATE {
             DispatchQueue.main.asyncAfter(deadline: .now() + 6) { [weak self] in self?.checkForUpdates(silent: true) }
         }
 
         // teste automático (só no GitHub): --gf-test-play <link do vídeo> <código IMDb>
         let args = CommandLine.arguments
+        // teste automático do atualizador (só no GitHub): --gf-test-update <caminho de um .zip>
+        if let i = args.firstIndex(of: "--gf-test-update"), i + 1 < args.count {
+            let z = URL(fileURLWithPath: args[i + 1])
+            AppDelegate.updateLog("versão \(Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "?") a instalar \(z.lastPathComponent)")
+            DispatchQueue.main.asyncAfter(deadline: .now() + 3) { [weak self] in self?.testInstall(zip: z) }
+        }
         // teste automático da janela do site: --gf-test-web. O script escreve linhas em /tmp/gf-web: "resize L A" ou "js <código>" (resultado em /tmp/gf-web.out)
         if args.contains("--gf-test-web") {
             Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { [weak self] _ in
@@ -599,7 +607,18 @@ final class AppDelegate: NSObject, NSApplicationDelegate, WKScriptMessageHandler
     // baixa o .zip pelo próprio app (sem a marca "vindo da internet", que o macOS usa para bloquear), troca o app e abre de novo
     private var updatePanel: NSPanel?
 
+    /// teste automático do atualizador (só no CI): sem janelas, escreve o que aconteceu em /tmp/gf-update.log
+    static let TEST_UPDATE = CommandLine.arguments.contains("--gf-test-update")
+    static func updateLog(_ line: String) {
+        guard TEST_UPDATE else { return }
+        let out = line + "\n"
+        if let h = FileHandle(forWritingAtPath: "/tmp/gf-update.log") { h.seekToEndOfFile(); h.write(out.data(using: .utf8)!); h.closeFile() }
+        else { try? out.write(toFile: "/tmp/gf-update.log", atomically: true, encoding: .utf8) }
+    }
+
     private func updateFailed(_ text: String) {
+        AppDelegate.updateLog("falhou: " + text)
+        if AppDelegate.TEST_UPDATE { return }
         let a = NSAlert()
         a.messageText = "Não foi possível atualizar"
         a.informativeText = text
@@ -634,13 +653,65 @@ final class AppDelegate: NSObject, NSApplicationDelegate, WKScriptMessageHandler
         URLSession(configuration: cfg).downloadTask(with: zip) { [weak self] tmp, resp, err in
             var dest: URL?
             let code = (resp as? HTTPURLResponse)?.statusCode ?? 200
-            if let tmp = tmp, err == nil, code < 400 {
-                let d = FileManager.default.temporaryDirectory.appendingPathComponent("FramePlay-update.zip")
-                try? FileManager.default.removeItem(at: d)
+            if let tmp = tmp, err == nil, code < 400, let dir = AppDelegate.uniqueTempDir() {
+                let d = dir.appendingPathComponent("FramePlay-update.zip")
                 if (try? FileManager.default.moveItem(at: tmp, to: d)) != nil { dest = d }
             }
             DispatchQueue.main.async { self?.finishInstall(zipFile: dest) }
         }.resume()
+    }
+
+    /// pasta temporária só desta atualização (nome único, na pasta temporária do utilizador — não um caminho fixo em /tmp)
+    static func uniqueTempDir() -> URL? {
+        let d = FileManager.default.temporaryDirectory.appendingPathComponent("frameplay-upd-" + UUID().uuidString)
+        return (try? FileManager.default.createDirectory(at: d, withIntermediateDirectories: false, attributes: [.posixPermissions: 0o700])) != nil ? d : nil
+    }
+
+    @discardableResult
+    private static func run(_ tool: String, _ args: [String]) -> Int32 {
+        let p = Process()
+        p.executableURL = URL(fileURLWithPath: tool)
+        p.arguments = args
+        p.standardOutput = FileHandle.nullDevice
+        p.standardError = FileHandle.nullDevice
+        do { try p.run() } catch { return -1 }
+        p.waitUntilExit()
+        return p.terminationStatus
+    }
+
+    /// texto entre aspas simples para o bash (qualquer caminho, mesmo com espaços ou aspas)
+    private static func shq(_ s: String) -> String { "'" + s.replacingOccurrences(of: "'", with: "'\\''") + "'" }
+
+    /**
+     Abre o .zip numa pasta ao lado do app (mesmo disco, para a troca ser um simples "mudar o nome") e confere tudo ANTES de fechar o app:
+     é o FramePlay (mesmo identificador), é mais novo, tem o executável e a assinatura de código está intacta.
+     Devolve o app novo pronto a trocar, ou o motivo da recusa.
+     */
+    static func stageUpdate(zip: URL, appPath: String) -> (staged: URL?, stageDir: URL?, error: String?) {
+        let fm = FileManager.default
+        let parent = URL(fileURLWithPath: (appPath as NSString).deletingLastPathComponent)
+        let stage = parent.appendingPathComponent(".FramePlay-update-" + UUID().uuidString)
+        do { try fm.createDirectory(at: stage, withIntermediateDirectories: false) } catch {
+            return (nil, nil, "Não consegui preparar a atualização (sem permissão na pasta do app).")
+        }
+        func fail(_ text: String) -> (staged: URL?, stageDir: URL?, error: String?) { try? fm.removeItem(at: stage); return (nil, nil, text) }
+        if run("/usr/bin/ditto", ["-x", "-k", zip.path, stage.path]) != 0 { return fail("O ficheiro da atualização está danificado.") }
+        let app = stage.appendingPathComponent("FramePlay.app")
+        guard let info = NSDictionary(contentsOf: app.appendingPathComponent("Contents/Info.plist")) as? [String: Any] else {
+            return fail("A atualização não contém o FramePlay.")
+        }
+        let mineId = Bundle.main.bundleIdentifier ?? ""
+        if (info["CFBundleIdentifier"] as? String ?? "") != mineId { return fail("A atualização não é do FramePlay.") }
+        let mine = Int(Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "") ?? 0
+        let theirs = Int(info["CFBundleVersion"] as? String ?? "") ?? -1
+        if theirs <= mine { return fail("A versão descarregada (\(theirs)) não é mais nova que a instalada (\(mine)).") }
+        let exe = app.appendingPathComponent("Contents/MacOS/" + (info["CFBundleExecutable"] as? String ?? "FramePlay"))
+        if !fm.isExecutableFile(atPath: exe.path) { return fail("A atualização está incompleta.") }
+        if run("/usr/bin/codesign", ["--verify", "--deep", "--strict", app.path]) != 0 {
+            return fail("A assinatura da atualização não confere (ficheiro alterado ou incompleto).")
+        }
+        run("/usr/bin/xattr", ["-cr", app.path])
+        return (app, stage, nil)
     }
 
     private func finishInstall(zipFile: URL?) {
@@ -651,30 +722,60 @@ final class AppDelegate: NSObject, NSApplicationDelegate, WKScriptMessageHandler
             return
         }
         let appPath = Bundle.main.bundlePath
+        let tmpDir = zipFile.deletingLastPathComponent()
+        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+            let r = AppDelegate.stageUpdate(zip: zipFile, appPath: appPath)
+            DispatchQueue.main.async {
+                guard let self = self else { return }
+                guard let staged = r.staged, let stage = r.stageDir else {
+                    try? FileManager.default.removeItem(at: tmpDir)
+                    self.updateFailed(r.error ?? "Não consegui preparar a atualização.")
+                    return
+                }
+                AppDelegate.updateLog("conferida: " + staged.path)
+                self.swapAndRelaunch(staged: staged, stage: stage, appPath: appPath, tmpDir: tmpDir)
+            }
+        }
+    }
+
+    /// depois de o app fechar: troca pelo novo (o antigo só é apagado quando o novo já está no lugar; se a troca falhar, o antigo volta)
+    private func swapAndRelaunch(staged: URL, stage: URL, appPath: String, tmpDir: URL) {
+        let q = AppDelegate.shq
         let pid = ProcessInfo.processInfo.processIdentifier
+        let app = q(appPath), new = q(staged.path), old = q(stage.appendingPathComponent("FramePlay-antigo.app").path)
         let script = """
         #!/bin/bash
         while kill -0 \(pid) 2>/dev/null; do sleep 0.3; done
-        T=$(mktemp -d /tmp/frameplay-upd.XXXXXX)
-        if ditto -x -k "\(zipFile.path)" "$T" && [ -d "$T/FramePlay.app" ]; then
-          rm -rf "\(appPath)" && mv "$T/FramePlay.app" "\(appPath)" && xattr -cr "\(appPath)"
+        if mv \(app) \(old); then
+          if mv \(new) \(app); then rm -rf \(q(stage.path)); else mv \(old) \(app); fi
         fi
-        rm -rf "$T" "\(zipFile.path)"
-        open "\(appPath)"
+        rm -rf \(q(tmpDir.path))
+        open \(app)
         """
-        let sh = "/tmp/frameplay-update.sh"
-        do { try script.write(toFile: sh, atomically: true, encoding: .utf8) } catch {
+        let sh = tmpDir.appendingPathComponent("frameplay-update.sh")
+        do { try script.write(to: sh, atomically: true, encoding: .utf8) } catch {
+            try? FileManager.default.removeItem(at: stage)
             updateFailed("Não consegui preparar a atualização.")
             return
         }
         let p = Process()
         p.executableURL = URL(fileURLWithPath: "/bin/bash")
-        p.arguments = ["-c", "nohup /bin/bash \(sh) >/dev/null 2>&1 &"]
+        p.arguments = ["-c", "nohup /bin/bash \(q(sh.path)) >/dev/null 2>&1 &"]
         do { try p.run() } catch {
+            try? FileManager.default.removeItem(at: stage)
             updateFailed("Não consegui iniciar a atualização.")
             return
         }
+        AppDelegate.updateLog("a trocar e reabrir")
         NSApp.terminate(nil)
+    }
+
+    /// teste automático: instala a partir de um .zip local (copiado para uma pasta temporária única, como o download faz)
+    func testInstall(zip: URL) {
+        guard let dir = AppDelegate.uniqueTempDir() else { updateFailed("sem pasta temporária"); return }
+        let d = dir.appendingPathComponent("FramePlay-update.zip")
+        do { try FileManager.default.copyItem(at: zip, to: d) } catch { updateFailed("não copiou o zip"); return }
+        finishInstall(zipFile: d)
     }
 
     // ---------- links ----------

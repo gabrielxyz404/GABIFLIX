@@ -1,0 +1,122 @@
+name: Mac atualizador (troca segura, sem publicar)
+
+# Prova do atualizador do Mac: o app instalado recebe um .zip local (--gf-test-update) e tem de
+#  A) instalar uma versão nova assinada e reabrir;  B) recusar um app alterado depois de assinado;
+#  C) recusar um zip danificado;  D) recusar uma versão que não é mais nova;  E) funcionar numa pasta com espaço no nome.
+# Nos casos recusados o app instalado tem de ficar intacto e sem restos. Nunca publica. Registos no branch mac-atualizador-out.
+on:
+  push:
+    branches: [run-mac-atualizador]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: mac-atualizador-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  app:
+    runs-on: macos-15
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - name: Montar o FramePlay.app
+        env:
+          FRAMEPLAY_VERSION: 0.0.${{ github.run_number }}
+          FRAMEPLAY_BUILD: ${{ github.run_number }}
+        run: |
+          set -o pipefail
+          ./mac/build.sh 2>&1 | tee build.log
+      - name: Mostrar o erro (se houver)
+        if: failure()
+        run: |
+          grep -n -E "error:|fatal" build.log | head -40 | while IFS= read -r line; do echo "::error::$(echo "$line" | cut -c1-900)"; done
+      - name: Preparar os pacotes de teste
+        run: |
+          set -e
+          B=mac/build/FramePlay.app
+          xattr -cr "$B"
+          N=$(/usr/libexec/PlistBuddy -c "Print CFBundleVersion" "$B/Contents/Info.plist")
+          NOVO=$((N + 1000))
+          mkdir -p /tmp/pk/novo /tmp/pk/mexido /tmp/pk/igual /tmp/out
+          # A/E: versão nova, assinada
+          cp -R "$B" /tmp/pk/novo/FramePlay.app
+          /usr/libexec/PlistBuddy -c "Set CFBundleVersion $NOVO" /tmp/pk/novo/FramePlay.app/Contents/Info.plist
+          echo "versao-nova" > /tmp/pk/novo/FramePlay.app/Contents/Resources/gf-marca.txt
+          codesign --force --deep --sign - /tmp/pk/novo/FramePlay.app
+          codesign --verify --deep --strict /tmp/pk/novo/FramePlay.app
+          ditto -c -k --sequesterRsrc --keepParent /tmp/pk/novo/FramePlay.app /tmp/pk/novo.zip
+          # B: a mesma versão nova, mas um ficheiro mexido DEPOIS da assinatura
+          cp -R /tmp/pk/novo/FramePlay.app /tmp/pk/mexido/FramePlay.app
+          echo "alterado" >> /tmp/pk/mexido/FramePlay.app/Contents/Resources/gf-marca.txt
+          ditto -c -k --sequesterRsrc --keepParent /tmp/pk/mexido/FramePlay.app /tmp/pk/mexido.zip
+          # C: zip danificado
+          head -c 200000 /dev/urandom > /tmp/pk/danificado.zip
+          # D: a mesma versão que está instalada
+          cp -R "$B" /tmp/pk/igual/FramePlay.app
+          ditto -c -k --sequesterRsrc --keepParent /tmp/pk/igual/FramePlay.app /tmp/pk/igual.zip
+          echo "N=$N NOVO=$NOVO" | tee /tmp/out/versoes.txt
+          echo "N=$N" >> "$GITHUB_ENV"; echo "NOVO=$NOVO" >> "$GITHUB_ENV"
+      - name: Cenários
+        run: |
+          B=mac/build/FramePlay.app
+          falhas=0
+          caso() { # nome pasta zip esperado(trocou|recusou) texto-do-motivo
+            local nome="$1" dir="$2" zip="$3" esp="$4" motivo="$5"
+            echo "==== $nome" | tee -a /tmp/out/resumo.txt
+            pkill -x FramePlay 2>/dev/null; sleep 1
+            rm -rf "$dir"; mkdir -p "$dir"; cp -R "$B" "$dir/FramePlay.app"
+            rm -f /tmp/gf-update.log
+            "$dir/FramePlay.app/Contents/MacOS/FramePlay" --gf-test-update "$zip" > "/tmp/out/$nome-app.log" 2>&1 &
+            local fim=$((SECONDS + 60)) v=""
+            while [ $SECONDS -lt $fim ]; do
+              v=$(/usr/libexec/PlistBuddy -c "Print CFBundleVersion" "$dir/FramePlay.app/Contents/Info.plist" 2>/dev/null)
+              if [ "$esp" = trocou ] && [ "$v" = "$NOVO" ] && pgrep -f "$dir/FramePlay.app/Contents/MacOS/FramePlay" >/dev/null; then break; fi
+              if [ "$esp" = recusou ] && grep -q "falhou:" /tmp/gf-update.log 2>/dev/null; then sleep 2; break; fi
+              sleep 1
+            done
+            cp /tmp/gf-update.log "/tmp/out/$nome-update.log" 2>/dev/null || true
+            cat /tmp/gf-update.log 2>/dev/null | tee -a /tmp/out/resumo.txt
+            v=$(/usr/libexec/PlistBuddy -c "Print CFBundleVersion" "$dir/FramePlay.app/Contents/Info.plist" 2>/dev/null)
+            local restos=$(ls -a "$dir" | grep -c "FramePlay-update" || true)
+            local tmprestos=$( (ls "$(getconf DARWIN_USER_TEMP_DIR)"; ls "${TMPDIR:-/tmp}"; ls /tmp) 2>/dev/null | grep -c "frameplay-upd" || true)
+            local corre=0; pgrep -f "$dir/FramePlay.app/Contents/MacOS/FramePlay" >/dev/null && corre=1
+            ls -la "$dir" >> /tmp/out/resumo.txt
+            echo "versao_instalada=$v a_correr=$corre restos_na_pasta=$restos restos_temporarios=$tmprestos" | tee -a /tmp/out/resumo.txt
+            local ok=1
+            if [ "$esp" = trocou ]; then
+              [ "$v" = "$NOVO" ] || ok=0
+              [ "$corre" = 1 ] || ok=0
+              grep -q "versao-nova" "$dir/FramePlay.app/Contents/Resources/gf-marca.txt" 2>/dev/null || ok=0
+              codesign --verify --deep --strict "$dir/FramePlay.app" || ok=0
+            else
+              [ "$v" = "$N" ] || ok=0
+              grep -q "$motivo" /tmp/gf-update.log 2>/dev/null || ok=0
+              [ -e "$dir/FramePlay.app/Contents/Resources/gf-marca.txt" ] && ok=0
+            fi
+            [ "$restos" = 0 ] || ok=0
+            [ "$tmprestos" = 0 ] || ok=0
+            if [ $ok = 1 ]; then echo "RESULTADO $nome: OK" | tee -a /tmp/out/resumo.txt
+            else echo "RESULTADO $nome: FALHOU" | tee -a /tmp/out/resumo.txt; echo "::error::$nome falhou"; falhas=$((falhas + 1)); fi
+            pkill -f "$dir/FramePlay.app/Contents/MacOS/FramePlay" 2>/dev/null; sleep 1
+          }
+          caso A-versao-nova /tmp/inst-a /tmp/pk/novo.zip trocou ""
+          caso B-app-mexido /tmp/inst-b /tmp/pk/mexido.zip recusou "assinatura"
+          caso C-zip-danificado /tmp/inst-c /tmp/pk/danificado.zip recusou "danificado"
+          caso D-mesma-versao /tmp/inst-d /tmp/pk/igual.zip recusou "mais nova"
+          caso "E-pasta-com-espaco" "/tmp/inst e 'aspas'" /tmp/pk/novo.zip trocou ""
+          echo "falhas=$falhas" | tee -a /tmp/out/resumo.txt
+          [ $falhas = 0 ]
+      - name: Guardar os registos no branch mac-atualizador-out
+        if: always()
+        env:
+          TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p /tmp/out && cp build.log /tmp/out/ 2>/dev/null || true
+          cd /tmp/out
+          git init -q && git checkout -q -b mac-atualizador-out
+          git config user.name "FramePlay CI"; git config user.email "ci@frameplay.local"
+          git add -A && git commit -qm "registos do teste do atualizador do Mac" || true
+          git push -q -f "https://x-access-token:${TOKEN}@github.com/${{ github.repository }}.git" mac-atualizador-out || echo "::warning::não guardou"
