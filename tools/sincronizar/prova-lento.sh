@@ -26,6 +26,7 @@ waitlog() {  # $1 = padrão (egrep), $2 = segundos
   for i in $(seq 1 $n); do grep -q -E "$1" "$LOG" 2>/dev/null && return 0; sleep 0.5; done
   note "TEMPO ESGOTADO esperando: $1"; return 1
 }
+dif() { awk -v a="$1" -v b="$2" 'BEGIN{printf "%.0f", a-b}'; }
 lastep() { grep -E "$1" "$LOG" | tail -1 | cut -d' ' -f1; }
 nres() { grep -c -E "$RESULT_RE" "$LOG" 2>/dev/null || true; }
 launch() {  # $1 = nome, $2 = legenda externa, resto = variáveis de ambiente VAR=valor
@@ -69,7 +70,7 @@ ls -la /tmp/media > "$OUT/media.txt"
 rm -f ~/Library/Logs/DiagnosticReports/FramePlay* 2>/dev/null
 
 # ------------------------------------------------------------------ 1) botão Sincronizar numa rede lenta
-launch botao sub25.srt FP_AUDIO_AUTO=false
+launch botao sub25.srt FP_AUDIO_START_SEC=3000
 wait_ext || FAIL=1
 cmd "seek 300000" 8
 sleep 8
@@ -85,7 +86,7 @@ N0=$(nres)
 for i in $(seq 1 330); do [ "$(nres)" -gt 0 ] && break; sleep 1; done
 RES1=$(lastep "$RESULT_RE")
 if [ -n "$RES1" ]; then
-  DT=$(awk -v a="$RES1" -v b="$T0" "BEGIN{printf \"%.0f\", a-b}"); medida "cenario=botao resposta_s=$DT resposta=\"$(grep -E "$RESULT_RE" "$LOG" | tail -1 | cut -c1-160)\""
+  DT=$(dif "$RES1" "$T0"); medida "cenario=botao resposta_s=$DT resposta=\"$(grep -E "$RESULT_RE" "$LOG" | tail -1 | cut -c1-160)\""
 else
   DT=-1; medida "cenario=botao resposta_s=SEM_RESPOSTA"; FAIL=1; RES1=$(date +%s)
 fi
@@ -109,7 +110,7 @@ for i in $(seq 1 420); do
   sleep 1
 done
 if [ -n "$ANS" ]; then
-  medida "cenario=auto resposta_s=$(awk -v a="$ANS" -v b="$TA" "BEGIN{printf \"%.0f\", a-b}") (desde a legenda ativa; a análise espera 25 s tocando) primeira_linha=\"$(grep -E "$RESULT_RE|AUDIOSYNC aplicado|AUDIOSYNC a legenda já estava certa|AUDIOSYNC o áudio não tem certeza|ANALISE" "$LOG" | head -1 | cut -c1-160)\""
+  medida "cenario=auto resposta_s=$(dif "$ANS" "$TA") (desde a legenda ativa; a análise espera 25 s tocando) primeira_linha=\"$(grep -E "$RESULT_RE|AUDIOSYNC aplicado|AUDIOSYNC a legenda já estava certa|AUDIOSYNC o áudio não tem certeza|ANALISE" "$LOG" | head -1 | cut -c1-160)\""
 else
   medida "cenario=auto resposta_s=SEM_RESPOSTA"; ANS=$(date +%s)
 fi
