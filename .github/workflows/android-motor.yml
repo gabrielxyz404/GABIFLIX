@@ -1,0 +1,243 @@
+name: Android motor (deriva + ajuste manual, celular e TV, sem publicar)
+
+# Prova do botão "Sincronizar automaticamente" do player do Android (celular e TV, emuladores x86) num substituto realista de um filme de ~90 min a 23,976 fps:
+# o MESMO material do teste do Mac (mac-sincronizar.yml): domínio público com fala real, servido por HTTP com Range (como o servidor de streaming do Stremio),
+# legenda PT a 25 fps + 4 s como legenda externa e a MESMA legenda embutida como faixa do MKV; mais um vídeo sem fala e um servidor que trava.
+# Compara a versão ANTIGA (antes) com esta (depois). Nunca publica o app. Fotos e registros no branch android-motor-out-<perfil>-<versao>.
+on:
+  push:
+    branches: [run-android-motor]
+  workflow_dispatch:
+    inputs:
+      so_depois:
+        description: "1 = só a versão nova (sem o 'antes')"
+        default: "0"
+
+permissions:
+  contents: write
+  actions: read
+
+concurrency:
+  group: android-motor-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  ANTES: 25f3a2409d0fb885a704593c6b4e2a394d59a931
+  MAC_RUN: "45529565280"
+
+jobs:
+  prep:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      # o material já preparado pelo teste do Mac (a mesma prova nos três aparelhos); se expirou, prepara de novo
+      - uses: actions/download-artifact@v4
+        continue-on-error: true
+        with:
+          name: media
+          path: media
+          run-id: ${{ env.MAC_RUN }}
+          github-token: ${{ github.token }}
+          repository: ${{ github.repository }}
+      - uses: actions/cache@v4
+        if: hashFiles('media/film.mkv') == ''
+        with:
+          path: film
+          key: sincronizar-film-v3-${{ hashFiles('tools/sincronizar/prep_film.py', 'tools/audio-integra/corpus/corpus.py', '.github/workflows/mac-sincronizar.yml') }}
+      - name: Se o material do Mac expirou, prepara o filme de ~90 min e a legenda certa (como no Mac)
+        run: |
+          ls -la media || true
+          if [ -f media/film.mkv ] && [ -f media/film-emb.mkv ] && [ -f media/certa.srt ] && [ -f media/sub25.srt ] && [ -f media/musica.mkv ]; then echo "material do Mac aproveitado"; exit 0; fi
+          rm -rf media; mkdir -p media
+          sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg >/dev/null
+          mkdir -p /tmp/ort /tmp/pc
+          curl -fsSL -o /tmp/ort/ort.jar https://repo1.maven.org/maven2/com/microsoft/onnxruntime/onnxruntime/1.20.0/onnxruntime-1.20.0.jar
+          D=android/app/src/main/java/io/github/gabrielxyz404/gabiflix/audiosync
+          javac -nowarn -d /tmp/pc -cp /tmp/ort/ort.jar $D/*.java tools/audio-integra/PreCheck.java
+          PRE="java -cp /tmp/pc:/tmp/ort/ort.jar PreCheck"; MODEL=$PWD/android/app/src/main/assets/silero_vad.onnx
+          if [ ! -f film/film.mkv ] || [ ! -f film/certa.srt ]; then
+            rm -rf film film_*; : > precheck.txt; FIRST=""
+            for s in scarlet_street the_stranger night_of_the_living_dead doa my_man_godfrey his_girl_friday; do
+              rm -rf film_$s
+              python3 tools/sincronizar/prep_film.py $s film_$s > prep-$s.log 2>&1 || { echo "$s: não preparou"; tail -4 prep-$s.log; continue; }
+              [ -z "$FIRST" ] && FIRST=$s
+              python3 tools/deriva/mkdrift.py film_$s/certa.srt /tmp/sub25.srt 23.976/25 4000
+              R=$(SPREAD=1 $PRE film_$s/_work/audio16k.wav /tmp/sub25.srt $MODEL 2>/dev/null | grep ^SPREAD)
+              echo "$s -> $R" | tee -a precheck.txt
+              rm -rf film_$s/_work
+              if echo "$R" | grep -q "accepted=1"; then PICK=$s; break; fi
+            done
+            PICK=${PICK:-$FIRST}
+            [ -n "$PICK" ] || { echo "::error::nenhum filme preparado"; exit 1; }
+            echo "filme escolhido: $PICK"; mv film_$PICK film; rm -rf film_*
+            cp precheck.txt film/precheck.txt
+          fi
+          mkdir -p media
+          cp film/film.mkv film/certa.srt film/info.json film/precheck.txt media/ 2>/dev/null || cp film/film.mkv film/certa.srt media/
+          python3 tools/deriva/mkdrift.py media/certa.srt media/sub25.srt 23.976/25 4000
+          ffmpeg -nostdin -loglevel error -y -i media/film.mkv -i media/sub25.srt -map 0 -map 1 -c copy -c:s srt \
+            -metadata:s:s:0 language=por -metadata:s:s:0 title="Português" media/film-emb.mkv
+          ffmpeg -nostdin -loglevel error -y -f lavfi -i "testsrc2=size=320x180:rate=24000/1001:duration=1500" \
+            -f lavfi -i "sine=frequency=220:duration=1500" -f lavfi -i "sine=frequency=330:duration=1500" \
+            -filter_complex "[1:a][2:a]amix=inputs=2[a]" -map 0:v -map "[a]" -c:v libx264 -preset ultrafast -crf 40 -c:a aac -b:a 48k media/musica.mkv
+          ls -la media
+      - name: Conferir o material
+        run: |
+          sudo apt-get install -y -qq ffmpeg >/dev/null 2>&1 || true
+          ls -la media
+          for f in film.mkv film-emb.mkv musica.mkv; do ffprobe -loglevel error -show_entries stream=index,codec_name,codec_type,avg_frame_rate:format=duration -of compact media/$f | head -6; done
+          python3 tools/sincronizar/mkvcues.py media/film-emb.mkv 3 | tail -3
+      - uses: actions/upload-artifact@v4
+        with:
+          name: media
+          path: media
+          retention-days: 3
+
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        versao: [antes, depois]
+    steps:
+      - name: Pular?
+        id: skip
+        run: |
+          if [ "${{ matrix.versao }}" = antes ] && [ "${{ github.event.inputs.so_depois }}" = 1 ]; then echo "skip=1" >> $GITHUB_OUTPUT; fi
+      - uses: actions/checkout@v4
+        if: steps.skip.outputs.skip != '1'
+        with:
+          ref: ${{ matrix.versao == 'antes' && env.ANTES || github.sha }}
+      - uses: actions/setup-java@v5
+        if: steps.skip.outputs.skip != '1'
+        with:
+          distribution: temurin
+          java-version: 17
+      - uses: gradle/actions/setup-gradle@v4
+        if: steps.skip.outputs.skip != '1'
+        with:
+          gradle-version: '8.9'
+      - name: Testes JVM
+        if: steps.skip.outputs.skip != '1' && matrix.versao == 'depois'
+        run: gradle -p android testReleaseUnitTest --no-daemon
+      - name: APK de teste (x86, as bibliotecas do emulador)
+        if: steps.skip.outputs.skip != '1'
+        env:
+          GABIFLIX_ABIS: x86,x86_64
+          GABIFLIX_VERSION_NAME: 0.0.${{ github.run_number }}
+        run: |
+          set -o pipefail
+          gradle -p android assembleRelease --no-daemon 2>&1 | tee build.log
+          mkdir -p apk && cp android/app/build/outputs/apk/release/app-release.apk apk/teste.apk
+      - name: Mostrar o erro (se houver)
+        if: failure()
+        run: |
+          grep -n -E "error:|What went wrong|Could not|FAILURE|e: |> .*" build.log | head -30 | while IFS= read -r line; do
+            echo "::error::$(echo "$line" | cut -c1-900)"
+          done
+      - uses: actions/upload-artifact@v4
+        if: steps.skip.outputs.skip != '1'
+        with:
+          name: apk-${{ matrix.versao }}
+          path: apk/teste.apk
+          retention-days: 3
+
+  emulador:
+    needs: [prep, build]
+    runs-on: ubuntu-latest
+    timeout-minutes: 150
+    strategy:
+      fail-fast: false
+      matrix:
+        versao: [antes, depois]
+        perfil: [tel, tv]
+    steps:
+      - name: Pular?
+        id: skip
+        run: |
+          if [ "${{ matrix.versao }}" = antes ] && [ "${{ github.event.inputs.so_depois }}" = 1 ]; then echo "skip=1" >> $GITHUB_OUTPUT; fi
+      - uses: actions/checkout@v4
+        if: steps.skip.outputs.skip != '1'
+      - uses: actions/download-artifact@v4
+        if: steps.skip.outputs.skip != '1'
+        with:
+          name: media
+          path: /tmp/media
+      - uses: actions/download-artifact@v4
+        if: steps.skip.outputs.skip != '1'
+        with:
+          name: apk-${{ matrix.versao }}
+          path: /tmp/apk
+      - name: Servidores dos vídeos (8000 normal, 8001 trava longe do começo)
+        if: steps.skip.outputs.skip != '1'
+        run: |
+          ls -la /tmp/media /tmp/apk
+          python3 tools/deriva/mkdrift.py /tmp/media/certa.srt /tmp/media/sub24.srt 24/23.976 -14000
+          head -12 /tmp/media/sub24.srt
+          SZ=$(stat -c %s /tmp/media/film.mkv)
+          : > /tmp/server-bytes.log
+          nohup python3 tools/audio-integra/server.py /tmp/media 8000 >/tmp/server.out 2>&1 &
+          THROTTLE_KBPS=6 THROTTLE_FROM_BYTES=$((SZ / 5)) LOG=/tmp/server-slow.log nohup python3 tools/audio-integra/server.py /tmp/media 8001 >/tmp/server-slow.out 2>&1 &
+          sleep 2
+          curl -sI http://127.0.0.1:8000/film.mkv | head -4
+          curl -s -o /dev/null -w "range: %{http_code} %{size_download}\n" -r 1000-1999 http://127.0.0.1:8000/film.mkv
+      - name: KVM
+        if: steps.skip.outputs.skip != '1'
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules && sudo udevadm trigger --name-match=kvm
+      - name: Emulador de TV (Fire TV, tela de 1080p, pouca RAM)
+        if: steps.skip.outputs.skip != '1' && matrix.perfil == 'tv'
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 30
+          target: android-tv
+          arch: x86
+          profile: tv_1080p
+          ram-size: 2048M
+          heap-size: 512M
+          disable-animations: true
+          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
+          script: timeout 7000 bash tools/sincronizar/android-motor.sh tv /tmp/apk/teste.apk ${{ matrix.versao }}
+      - name: Emulador de celular
+        if: steps.skip.outputs.skip != '1' && matrix.perfil == 'tel'
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 30
+          target: google_apis
+          arch: x86
+          profile: pixel_4
+          ram-size: 3072M
+          heap-size: 512M
+          disable-animations: true
+          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
+          script: timeout 7000 bash tools/sincronizar/android-motor.sh tel /tmp/apk/teste.apk ${{ matrix.versao }}
+      - name: Resumo
+        if: always() && steps.skip.outputs.skip != '1'
+        run: |
+          cat shots/conferencia.txt 2>/dev/null || true
+          cat shots/passos.txt 2>/dev/null | tail -80 || true
+          cat shots/fim.txt 2>/dev/null || true
+          { echo '### Android sincronizar ${{ matrix.perfil }} ${{ matrix.versao }}'; echo '```'; cat shots/conferencia.txt shots/fim.txt 2>/dev/null; echo '```'; } >> $GITHUB_STEP_SUMMARY
+      - name: Publicar as fotos e os registros
+        if: always() && steps.skip.outputs.skip != '1'
+        run: |
+          mkdir -p shots
+          cp /tmp/server-slow.log /tmp/server-bytes.log /tmp/server.out shots/ 2>/dev/null || true
+          cd shots || exit 0
+          git init -q -b x && git add -A
+          git -c user.name=ci -c user.email=ci@x commit -qm fotos
+          git push -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" x:android-motor-out-${{ matrix.perfil }}-${{ matrix.versao }}
+      - uses: actions/upload-artifact@v4
+        if: always() && steps.skip.outputs.skip != '1'
+        with:
+          name: provas-${{ matrix.perfil }}-${{ matrix.versao }}
+          path: shots
+          retention-days: 5
+      - name: A versão nova tem de passar em tudo
+        if: matrix.versao == 'depois'
+        run: |
+          cat shots/fim.txt
+          grep -q "falha=0" shots/fim.txt
