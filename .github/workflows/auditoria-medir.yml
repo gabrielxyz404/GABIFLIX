@@ -1,0 +1,132 @@
+name: Auditoria - medir antes e depois
+
+# Só para a auditoria de desempenho: compara o commit-base (onde o branch saiu da main) com o commit novo, no mesmo runner.
+#  - web:     site (celular e Mac) num Chromium com o processador mais lento; arranque, abrir serviço, grade de 2000 títulos, rolagem, memória, perfil de CPU
+#  - android: testes da JVM + APK do app da TV (base e novo) no mesmo emulador de TV; arranque a frio, fluidez (gfxinfo) e memória
+# NUNCA publica nada (sem release, sem Pages). Resultados nos branches auditoria-out-web-<sha> e auditoria-out-android-<sha>.
+on:
+  push:
+    branches: ['run-auditoria**']
+
+permissions:
+  contents: write
+
+concurrency:
+  group: auditoria-${{ github.ref_name }}
+  cancel-in-progress: true
+
+jobs:
+  web:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Pasta do commit-base
+        run: |
+          BASE=$(git merge-base HEAD origin/main)
+          echo "base=$BASE" ; echo "novo=$GITHUB_SHA"
+          git worktree add /tmp/base "$BASE"
+          echo "$BASE" > /tmp/base.sha
+      - name: Playwright
+        run: |
+          mkdir -p /tmp/pw && cd /tmp/pw && npm init -y >/dev/null && npm i playwright@1.49.1 >/dev/null
+          npx playwright install --with-deps chromium >/dev/null
+      - name: Cabeçalhos do site publicado (gzip, cache)
+        continue-on-error: true
+        run: |
+          mkdir -p out
+          H="gabrielxyz404.git""hub.io"
+          for repo in GABIFLIX FramePlay; do
+            for p in "" gabiflix/home.js 9f991f0e5de35babe83e7d632d2521e8a22855cb/scripts/main.js 9f991f0e5de35babe83e7d632d2521e8a22855cb/binaries/stremio_core_web_bg.wasm data/netflix-home.json fonts/Outfit.ttf; do
+              echo "== $repo/$p"; curl -sI -H 'Accept-Encoding: gzip, br' "https://$H/$repo/$p" | grep -iE "^(HTTP|content-type|content-encoding|content-length|cache-control|etag|age|x-cache)"
+            done
+          done > out/cabecalhos-site.txt 2>&1 || true
+          cat out/cabecalhos-site.txt
+      - name: Medir (base e novo, celular e Mac, com e sem Chromecast lento)
+        env:
+          NODE_PATH: /tmp/pw/node_modules
+        run: |
+          cp tools/auditoria/web-perf.js tools/auditoria/poster.jpg /tmp/ 2>/dev/null || true
+          for perfil in mac and; do
+            for versao in base novo; do
+              if [ "$versao" = base ]; then DIR=/tmp/base; PORT=8101; else DIR=$PWD; PORT=8102; fi
+              for delay in 0 1500; do
+                SITE_DIR=$DIR PORT=$PORT BASE=http://127.0.0.1:$PORT/index.html PROFILE=$perfil CAST_DELAY_MS=$delay RUNS=3 OUT=out/web-$perfil-$versao-cast$delay.json node tools/auditoria/web-perf.js > out/web-$perfil-$versao-cast$delay.log 2>&1 || tail -5 out/web-$perfil-$versao-cast$delay.log
+              done
+            done
+          done
+          python3 tools/auditoria/comparar-web.py out > out/web-resumo.md || true
+          cat out/web-resumo.md
+      - name: Guardar
+        if: always()
+        run: |
+          cd out || exit 0
+          git init -q -b x && git add -A
+          git -c user.name=ci -c user.email=ci@x commit -qm resultados
+          git push -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" x:auditoria-out-web-${GITHUB_SHA::7}
+
+  android:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 17
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+      - name: Testes da JVM (inclui os novos da auditoria)
+        run: |
+          mkdir -p out
+          gradle -p android testReleaseUnitTest --no-daemon 2>&1 | tee out/testes-jvm.log | tail -40
+          find android/app/build/test-results -name '*.xml' | xargs grep -h -o 'testsuite name="[^"]*" tests="[0-9]*" skipped="[0-9]*" failures="[0-9]*" errors="[0-9]*"' > out/testes-jvm-resumo.txt || true
+          cat out/testes-jvm-resumo.txt
+      - name: APK novo (x86)
+        env:
+          GABIFLIX_ABIS: x86,x86_64
+        run: |
+          gradle -p android assembleRelease --no-daemon -q
+          cp android/app/build/outputs/apk/release/app-release.apk /tmp/head.apk
+      - name: APK base (x86), do commit onde o branch saiu da main
+        env:
+          GABIFLIX_ABIS: x86,x86_64
+        run: |
+          BASE=$(git merge-base HEAD origin/main)
+          git worktree add /tmp/basetree "$BASE"
+          gradle -p /tmp/basetree/android assembleRelease --no-daemon -q
+          cp /tmp/basetree/android/app/build/outputs/apk/release/app-release.apk /tmp/base.apk
+          ls -la /tmp/base.apk /tmp/head.apk
+      - name: KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules && sudo udevadm trigger --name-match=kvm
+      - name: Emulador de TV (base, novo, base, novo, ...)
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 30
+          target: android-tv
+          arch: x86
+          profile: tv_1080p
+          ram-size: 2048M
+          heap-size: 512M
+          disable-animations: false
+          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
+          script: bash tools/auditoria/tv-medir-all.sh
+      - name: Guardar
+        if: always()
+        run: |
+          mkdir -p out
+          cp -r auditoria-out/. out/ 2>/dev/null || true
+          cd out || exit 0
+          git init -q -b x && git add -A
+          git -c user.name=ci -c user.email=ci@x commit -qm resultados
+          git push -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" x:auditoria-out-android-${GITHUB_SHA::7}
