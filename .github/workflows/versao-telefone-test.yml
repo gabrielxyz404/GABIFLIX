@@ -1,0 +1,96 @@
+name: Teste versão 2.0 no celular
+
+# Prova do esquema de versões X.Y: um app 1.0.110 instalado (código ANTIGO, da main) e o código NOVO (este branch)
+# leem a release falsa no formato novo ("Versão 2.0" + <!-- build 1.0.121 -->) e oferecem a atualização. Nunca publica o app.
+on:
+  push:
+    branches: [versao-telefone-run]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  teste:
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          path: antigo
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 17
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+      - name: Testes JVM e do cálculo da versão
+        run: |
+          python3 tools/versao/test_nextversion.py
+          gradle -p android testReleaseUnitTest --no-daemon --tests '*ReleaseVersionTest*'
+      - name: APK do código antigo (main, versão 1.0.110)
+        env:
+          GABIFLIX_ABIS: x86,x86_64
+          GABIFLIX_VERSION_CODE: 110
+          GABIFLIX_VERSION_NAME: 1.0.110
+        run: |
+          set -o pipefail
+          gradle -p antigo/android assembleRelease --no-daemon 2>&1 | tee build-antigo.log
+          mkdir -p apks && cp antigo/android/app/build/outputs/apk/release/app-release.apk apks/antigo.apk
+      - name: APK do código novo (este branch, versão 2.0, versionCode 110)
+        env:
+          GABIFLIX_ABIS: x86,x86_64
+          GABIFLIX_VERSION_CODE: 110
+          GABIFLIX_VERSION_NAME: "2.0"
+        run: |
+          set -o pipefail
+          gradle -p android assembleRelease --no-daemon 2>&1 | tee build.log
+          cp android/app/build/outputs/apk/release/app-release.apk apks/novo.apk
+      - name: Mostrar o erro (se houver)
+        if: failure()
+        run: |
+          cat build-antigo.log build.log 2>/dev/null | grep -n -E "error:|What went wrong|Could not|FAILURE|e: |> .*" | head -25 | while IFS= read -r line; do
+            echo "::error::$(echo "$line" | cut -c1-900)"
+          done
+      - name: Release falsa no formato novo (o corpo que o android.yml publica)
+        run: |
+          mkdir -p test-release
+          cp apks/novo.apk test-release/FramePlay.apk
+          python3 - <<'PY'
+          import json
+          body = "Versão 2.0\n<!-- build 1.0.121 -->\nBaixe o FramePlay.apk abaixo no celular Android e toque nele para instalar o FramePlay.\n<!-- celular:0123456789abcdef -->"
+          rel = {"name": "FramePlay para Android", "body": body,
+                 "assets": [{"name": "FramePlay.apk", "browser_download_url": "http://10.0.2.2:8000/test-release/FramePlay.apk"}]}
+          for tag in ("android", "tv"):
+              json.dump(rel, open("test-release/%s.json" % tag, "w"), ensure_ascii=False)
+          PY
+          cat test-release/android.json
+          nohup python3 -m http.server 8000 --bind 0.0.0.0 >/dev/null 2>&1 &
+          sleep 3; curl -s http://127.0.0.1:8000/test-release/android.json | head -c 200
+      - name: KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules && sudo udevadm trigger --name-match=kvm
+      - name: Emulador de celular
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          target: google_apis
+          arch: x86_64
+          profile: pixel_4
+          disable-animations: false
+          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
+          script: bash tools/versao/emu.sh apks/antigo.apk apks/novo.apk
+      - name: Resultado
+        if: always()
+        run: cat shots/resultado.txt || true
+      - name: Publicar as fotos
+        if: always()
+        run: |
+          cd shots || exit 0
+          git init -q -b x && git add -A
+          git -c user.name=ci -c user.email=ci@x commit -qm fotos
+          git push -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" x:versao-telefone-out

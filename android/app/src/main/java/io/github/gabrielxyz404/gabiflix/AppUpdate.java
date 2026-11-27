@@ -27,8 +27,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.function.BooleanSupplier;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * Atualização do app dentro do próprio app: partes comuns à TV (tv/Updater) e ao celular (MainActivity).
@@ -48,11 +46,14 @@ public final class AppUpdate {
     private static final ExecutorService IO = Executors.newFixedThreadPool(2, r -> { Thread t = new Thread(r, "gf-update"); t.setDaemon(true); return t; });
     private static final Handler MAIN = new Handler(Looper.getMainLooper());
 
-    /** o que a release publicada diz: número da versão (o N de 1.0.N, ou -1) e o endereço do FramePlay.apk (ou null) */
+    /** o que a release publicada diz: número do build (o N do marcador 1.0.N, ou -1), a versão mostrada ("2.0") e o endereço do FramePlay.apk (ou null) */
     public static final class Release {
         public final long latest;
+        public final String version;
         public final String url;
-        Release(long latest, String url) { this.latest = latest; this.url = url; }
+        Release(long latest, String version, String url) { this.latest = latest; this.version = version; this.url = url; }
+        /** "Versão 2.1 disponível." (o build fica interno) */
+        public String offerText() { return "Versão " + (version != null ? version : "nova") + " disponível."; }
     }
 
     /** textos de cada tela (a TV mantém os dela; o celular usa português de Portugal) */
@@ -121,9 +122,9 @@ public final class AppUpdate {
     /** busca e lê a release da etiqueta ("tv" ou "android"). Chamar fora da thread principal. */
     public static Release fetch(String tag) throws Exception {
         JSONObject rel = new JSONObject(releaseJson(tag));
-        String text = rel.optString("name") + " " + rel.optString("body");
-        Matcher m = Pattern.compile("1\\.0\\.(\\d+)").matcher(text);
-        long latest = m.find() ? Long.parseLong(m.group(1)) : -1;
+        // o build vem do marcador escondido "<!-- build 1.0.N -->" (ou do formato antigo "Versão 1.0.N"); a versão mostrada vem de "Versão X.Y"
+        long latest = ReleaseVersion.build(rel.optString("name"), rel.optString("body"));
+        String version = ReleaseVersion.marketing(rel.optString("body"));
         String url = null;
         JSONArray assets = rel.optJSONArray("assets");
         if (assets != null) for (int i = 0; i < assets.length(); i++) {
@@ -133,7 +134,7 @@ public final class AppUpdate {
             if (n.equals("FramePlay.apk")) { url = as.optString("browser_download_url"); break; }
             if (n.endsWith(".apk") && url == null) url = as.optString("browser_download_url");
         }
-        return new Release(latest, url);
+        return new Release(latest, version, url);
     }
 
     public static long versionCode(Context c) {
@@ -288,7 +289,7 @@ public final class AppUpdate {
         android.util.Log.i("GFUpdate", "showOffer " + r.latest);
         offerDialog = new AlertDialog.Builder(a, android.R.style.Theme_DeviceDefault_Dialog_Alert)
                 .setTitle("Nova versão do FramePlay")
-                .setMessage("Versão 1.0." + r.latest + " disponível (a sua é 1.0." + offerMine + "). Instalar agora?")
+                .setMessage(r.offerText() + " Instalar agora?")
                 .setPositiveButton("Instalar", (d, w) -> {
                     offer = null;
                     Toast.makeText(a, "A transferir…", Toast.LENGTH_SHORT).show();

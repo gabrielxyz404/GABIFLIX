@@ -26,7 +26,7 @@ final class Updater {
             if (latest <= mine) { Toast.makeText(a, "Catálogos atualizados. O app já está na versão mais recente.", Toast.LENGTH_LONG).show(); return; }
             new AlertDialog.Builder(a, android.R.style.Theme_DeviceDefault_Dialog_Alert)
                     .setTitle("Nova versão do FramePlay")
-                    .setMessage("Versão 1.0." + latest + " disponível (a sua é 1.0." + mine + "). Instalar agora?")
+                    .setMessage(res.offerText() + " Instalar agora?")
                     .setPositiveButton("Instalar", (d, w) -> AppUpdate.download(a, url, AppUpdate.Texts.tv(), false))
                     .setNegativeButton("Depois", null)
                     .show();

@@ -30,10 +30,29 @@ jobs:
           gradle-version: '8.9'
       - name: Testes JVM (classificação dos avisos de erro)
         run: gradle -p android testReleaseUnitTest --no-daemon
+      - name: Calcular a versão (a seguinte à maior das releases publicadas android e tv)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          python3 tools/versao/test_nextversion.py
+          # o mesmo APK vai para o celular e para a TV: uma só versão X.Y. Um build cancelado não gasta número.
+          for tag in android tv; do
+            : > "body-$tag.txt"; ok=0
+            for t in 1 2 3 4; do
+              if out=$(gh api "repos/${{ github.repository }}/releases/tags/$tag" 2>err.txt); then
+                printf '%s' "$out" | python3 -c 'import json,sys; sys.stdout.write(json.load(sys.stdin).get("body") or "")' > "body-$tag.txt"; ok=1; break
+              fi
+              if grep -q "404" err.txt; then ok=1; break; fi
+              sleep 10
+            done
+            [ "$ok" = "1" ] || { echo "::error::não consegui ler a release $tag para calcular a versão"; cat err.txt; exit 1; }
+          done
+          v=$(python3 tools/versao/nextversion.py body-android.txt body-tv.txt)
+          echo "::notice::versão a publicar: $v (build ${{ github.run_number }})"
+          echo "GABIFLIX_VERSION_NAME=$v" >> "$GITHUB_ENV"
       - name: Gerar o APK
         env:
           GABIFLIX_VERSION_CODE: ${{ github.run_number }}
-          GABIFLIX_VERSION_NAME: 1.0.${{ github.run_number }}
         run: |
           set -o pipefail
           gradle -p android assembleRelease --no-daemon 2>&1 | tee build.log
@@ -76,7 +95,8 @@ jobs:
           tag_name: android
           name: FramePlay para Android
           body: |
-            Versão 1.0.${{ github.run_number }}
+            Versão ${{ env.GABIFLIX_VERSION_NAME }}
+            <!-- build 1.0.${{ github.run_number }} -->
             Baixe o FramePlay.apk abaixo no celular Android e toque nele para instalar o FramePlay.
             <!-- celular:${{ steps.phone.outputs.hash }} -->
           files: |
@@ -89,7 +109,8 @@ jobs:
           tag_name: tv
           name: FramePlay para TV
           body: |
-            Versão 1.0.${{ github.run_number }}
+            Versão ${{ env.GABIFLIX_VERSION_NAME }}
+            <!-- build 1.0.${{ github.run_number }} -->
             App da TV (Fire TV). Instale pelo Downloader: gabrielxyz404.github.io/${{ github.event.repository.name }}/tv
           files: |
             out/FramePlay.apk
