@@ -254,9 +254,14 @@ public class TvHomeActivity extends TvBase {
             if (isFinishing() || lastFocused != pos) return;
             heroImageUrl = url;
             android.util.DisplayMetrics dm = getResources().getDisplayMetrics();
-            int w = Math.min(dm.widthPixels, 1280);
+            // pequena (no máximo 960 px de largura, ~0,6 MB em RGB565) e fora da memória do Glide: só a imagem visível fica na memória
+            int w = Math.min(dm.widthPixels, 960);
             int h = Math.round(w * (dm.heightPixels * 0.62f) / dm.widthPixels);
-            Ui.imageSized(heroImg, url, w, h);
+            com.bumptech.glide.Glide.with(heroImg.getContext()).load(url)
+                    .diskCacheStrategy(com.bumptech.glide.load.engine.DiskCacheStrategy.ALL).skipMemoryCache(true)
+                    .format(com.bumptech.glide.load.DecodeFormat.PREFER_RGB_565).override(w, h).centerCrop()
+                    .transition(com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions.withCrossFade(150))
+                    .into(heroImg);
         };
         list.postDelayed(heroImageTask, now ? 0 : 150);
     }
@@ -389,7 +394,6 @@ public class TvHomeActivity extends TvBase {
             f.setOnFocusChangeListener((v, has) -> {
                 float sc = has ? 1.28f : 1f;
                 v.animate().scaleX(sc).scaleY(sc).setDuration(110).setInterpolator(new android.view.animation.DecelerateInterpolator()).start();
-                v.setTranslationZ(has ? Ui.dp(c, 8) : 0); // o selecionado fica por cima dos vizinhos
                 int p = h.getBindingAdapterPosition();
                 if (has && p >= 0) { lastFocused = p; showHero(p, false); }
             });
