@@ -168,3 +168,40 @@ html[data-gf-nova][data-gf-route="home"][data-gf-view="grid"] div[class^="board-
 .gf-nova .gf-nv-wide .gf-nv-bar { z-index: 1; }
 .gf-nova .gf-nv-wide .gf-nv-bar { width: auto; }
 .gf-nova-phone .gf-nv-row::after { content: ""; flex: none; width: 10px; }
+
+/* ---------- V2 (Mac e celular): destaque que roda pelos serviços, serviços um pouco maiores, "Continuar a ver" por baixo ---------- */
+.gf-nv-slide { display: contents; }
+.gf-v2 .gf-nv-img.is-old img { opacity: 1; transition: none; }
+.gf-v2 .gf-nv-pager { position: absolute; display: flex; align-items: center; gap: 7px; }
+.gf-nova .gf-nv-pg { position: relative; flex: none; width: 6px; height: 6px; border-radius: 3px; background: rgba(255, 255, 255, 0.35); transition: width 0.2s ease, background 0.2s ease; }
+.gf-nova .gf-nv-pg::after { content: ""; position: absolute; inset: -12px -4px; }
+.gf-nova .gf-nv-pg.is-on { width: 18px; background: #fff; }
+.gf-nova .gf-nv-arrow { flex: none; display: inline-flex; align-items: center; justify-content: center; width: 30px; height: 30px; border-radius: 15px; background: rgba(255, 255, 255, 0.08); color: var(--nv-text); }
+.gf-nova .gf-nv-arrow:hover { background: rgba(255, 255, 255, 0.18); }
+@media (prefers-reduced-motion: reduce) { .gf-nova .gf-nv-pg { transition: none; } }
+
+/* celular */
+.gf-nova-phone.gf-v2 .gf-nv-hero { padding-bottom: 40px; touch-action: pan-y; }
+.gf-nova-phone.gf-v2 .gf-nv-pager { left: 0; right: 0; bottom: 14px; justify-content: center; }
+.gf-nova-phone.gf-v2 .gf-nv-svcs { gap: 12px; padding-top: 20px; }
+.gf-nova-phone.gf-v2 .gf-nv-svc { width: 72px; gap: 7px; }
+.gf-nova-phone.gf-v2 .gf-nv-dot { width: 64px; height: 64px; border-radius: 32px; font-size: 21px; }
+.gf-nova-phone.gf-v2 .gf-nv-svc-name { max-width: 72px; font-size: 12px; }
+.gf-nova-phone.gf-v2 .gf-nv-wide { width: 220px; height: 124px; }
+
+/* Mac: cabe em 1440×900 e 1024×768 sem rolar */
+.gf-nova-mac.gf-v2 { gap: 18px; padding-bottom: 20px; }
+.gf-nova-mac.gf-v2 .gf-nv-hero { height: clamp(200px, 28vh, 290px); padding-top: 26px; padding-bottom: 52px; }
+.gf-nova-mac.gf-v2 .gf-nv-sec { gap: 12px; }
+.gf-nova-mac.gf-v2 .gf-nv-img { top: 26px; bottom: 26px; }
+.gf-nova-mac.gf-v2 .gf-nv-pager { left: 34px; bottom: 14px; }
+.gf-nova-mac.gf-v2 .gf-nv-svc { height: clamp(92px, 12.5vh, 118px); font-size: clamp(0.85rem, 1.15vw, 1.05rem); }
+.gf-nova-mac.gf-v2 .gf-nv-cw[hidden] { display: none; }
+.gf-nova-mac.gf-v2 .gf-nv-row { display: flex; align-items: flex-start; gap: 14px; overflow-x: auto; overflow-y: hidden; scrollbar-width: none; padding: 4px; margin: -4px; }
+.gf-nova-mac.gf-v2 .gf-nv-row::-webkit-scrollbar { display: none; }
+.gf-nova-mac.gf-v2 .gf-nv-wide { width: clamp(180px, 15vw, 240px); height: clamp(101px, 8.44vw, 135px); }
+.gf-nova-mac.gf-v2 .gf-nv-wide:hover { border-color: #fff; }
+.gf-nova-mac.gf-v2 .gf-nv-wide:focus-visible { outline: 3px solid #fff; outline-offset: 2px; }
+@media (min-width: 861px) and (max-width: 1100px) {
+    .gf-nova-mac.gf-v2 .gf-nv-svcs { grid-template-columns: repeat(9, minmax(0, 1fr)); gap: 10px; }
+}

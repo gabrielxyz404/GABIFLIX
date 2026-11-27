@@ -216,12 +216,33 @@ jobs:
           APP=mac/build/FramePlay.app/Contents/MacOS/FramePlay
           shot() { screencapture -x "/tmp/telas/$1.png" || true; }
           web() { rm -f /tmp/gf-web.out; echo "$1" > /tmp/gf-web; sleep "${2:-2.5}"; echo "$V $1 => $(cat /tmp/gf-web.out 2>/dev/null)" | cut -c1-600 >> /tmp/telas/mac-app.txt; }
-          for V in antes depois; do
+          # antes = main; depois = este commit sem histórico; depois-hist = este commit com 2 títulos em "Continuar a ver" (biblioteca local)
+          for V in antes depois depois-hist; do
             P=8099; [ $V = antes ] && P=8098
+            U="http://localhost:$P/index.html"; [ $V = depois-hist ] && U="http://localhost:$P/tools/home-nova-test/historico.html"
             defaults delete FramePlay 2>/dev/null || true
-            $APP --gf-test-url "http://localhost:$P/index.html" --gf-test-web > /tmp/telas/$V-app.log 2>&1 &
+            rm -rf ~/Library/WebKit/FramePlay ~/Library/Caches/FramePlay 2>/dev/null || true
+            $APP --gf-test-url "$U" --gf-test-web > /tmp/telas/$V-app.log 2>&1 &
             sleep 30
             web "resize 1440 900" 4
+            web "js (function(){var sc=document.getElementById('gf-home');sc=sc&&sc.parentNode;return 'altura '+(sc?sc.scrollHeight+'/'+sc.clientHeight:'?')})()"
+            web "resize 1024 768" 3
+            web "js (function(){var sc=document.getElementById('gf-home');sc=sc&&sc.parentNode;return 'altura 1024x768 '+(sc?sc.scrollHeight+'/'+sc.clientHeight:'?')})()"
+            shot $V-mac-02b-inicio-1024x768
+            web "resize 1440 900" 3
+            # destaque: Ver e Detalhes abrem o título do destaque; Continuar a ver abre o título certo
+            for B in "is-main" "not(.is-main)"; do
+              SEL=".gf-nv-copy .gf-nv-btn.$B"; [ "$B" = "not(.is-main)" ] && SEL=".gf-nv-copy .gf-nv-btn:not(.is-main)"
+              web "js (function(){var h=document.querySelector('.gf-nv-hero');var b=document.querySelector('$SEL');if(!h||!b)return 'sem destaque';window.__id=h.getAttribute('data-hero-id');b.click();return 'clicou '+b.textContent+' '+window.__id})()" 4
+              web "js 'destaque abriu '+location.hash+' '+(window.__id&&location.hash.indexOf(window.__id)>=0?'OK':'ERRO')" 1
+              web "js history.back(); 'ok'" 3
+            done
+            if [ $V = depois-hist ]; then
+              shot $V-mac-05-continuar-a-ver
+              web "js (function(){var c=document.querySelector('.gf-nv-cw .gf-nv-wide');if(!c)return 'sem continuar';c.click();return 'clicou '+c.getAttribute('aria-label')})()" 4
+              web "js 'continuar abriu '+location.hash+' '+(/tt0816692/.test(location.hash)?'OK':'ERRO')" 1
+              web "js history.back(); 'ok'" 3
+            fi
             web "js document.documentElement.getAttribute('data-gf-app') + ' nova=' + !!document.querySelector('.gf-nova') + ' servicos=' + document.querySelectorAll('[data-service]').length + ' ' + innerWidth + 'x' + innerHeight"
             shot $V-mac-01-inicio-1440
             web "resize 1024 700" 3

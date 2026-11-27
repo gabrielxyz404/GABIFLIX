@@ -349,6 +349,127 @@
         return b;
     }
 
+    // ---------- celular: destaque com recomendações de todos os serviços ----------
+    // Roda entre o 1.º título em alta de cada serviço (troca a cada 8 s, desliza com o dedo, pontos por baixo).
+    // Os dados vêm dos mesmos arquivos da Início de cada catálogo (data/<serviço>-home.json), pedidos um de cada vez,
+    // só quando o destaque está para chegar a esse serviço (e ficam prontos para abrir o catálogo na hora).
+    var NV_ART = { netflix: 'NA', disney: 'NO', prime: 'NO', hbo: 'NA', appletv: 'NA', paramount: 'NO', globoplay: 'NO', clarovideo: 'NA', cinemateca: 'NO' };
+
+    function trendOf(s) {
+        var p = s.id === 'cinemateca'
+            ? loadCatalog({ file: 'cine-cinemas' })
+            : loadHome(s.id).then(function (h) { return (h.top10 || []).concat(h.movie || []).concat(h.series || []); });
+        return p.then(function (list) {
+            return list.filter(function (x) { return x && x.id && x.name && (x.background || /^tt/.test(x.id)); })[0] || null;
+        }).catch(function () { return null; });
+    }
+
+    function heroSrcOf(meta) {
+        return meta.background || ('https://images.metahub.space/background/medium/' + encodeURIComponent(meta.id) + '/img');
+    }
+
+    // V2: destaque com recomendações de todos os serviços + "Continuar a ver" por baixo dos serviços (sem a fila "Em alta")
+    var V2 = { mac: true, phone: false }; // celular: ainda o desenho anterior (o V2 do celular vem a seguir)
+
+    function novaCarousel(hero, page, mac, onFirst) {
+        var N = SERVICES.length, idx = -1, timer = 0, busy = 0, first = true;
+        var slides = SERVICES.map(function (s) { return { s: s, meta: null, p: null }; });
+        var slide = el('div', 'gf-nv-slide'); // display: contents; só isto é refeito a cada troca
+        hero.appendChild(slide);
+        var bar = el('div', 'gf-nv-pager');
+        var pts = [];
+        function arrow(dir, label, d) {
+            var b = el('button', 'gf-nv-arrow');
+            b.type = 'button';
+            b.setAttribute('aria-label', label);
+            b.appendChild(svgIcon(d, 18, false));
+            b.addEventListener('click', function () { go(idx + dir, dir, true); });
+            return b;
+        }
+        if (mac) bar.appendChild(arrow(-1, 'Destaque anterior', 'M15 5l-7 7 7 7'));
+        slides.forEach(function (sl, i) {
+            var d = el('button', 'gf-nv-pg');
+            d.type = 'button';
+            d.setAttribute('aria-label', 'Destaque ' + (i + 1) + ': ' + sl.s.name);
+            d.addEventListener('click', function () { go(i, i >= idx ? 1 : -1, true); });
+            pts.push(d);
+            bar.appendChild(d);
+        });
+        if (mac) bar.appendChild(arrow(1, 'Destaque seguinte', 'M9 5l7 7-7 7'));
+        hero.appendChild(bar);
+        function load(i) {
+            var sl = slides[i];
+            if (!sl.p) sl.p = trendOf(sl.s).then(function (m) {
+                sl.meta = m;
+                if (m) { var im = new Image(); im.decoding = 'async'; im.src = heroSrcOf(m); } // já fica na cache para a troca ser imediata
+                return m;
+            });
+            return sl.p;
+        }
+        function show(i) {
+            var sl = slides[i];
+            var old = slide.querySelector('.gf-nv-img');
+            fillNovaHero(slide, { kind: 'trend', meta: sl.meta, service: sl.s }, mac);
+            var tag = slide.querySelector('.gf-nv-tag');
+            if (tag) {
+                tag.textContent = 'EM ALTA ' + (NV_ART[sl.s.id] || 'NO') + ' ' + sl.s.name.toUpperCase();
+                tag.style.color = (NV_COLORS[sl.s.id] || [])[0] || '';
+            }
+            // a imagem anterior fica por baixo até a nova chegar (sem piscar para o fundo)
+            if (old) {
+                old.classList.add('is-old');
+                slide.insertBefore(old, slide.firstChild);
+                var img = slide.querySelector('.gf-nv-img:not(.is-old) img');
+                var rm = function () { if (old.parentNode) old.remove(); };
+                if (img) { img.addEventListener('load', function () { setTimeout(rm, 250); }); img.addEventListener('error', rm); }
+                setTimeout(rm, 2500);
+            }
+            for (var k = 0; k < pts.length; k++) pts[k].classList.toggle('is-on', k === i);
+            hero.setAttribute('data-hero-service', sl.s.id);
+            hero.setAttribute('data-hero-id', sl.meta.id);
+            if (first) { first = false; if (onFirst) onFirst(); }
+        }
+        // vai para o destaque i; serviço sem título (ou sem internet) é saltado na direção do movimento
+        function go(i, dir, user) {
+            var tries = 0, my = ++busy;
+            if (user) restart();
+            (function next(j) {
+                j = (j + N) % N;
+                load(j).then(function (m) {
+                    if (my !== busy || !page.isConnected) return;
+                    if (!m) { if (++tries < N) next(j + (dir || 1)); else { hero.classList.remove('is-loading'); fillNovaHero(slide, null, mac); } return; }
+                    idx = j;
+                    hero.classList.remove('is-loading');
+                    show(j);
+                    load((j + (dir || 1) + N) % N); // o seguinte já em segundo plano
+                });
+            })(i);
+        }
+        function restart() {
+            clearInterval(timer);
+            timer = setInterval(function () {
+                if (!page.isConnected) { clearInterval(timer); return; }
+                // parado enquanto a app está escondida, o rato está por cima ou o foco do teclado está no destaque
+                if (document.hidden || hero.matches(':hover') || hero.matches(':active') || hero.contains(document.activeElement)) return;
+                go(idx + 1, 1, false);
+            }, 8000);
+        }
+        // deslizar com o dedo: para o lado muda de destaque; para cima/baixo continua a rolar a página
+        var sx = 0, sy = 0, down = false, swiped = 0;
+        hero.addEventListener('pointerdown', function (e) { if (e.pointerType === 'mouse') return; down = true; sx = e.clientX; sy = e.clientY; }, { passive: true });
+        hero.addEventListener('pointerup', function (e) {
+            if (!down) return;
+            down = false;
+            var dx = e.clientX - sx, dy = e.clientY - sy;
+            if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy) * 1.2) { swiped = Date.now(); go(idx + (dx < 0 ? 1 : -1), dx < 0 ? 1 : -1, true); }
+        }, { passive: true });
+        hero.addEventListener('pointercancel', function () { down = false; }, { passive: true });
+        // um deslize que acaba em cima de um botão não conta como toque
+        hero.addEventListener('click', function (e) { if (Date.now() - swiped < 400) { e.preventDefault(); e.stopPropagation(); } }, true);
+        go(0, 1, false);
+        restart();
+    }
+
     function renderNova(root, appKind) {
         var mac = appKind === 'mac';
         var page = el('div', 'gf-nova ' + (mac ? 'gf-nova-mac' : 'gf-nova-phone'));
@@ -384,9 +505,20 @@
         if (mac) svcSec.appendChild(el('h3', 'gf-nv-h', 'Os teus serviços'));
         svcSec.appendChild(svcBox);
 
-        var rowSec = el('section', 'gf-nv-sec');
-        var rowBox = el('div', 'gf-nv-row');
-        var rowTitle = el('h3', 'gf-nv-h', mac ? 'Em alta na ' + SERVICES[0].name : 'Continuar a ver');
+        var v2 = mac ? V2.mac : V2.phone;
+        if (v2) page.classList.add('gf-v2');
+        // "Continuar a ver": cartões largos por baixo dos serviços (só aparece com histórico)
+        var cwSec = el('section', 'gf-nv-sec gf-nv-cw');
+        cwSec.hidden = true;
+        var cwBox = el('div', 'gf-nv-row');
+        cwSec.appendChild(el('h3', 'gf-nv-h', 'Continuar a ver'));
+        cwSec.appendChild(cwBox);
+        // versão anterior (sem V2): fila de capas "Em alta na Netflix"
+        var trendSec = el('section', 'gf-nv-sec gf-nv-trend');
+        trendSec.hidden = true;
+        var trendBox = el('div', 'gf-nv-row');
+        trendSec.appendChild(el('h3', 'gf-nv-h', 'Em alta na ' + SERVICES[0].name));
+        trendSec.appendChild(trendBox);
 
         if (mac) {
             var head = el('header', 'gf-nv-head');
@@ -405,61 +537,37 @@
             lab.appendChild(inp);
             head.appendChild(lab);
             page.appendChild(head);
-            page.appendChild(hero);
-            page.appendChild(svcSec);
-            rowSec.appendChild(rowTitle);
-            rowSec.appendChild(rowBox);
-            page.appendChild(rowSec);
-        } else {
-            page.appendChild(hero);
-            page.appendChild(svcSec);
-            rowSec.hidden = true;
-            rowSec.className = 'gf-nv-sec gf-nv-cw';
-            rowSec.appendChild(rowTitle);
-            rowSec.appendChild(rowBox);
-            page.appendChild(rowSec);
-            // celular: capas em alta da Netflix por baixo (sem histórico, logo a seguir aos serviços)
-            var trendSec = el('section', 'gf-nv-sec gf-nv-trend');
-            trendSec.hidden = true;
-            var trendBox = el('div', 'gf-nv-row');
-            trendSec.appendChild(el('h3', 'gf-nv-h', 'Em alta na ' + SERVICES[0].name));
-            trendSec.appendChild(trendBox);
-            page.appendChild(trendSec);
         }
+        page.appendChild(hero);
+        page.appendChild(svcSec);
+        if (v2 || !mac) page.appendChild(cwSec);
+        if (!v2) page.appendChild(trendSec);
         root.appendChild(page);
 
-        // dados: o destaque (histórico ou em alta), a fila "Em alta" do Mac e o "Continuar a ver" do celular
-        pickFeatured().then(function (feat) {
+        // destaque: V2 roda pelos serviços; antes, o último "Continuar a ver" ou o 1.º em alta da Netflix
+        if (v2) novaCarousel(hero, page, mac, focusNovaStart);
+        else pickFeatured().then(function (feat) {
             if (!page.isConnected) return;
             hero.classList.remove('is-loading');
             fillNovaHero(hero, feat, mac);
             focusNovaStart();
         });
-        if (mac) {
-            loadHome(SERVICES[0].id).then(function (h) {
-                if (!page.isConnected) return;
-                var frag = document.createDocumentFragment();
-                (h.top10 || []).concat(h.movie || []).slice(0, 14).forEach(function (m) { frag.appendChild(novaPoster(m)); });
-                rowBox.appendChild(frag);
-            }).catch(function () { rowSec.hidden = true; });
-        } else {
-            loadHome(SERVICES[0].id).then(function (h) {
-                if (!page.isConnected) return;
-                var frag = document.createDocumentFragment();
-                (h.top10 || []).concat(h.movie || []).slice(0, 14).forEach(function (m) { frag.appendChild(novaPoster(m)); });
-                trendBox.appendChild(frag);
-                trendSec.hidden = false;
-            }).catch(function () {});
-            getContinueItems().then(function (items) {
-                if (!page.isConnected) return;
-                var list = items.filter(function (x) { return x && x._id && x.type !== 'other'; }).slice(0, 12);
-                if (!list.length) return;
-                var frag = document.createDocumentFragment();
-                list.forEach(function (it) { frag.appendChild(novaContinueCard(it, rowSec)); });
-                rowBox.appendChild(frag);
-                rowSec.hidden = false;
-            });
-        }
+        if (!v2) loadHome(SERVICES[0].id).then(function (h) {
+            if (!page.isConnected) return;
+            var frag = document.createDocumentFragment();
+            (h.top10 || []).concat(h.movie || []).slice(0, 14).forEach(function (m) { frag.appendChild(novaPoster(m)); });
+            trendBox.appendChild(frag);
+            trendSec.hidden = false;
+        }).catch(function () {});
+        if (v2 || !mac) getContinueItems().then(function (items) {
+            if (!page.isConnected) return;
+            var list = items.filter(function (x) { return x && x._id && x.type !== 'other'; }).slice(0, 12);
+            if (!list.length) return;
+            var frag = document.createDocumentFragment();
+            list.forEach(function (it) { frag.appendChild(novaContinueCard(it, cwSec)); });
+            cwBox.appendChild(frag);
+            cwSec.hidden = false;
+        });
 
         // celular: os círculos começam no serviço onde o usuário estava
         if (!mac) requestAnimationFrame(function () {
@@ -487,7 +595,7 @@
             return [
                 [].slice.call(page.querySelectorAll('.gf-nv-hero .gf-nv-btn:not(:disabled)')),
                 svcs,
-                [].slice.call(page.querySelectorAll('.gf-nv-poster'))
+                [].slice.call(page.querySelectorAll('.gf-nv-poster, .gf-nv-cw .gf-nv-wide'))
             ].filter(function (r) { return r.length; });
         }
         gridKeyHandler = function (e) {
