@@ -61,6 +61,10 @@ final class AudioResult {
     var driftDropWin = -1
     /** as janelas de z alto concordam em torno da mediana (porta robusta, ver finalEvidence) */
     var winConsensus = true
+    /** com a deriva provada: as janelas concordam com a reta (fortes <= driftGateDevMs, fracas <= driftWeakTolMs, maioria clara), ver AudioAligner.driftAgree */
+    var driftAgree = true
+    /** janelas com fala que cabem na reta (com a tolerância de cada uma) */
+    var winsFit = 0
     /// invariante: o deslocamento aplicado contradiz em mais de shiftContraMs o que as janelas medem com busca larga
     var shiftContra = false
     var finDetail = ""

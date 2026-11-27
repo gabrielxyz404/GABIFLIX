@@ -101,6 +101,20 @@ echo "analises_botao_antes=$N0 depois=$N1" >> "$OUT/conferencia.txt"
 [ "$N1" -gt "$N0" ] || { note "FALHA: o 2º toque não analisou de novo"; FAIL=1; }
 grep -E "AVISO na tela|sincronização:|GATILHO motivo=botão|AUDIOSYNC botão" "$LOG" | cut -c1-260 > "$OUT/avisos-1-ext.txt"
 shot 1-ext-6-depois-segundo-toque 0.5
+# ajuste manual com a escala ativa (a legenda era de 25 fps): dois passos de +500 ms pelo mesmo caminho dos botões; cada passo tem de ficar no registro
+# ("ajuste manual: A -> B"), redesenhar a fala na hora, e o automático/seguimento da escala não pode desfazê-lo
+cmd "nudge 500" 1.5
+cmd "nudge 500" 1.5
+shot 1-ext-7-ajuste-manual 0.5
+sleep 8
+grep -E "ajuste manual: |ajuste manual registrado|reancorado no ajuste manual|atraso da legenda \(automático|atraso da legenda: " "$LOG" | tail -12 | cut -c1-300 | tee "$OUT/ajuste-manual.txt"
+MN=0; MBAD=0
+while read -r ma mb; do MN=$((MN + 1)); [ $((mb - ma)) -eq 500 ] || MBAD=1; done < <(grep -E "ajuste manual: -?[0-9]+ -> -?[0-9]+ ms" "$LOG" | tail -2 | sed -E 's/.*ajuste manual: (-?[0-9]+) -> (-?[0-9]+) ms.*/\1 \2/')
+echo "ajuste_manual passos=$MN passos_de_500=$((1 - MBAD))" | tee -a "$OUT/conferencia.txt"
+if [ "$TAP" = pill ]; then
+  { [ "$MN" -ge 2 ] && [ "$MBAD" -eq 0 ]; } || { note "FALHA: o ajuste manual não ficou no registro com passos de 500 ms"; FAIL=1; }
+  grep -q "reancorado no ajuste manual" "$LOG" && note "ok: o modelo com escala foi reancorado no ajuste manual (soma ao deslocamento)" || note "aviso: sem reancoragem no registro (sem escala ativa?)"
+fi
 save 1-ext-b
 finish 1-ext
 

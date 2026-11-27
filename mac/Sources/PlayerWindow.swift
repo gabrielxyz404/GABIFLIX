@@ -1549,6 +1549,14 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
     private func syncDelayToTrack(_ trackId: Int) {
         let k = delayKeyFor(trackId)
         let tag = k ?? ""
+        if delayUnsaved, let k = k {
+            // o atraso foi posto à mão antes de a legenda ativa ser conhecida: guarda agora (o ajuste manual persiste por fonte+legenda) em vez de o apagar com o valor guardado
+            delayUnsaved = false
+            lastSyncKey = tag
+            UserDefaults.standard.set(subDelayMs, forKey: PlayerWindowController.delayPrefs + k)
+            log("atraso da legenda guardado depois: \(subDelayMs) ms (\(k))")
+            return
+        }
         if tag == lastSyncKey { return }
         lastSyncKey = tag
         let m = PlayerWindowController.maxDelayMs
@@ -1581,14 +1589,26 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
         let k = delayKeyFor(Int(player.currentVideoSubTitleIndex))
         if let k = k {
             lastSyncKey = k
+            delayUnsaved = false
             UserDefaults.standard.set(subDelayMs, forKey: PlayerWindowController.delayPrefs + k)
-        }
+        } else { delayUnsaved = true }
         applySubDelay()
         syncValue?.stringValue = delayLabel()
         log("atraso da legenda: \(subDelayMs) ms (\(k ?? "sem legenda ativa, não guardado"))")
     }
 
-    private func changeSubDelay(_ delta: Int, reset: Bool) { userEdits += 1; setSubDelay(reset ? 0 : subDelayMs + delta) }
+    /** o atraso foi mexido sem haver chave de legenda (ainda desconhecida): guarda assim que ela ficar conhecida (syncDelayToTrack) */
+    private var delayUnsaved = false
+
+    private func changeSubDelay(_ delta: Int, reset: Bool) {
+        userEdits += 1
+        let was = subDelayMs
+        setSubDelay(reset ? 0 : subDelayMs + delta)
+        // o ajuste manual sempre vence e se vê na hora: redesenha a fala já com o atraso novo (sem esperar o próximo ciclo de 100 ms) e deixa o estado no registro
+        overlayTick()
+        let cues = candForTrack(Int(player.currentVideoSubTitleIndex)).flatMap { overlayCues[$0.rank]?.count } ?? 0
+        log("ajuste manual: \(was) -> \(subDelayMs) ms (legenda do app \(overlayWin != nil || cues > 0 ? "ligada" : "desligada: o libVLC desenha"), falas=\(cues), tempo \(player.time.intValue) ms, fala na tela=\(overlayLast.map { "\"" + String($0.prefix(30)).replacingOccurrences(of: "\n", with: " / ") + "\"" } ?? "nada"))")
+    }
 
     // ---------- painel "Sincronizar legenda" (por cima do vídeo; teclado: setas/Enter/Esc; mouse: clique, segurar repete) ----------
     private func panelLabel(_ s: String, _ size: CGFloat, bold: Bool = false, color: NSColor = .white) -> NSTextField {
@@ -1884,6 +1904,7 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
             showSyncPanel()
             if let c = candForTrack(Int(player.currentVideoSubTitleIndex)) { showSpeechPicker(c) }
         case "delay": userEdits += 1; setSubDelay(n)
+        case "nudge": changeSubDelay(n, reset: false)   // o mesmo caminho dos botões +/- do ajuste manual
         case "pill":
             // o toque de verdade no botão Sincronizar da barra (a mesma ação do mouse)
             if let b = syncPill { log("toque no botão Sincronizar (visível=\(!b.isHidden && b.alphaValue > 0) enabled=\(b.isEnabled))"); b.performClick(nil) } else { log("toque no botão Sincronizar: sem botão") }

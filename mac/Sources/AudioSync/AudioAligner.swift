@@ -46,6 +46,15 @@ enum AudioAligner {
         /** com a deriva provada, o desvio de cada janela para o modelo final pode chegar a isto (ms) sem derrubar a aceitação */
         var driftGateDevMs = 200.0
         var driftResFloorMs = 50.0
+        /** com a deriva provada a concordância das janelas é medida contra a RETA (escala + deslocamento): janelas fortes ficam a menos de driftGateDevMs; as fracas (z baixo,
+         *  pico ambíguo) a menos de driftWeakTolMs; basta uma maioria clara (driftMinAgreeFrac) das janelas com fala caber, e nenhuma janela forte pode contradizer a reta */
+        var driftWeakTolMs = 800.0
+        var driftMinAgreeFrac = 0.6
+        /** janelas fracas só entram no refinamento do deslocamento da reta se caem a menos disto (ms) dela (com peso menor); 0 = desligado (como no Java) */
+        var driftWeakFitMs = 0.0
+        var driftWeakWeight = 0.5
+        /** a porta relaxada (janela fraca a mais de driftGateDevMs da reta) só vale com prova forte: resíduo da reta sem escala >= isto vezes o da reta de deriva */
+        var driftRelaxRatio = 5.0
         var driftRatio = 3.0
         var driftContentMs = 800.0
         var winMinNcc = 0.15
@@ -621,9 +630,6 @@ enum AudioAligner {
     private static func driftCheck(_ R: AudioResult, _ cues: [AudioCue], _ ws: [AudioWindow], _ ps: [[Float]], _ fine: [Float], _ durMs: Int, _ P: Params) {
         let W = ws.count
         var info: [AudioResult.Win] = []
-        var x = [Double](repeating: 0, count: W), y = [Double](repeating: 0, count: W), wt = [Double](repeating: 0, count: W)
-        var widx = [Int](repeating: 0, count: W)
-        var n = 0
         let nearUnitModel = abs(R.scale - 1.0) < 0.0035
         for w in 0..<W {
             var wi = AudioResult.Win()
@@ -638,9 +644,25 @@ enum AudioAligner {
             wi.second = f.nccSecond
             wi.speech = f.speechFrac >= P.minSpeechFrac
             wi.confident = wi.speech && f.ncc >= P.winMinNcc && (f.ncc - f.nccSecond >= P.winMinMargin || f.z >= P.winMinZ)
-            if wi.confident { x[n] = uc; y[n] = wi.delayMs; wt[n] = max(0.01, f.ncc); widx[n] = w; n += 1 }
             info.append(wi)
         }
+        driftFromWins(R, cues, ws, info, durMs, P)
+    }
+
+    /**
+     * Prova de deriva a partir das medidas por janela (AudioResult.Win). Separada da captura para poder ser testada com as medidas de um relatório real
+     * (cues e ws só servem para pedir janelas extras e podem ser nil).
+     */
+    static func driftFromWins(_ R: AudioResult, _ cues: [AudioCue]?, _ ws: [AudioWindow]?, _ info: [AudioResult.Win], _ durMs: Int, _ P: Params) {
+        let W = info.count
+        var x = [Double](repeating: 0, count: W), y = [Double](repeating: 0, count: W), wt = [Double](repeating: 0, count: W)
+        var widx = [Int](repeating: 0, count: W)
+        var n = 0
+        for w in 0..<W {
+            let wi = info[w]
+            if wi.confident { x[n] = wi.centerMs; y[n] = wi.delayMs; wt[n] = max(0.01, wi.ncc); widx[n] = w; n += 1 }
+        }
+        let nearUnitModel = abs(R.scale - 1.0) < 0.0035
         R.wins = info
         R.driftConfident = n
         if n < 2 { R.driftNote = "menos de 2 janelas confiáveis (\(n) de \(W))"; return }
@@ -693,6 +715,25 @@ enum AudioAligner {
         }
         if best >= 0 {
             let al = alphaOf(ks[best])
+            // refaz o deslocamento da reta com as janelas com fala (as fracas só entram se driftWeakFitMs > 0): porte do Java
+            let bestBeta0 = bestBeta
+            for _ in 0..<2 {
+                var sw = 0.0, sy = 0.0
+                var used = 0
+                let dropW = bestDrop >= 0 ? widx[bestDrop] : -1
+                for w in 0..<W {
+                    let wi = info[w]
+                    if !wi.speech || w == dropW { continue }
+                    let r = wi.delayMs - (bestBeta + al * wi.centerMs)
+                    let wgt: Double
+                    if wi.confident { wgt = max(0.01, wi.ncc) }
+                    else if abs(r) <= P.driftWeakFitMs { wgt = P.driftWeakWeight * max(0.01, wi.ncc) }
+                    else { continue }
+                    sw += wgt; sy += wgt * (wi.delayMs - al * wi.centerMs); used += 1
+                }
+                if sw > 0 && used >= 2 { bestBeta = sy / sw }
+            }
+            if abs(bestBeta - bestBeta0) > 400 { bestBeta = bestBeta0 }
             R.scale = ks[best]
             R.offsetMs = bestBeta * R.scale
             R.scaleKnown = true
@@ -715,7 +756,7 @@ enum AudioAligner {
         R.driftNote = "sem prova de deriva: resíduo da reta sem escala \(jround(unit.1)) ms" + (nearMiss ? " (" + why.trimmingCharacters(in: .whitespaces) + ")" : "")
         if unit.1 > P.driftSuspectMs || nearMiss {
             R.driftSuspect = true
-            if W < P.maxDriftWindows { R.driftMore = moreSpread(cues, ws, durMs, P) }
+            if let ws = ws, let cues = cues, W < P.maxDriftWindows { R.driftMore = moreSpread(cues, ws, durMs, P) }
         }
     }
 
@@ -822,6 +863,7 @@ enum AudioAligner {
         var cnt = 0
         var tp = 0.0, fp = 0.0, fn = 0.0
         var devs: [Double] = [], zs: [Double] = [], wides: [Double] = []
+        var strong: [Bool] = []
         var fd = ""
         for w in 0..<ws.count {
             if w == R.driftDropWin { continue }
@@ -838,6 +880,7 @@ enum AudioAligner {
             if dev > R.winMaxDev { R.winMaxDev = dev }
             if dev <= 150 { R.winsAgree += 1 }
             devs.append(fw.bestDelta); zs.append(fw.z)
+            strong.append(fw.ncc >= P.winMinNcc && (fw.ncc - fw.nccSecond >= P.winMinMargin || fw.z >= P.winMinZ))
             sum += f.ncc0; cnt += 1
             if f.ncc0 < mn { mn = f.ncc0 }
             for j in 0..<ps[w].count {
@@ -848,12 +891,31 @@ enum AudioAligner {
             }
         }
         R.winConsensus = consensus(devs, zs, P)
+        R.driftAgree = driftAgree(devs, strong, P)
+        R.winsFit = driftFitCount(devs, strong, P)
         R.shiftContra = !P.legacy && contradicts(wides, zs, P)
         R.finDetail = fd
         R.nccMean = cnt > 0 ? sum / Double(cnt) : 0
         R.nccMin = cnt > 0 ? mn : 0
         let pr = tp / max(1, tp + fp), rc = tp / max(1, tp + fn)
         R.f1 = (pr + rc) > 0 ? 2 * pr * rc / (pr + rc) : 0
+    }
+
+    static func driftFitCount(_ dev: [Double], _ strong: [Bool], _ P: Params) -> Int {
+        var fit = 0
+        for i in 0..<dev.count where abs(dev[i]) <= (strong[i] ? P.driftGateDevMs : P.driftWeakTolMs) { fit += 1 }
+        return fit
+    }
+
+    /**
+     * Concordância das janelas com a reta de deriva (escala + deslocamento): nenhuma janela FORTE pode ficar a mais de driftGateDevMs da reta; as FRACAS têm tolerância larga
+     * (driftWeakTolMs); e uma maioria clara (driftMinAgreeFrac, mínimo 2) das janelas com fala tem de caber. Porte de AudioAligner.driftAgree.
+     */
+    static func driftAgree(_ dev: [Double], _ strong: [Bool], _ P: Params) -> Bool {
+        let n = dev.count
+        if n < 2 { return true }
+        for i in 0..<n where strong[i] && abs(dev[i]) > P.driftGateDevMs { return false }
+        return driftFitCount(dev, strong, P) >= max(2, jint((P.driftMinAgreeFrac * Double(n) - 1e-9).rounded(.up)))
     }
 
     /** Confere um modelo (escala, deslocamento) contra TODAS as janelas capturadas pela mesma porta robusta (porte de verifyModel). */
@@ -942,7 +1004,7 @@ enum AudioAligner {
         // prova de reta de atraso constante: 4+ janelas confiáveis numa reta (resíduo <= 100 ms) valem como concordância mesmo se as outras janelas (fracas) discordam
         let linePass = !P.legacy && !R.driftScale && abs(R.scale - 1.0) < 1e-9 && R.driftConfident >= 4 && R.unitResMs <= 100
         let gateDev = P.gateWinDevMs > 0 && R.winsValid >= 2
-            && (P.legacy ? R.winMaxDev > P.gateWinDevMs : R.driftScale ? R.winMaxDev > P.driftGateDevMs : !R.winConsensus && !linePass)
+            && (P.legacy ? R.winMaxDev > P.gateWinDevMs : R.driftScale ? (!R.driftAgree || (R.winMaxDev > P.driftGateDevMs && R.unitResMs < P.driftRelaxRatio * max(R.driftResMs, P.driftResFloorMs))) : !R.winConsensus && !linePass)
         let gateWin = P.gateMinWinsAgree > 0 && R.winsAgree < P.gateMinWinsAgree
         if gateDev || gateWin { ok = false }
         R.accepted = ok

@@ -264,12 +264,74 @@ func runPre(_ wav: String, _ srtPath: String) {
                  r.inSync ? 1 : 0, name, plan.map { "[\($0[0]), \($0[1])]" }.joined(separator: ", ")))
 }
 
+// ------------------------------------------------------------------ repetição do relatório real (porte de DriftReplayTest.java)
+/// valores de referência: o motor Java (AudioAligner.driftFromWins) corrido com as mesmas medidas (1.0.110)
+func runDriftReplay() {
+    func win(_ startS: Int, _ delay: Double, _ ncc: Double, _ second: Double, _ z: Double, _ conf: Bool) -> AudioResult.Win {
+        var w = AudioResult.Win()
+        w.startMs = startS * 1000
+        w.centerMs = Double(startS + 45) * 1000.0
+        w.delayMs = delay; w.ncc = ncc; w.second = second; w.z = z
+        w.speech = true; w.confident = conf
+        return w
+    }
+    // as 7 janelas da tentativa 1 do relatório (celular, v1.0.109, filme de 5615 s): ~14,6 s de atraso + deriva 1000/1001
+    let report = [win(440, 14268, 0.63, 0.53, 4.2, true), win(865, 13588, 0.70, 0.61, 2.6, true), win(2490, 12024, 0.65, 0.58, 2.8, false),
+                  win(1025, 13535, 0.45, 0.37, 3.8, true), win(3425, 11141, 0.53, 0.44, 3.7, true), win(4000, 10750, 0.47, 0.46, 2.1, false),
+                  win(4600, 10730, 0.51, 0.46, 3.0, false)]
+    let P = AudioAligner.Params()
+    func strong(_ ws: [AudioResult.Win]) -> [Bool] { return ws.map { $0.ncc >= P.winMinNcc && ($0.ncc - $0.second >= P.winMinMargin - 1e-9 || $0.z >= P.winMinZ) } }
+    func near(_ a: Double, _ b: Double, _ tol: Double) -> Bool { return abs(a - b) <= tol }
+
+    let R = AudioResult()
+    AudioAligner.driftFromWins(R, nil, nil, report, 5_615_000, P)
+    check(R.driftScale, "replay real: deriva provada (\(R.driftNote))")
+    check(near(R.scale, 1000.0 / 1001.0, 2e-6), "replay real: escala 0,999 (\(R.scale))")
+    check(near(R.offsetMs, 14_600, 300), "replay real: deslocamento ~+14,6 s (\(R.offsetMs))")
+    check(near(R.offsetMs, 14601.114, 0.01) && near(R.unitResMs, 2060.697, 0.01) && near(R.driftResMs, 137.755, 0.01) && R.driftConfident == 4 && R.driftDropWin == -1 && !R.driftSuspect,
+          "replay real: igual ao Java (offset 14601.114, resíduo sem escala 2060.697, resíduo 137.755, 4 confiáveis)")
+    check(R.unitResMs >= P.driftRelaxRatio * max(R.driftResMs, P.driftResFloorMs), "replay real: prova forte da porta relaxada (\(R.unitResMs) / \(R.driftResMs))")
+    let al = AudioAligner.alphaOf(R.scale), beta = R.offsetMs / R.scale
+    var d = report.map { $0.delayMs - (beta + al * $0.centerMs) }
+    let st = strong(report)
+    let expDev = [137.755, -116.819, -54.193, -9.659, -1.257, 183.319, 763.920]
+    var devOk = true
+    for i in 0..<7 where !near(d[i], expDev[i], 0.01) { devOk = false }
+    check(devOk, "replay real: desvios por janela iguais ao Java")
+    check(d.map { abs($0) }.max()! > 200 && abs(d[6]) > 500, "replay real: o desvio máximo bruto passava de 200 ms (a janela fraca fora é a de z baixo)")
+    check(AudioAligner.driftAgree(d, st, P) && AudioAligner.driftFitCount(d, st, P) == 7, "replay real: as janelas concordam com a reta (7 de 7)")
+    d[0] = 450
+    check(!AudioAligner.driftAgree(d, st, P) && AudioAligner.driftFitCount(d, st, P) == 6, "replay: janela forte a 450 ms da reta continua a recusar")
+    let minority = [50.0, 60, 3000, 2500, 4000, 1800, 5000]
+    check(!AudioAligner.driftAgree(minority, [Bool](repeating: false, count: 7), P) && AudioAligner.driftFitCount(minority, [Bool](repeating: false, count: 7), P) == 2, "replay: minoria a caber não chega")
+
+    // atraso constante, sem inclinação: não é deriva
+    let flat = report.map { win($0.startMs / 1000, 14000, $0.ncc, $0.second, $0.z, $0.confident) }
+    let R2 = AudioResult()
+    AudioAligner.driftFromWins(R2, nil, nil, flat, 5_615_000, P)
+    check(!R2.driftScale && R2.scale == 1.0, "replay: atraso constante sem deriva")
+
+    // caso da bancada: só deslocamento (+7,5 s) com ruído de ~500 ms: a "deriva" de 1285 ms não pode passar a porta relaxada
+    let noisy = [win(660, -7942, 0.25, 0.17, 3.3, true), win(1450, -7207, 0.59, 0.50, 3.3, true), win(1945, -6938, 0.39, 0.28, 4.6, true),
+                 win(2750, -7521, 0.35, 0.30, 3.8, false), win(3165, -7374, 0.54, 0.39, 5.3, true), win(4330, -7633, 0.72, 0.69, 2.7, false)]
+    let R3 = AudioResult()
+    AudioAligner.driftFromWins(R3, nil, nil, noisy, 5_000_000, P)
+    check(near(R3.offsetMs, -8771.251, 0.01) && near(R3.unitResMs, 639.508, 0.01) && near(R3.driftResMs, 165.520, 0.01) && R3.driftScale && R3.driftDropWin == 4,
+          "replay bancada: igual ao Java (offset -8771.251, resíduos 639.508 / 165.520, janela 4 fora)")
+    check(!R3.driftScale || R3.unitResMs < P.driftRelaxRatio * max(R3.driftResMs, P.driftResFloorMs), "replay bancada: sem prova forte a porta relaxada não vale")
+}
+
 let a = CommandLine.arguments
 if a.count >= 4 && a[1] == "parity" {
     runVectors(a[2])
     runExpected(a[3])
     runDsp(a[3])
     runFuzz()
+    runDriftReplay()
+    print(failures == 0 ? "TUDO CERTO" : "FALHAS: \(failures)")
+    exit(failures == 0 ? 0 : 1)
+} else if a.count >= 2 && a[1] == "driftreplay" {
+    runDriftReplay()
     print(failures == 0 ? "TUDO CERTO" : "FALHAS: \(failures)")
     exit(failures == 0 ? 0 : 1)
 } else if a.count >= 5 && a[1] == "silero" {
