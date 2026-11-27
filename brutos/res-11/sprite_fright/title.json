@@ -1,0 +1,124 @@
+{
+ "id": "sprite_fright",
+ "title": "Sprite Fright",
+ "year": 2021,
+ "decade": 2020,
+ "kind": "new",
+ "imdb": null,
+ "ia": "sprite-fright",
+ "series": null,
+ "license": "https://creativecommons.org/licenses/by/4.0/",
+ "collection": null,
+ "tag": "curado",
+ "media_file": "Sprite Fright - Open Movie by Blender Studio-804p.mp4",
+ "media_size": 110581245,
+ "notes": [],
+ "sub_candidates": [
+  {
+   "k": 0,
+   "lang": "por",
+   "src": "commons-timedtext",
+   "id": "Sprite Fright - Blender Open Movie-full movie.webm.pt",
+   "bytes": 5419,
+   "app": {
+    "file": "raw0.bin",
+    "bytes": 5419,
+    "decode_ms": 14,
+    "decoded": 1,
+    "vtt": 0,
+    "cues": 78,
+    "speech": 78,
+    "first": 17375,
+    "last": 535417,
+    "unsorted": 0,
+    "overlap": 0,
+    "nodur": 0,
+    "mojibake": 0,
+    "pt": 1,
+    "lastCueEnd": 535417
+   },
+   "py_cues": 78,
+   "text_lang": "por",
+   "pt_app": 1,
+   "skip": "poucas falas (78)"
+  },
+  {
+   "k": 1,
+   "lang": "eng",
+   "src": "commons-timedtext",
+   "id": "Sprite Fright - Blender Open Movie-full movie.webm.en",
+   "bytes": 5548,
+   "app": {
+    "file": "raw1.bin",
+    "bytes": 5548,
+    "decode_ms": 10,
+    "decoded": 1,
+    "vtt": 0,
+    "cues": 80,
+    "speech": 80,
+    "first": 17375,
+    "last": 535417,
+    "unsorted": 0,
+    "overlap": 0,
+    "nodur": 0,
+    "mojibake": 0,
+    "pt": 0,
+    "lastCueEnd": 535417
+   },
+   "py_cues": 80,
+   "text_lang": "eng",
+   "pt_app": 0
+  }
+ ],
+ "download_s": 3.2,
+ "probe": {
+  "n_audio": 1,
+  "n_video": 1,
+  "audio": [
+   {
+    "codec": "aac",
+    "ch": 2,
+    "layout": "stereo",
+    "sr": "44100",
+    "lang": "und",
+    "title": null
+   }
+  ],
+  "dur_s": 629.88771,
+  "bitrate": "1404456",
+  "container": "mov,mp4,m4a,3gp,3g2,mj2"
+ },
+ "audio_s": 629.9,
+ "long": false,
+ "silent_open_s": 0.0,
+ "ref_tries": [
+  {
+   "k": 1,
+   "lang": "eng",
+   "text_lang": "eng",
+   "src": "commons-timedtext",
+   "alass": "ok",
+   "alass_med_ms": -17098,
+   "alass_p90dev_ms": 66580,
+   "alass_maxdev_ms": 120090,
+   "pairs": 80,
+   "alass_s": 0.2
+  }
+ ],
+ "ref": {
+  "k": 1,
+  "lang": "eng",
+  "text_lang": "eng",
+  "pt_app": 0,
+  "src": "commons-timedtext",
+  "cues": 80,
+  "alass_p90dev_ms": 66580,
+  "alass_med_ms": -17098,
+  "alass_maxdev_ms": 120090,
+  "ffs_off_ms": 106867,
+  "ffs_note": "ok",
+  "tier": "X"
+ },
+ "status": "referencia ruim (alass p90=66580 ms, ffs=106867)",
+ "shard": 11
+}
