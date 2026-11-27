@@ -369,7 +369,7 @@
     }
 
     // V2: destaque com recomendações de todos os serviços + "Continuar a ver" por baixo dos serviços (sem a fila "Em alta")
-    var V2 = { mac: true, phone: false }; // celular: ainda o desenho anterior (o V2 do celular vem a seguir)
+    var V2 = { mac: true, phone: true };
 
     function novaCarousel(hero, page, mac, onFirst) {
         var N = SERVICES.length, idx = -1, timer = 0, busy = 0, first = true;

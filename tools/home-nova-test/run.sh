@@ -12,7 +12,15 @@ adb shell settings put global hide_error_dialogs 1
 adb shell settings put system screen_off_timeout 600000
 if [ "$P" = tel ]; then adb shell wm size 1080x2400; adb shell wm density 420; fi
 snap() { sleep "${2:-1}"; adb shell am broadcast -a android.intent.action.CLOSE_SYSTEM_DIALOGS >/dev/null 2>&1; adb exec-out screencap -p > "$OUT/$L-$P-$1.png"; }
-focus() { adb shell uiautomator dump /sdcard/f.xml >/dev/null 2>&1; echo "$1: $(adb shell cat /sdcard/f.xml 2>/dev/null | python3 $UI focus)" >> $OUT/$L-$P-foco.txt; }
+focus() { adb shell uiautomator dump /sdcard/f.xml >/dev/null 2>&1; echo "$1: $(adb shell cat /sdcard/f.xml 2>/dev/null | python3 -c '
+import sys,re
+raw=sys.stdin.read()
+f=[m for m in re.finditer(r"<node [^>]*focused=\"true\"[^>]*>", raw)]
+if not f: print(""); sys.exit()
+n=f[-1].group(0)
+g=lambda k: (re.search(k+r"=\"([^\"]*)\"", n) or [None,""])[1]
+print((g("text") or g("content-desc")) + " @" + g("bounds"))
+')" >> $OUT/$L-$P-foco.txt; }
 topact() { adb shell dumpsys activity activities 2>/dev/null | grep -E "topResumedActivity|mResumedActivity" | head -1 | tr -s ' '; }
 adb logcat -c
 if [ "$P" = tv ]; then
@@ -40,6 +48,28 @@ if [ "$P" = tv ]; then
     adb shell uiautomator dump /sdcard/u.xml >/dev/null 2>&1; echo "servico-$i titulo: $(adb shell cat /sdcard/u.xml 2>/dev/null | python3 $UI texts | head -3 | tr '\n' '|')" >> $OUT/$L-$P-foco.txt
     [ $i = 0 ] || [ $i = 8 ] && snap 08-catalogo-$i 0.3
   done
+  # destaque roda sozinho (foco nos ícones do topo) e, com o foco num serviço, mostra esse serviço
+  adb shell am force-stop $PKG; sleep 1
+  adb shell monkey -p $PKG -c android.intent.category.LEANBACK_LAUNCHER 1; sleep 10
+  adb shell input keyevent DPAD_UP; sleep 1; snap 09-roda-a 0.3
+  sleep 9; snap 10-roda-b 0.3
+  adb shell input keyevent DPAD_DOWN; sleep 0.6
+  for k in 1 2 3; do adb shell input keyevent DPAD_RIGHT; sleep 0.5; done
+  snap 11-foco-hbo 1.5; focus foco-hbo
+  sleep 9; snap 12-foco-hbo-depois-de-9s 0.3
+  # com histórico: Continuar a ver por baixo dos serviços; ↓ entra, ← → nas pontas não saltam, ↑ volta ao mesmo serviço
+  adb shell am force-stop $PKG; sleep 1
+  adb shell am start -n $PKG/.tv.TvHomeActivity --ez gfTestHomeContinue true
+  snap 13-com-historico 16; focus hist-inicio
+  adb shell input keyevent DPAD_RIGHT; sleep 0.5; adb shell input keyevent DPAD_RIGHT; sleep 0.5; focus hist-servico
+  adb shell input keyevent DPAD_DOWN; sleep 0.8; snap 14-continuar-foco 0.3; focus hist-continuar
+  adb shell input keyevent DPAD_LEFT; sleep 0.5; focus hist-continuar-esquerda
+  for k in 1 2 3 4; do adb shell input keyevent DPAD_RIGHT; sleep 0.5; done; focus hist-continuar-fim
+  adb shell input keyevent DPAD_DOWN; sleep 0.5; focus hist-continuar-baixo
+  adb shell input keyevent DPAD_UP; sleep 0.8; snap 15-volta-ao-servico 0.3; focus hist-volta-servico
+  adb shell input keyevent DPAD_DOWN; sleep 0.8; adb shell input keyevent DPAD_CENTER; sleep 6; echo "continuar abriu: $(topact)" >> $OUT/$L-$P-foco.txt
+  adb shell uiautomator dump /sdcard/u.xml >/dev/null 2>&1; echo "continuar textos: $(adb shell cat /sdcard/u.xml 2>/dev/null | python3 $UI texts | head -4 | tr '\n' '|')" >> $OUT/$L-$P-foco.txt
+  snap 16-continuar-abriu 0.3
 else
   adb shell am start -n $PKG/.MainActivity --es gfTestWeb "http://10.0.2.2:8099/index.html" --es gfTestRelease "http://10.0.2.2:8099/sem-release/"  # sem a janela de versão nova por cima
   snap 01-abertura 4

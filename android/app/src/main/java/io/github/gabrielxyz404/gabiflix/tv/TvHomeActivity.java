@@ -41,11 +41,33 @@ public class TvHomeActivity extends TvBase {
     private int lastFocused = 0;          // serviço selecionado por último (o foco volta a ele depois dos ícones do topo)
     private Runnable heroImageTask;
     private String heroImageUrl = "";
+    private int heroPos = 0;              // serviço cujo destaque está na tela (roda sozinho; com o foco num serviço, mostra esse)
+    private LinearLayout dots;            // pontos do destaque (um por serviço)
+    private LinearLayout contBox;         // "Continuar a ver" (só com histórico)
+    private RecyclerView contList;
+    private PosterAdapter contAdapter;
+    private static final long ROTATE_MS = 8000;
+    private final Runnable rotate = new Runnable() {
+        @Override public void run() {
+            if (isFinishing()) return;
+            View f = getCurrentFocus();
+            boolean onService = f != null && f.getParent() == list; // com o foco num serviço, o destaque fica nesse serviço
+            if (!onService) showHero((heroPos + 1) % N, false);
+            list.postDelayed(this, ROTATE_MS);
+        }
+    };
 
     /** o título em destaque de um serviço */
     private static final class Feature { String title = "", text = "", image = "", info = ""; }
     private final ConcurrentHashMap<String, Feature> features = new ConcurrentHashMap<>();
     private final java.util.Set<String> loading = java.util.Collections.newSetFromMap(new ConcurrentHashMap<String, Boolean>());
+
+    /** "EM ALTA NA NETFLIX", "EM ALTA NO DISNEY+"... */
+    private static final java.util.Map<String, String> ART = new java.util.HashMap<>();
+    static {
+        String[][] a = {{"netflix", "NA"}, {"disney", "NO"}, {"prime", "NO"}, {"hbo", "NA"}, {"appletv", "NA"}, {"paramount", "NO"}, {"globoplay", "NO"}, {"clarovideo", "NA"}, {"cinemateca", "NO"}};
+        for (String[] x : a) ART.put(x[0], x[1]);
+    }
 
     /** cores de cada serviço: {texto, fundo do cartão} (as mesmas do desenho aprovado) */
     static int[] look(String id) {
@@ -133,7 +155,7 @@ public class TvHomeActivity extends TvBase {
         heroTag = Ui.text(this, "", 11, true, 0xFFFF4D55);
         outfit(heroTag, 600);
         heroTag.setLetterSpacing(0.12f);
-        heroTitle = Ui.text(this, "", 36, true, Ui.TEXT);
+        heroTitle = Ui.text(this, "", 32, true, Ui.TEXT);
         outfit(heroTitle, 700);
         heroTitle.setMaxLines(2);
         heroTitle.setEllipsize(TextUtils.TruncateAt.END);
@@ -147,8 +169,21 @@ public class TvHomeActivity extends TvBase {
         info.addView(heroTitle);
         info.addView(Ui.space(this, 1, 10));
         info.addView(heroText);
+        // pontos: qual dos serviços está no destaque
+        dots = new LinearLayout(this);
+        dots.setOrientation(LinearLayout.HORIZONTAL);
+        dots.setGravity(Gravity.CENTER_VERTICAL);
+        for (int i = 0; i < N; i++) {
+            View d = new View(this);
+            LinearLayout.LayoutParams dl = new LinearLayout.LayoutParams(Ui.dp(this, 5), Ui.dp(this, 5));
+            dl.setMargins(0, 0, Ui.dp(this, 6), 0);
+            dots.addView(d, dl);
+        }
+        LinearLayout.LayoutParams dsl = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        dsl.setMargins(0, Ui.dp(this, 12), 0, 0);
+        info.addView(dots, dsl);
         FrameLayout.LayoutParams il = new FrameLayout.LayoutParams(Ui.dp(this, 470), ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.BOTTOM | Gravity.START);
-        il.setMargins(Ui.dp(this, 48), 0, 0, Ui.dp(this, 22));
+        il.setMargins(Ui.dp(this, 48), 0, 0, Ui.dp(this, 14));
         hero.addView(info, il);
         root.addView(hero, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f));
 
@@ -156,7 +191,7 @@ public class TvHomeActivity extends TvBase {
         LinearLayout shelf = new LinearLayout(this);
         shelf.setOrientation(LinearLayout.VERTICAL);
         shelf.setClipChildren(false);
-        shelf.setPadding(0, Ui.dp(this, 4), 0, Ui.dp(this, 14));
+        shelf.setPadding(0, Ui.dp(this, 4), 0, Ui.dp(this, 6));
         TextView head = Ui.text(this, "Serviços", 14, true, 0xFFC4C4CC);
         outfit(head, 600);
         LinearLayout.LayoutParams hl = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
@@ -164,7 +199,7 @@ public class TvHomeActivity extends TvBase {
         shelf.addView(head, hl);
         list = PosterAdapter.list(this);
         list.setClipChildren(false);
-        list.setPadding(Ui.dp(this, 40), 0, Ui.dp(this, 40), 0);
+        list.setPadding(Ui.dp(this, 43), 0, Ui.dp(this, 43), 0);
         PosterAdapter.Linear hlm = new PosterAdapter.Linear(this, RecyclerView.HORIZONTAL);
         hlm.smooth = false;
         list.setLayoutManager(hlm);
@@ -173,6 +208,29 @@ public class TvHomeActivity extends TvBase {
         list.setAdapter(new Cards());
         shelf.addView(list, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
         root.addView(shelf, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+
+        // ---------- "Continuar a ver" (por baixo dos serviços; só aparece com histórico) ----------
+        contBox = new LinearLayout(this);
+        contBox.setOrientation(LinearLayout.VERTICAL);
+        contBox.setClipChildren(false);
+        contBox.setPadding(0, 0, 0, Ui.dp(this, 14));
+        contBox.setVisibility(View.GONE);
+        TextView ch = Ui.text(this, "Continuar a ver", 14, true, 0xFFC4C4CC);
+        outfit(ch, 600);
+        LinearLayout.LayoutParams chl = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        chl.setMargins(Ui.dp(this, 48), 0, 0, Ui.dp(this, 2));
+        contBox.addView(ch, chl);
+        contList = PosterAdapter.list(this);
+        contList.setClipChildren(false);
+        contList.setPadding(Ui.dp(this, 41), 0, Ui.dp(this, 41), 0);
+        contList.setLayoutManager(new PosterAdapter.Linear(this, RecyclerView.HORIZONTAL));
+        contAdapter = new PosterAdapter(150, 84); // largo (16:9): a imagem de fundo do título
+        contAdapter.progress = true;
+        contAdapter.opener = this::openContinue;
+        contAdapter.longPress = (item, pos) -> removeDialog(item);
+        contList.setAdapter(contAdapter);
+        contBox.addView(contList, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+        root.addView(contBox, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
         setContentView(root);
         showHero(0, true);
         focusCard(0, 0);
@@ -201,7 +259,7 @@ public class TvHomeActivity extends TvBase {
                     features.put(s.id, loadFeature(s));
                 } catch (Exception ignored) {}
                 final int idx = Services.ALL.indexOf(s);
-                Net.MAIN.post(() -> { if (!isFinishing() && idx == lastFocused) showHero(idx, false); });
+                Net.MAIN.post(() -> { if (!isFinishing() && idx == heroPos) showHero(idx, false); });
             }
             return true;
         }, (ok, e) -> {});
@@ -233,11 +291,19 @@ public class TvHomeActivity extends TvBase {
 
     /** mostra o destaque do serviço (o texto já; a imagem só depois de o foco parar um instante) */
     private void showHero(int pos, boolean now) {
+        heroPos = pos;
+        for (int i = 0; i < dots.getChildCount(); i++) {
+            View d = dots.getChildAt(i);
+            d.setBackground(Ui.round(i == pos ? 0xFFFFFFFF : 0x59FFFFFF, Ui.dp(this, 3)));
+            ViewGroup.LayoutParams dl = d.getLayoutParams();
+            int w = Ui.dp(this, i == pos ? 16 : 5);
+            if (dl.width != w) { dl.width = w; d.setLayoutParams(dl); }
+        }
         Services.Service s = Services.ALL.get(pos);
         int[] look = look(s.id);
         Feature f = features.get(s.id);
         boolean cine = s.id.equals("cinemateca");
-        heroTag.setText(s.name.toUpperCase() + (cine ? "  ·  NOS CINEMAS" : "  ·  EM ALTA"));
+        heroTag.setText("EM ALTA " + (ART.containsKey(s.id) ? ART.get(s.id) : "NO") + " " + s.name.toUpperCase());
         heroTag.setTextColor(look[0]);
         if (f != null && !f.title.isEmpty()) {
             heroTitle.setText(f.title);
@@ -251,7 +317,7 @@ public class TvHomeActivity extends TvBase {
         final String url = f != null ? f.image : "";
         if (url.isEmpty() || url.equals(heroImageUrl)) return;
         heroImageTask = () -> {
-            if (isFinishing() || lastFocused != pos) return;
+            if (isFinishing() || heroPos != pos) return;
             heroImageUrl = url;
             android.util.DisplayMetrics dm = getResources().getDisplayMetrics();
             // pequena (no máximo 960 px de largura, ~0,6 MB em RGB565) e fora da memória do Glide: só a imagem visível fica na memória
@@ -273,7 +339,7 @@ public class TvHomeActivity extends TvBase {
             loading.remove(s.id);
             if (f == null || isFinishing()) return;
             features.put(s.id, f);
-            if (lastFocused == pos) showHero(pos, false);
+            if (heroPos == pos) showHero(pos, false);
         });
     }
 
@@ -333,6 +399,31 @@ public class TvHomeActivity extends TvBase {
             });
             return;
         }
+        if (i != null && i.getBooleanExtra("gfTestHomeContinue", false)) {
+            // só para os testes: histórico de mentira com 3 títulos da Netflix a meio, mostrado na Início
+            Net.async(() -> {
+                java.util.Map<String, org.json.JSONObject> m = new java.util.LinkedHashMap<>();
+                int n = 0;
+                for (String id : Stremio.ids("netflix")) {
+                    org.json.JSONObject meta = null;
+                    String type = "movie";
+                    for (String t : new String[]{"movie", "series"}) {
+                        try { meta = Stremio.meta(t, id); type = t; break; } catch (Exception ignored) {}
+                    }
+                    if (meta == null) continue;
+                    org.json.JSONObject st = new org.json.JSONObject().put("timeOffset", 900000L).put("duration", 2700000L)
+                            .put("lastWatched", "2026-10-26T20:00:0" + n + ".000Z").put("video_id", org.json.JSONObject.NULL);
+                    m.put(id, new org.json.JSONObject().put("_id", id).put("type", type).put("name", meta.optString("name"))
+                            .put("poster", meta.optString("poster", "")).put("state", st));
+                    if (++n >= 3) break;
+                }
+                return m;
+            }, (m, e) -> {
+                if (m != null) Stremio.fakeLibrary(getApplicationContext(), m);
+                loadContinue();
+            });
+            return;
+        }
         if (i != null && i.getBooleanExtra("gfTestLibrary", false)) {
             startActivity(new Intent(this, TvSearchActivity.class).putExtra("library", true));
             return;
@@ -369,6 +460,124 @@ public class TvHomeActivity extends TvBase {
         testPlay(intent);
     }
 
+    // ---------- Continuar a ver ----------
+
+    /** busca o histórico (só com conta) e mostra a fila; sem nada em andamento a fila some */
+    private void loadContinue() {
+        if (!Stremio.loggedIn(this)) { showContinue(null); return; }
+        Context c = getApplicationContext();
+        Net.async(() -> Stremio.continueWatching(c), (l, e) -> { if (!isFinishing()) showContinue(l); });
+    }
+
+    private void showContinue(java.util.List<JSONObject> items) {
+        java.util.List<JSONObject> out = new java.util.ArrayList<>();
+        if (items != null) for (JSONObject it : items) {
+            try {
+                // cópia com a imagem larga (fundo do título) no lugar do pôster; o resto (id, tipo, onde parou) é o mesmo
+                JSONObject d = new JSONObject(it.toString());
+                String id = it.optString("_id");
+                if (id.startsWith("tt")) d.put("poster", "https://images.metahub.space/background/small/" + id + "/img");
+                out.add(d);
+            } catch (Exception ignored) {}
+            if (out.size() >= 20) break;
+        }
+        boolean had = contBox.getVisibility() == View.VISIBLE;
+        View f = getCurrentFocus();
+        boolean focusInside = f != null && contList.findContainingItemView(f) != null;
+        contAdapter.set(out);
+        contBox.setVisibility(out.isEmpty() ? View.GONE : View.VISIBLE);
+        if (had && out.isEmpty() && focusInside) focusCard(lastFocused, 0);
+    }
+
+    /** clique num título do Continuar a ver: o mesmo do catálogo (fonte já escolhida: abre o player no minuto onde parou) */
+    private void openContinue(JSONObject item) {
+        String id = item.optString("_id"), type = item.optString("type");
+        JSONObject st = item.optJSONObject("state");
+        String vid = "movie".equals(type) ? id : (st != null ? st.optString("video_id", "") : "");
+        Stremio.Source src = vid.isEmpty() || "null".equals(vid) ? null : Stremio.savedSource(this, vid);
+        if (src == null) { PosterAdapter.open(this, item); return; }
+        try {
+            JSONObject meta = new JSONObject().put("id", id).put("type", type)
+                    .put("name", item.optString("name")).put("poster", item.optString("poster", ""));
+            play(meta, vid, src);
+        } catch (Exception e) { PosterAdapter.open(this, item); }
+    }
+
+    /** segurar OK num título do Continuar a ver: as mesmas opções do catálogo */
+    private void removeDialog(JSONObject item) {
+        JSONObject st = item.optJSONObject("state");
+        String sub = "";
+        if (st != null && st.optLong("duration") > 0) {
+            long off = st.optLong("timeOffset") / 60000, dur = st.optLong("duration") / 60000;
+            sub = "Parou em " + off + " min de " + dur + " min";
+        }
+        new TvSheet(this, item, sub)
+                .action("✕   Remover do Continuar assistindo", () -> {
+                    int pos = contAdapter.items.indexOf(item);
+                    java.util.List<JSONObject> rest = new java.util.ArrayList<>(contAdapter.items);
+                    rest.remove(item);
+                    contAdapter.set(rest);
+                    if (rest.isEmpty()) { contBox.setVisibility(View.GONE); focusCard(lastFocused, 0); }
+                    else focusCont(Math.min(Math.max(pos, 0), rest.size() - 1), 0);
+                    Context c = getApplicationContext();
+                    Net.async(() -> { Stremio.rewind(c, item.optString("_id")); return true; }, (ok, e) -> {});
+                })
+                .action("Abrir a página (escolher outra fonte)", () -> PosterAdapter.open(this, item))
+                .action("Cancelar", null)
+                .show();
+    }
+
+    private int contFocus = 0;
+
+    private void focusCont(int pos, int tries) {
+        contList.post(() -> {
+            RecyclerView.ViewHolder h = contList.findViewHolderForAdapterPosition(pos);
+            if (h != null) h.itemView.requestFocus();
+            else if (tries < 10) { contList.scrollToPosition(pos); contList.postDelayed(() -> focusCont(pos, tries + 1), 30); }
+        });
+    }
+
+    /** setas: serviços ↓ Continuar a ver ↑ serviços (volta ao mesmo serviço); nas pontas das filas o foco não salta */
+    @Override
+    public boolean dispatchKeyEvent(KeyEvent e) {
+        if (e.getAction() == KeyEvent.ACTION_DOWN) {
+            int k = e.getKeyCode();
+            View f = getCurrentFocus();
+            View inCont = f != null && contBox.getVisibility() == View.VISIBLE ? contList.findContainingItemView(f) : null;
+            if (inCont != null) {
+                int p = contList.getChildAdapterPosition(inCont);
+                if (p >= 0) contFocus = p;
+                if (k == KeyEvent.KEYCODE_DPAD_UP) { focusCard(lastFocused, 0); return true; }
+                if (k == KeyEvent.KEYCODE_DPAD_DOWN) return true;
+                if (k == KeyEvent.KEYCODE_DPAD_LEFT && p == 0) return true;
+                if (k == KeyEvent.KEYCODE_DPAD_RIGHT && p == contAdapter.getItemCount() - 1) return true;
+            } else if (f != null && f.getParent() == list) {
+                if (k == KeyEvent.KEYCODE_DPAD_DOWN) {
+                    if (contBox.getVisibility() == View.VISIBLE && contAdapter.getItemCount() > 0) focusCont(Math.min(contFocus, contAdapter.getItemCount() - 1), 0);
+                    return true;
+                }
+            }
+        }
+        return super.dispatchKeyEvent(e);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        list.removeCallbacks(rotate);
+        list.postDelayed(rotate, ROTATE_MS);
+        loadContinue(); // ao voltar de um título ou do player, o Continuar a ver pode ter mudado
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        list.removeCallbacks(rotate);
+    }
+
+    @Override
+    protected void onProgressSaved() { loadContinue(); }
+
     private void focusCard(int pos, int tries) {
         list.post(() -> {
             RecyclerView.ViewHolder h = list.findViewHolderForAdapterPosition(pos);
@@ -388,8 +597,8 @@ public class TvHomeActivity extends TvBase {
         public CH onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
             Context c = parent.getContext();
             FrameLayout f = new FrameLayout(c);
-            RecyclerView.LayoutParams lp = new RecyclerView.LayoutParams(Ui.dp(c, 80), Ui.dp(c, 76));
-            lp.setMargins(Ui.dp(c, 7), Ui.dp(c, 16), Ui.dp(c, 7), Ui.dp(c, 16)); // espaço para o cartão crescer sem ser cortado
+            RecyclerView.LayoutParams lp = new RecyclerView.LayoutParams(Ui.dp(c, 86), Ui.dp(c, 84));
+            lp.setMargins(Ui.dp(c, 5), Ui.dp(c, 12), Ui.dp(c, 5), Ui.dp(c, 12)); // espaço para o cartão crescer sem ser cortado
             f.setLayoutParams(lp);
             GradientDrawable fill = new GradientDrawable();
             fill.setCornerRadius(Ui.dp(c, 12));
@@ -397,7 +606,7 @@ public class TvHomeActivity extends TvBase {
             f.setForeground(Ui.focusRing(c, 12));
             f.setFocusable(true);
             f.setClickable(true);
-            TextView name = Ui.text(c, "", 12, true, Ui.TEXT);
+            TextView name = Ui.text(c, "", 13, true, Ui.TEXT);
             outfit(name, 700);
             name.setGravity(Gravity.CENTER);
             name.setMaxLines(2);
@@ -407,7 +616,7 @@ public class TvHomeActivity extends TvBase {
             CH h = new CH(f, name, fill);
             // selecionado: cresce (só escala, sem refazer o desenho) e o destaque de cima muda para o serviço
             f.setOnFocusChangeListener((v, has) -> {
-                float sc = has ? 1.28f : 1f;
+                float sc = has ? 1.2f : 1f;
                 v.animate().scaleX(sc).scaleY(sc).setDuration(110).setInterpolator(new android.view.animation.DecelerateInterpolator()).start();
                 int p = h.getBindingAdapterPosition();
                 if (has && p >= 0) { lastFocused = p; showHero(p, false); }
@@ -438,7 +647,7 @@ public class TvHomeActivity extends TvBase {
             h.name.setText(s.name);
             h.name.setTextColor(look[0]);
             h.itemView.setContentDescription(s.name);
-            float sc = h.itemView.hasFocus() ? 1.28f : 1f;
+            float sc = h.itemView.hasFocus() ? 1.2f : 1f;
             h.itemView.setScaleX(sc);
             h.itemView.setScaleY(sc);
         }
