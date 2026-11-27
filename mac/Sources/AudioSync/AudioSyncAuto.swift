@@ -244,6 +244,7 @@ final class AudioSyncAuto {
             self.trigger("botão-sincronizar", k, "análise (o botão ignora o resultado guardado: sempre analisa de novo)")
         }
         live.value = nil
+        core.parallel = 3
         let o = core.run(url: url, subText: active.text, durMs: durationMs, nowMs: Int(videoTimeMs), currentDelay: d1, maxBytes: AudioSyncCore.noLimit, budgetMs: budgetMs)
         log("botão: \(o.note) | \(o.st.summary())")
         let body = AudioSyncCore.reportBody(o, durationMs, "origem=botao_sincronizar\natraso_ao_iniciar_ms=\(d1)\n")
@@ -518,6 +519,7 @@ final class AudioSyncAuto {
         let bud = autoBudgetMs
         queue.async { [weak self] in
             guard let self = self else { return }
+            self.core.parallel = 1
             let o = self.core.run(url: url, subText: text, durMs: dur, nowMs: pos, currentDelay: d0, maxBytes: budget, budgetMs: bud)
             DispatchQueue.main.async { self.finishRun(tok, k, d0, o) }
         }

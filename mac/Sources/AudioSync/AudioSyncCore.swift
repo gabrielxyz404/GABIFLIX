@@ -66,6 +66,13 @@ final class AudioSyncCore {
 
     private let dir: URL
     private let cap = AudioCap()
+    /** capturas extras em paralelo (botão numa rede lenta: as latências de cada busca se sobrepõem em vez de somar); cada uma tem o seu player */
+    private var extraCaps: [AudioCap] = []
+    private let extraLock = NSLock()
+    private let vadLock = NSLock()
+    private let statLock = NSLock()
+    /** quantas janelas capturar ao mesmo tempo na etapa 1 (1 = uma de cada vez, o que a análise automática faz para não disputar a rede com o filme) */
+    var parallel = 1
     private var vad: AudioVad?
     private var vadName = "?"
     private let busyLock = NSLock()
@@ -85,7 +92,12 @@ final class AudioSyncCore {
     private func setBusy(_ b: Bool) { busyLock.lock(); busyFlag = b; busyLock.unlock() }
 
     /** cancela o que estiver rodando (pode ser chamado de qualquer thread) */
-    func cancel() { cap.cancel() }
+    func cancel() {
+        cap.cancel()
+        extraLock.lock(); let ex = extraCaps; extraLock.unlock()
+        for e in ex { e.cancel() }
+    }
+    private var anyCancelled: Bool { return cap.isCancelled }
 
     /** cancela e libera o player de captura e o ONNX Runtime sem prender quem chama (a thread principal): espera a execução acabar */
     func close() {
@@ -93,6 +105,8 @@ final class AudioSyncCore {
         DispatchQueue.global(qos: .utility).async { [self] in
             runLock.lock()
             cap.close()
+            extraLock.lock(); let ex = extraCaps; extraCaps = []; extraLock.unlock()
+            for e in ex { e.close() }
             vad = nil
             runLock.unlock()
             try? FileManager.default.removeItem(at: dir)
@@ -256,31 +270,36 @@ final class AudioSyncCore {
     /** quanto demorou (s) a última captura que veio (para saber se cabe mais uma no tempo que resta) */
     private var lastWallS = 0.0
 
-    private func captureWindow(_ url: URL, _ startMs: Int, _ lenMs: Int, _ o: Outcome, deadline: Int? = nil) -> AudioWindow? {
+    private func captureWindow(_ url: URL, _ startMs: Int, _ lenMs: Int, _ o: Outcome, deadline: Int? = nil, using capObj: AudioCap? = nil) -> AudioWindow? {
+        let cp = capObj ?? cap
         let wav = dir.appendingPathComponent("w\(startMs).wav")
         let t0 = AudioSyncCore.nowMs()
         // com prazo (análise do botão e automática): nenhuma leitura de rede pode passar do prazo; sem prazo (reverificação) é o comportamento de sempre
         func budgetS() -> Double { return deadline.map { Double($0 - AudioSyncCore.nowMs()) / 1000.0 } ?? 420 }
         func doCapture() -> AudioCap.Out {
-            if deadline == nil { return self.cap.capture(url: url, startMs: startMs, durMs: lenMs, out: wav, timeoutS: 420) }
+            if deadline == nil { return cp.capture(url: url, startMs: startMs, durMs: lenMs, out: wav, timeoutS: 420) }
             // primeiro dado em 30 s, parada de 20 s, e uma janela cortada com pelo menos 40% do áudio ainda serve (o alinhador aceita janelas curtas)
-            return self.cap.capture(url: url, startMs: startMs, durMs: lenMs, out: wav, timeoutS: max(5, budgetS()), firstDataS: 30, stallS: 20,
+            return cp.capture(url: url, startMs: startMs, durMs: lenMs, out: wav, timeoutS: max(5, budgetS()), firstDataS: 30, stallS: 20,
                                     minPartialS: Double(lenMs) / 1000.0 * 0.4)
         }
         var co = doCapture()
-        if !co.ok && !self.cap.isCancelled && (deadline == nil || budgetS() > 45) {
+        if !co.ok && !cp.isCancelled && (deadline == nil || budgetS() > 45) {
             log("captura falhou em \(startMs / 1000) s (tentativa 1): \(co.end)")
             Thread.sleep(forTimeInterval: 2.0)
             co = doCapture()
         }
+        statLock.lock()
         if co.partial { o.st.partialWindows += 1 }
         o.st.captureWallMs += AudioSyncCore.nowMs() - t0
+        statLock.unlock()
         defer { try? FileManager.default.removeItem(at: wav) }
         if !co.ok { lastCapFail = co.end; log("captura falhou em \(startMs / 1000) s: \(co.end)"); return nil }
         log(String(format: "captura %d s +%d s: %.2f s de PCM em %.2f s (%@%@) primeiro_dado=%.1f s", startMs / 1000, lenMs / 1000, co.pcmS, co.wallS, co.end, co.partial ? ", cortada" : "", co.firstDataS))
         lastWallS = co.wallS
         let pcm = AudioCap.readWav(wav)
         if pcm.count < 16000 * (lenMs / 1000) / 3 { lastCapFail = "áudio curto demais"; return nil }
+        vadLock.lock()
+        defer { vadLock.unlock() }
         let c0 = AudioSyncCore.threadCpuMs(), w0 = AudioSyncCore.nowMs()
         var vd = theVad()
         var p = vd.speechProb(pcm, pcm.count, 16000)
@@ -356,13 +375,29 @@ final class AudioSyncCore {
         var failedAt = 0
         var first = true
         let c0 = AudioSyncCore.threadCpuMs(), w0 = AudioSyncCore.nowMs()
+        // etapa 1 em paralelo (só o botão): as janelas 2 e 3 começam já, cada uma no seu player; as latências de cada busca (3-4 pedidos por janela) se sobrepõem
+        // em vez de somar. O VAD continua um de cada vez. A análise automática (parallel = 1) captura uma por vez para não disputar a rede com o filme.
+        final class Slot { let sem = DispatchSemaphore(value: 0); var win: AudioWindow?; var failed = false }
+        var slots: [Int: Slot] = [:]
+        let slotLock = NSLock()
+        let par = parallel
         let res = AudioSyncSession.analyzeNear(cues, durMs, lenMs, nowMs, 300_000, { st, ln, i, total in
             if self.cap.isCancelled { return nil }
+            slotLock.lock(); let sl = slots[st]; slotLock.unlock()
+            self.progress?(i + 1, total)
+            if let sl = sl {
+                // janela já em captura numa linha à parte: espera por ela (no máximo até o prazo)
+                let wait = max(1.0, Double(deadline - reserveMs - AudioSyncCore.nowMs()) / 1000.0 + 5)
+                if sl.sem.wait(timeout: .now() + wait) == .timedOut { failedAt = i + 1; return nil }
+                sl.sem.signal()
+                guard let w = sl.win else { failedAt = i + 1; return nil }
+                statLock.lock(); o.st.windows += 1; statLock.unlock()
+                return w
+            }
             if !first { Thread.sleep(forTimeInterval: 0.5) }   // respiro entre as capturas: o player ao lado não disputa o tempo todo
             first = false
-            self.progress?(i + 1, total)
             guard let w = self.captureWindow(url, st, ln, o, deadline: deadline - reserveMs) else { failedAt = i + 1; return nil }
-            o.st.windows += 1
+            statLock.lock(); o.st.windows += 1; statLock.unlock()
             return w
         }, P, stop: {
             if self.cap.isCancelled { return true }
@@ -372,6 +407,22 @@ final class AudioSyncCore {
             if o.st.windows > 0 && left < need { o.st.outOfTime = true; return true }
             if left < 8000 { o.st.outOfTime = true; return true }
             return false
+        }, prefetch: { plan in
+            if par < 2 { return }
+            // a janela 1 corre na linha desta análise; as outras (até par - 1) começam já, cada uma com o seu AudioCap
+            for p in plan.dropFirst().prefix(par - 1) {
+                let sl = Slot()
+                slotLock.lock(); slots[p[0]] = sl; slotLock.unlock()
+                let ac = AudioCap()
+                self.extraLock.lock(); self.extraCaps.append(ac); self.extraLock.unlock()
+                let start = p[0], ln = p[1]
+                Thread.detachNewThread {
+                    let w = self.captureWindow(url, start, ln, o, deadline: deadline - reserveMs, using: ac)
+                    sl.win = w
+                    sl.failed = w == nil
+                    sl.sem.signal()
+                }
+            }
         }, used: &used, stats: &stats)
         o.st.planned = stats.planned
         o.st.solves = stats.solves

@@ -200,8 +200,9 @@ final class AudioSyncSession {
      * Plano B igual ao de analyze (motor de antes sobre as 3 primeiras janelas).
      */
     static func analyzeNear(_ cues: [AudioCue], _ durMs: Int, _ lenMs: Int, _ posMs: Int, _ gapMs: Int, _ src: Source, _ P: AudioAligner.Params,
-                            stop: () -> Bool, used: inout [AudioWindow], stats: inout NearStats) -> AudioResult? {
+                            stop: () -> Bool, prefetch: ([[Int]]) -> Void = { _ in }, used: inout [AudioWindow], stats: inout NearStats) -> AudioResult? {
         let near = planNear(cues, durMs, 3, lenMs, posMs, gapMs)
+        prefetch(near)
         let ses = AudioSyncSession(cues: cues, mediaDurationMs: durMs, params: P)
         var all: [AudioWindow] = []
         stats.planned = near.count
