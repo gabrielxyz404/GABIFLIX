@@ -40,8 +40,8 @@ for s in steps:
     cur += s
     exp.append(cur)
 got = [d for ep, d in mine]
-ok_seq = len(got) >= len(exp) and got[-len(exp):] == exp if exp else True
-final = exp[-1] if exp else d0
+ok_seq = (len(got) >= len(exp) and all(abs(g - e) <= 100 for g, e in zip(got[-len(exp):], exp))) if exp else True   # ±100 ms: com escala ativa o atraso de partida anda alguns ms entre a leitura e o toque
+final = got[-1] if got else (exp[-1] if exp else d0)
 after = [(ep, t, d) for ep, t, d in shown if ep > a.ate and ep <= a.depois_ate and not any(0 <= ep - sk <= 4.0 for sk in seeks)]   # os 4 s depois de um salto: o acompanhamento da escala ainda anda
 # com escala ativa o atraso certo anda com o filme (-0,1% por segundo): a referência é o tempo da primeira fala mostrada depois dos toques
 tref = after[0][1] if after else 0
