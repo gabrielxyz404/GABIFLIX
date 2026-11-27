@@ -268,7 +268,8 @@ final class AudioSyncAuto {
             rescanAt.value = AudioSyncAuto.now() + 1500
             return tag(r1.status == .fixed ? r1 : AutoSyncResult.ok("já estava certa (o áudio confirma)"))
         case .refused:
-            if let k = k { mark(k, "no", 1.0, 0, 0) }
+            // uma recusa do botão não apaga um resultado confiante que já estava guardado (senão a legenda já certa deixava de ser acompanhada)
+            if let k = k, readMark(k).map({ $0[1] == "no" }) ?? true { mark(k, "no", 1.0, 0, 0) }
             rescanAt.value = AudioSyncAuto.now() + 1500
             return tag(r1.status == .failed ? AutoSyncResult.failedMsg(r1.note + " | áudio: " + o.note, o.msg) : r1)
         case .cancelled:
