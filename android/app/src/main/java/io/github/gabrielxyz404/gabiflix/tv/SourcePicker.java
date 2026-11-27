@@ -195,7 +195,9 @@ final class SourcePicker {
         if (current == null && !byAddon.isEmpty()) select(byAddon.keySet().iterator().next());
         else if (current != null) {
             List<Item> l = byAddon.get(current);
-            if (list.isComputingLayout()) list.post(() -> adapter.set(l)); else adapter.set(l);
+            // só redesenha a lista se as fontes DESTE provedor mudaram. Antes cada resposta de outro addon refazia a lista (notifyDataSetChanged) e o
+            // RecyclerView perdia a seleção do controle: quem já estava a descer pelas fontes via o foco saltar quando um addon lento respondia.
+            if (!adapter.sameSources(l)) { if (list.isComputingLayout()) list.post(() -> adapter.set(l)); else adapter.set(l); }
         }
         if (!focusedOnce && adapter.getItemCount() > 0) { focusedOnce = true; focusFirstSource(); }
     }
@@ -219,6 +221,14 @@ final class SourcePicker {
     private final class Adapter extends RecyclerView.Adapter<Adapter.H> {
         final List<Item> items = new ArrayList<>();
         void set(List<Item> l) { items.clear(); if (l != null) items.addAll(l); notifyDataSetChanged(); }
+
+        /** a lista mostrada já tem exatamente estas fontes (as mesmas, na mesma ordem)? */
+        boolean sameSources(List<Item> l) {
+            int n = l == null ? 0 : l.size();
+            if (n != items.size()) return false;
+            for (int i = 0; i < n; i++) if (items.get(i).src != l.get(i).src) return false;
+            return true;
+        }
 
         final class H extends RecyclerView.ViewHolder {
             final TextView svc, quality, hdr, langs, info, file;

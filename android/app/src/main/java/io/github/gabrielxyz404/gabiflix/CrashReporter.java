@@ -129,6 +129,17 @@ public final class CrashReporter {
         } catch (Throwable ignored) {}
     }
 
+    /**
+     * como {@link #crumb}, mas com a linha de memória ({@link #memLine}) calculada na thread das migalhas: Debug.getPss() lê o /proc/self/smaps inteiro
+     * (o processo do player tem centenas de mapeamentos), o que na thread principal do Fire TV parava a tela - e a legenda, que é desenhada nela - durante
+     * cada pedido de memória do sistema. As migalhas ficam iguais, só que a medição não pesa na tela.
+     */
+    static void crumbMem(final String what) {
+        Handler w = writer;
+        if (w == null) { crumb(what); return; }
+        try { w.post(() -> crumb(what + " " + memLine())); } catch (Throwable t) { crumb(what); }
+    }
+
     private static String readCrumbsNow() {
         StringBuilder b = new StringBuilder();
         synchronized (RING) { for (String l : RING) b.append(l).append('\n'); }
@@ -393,6 +404,17 @@ public final class CrashReporter {
             case "java": h.postDelayed(() -> { throw new IllegalStateException("queda de teste (Java)"); }, 1500); break;
             case "native": h.postDelayed(() -> android.os.Process.sendSignal(android.os.Process.myPid(), 6), 1500); break;   // SIGABRT
             case "event": event("TESTE_EVENTO", "evento de teste"); break;
+            case "memline": {   // só para a auditoria: quanto custa memLine() na thread principal (logcat GFAudit)
+                long t0 = android.os.SystemClock.elapsedRealtimeNanos(), worst = 0;
+                final int n = 30;
+                for (int i = 0; i < n; i++) {
+                    long a0 = android.os.SystemClock.elapsedRealtimeNanos();
+                    memLine();
+                    worst = Math.max(worst, android.os.SystemClock.elapsedRealtimeNanos() - a0);
+                }
+                android.util.Log.i("GFAudit", String.format(Locale.ROOT, "memLine media=%.2f ms pior=%.2f ms (n=%d)", (android.os.SystemClock.elapsedRealtimeNanos() - t0) / 1e6 / n, worst / 1e6, n));
+                break;
+            }
             case "silero": silero(a); break;
             default: break;
         }
