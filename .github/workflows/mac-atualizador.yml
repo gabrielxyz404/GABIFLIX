@@ -61,6 +61,7 @@ jobs:
           echo "N=$N" >> "$GITHUB_ENV"; echo "NOVO=$NOVO" >> "$GITHUB_ENV"
       - name: Cenários
         run: |
+          set +e   # o bash do Actions usa -e: um pkill sem processos (código 1) parava o teste
           B=mac/build/FramePlay.app
           falhas=0
           caso() { # nome pasta zip esperado(trocou|recusou) texto-do-motivo
