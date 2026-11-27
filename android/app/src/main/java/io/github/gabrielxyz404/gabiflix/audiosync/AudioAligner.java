@@ -72,6 +72,14 @@ public final class AudioAligner {
         /** com a deriva provada, o desvio de cada janela para o modelo final pode chegar a isto (ms) sem derrubar a aceitação (o ruído de uma janela de 90 s é de ~100-200 ms) */
         public double driftGateDevMs = 200;
         public double driftResFloorMs = 50;
+        /** com a deriva provada a concordância das janelas é medida contra a RETA (escala + deslocamento) refeita com todas as janelas: janelas fortes (confiáveis sozinhas)
+         *  ficam a menos de driftGateDevMs; janelas fracas (z baixo, pico ambíguo) a menos de driftWeakTolMs (o ruído de uma janela fraca chega a centenas de ms);
+         *  basta uma maioria clara (driftMinAgreeFrac) das janelas com fala caber, e nenhuma janela forte pode contradizer a reta */
+        public double driftWeakTolMs = 800;
+        public double driftMinAgreeFrac = 0.6;
+        /** janelas fracas só entram no refinamento do deslocamento da reta se caem a menos disto (ms) dela (com peso menor) */
+        public double driftWeakFitMs = 400;
+        public double driftWeakWeight = 0.5;
         public double driftRatio = 3.0;
         public double driftContentMs = 800;
         public double winMinNcc = 0.15;
@@ -652,6 +660,23 @@ public final class AudioAligner {
             if (wi.confident) { x[n] = uc; y[n] = wi.delayMs; wt[n] = Math.max(0.01, f.ncc); widx[n] = w; n++; }
             info[w] = wi;
         }
+        driftFromWins(R, cues, ws, info, durMs, P);
+    }
+
+    /**
+     * Prova de deriva a partir das medidas por janela (Result.Win). Separada da captura para poder ser testada com as medidas de um relatório real
+     * (cues e ws só servem para pedir janelas extras e podem ser null).
+     */
+    public static void driftFromWins(Result R, Cue[] cues, Window[] ws, Result.Win[] info, long durMs, Params P) {
+        int W = info.length;
+        double[] x = new double[W], y = new double[W], wt = new double[W];
+        int[] widx = new int[W];
+        int n = 0;
+        for (int w = 0; w < W; w++) {
+            Result.Win wi = info[w];
+            if (wi.confident) { x[n] = wi.centerMs; y[n] = wi.delayMs; wt[n] = Math.max(0.01, wi.ncc); widx[n] = w; n++; }
+        }
+        final boolean nearUnitModel = Math.abs(R.scale - 1.0) < 0.0035;
         R.wins = info;
         R.driftConfident = n;
         if (n < 2) { R.driftNote = "menos de 2 janelas confiáveis (" + n + " de " + W + ")"; return; }
@@ -708,6 +733,24 @@ public final class AudioAligner {
         }
         if (best >= 0) {
             double al = alphaOf(ks[best]);
+            // refaz o deslocamento da reta com TODAS as janelas com fala que caem perto dela (as fracas pesam menos): não só as confiáveis
+            double bestBeta0 = bestBeta;
+            for (int it = 0; it < 2; it++) {
+                double sw = 0, sy = 0;
+                int used = 0;
+                for (int w = 0; w < W; w++) {
+                    Result.Win wi = info[w];
+                    if (!wi.speech || w == (bestDrop >= 0 ? widx[bestDrop] : -1)) continue;
+                    double r = wi.delayMs - (bestBeta + al * wi.centerMs);
+                    double wgt;
+                    if (wi.confident) wgt = Math.max(0.01, wi.ncc);
+                    else if (Math.abs(r) <= P.driftWeakFitMs) wgt = P.driftWeakWeight * Math.max(0.01, wi.ncc);
+                    else continue;
+                    sw += wgt; sy += wgt * (wi.delayMs - al * wi.centerMs); used++;
+                }
+                if (sw > 0 && used >= 2) bestBeta = sy / sw;
+            }
+            if (Math.abs(bestBeta - bestBeta0) > 400) bestBeta = bestBeta0;
             R.scale = ks[best];
             R.offsetMs = bestBeta * R.scale;
             R.scaleKnown = true;
@@ -733,7 +776,7 @@ public final class AudioAligner {
         R.driftNote = "sem prova de deriva: resíduo da reta sem escala " + Math.round(unit[1]) + " ms" + (nearMiss ? " (" + why.trim() + ")" : "");
         if (unit[1] > P.driftSuspectMs || nearMiss) {
             R.driftSuspect = true;
-            if (W < P.maxDriftWindows) R.driftMore = moreSpread(cues, ws, durMs, P);
+            if (ws != null && cues != null && W < P.maxDriftWindows) R.driftMore = moreSpread(cues, ws, durMs, P);
         }
     }
 
@@ -840,6 +883,7 @@ public final class AudioAligner {
         int cnt = 0;
         double tp = 0, fp = 0, fn = 0;
         double[] devs = new double[ws.length], zs = new double[ws.length], wides = new double[ws.length];
+        boolean[] strong = new boolean[ws.length];
         int nd = 0;
         StringBuilder fd = new StringBuilder();
         for (int w = 0; w < ws.length; w++) {
@@ -856,7 +900,9 @@ public final class AudioAligner {
             double dev = Math.abs(fw.bestDelta);
             if (dev > R.winMaxDev) R.winMaxDev = dev;
             if (dev <= 150) R.winsAgree++;
-            devs[nd] = fw.bestDelta; zs[nd] = fw.z; nd++;
+            devs[nd] = fw.bestDelta; zs[nd] = fw.z;
+            strong[nd] = fw.ncc >= P.winMinNcc && (fw.ncc - fw.nccSecond >= P.winMinMargin || fw.z >= P.winMinZ);
+            nd++;
             sum += f.ncc0; cnt++;
             if (f.ncc0 < min) min = f.ncc0;
             for (int j = 0; j < ps[w].length; j++) {
@@ -867,12 +913,31 @@ public final class AudioAligner {
             }
         }
         R.winConsensus = consensus(devs, zs, nd, P);
+        R.driftAgree = driftAgree(devs, strong, nd, P);
+        R.winsFit = driftFitCount(devs, strong, nd, P);
         R.shiftContra = !P.legacy && contradicts(wides, zs, nd, P);
         R.finDetail = fd.toString();
         R.nccMean = cnt > 0 ? sum / cnt : 0;
         R.nccMin = cnt > 0 ? min : 0;
         double pr = tp / Math.max(1, tp + fp), rc = tp / Math.max(1, tp + fn);
         R.f1 = (pr + rc) > 0 ? 2 * pr * rc / (pr + rc) : 0;
+    }
+
+    static int driftFitCount(double[] dev, boolean[] strong, int n, Params P) {
+        int fit = 0;
+        for (int i = 0; i < n; i++) if (Math.abs(dev[i]) <= (strong[i] ? P.driftGateDevMs : P.driftWeakTolMs)) fit++;
+        return fit;
+    }
+
+    /**
+     * Concordância das janelas com a reta de deriva (escala + deslocamento refeitos com todas as janelas): nenhuma janela FORTE (confiável sozinha) pode ficar a mais
+     * de driftGateDevMs da reta; as FRACAS (pico ambíguo, z baixo) têm tolerância larga (driftWeakTolMs) porque o ruído delas é grande; e uma maioria clara
+     * (driftMinAgreeFrac, mínimo 2) das janelas com fala tem de caber. Antes valia o desvio MÁXIMO bruto (200 ms): uma só janela fraca fora recusava uma deriva provada.
+     */
+    public static boolean driftAgree(double[] dev, boolean[] strong, int n, Params P) {
+        if (n < 2) return true;
+        for (int i = 0; i < n; i++) if (strong[i] && Math.abs(dev[i]) > P.driftGateDevMs) return false;
+        return driftFitCount(dev, strong, n, P) >= Math.max(2, (int) Math.ceil(P.driftMinAgreeFrac * n - 1e-9));
     }
 
     /**
@@ -965,7 +1030,7 @@ public final class AudioAligner {
         // prova de reta de atraso constante: 4+ janelas confiáveis numa reta (resíduo <= 100 ms) valem como concordância mesmo se as outras janelas (fracas) discordam
         boolean linePass = !P.legacy && !R.driftScale && Math.abs(R.scale - 1.0) < 1e-9 && R.driftConfident >= 4 && R.unitResMs <= 100;
         boolean gateDev = P.gateWinDevMs > 0 && R.winsValid >= 2
-                && (P.legacy ? R.winMaxDev > P.gateWinDevMs : R.driftScale ? R.winMaxDev > P.driftGateDevMs : !R.winConsensus && !linePass);
+                && (P.legacy ? R.winMaxDev > P.gateWinDevMs : R.driftScale ? !R.driftAgree : !R.winConsensus && !linePass);
         boolean gateWin = P.gateMinWinsAgree > 0 && R.winsAgree < P.gateMinWinsAgree;
         if (gateDev || gateWin) ok = false;
         R.accepted = ok;
