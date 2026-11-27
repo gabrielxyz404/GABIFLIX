@@ -23,14 +23,19 @@
     function onDetail() { return /^#\/detail\//.test(location.hash); }
 
     // em quais serviços o título está (usa as listas de códigos geradas todo dia)
+    // Uma falha de rede NÃO pode ficar guardada como "nenhum título": antes cada erro virava {} e o resultado ficava na memória até fechar o app, então
+    // um corte de internet no arranque fazia todo título parecer "fora dos serviços" (aparecia "CineTime" na página e o título era gravado na lista
+    // do CineTime do aparelho, onde ficava depois de a rede voltar). Agora o erro rejeita a promessa, o cache é limpo e a próxima tentativa refaz o pedido.
+    function jsonOrThrow(url) {
+        return fetch(url).then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); });
+    }
     function serviceIds() {
         if (!idsCache) {
             idsCache = Promise.all(SERVICES.map(function (s) {
-                return fetch('data/' + s[0] + '-ids.json?v=' + DATA_VERSION)
-                    .then(function (r) { return r.ok ? r.json() : []; })
-                    .then(function (ids) { var o = {}; ids.forEach(function (i) { o[i] = true; }); return o; })
-                    .catch(function () { return {}; });
+                return jsonOrThrow('data/' + s[0] + '-ids.json?v=' + DATA_VERSION)
+                    .then(function (ids) { var o = {}; ids.forEach(function (i) { o[i] = true; }); return o; });
             }));
+            idsCache.catch(function () { idsCache = null; });
         }
         return idsCache;
     }
@@ -39,12 +44,13 @@
     function cineIds() {
         if (!cineCache) {
             cineCache = Promise.all(['cine-cinemas', 'cine-classicos', 'cine-movie', 'cine-series'].map(function (f) {
-                return fetch('data/' + f + '.json?v=' + DATA_VERSION).then(function (r) { return r.ok ? r.json() : []; }).catch(function () { return []; });
+                return jsonOrThrow('data/' + f + '.json?v=' + DATA_VERSION);
             })).then(function (lists) {
                 var o = {};
                 lists.forEach(function (l) { ((l && l.metas) || l || []).forEach(function (m) { if (m && m.id) o[m.id] = true; }); });
                 return o;
             });
+            cineCache.catch(function () { cineCache = null; });
         }
         return cineCache;
     }
@@ -63,6 +69,8 @@
     function whereIs(id) {
         if (servicesFor[id]) return;
         servicesFor[id] = [];
+        // sem as listas (rede caiu): não conclui nada sobre o título; tenta de novo daqui a pouco
+        function retryLater() { setTimeout(function () { delete servicesFor[id]; lastSig = ''; }, 8000); }
         serviceIds().then(function (sets) {
             servicesFor[id] = SERVICES.filter(function (s, i) { return sets[i][id]; });
             if (servicesFor[id].length) { servicesDone[id] = true; lastSig = ''; tick(); return; }
@@ -71,8 +79,8 @@
                 servicesDone[id] = true;
                 if (!cine[id]) addToCineTime(meta);
                 lastSig = ''; tick();
-            });
-        });
+            }, retryLater);
+        }, retryLater);
     }
 
     function links(meta, cat) {
@@ -299,8 +307,9 @@
         var k = (id.match(/(\d\d)$/) || [])[1];
         if (!k || ptShard[k]) return;
         ptShard[k] = 1;
-        fetch('data/desc/' + k + '.json?v=' + DATA_VERSION).then(function (r) { return r.ok ? r.json() : {}; })
-            .then(function (d) { Object.assign(ptDesc, d); lastSig = ''; tick(); }).catch(function () {});
+        // se falhar (rede), tenta de novo mais tarde: antes ficava sem sinopse em português até fechar o app
+        fetch('data/desc/' + k + '.json?v=' + DATA_VERSION).then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+            .then(function (d) { Object.assign(ptDesc, d); lastSig = ''; tick(); }).catch(function () { setTimeout(function () { delete ptShard[k]; }, 15000); });
     }
     var GENRES = { Action: 'Ação', Adventure: 'Aventura', Animation: 'Animação', Biography: 'Biografia', Comedy: 'Comédia', Crime: 'Crime',
         Documentary: 'Documentário', Drama: 'Drama', Family: 'Família', Fantasy: 'Fantasia', History: 'História', Horror: 'Terror',
