@@ -1,0 +1,573 @@
+{
+ "profile": "and",
+ "throttle": 4,
+ "castDelayMs": 1500,
+ "summary": {
+  "homeCardsMs": 1672,
+  "loadMs": 1673,
+  "dclMs": 1551,
+  "tCardMs": 1579,
+  "serviceOpenMs": 265,
+  "gridOpenMs": 40,
+  "gridItems": 60,
+  "scrollAvgMs": 16.7,
+  "scrollP95Ms": 16.7,
+  "scrollMaxMs": 33.4,
+  "scrollOver33": 0,
+  "scrollOver50": 0,
+  "heapMb": 18,
+  "nodes": 3486,
+  "nodesAfterGrid": 2967,
+  "moCalls": 31,
+  "moMs": 1,
+  "longTasks": 1,
+  "longTaskMs": 157,
+  "taskMs": 4149,
+  "scriptMs": 454,
+  "layoutMs": 397,
+  "styleMs": 672,
+  "resKb": 1231,
+  "resCount": 157,
+  "castRequested": 1
+ },
+ "runs": [
+  {
+   "run": 0,
+   "profile": "and",
+   "throttle": 4,
+   "castDelayMs": 1500,
+   "steps": {
+    "homeCardsMs": 1810,
+    "loadMs": 1810,
+    "nav": {
+     "dcl": 1555,
+     "load": 1573,
+     "tCard": 1582
+    },
+    "serviceOpenMs": 271,
+    "gridOpenMs": 40,
+    "gridItems": 60,
+    "scroll": {
+     "frames": 149,
+     "avgMs": 19.2,
+     "p95Ms": 16.8,
+     "maxMs": 383.3,
+     "over33": 1,
+     "over50": 1
+    },
+    "afterTabsMs": 2515
+   },
+   "cpu": {
+    "totalMs": 11729,
+    "topFunctions": [
+     [
+      "(idle) @ (nativo):-1",
+      7368
+     ],
+     [
+      "(program) @ (nativo):-1",
+      3434
+     ],
+     [
+      "step @ (nativo):4",
+      291
+     ],
+     [
+      "(anônima) @ scripts/main.js:0",
+      103
+     ],
+     [
+      "T @ scripts/main.js:0",
+      69
+     ],
+     [
+      "render @ gabiflix/home.js?v=59:869",
+      30
+     ],
+     [
+      "posterEl @ gabiflix/home.js?v=59:413",
+      24
+     ],
+     [
+      "(garbage collector) @ (nativo):-1",
+      21
+     ],
+     [
+      "isElementVisible @ (nativo):111",
+      21
+     ],
+     [
+      "renderCatalog @ gabiflix/home.js?v=59:740",
+      13
+     ],
+     [
+      "a @ scripts/main.js:0",
+      12
+     ],
+     [
+      "i @ scripts/main.js:0",
+      10
+     ],
+     [
+      "Xt @ scripts/main.js:0",
+      9
+     ],
+     [
+      "jn @ scripts/main.js:0",
+      9
+     ]
+    ],
+    "topFiles": [
+     [
+      "(nativo):-1",
+      10842
+     ],
+     [
+      "scripts/main.js",
+      418
+     ],
+     [
+      "(nativo)",
+      369
+     ],
+     [
+      "gabiflix/home.js?v=59",
+      98
+     ],
+     [
+      "gabiflix/app.js?v=15",
+      1
+     ],
+     [
+      "scripts/worker.js",
+      1
+     ]
+    ]
+   },
+   "heapMb": 18,
+   "dom": {
+    "nodes": 3486,
+    "nodesAfterGrid": 2967,
+    "docs": 3,
+    "listeners": 2534
+   },
+   "work": {
+    "taskMs": 4391,
+    "scriptMs": 493,
+    "layoutMs": 397,
+    "styleMs": 672,
+    "layouts": 444,
+    "styleRecalcs": 605,
+    "scrollLayoutMs": 183,
+    "scrollStyleMs": 219,
+    "scrollScriptMs": 77
+   },
+   "mutationObservers": {
+    "calls": 31,
+    "records": 200,
+    "ms": 2
+   },
+   "longTasks": {
+    "n": 1,
+    "totalMs": 185,
+    "maxMs": 185
+   },
+   "res": {
+    "total": 157,
+    "kb": 1231,
+    "by": {
+     "css": {
+      "n": 6,
+      "kb": 65
+     },
+     "ttf": {
+      "n": 2,
+      "kb": 281
+     },
+     "js": {
+      "n": 11,
+      "kb": 748
+     },
+     "png": {
+      "n": 1,
+      "kb": 17
+     },
+     "json": {
+      "n": 7,
+      "kb": 120
+     },
+     "outro": {
+      "n": 130,
+      "kb": 0
+     }
+    }
+   },
+   "castRequested": 1,
+   "errors": []
+  },
+  {
+   "run": 1,
+   "profile": "and",
+   "throttle": 4,
+   "castDelayMs": 1500,
+   "steps": {
+    "homeCardsMs": 1672,
+    "loadMs": 1673,
+    "nav": {
+     "dcl": 1551,
+     "load": 1570,
+     "tCard": 1579
+    },
+    "serviceOpenMs": 258,
+    "gridOpenMs": 38,
+    "gridItems": 60,
+    "scroll": {
+     "frames": 149,
+     "avgMs": 16.7,
+     "p95Ms": 16.7,
+     "maxMs": 33.4,
+     "over33": 0,
+     "over50": 0
+    },
+    "afterTabsMs": 2511
+   },
+   "cpu": {
+    "totalMs": 11226,
+    "topFunctions": [
+     [
+      "(idle) @ (nativo):-1",
+      7126
+     ],
+     [
+      "(program) @ (nativo):-1",
+      3239
+     ],
+     [
+      "step @ (nativo):4",
+      283
+     ],
+     [
+      "(anônima) @ scripts/main.js:0",
+      94
+     ],
+     [
+      "T @ scripts/main.js:0",
+      60
+     ],
+     [
+      "render @ gabiflix/home.js?v=59:869",
+      30
+     ],
+     [
+      "posterEl @ gabiflix/home.js?v=59:413",
+      18
+     ],
+     [
+      "_ @ scripts/main.js:0",
+      16
+     ],
+     [
+      "a @ scripts/main.js:0",
+      13
+     ],
+     [
+      "query @ (nativo):3442",
+      12
+     ],
+     [
+      "(garbage collector) @ (nativo):-1",
+      11
+     ],
+     [
+      "renderCatalog @ gabiflix/home.js?v=59:740",
+      10
+     ],
+     [
+      "Xt @ scripts/main.js:0",
+      9
+     ],
+     [
+      "O_ @ scripts/main.js:0",
+      9
+     ]
+    ],
+    "topFiles": [
+     [
+      "(nativo):-1",
+      10403
+     ],
+     [
+      "scripts/main.js",
+      392
+     ],
+     [
+      "(nativo)",
+      339
+     ],
+     [
+      "gabiflix/home.js?v=59",
+      88
+     ],
+     [
+      "gabiflix/detail.js?v=25",
+      1
+     ],
+     [
+      "gabiflix/update.js?v=5",
+      1
+     ],
+     [
+      "scripts/worker.js",
+      1
+     ]
+    ]
+   },
+   "heapMb": 18,
+   "dom": {
+    "nodes": 3486,
+    "nodesAfterGrid": 2967,
+    "docs": 3,
+    "listeners": 2536
+   },
+   "work": {
+    "taskMs": 4149,
+    "scriptMs": 454,
+    "layoutMs": 404,
+    "styleMs": 738,
+    "layouts": 445,
+    "styleRecalcs": 606,
+    "scrollLayoutMs": 196,
+    "scrollStyleMs": 230,
+    "scrollScriptMs": 79
+   },
+   "mutationObservers": {
+    "calls": 31,
+    "records": 200,
+    "ms": 1
+   },
+   "longTasks": {
+    "n": 1,
+    "totalMs": 155,
+    "maxMs": 155
+   },
+   "res": {
+    "total": 157,
+    "kb": 1231,
+    "by": {
+     "css": {
+      "n": 6,
+      "kb": 65
+     },
+     "ttf": {
+      "n": 2,
+      "kb": 281
+     },
+     "js": {
+      "n": 11,
+      "kb": 748
+     },
+     "png": {
+      "n": 1,
+      "kb": 17
+     },
+     "json": {
+      "n": 7,
+      "kb": 120
+     },
+     "outro": {
+      "n": 130,
+      "kb": 0
+     }
+    }
+   },
+   "castRequested": 1,
+   "errors": []
+  },
+  {
+   "run": 2,
+   "profile": "and",
+   "throttle": 4,
+   "castDelayMs": 1500,
+   "steps": {
+    "homeCardsMs": 1658,
+    "loadMs": 1658,
+    "nav": {
+     "dcl": 1548,
+     "load": 1567,
+     "tCard": 1575
+    },
+    "serviceOpenMs": 265,
+    "gridOpenMs": 42,
+    "gridItems": 60,
+    "scroll": {
+     "frames": 149,
+     "avgMs": 16.6,
+     "p95Ms": 16.7,
+     "maxMs": 16.8,
+     "over33": 0,
+     "over50": 0
+    },
+    "afterTabsMs": 2511
+   },
+   "cpu": {
+    "totalMs": 11180,
+    "topFunctions": [
+     [
+      "(idle) @ (nativo):-1",
+      7396
+     ],
+     [
+      "(program) @ (nativo):-1",
+      2926
+     ],
+     [
+      "step @ (nativo):4",
+      274
+     ],
+     [
+      "(anônima) @ scripts/main.js:0",
+      88
+     ],
+     [
+      "T @ scripts/main.js:0",
+      62
+     ],
+     [
+      "render @ gabiflix/home.js?v=59:869",
+      29
+     ],
+     [
+      "posterEl @ gabiflix/home.js?v=59:413",
+      20
+     ],
+     [
+      "renderCatalog @ gabiflix/home.js?v=59:740",
+      15
+     ],
+     [
+      "a @ scripts/main.js:0",
+      14
+     ],
+     [
+      "(garbage collector) @ (nativo):-1",
+      12
+     ],
+     [
+      "Xt @ scripts/main.js:0",
+      11
+     ],
+     [
+      "O_ @ scripts/main.js:0",
+      8
+     ],
+     [
+      "(anônima) @ (nativo):0",
+      8
+     ],
+     [
+      "i @ scripts/main.js:0",
+      8
+     ]
+    ],
+    "topFiles": [
+     [
+      "(nativo):-1",
+      10359
+     ],
+     [
+      "scripts/main.js",
+      385
+     ],
+     [
+      "(nativo)",
+      333
+     ],
+     [
+      "gabiflix/home.js?v=59",
+      96
+     ],
+     [
+      "gabiflix/detail.js?v=25",
+      2
+     ],
+     [
+      "gabiflix/update.js?v=5",
+      1
+     ],
+     [
+      "scripts/worker.js",
+      1
+     ],
+     [
+      "gabiflix/search.js?v=6",
+      1
+     ],
+     [
+      "v1/cast_sender.js?loadCastFramework=1",
+      1
+     ]
+    ]
+   },
+   "heapMb": 18,
+   "dom": {
+    "nodes": 3493,
+    "nodesAfterGrid": 2974,
+    "docs": 3,
+    "listeners": 2539
+   },
+   "work": {
+    "taskMs": 3850,
+    "scriptMs": 447,
+    "layoutMs": 380,
+    "styleMs": 634,
+    "layouts": 443,
+    "styleRecalcs": 610,
+    "scrollLayoutMs": 177,
+    "scrollStyleMs": 212,
+    "scrollScriptMs": 64
+   },
+   "mutationObservers": {
+    "calls": 31,
+    "records": 200,
+    "ms": 0
+   },
+   "longTasks": {
+    "n": 1,
+    "totalMs": 157,
+    "maxMs": 157
+   },
+   "res": {
+    "total": 157,
+    "kb": 1231,
+    "by": {
+     "css": {
+      "n": 6,
+      "kb": 65
+     },
+     "ttf": {
+      "n": 2,
+      "kb": 281
+     },
+     "js": {
+      "n": 11,
+      "kb": 748
+     },
+     "png": {
+      "n": 1,
+      "kb": 17
+     },
+     "json": {
+      "n": 7,
+      "kb": 120
+     },
+     "outro": {
+      "n": 130,
+      "kb": 0
+     }
+    }
+   },
+   "castRequested": 1,
+   "errors": []
+  }
+ ]
+}
