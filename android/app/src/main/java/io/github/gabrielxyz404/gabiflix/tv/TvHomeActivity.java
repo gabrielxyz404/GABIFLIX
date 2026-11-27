@@ -148,6 +148,21 @@ public class TvHomeActivity extends TvBase {
             for (String[] x : f) { Stremio.Source s = new Stremio.Source(); s.addon = x[0]; s.name = x[1]; s.title = x[2]; s.url = "http://x/" + l.size(); l.add(s); }
             SourcePicker p = new SourcePicker(this, "Filme de teste", src -> {});
             p.show();
+            if (i.getBooleanExtra("gfTestPickerLate", false)) {
+                // só para os testes: os addons respondem um a um. O 1º traz as fontes que o teste vai percorrer com o controle; os outros chegam
+                // 5 s e 9 s depois (como um addon lento) e a seleção do teste NÃO pode ser mexida por eles.
+                java.util.List<Stremio.Source> first = new java.util.ArrayList<>();
+                for (Stremio.Source s : l) if ("Torrentio".equals(s.addon)) first.add(s);
+                java.util.List<Stremio.Source> second = new java.util.ArrayList<>(first);
+                java.util.List<Stremio.Source> third = new java.util.ArrayList<>(first);
+                for (Stremio.Source s : l) if ("TorrentsDB".equals(s.addon)) { second.add(s); third.add(s); }
+                Stremio.Source extra = new Stremio.Source(); extra.addon = "Outro"; extra.name = "[RD+] Outro 1080p"; extra.title = "Filme 2024 1080p\n💾 1 GB"; extra.url = "http://x/9";
+                third.add(extra);
+                list.postDelayed(() -> p.update(first, false), 500);
+                list.postDelayed(() -> p.update(second, false), 5000);
+                list.postDelayed(() -> p.update(third, true), 9000);
+                return;
+            }
             list.postDelayed(() -> p.update(l, true), 500);
             return;
         }
