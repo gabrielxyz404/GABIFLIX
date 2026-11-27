@@ -191,15 +191,17 @@ html[data-gf-nova][data-gf-route="home"][data-gf-view="grid"] div[class^="board-
 
 /* Mac: cabe em 1440×900 e 1024×768 sem rolar */
 .gf-nova-mac.gf-v2 { gap: 18px; padding-bottom: 20px; }
-.gf-nova-mac.gf-v2 .gf-nv-hero { height: clamp(200px, 28vh, 290px); padding-top: 26px; padding-bottom: 52px; }
+.gf-nova-mac.gf-v2 .gf-nv-hero { height: clamp(200px, calc(100vh - 566px), 290px); padding-top: 26px; padding-bottom: 52px; }
 .gf-nova-mac.gf-v2 .gf-nv-sec { gap: 12px; }
 .gf-nova-mac.gf-v2 .gf-nv-img { top: 26px; bottom: 26px; }
 .gf-nova-mac.gf-v2 .gf-nv-pager { left: 34px; bottom: 14px; }
-.gf-nova-mac.gf-v2 .gf-nv-svc { height: clamp(92px, 12.5vh, 118px); font-size: clamp(0.85rem, 1.15vw, 1.05rem); }
+.gf-nova-mac.gf-v2 .gf-nv-svc { height: clamp(92px, 13.5vh, 130px); font-size: clamp(0.85rem, 1.15vw, 1.05rem); }
 .gf-nova-mac.gf-v2 .gf-nv-cw[hidden] { display: none; }
 .gf-nova-mac.gf-v2 .gf-nv-row { display: flex; align-items: flex-start; gap: 14px; overflow-x: auto; overflow-y: hidden; scrollbar-width: none; padding: 4px; margin: -4px; }
 .gf-nova-mac.gf-v2 .gf-nv-row::-webkit-scrollbar { display: none; }
-.gf-nova-mac.gf-v2 .gf-nv-wide { width: clamp(180px, 15vw, 240px); height: clamp(101px, 8.44vw, 135px); }
+.gf-nova-mac.gf-v2 .gf-nv-wide { flex: none; width: max(180px, min(320px, calc((100% - 42px) / 4), calc(24vh * 16 / 9))); height: auto; aspect-ratio: 16 / 9; }
+/* sem "Continuar a ver" o destaque fica mais alto (a tela não fica vazia em baixo) */
+.gf-nova-mac.gf-v2:not(.has-cw) .gf-nv-hero { height: clamp(240px, calc(100vh - 400px), 520px); }
 .gf-nova-mac.gf-v2 .gf-nv-wide:hover { border-color: #fff; }
 .gf-nova-mac.gf-v2 .gf-nv-wide:focus-visible { outline: 3px solid #fff; outline-offset: 2px; }
 @media (min-width: 861px) and (max-width: 1100px) {

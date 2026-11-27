@@ -341,7 +341,7 @@
         b.appendChild(bar);
         var pressed = false;
         onLongPress(b, function () { pressed = true; continueMenu(item, b); });
-        b._gfRemoved = function () { if (!section.querySelector('.gf-nv-wide')) section.hidden = true; };
+        b._gfRemoved = function () { if (!section.querySelector('.gf-nv-wide')) { section.hidden = true; if (section.parentNode) section.parentNode.classList.remove('has-cw'); } };
         b.addEventListener('click', function (e) {
             if (pressed) { pressed = false; e.preventDefault(); return; }
             resumeItem(item);
@@ -567,6 +567,7 @@
             list.forEach(function (it) { frag.appendChild(novaContinueCard(it, cwSec)); });
             cwBox.appendChild(frag);
             cwSec.hidden = false;
+            page.classList.add('has-cw');
         });
 
         // celular: os círculos começam no serviço onde o usuário estava
