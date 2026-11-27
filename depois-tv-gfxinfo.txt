@@ -1,0 +1,58 @@
+Applications Graphics Acceleration Info:
+Uptime: 125953 Realtime: 125953
+
+** Graphics info for pid 3164 [io.github.gabrielxyz404.gabiflix] **
+
+Stats since: 55257980190ns
+Total frames rendered: 608
+Janky frames: 608 (100.00%)
+50th percentile: 61ms
+90th percentile: 93ms
+95th percentile: 97ms
+99th percentile: 113ms
+Number Missed Vsync: 296
+Number High input latency: 2
+Number Slow UI thread: 193
+Number Slow bitmap uploads: 6
+Number Slow issue draw commands: 606
+Number Frame deadline missed: 606
+HISTOGRAM: 5ms=0 6ms=0 7ms=0 8ms=0 9ms=0 10ms=0 11ms=0 12ms=0 13ms=0 14ms=0 15ms=0 16ms=0 17ms=0 18ms=0 19ms=0 20ms=0 21ms=0 22ms=0 23ms=0 24ms=1 25ms=1 26ms=2 27ms=7 28ms=2 29ms=6 30ms=11 31ms=9 32ms=22 34ms=19 36ms=17 38ms=20 40ms=25 42ms=19 44ms=27 46ms=26 48ms=32 53ms=28 57ms=20 61ms=26 65ms=26 69ms=37 73ms=29 77ms=30 81ms=45 85ms=32 89ms=21 93ms=26 97ms=12 101ms=8 105ms=10 109ms=5 113ms=1 117ms=1 121ms=0 125ms=1 129ms=2 133ms=0 150ms=2 200ms=0 250ms=0 300ms=0 350ms=0 400ms=0 450ms=0 500ms=0 550ms=0 600ms=0 650ms=0 700ms=0 750ms=0 800ms=0 850ms=0 900ms=0 950ms=0 1000ms=0 1050ms=0 1100ms=0 1150ms=0 1200ms=0 1250ms=0 1300ms=0 1350ms=0 1400ms=0 1450ms=0 1500ms=0 1550ms=0 1600ms=0 1650ms=0 1700ms=0 1750ms=0 1800ms=0 1850ms=0 1900ms=0 1950ms=0 2000ms=0 2050ms=0 2100ms=0 2150ms=0 2200ms=0 2250ms=0 2300ms=0 2350ms=0 2400ms=0 2450ms=0 2500ms=0 2550ms=0 2600ms=0 2650ms=0 2700ms=0 2750ms=0 2800ms=0 2850ms=0 2900ms=0 2950ms=0 3000ms=0 3050ms=0 3100ms=0 3150ms=0 3200ms=0 3250ms=0 3300ms=0 3350ms=0 3400ms=0 3450ms=0 3500ms=0 3550ms=0 3600ms=0 3650ms=0 3700ms=0 3750ms=0 3800ms=0 3850ms=0 3900ms=0 3950ms=0 4000ms=0 4050ms=0 4100ms=0 4150ms=0 4200ms=0 4250ms=0 4300ms=0 4350ms=0 4400ms=0 4450ms=0 4500ms=0 4550ms=0 4600ms=0 4650ms=0 4700ms=0 4750ms=0 4800ms=0 4850ms=0 4900ms=0 4950ms=0
+50th gpu percentile: 4950ms
+90th gpu percentile: 4950ms
+95th gpu percentile: 4950ms
+99th gpu percentile: 4950ms
+GPU HISTOGRAM: 1ms=0 2ms=0 3ms=0 4ms=0 5ms=0 6ms=0 7ms=0 8ms=0 9ms=0 10ms=0 11ms=0 12ms=0 13ms=1 14ms=0 15ms=0 16ms=0 17ms=0 18ms=1 19ms=0 20ms=1 21ms=0 22ms=2 23ms=4 24ms=7 25ms=9 4950ms=583
+Font Cache (CPU):
+  Size: 482.96 kB 
+  Glyph Count: 162 
+CPU Caches:
+GPU Caches:
+  Other:
+    Other: 24.53 KB (1 entry)
+    Buffer Object: 2.05 KB (2 entries)
+  Image:
+    Texture: 1.88 MB (4 entries)
+  Scratch:
+    Texture: 2.61 MB (2 entries)
+    Buffer Object: 144.00 KB (4 entries)
+Other Caches:
+                         Current / Maximum
+  Layers Total           0.00 KB (numLayers = 0)
+Total GPU memory usage:
+  4881488 bytes, 4.66 MB (1.97 MB is purgeable)
+
+
+Pipeline=Skia (OpenGL)
+Profile data in ms:
+
+	io.github.gabrielxyz404.gabiflix/io.github.gabrielxyz404.gabiflix.tv.TvHomeActivity/android.view.ViewRootImpl@e8564ac (visibility=0)
+View hierarchy:
+
+  io.github.gabrielxyz404.gabiflix/io.github.gabrielxyz404.gabiflix.tv.TvHomeActivity/android.view.ViewRootImpl@e8564ac
+  70 views, 100.07 kB of render nodes
+
+
+Total ViewRootImpl   : 1
+Total attached Views : 70
+Total RenderNode     : 100.07 kB (used) / 440.96 kB (capacity)
+
