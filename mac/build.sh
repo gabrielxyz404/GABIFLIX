@@ -2,7 +2,8 @@
 # Monta o FramePlay.app para Mac (Apple Silicon) — roda no GitHub Actions (macOS).
 set -euo pipefail
 cd "$(dirname "$0")"
-VERSION="${FRAMEPLAY_VERSION:-1.0.0}"
+# versão de marketing (a que o utilizador vê): mac/VERSION; FRAMEPLAY_VERSION só nos testes de CI. O build (interno) é o número do run.
+VERSION="${FRAMEPLAY_VERSION:-$(tr -d '[:space:]' < VERSION)}"
 BUILD="${FRAMEPLAY_BUILD:-1}"
 WORK="$PWD/build"
 rm -rf "$WORK"; mkdir -p "$WORK"

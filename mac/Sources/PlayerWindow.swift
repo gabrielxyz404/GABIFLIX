@@ -1198,7 +1198,7 @@ final class PlayerWindowController: NSWindowController, NSWindowDelegate {
         menu.addItem(menuAction("Repor", #selector(manualReset), enabled: canAdjust))
         menu.addItem(greyItem("Atraso: " + (subDelayMs == 0 ? "0,0 s" : SubtitleSync.signedSecs(Int64(subDelayMs))) + " · \u{2212} mais cedo, + mais tarde"))
         menu.addItem(NSMenuItem.separator())
-        menu.addItem(greyItem("FramePlay " + AnalysisReport.appVersion()))
+        menu.addItem(greyItem("FramePlay " + AnalysisReport.displayVersion()))
         return menu
     }
 
