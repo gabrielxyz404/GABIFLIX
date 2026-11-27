@@ -1,0 +1,48 @@
+==== A-versao-nova
+versão 5 a instalar novo.zip
+conferida: /tmp/inst-a/.FramePlay-update-E17EC236-2759-4156-95A3-56300D2DC8A5/FramePlay.app
+a trocar e reabrir
+total 0
+drwxr-xr-x  3 runner  wheel   96 Nov 27 19:19 .
+drwxrwxrwt  8 root    wheel  256 Nov 27 19:18 ..
+drwxr-xr-x  3 runner  wheel   96 Nov 27 19:18 FramePlay.app
+versao_instalada=1005 a_correr=1 restos_na_pasta=0 restos_temporarios=0
+RESULTADO A-versao-nova: OK
+==== B-app-mexido
+versão 5 a instalar mexido.zip
+falhou: A assinatura da atualização não confere (ficheiro alterado ou incompleto).
+total 0
+drwxr-xr-x  3 runner  wheel   96 Nov 27 19:19 .
+drwxrwxrwt  9 root    wheel  288 Nov 27 19:19 ..
+drwxr-xr-x  3 runner  wheel   96 Nov 27 19:19 FramePlay.app
+versao_instalada=5 a_correr=1 restos_na_pasta=0 restos_temporarios=0
+RESULTADO B-app-mexido: OK
+==== C-zip-danificado
+versão 5 a instalar danificado.zip
+falhou: O ficheiro da atualização está danificado.
+total 0
+drwxr-xr-x   3 runner  wheel   96 Nov 27 19:19 .
+drwxrwxrwt  10 root    wheel  320 Nov 27 19:19 ..
+drwxr-xr-x   3 runner  wheel   96 Nov 27 19:19 FramePlay.app
+versao_instalada=5 a_correr=1 restos_na_pasta=0 restos_temporarios=0
+RESULTADO C-zip-danificado: OK
+==== D-mesma-versao
+versão 5 a instalar igual.zip
+falhou: A versão descarregada (5) não é mais nova que a instalada (5).
+total 0
+drwxr-xr-x   3 runner  wheel   96 Nov 27 19:19 .
+drwxrwxrwt  11 root    wheel  352 Nov 27 19:19 ..
+drwxr-xr-x   3 runner  wheel   96 Nov 27 19:19 FramePlay.app
+versao_instalada=5 a_correr=1 restos_na_pasta=0 restos_temporarios=0
+RESULTADO D-mesma-versao: OK
+==== E-pasta-com-espaco
+versão 5 a instalar novo.zip
+conferida: /tmp/inst e 'aspas'/.FramePlay-update-2C53A3E0-3E6C-4745-9CE6-FAA3D5BD5B7C/FramePlay.app
+a trocar e reabrir
+total 0
+drwxr-xr-x   3 runner  wheel   96 Nov 27 19:19 .
+drwxrwxrwt  12 root    wheel  384 Nov 27 19:19 ..
+drwxr-xr-x   3 runner  wheel   96 Nov 27 19:18 FramePlay.app
+versao_instalada=1005 a_correr=1 restos_na_pasta=0 restos_temporarios=0
+RESULTADO E-pasta-com-espaco: OK
+falhas=0
