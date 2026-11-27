@@ -1,0 +1,108 @@
+OK     pos0: swift accepted=1 off=0.0 raw=-3.6 k=1.000000 z=11.48 | esperado accepted=1 off=0.0 k=1.000000 z=11.48 | 259 ms | 
+OK     pos1: swift accepted=1 off=6997.5 raw=6997.5 k=1.000000 z=14.51 | esperado accepted=1 off=6997.5 k=1.000000 z=14.51 | 300 ms | 
+OK     pos2: swift accepted=1 off=-45000.9 raw=-45000.9 k=1.000000 z=13.20 | esperado accepted=1 off=-45000.9 k=1.000000 z=13.20 | 291 ms | 
+OK     pos3: swift accepted=1 off=119997.0 raw=119997.0 k=1.000000 z=14.93 | esperado accepted=1 off=119997.0 k=1.000000 z=14.93 | 295 ms | 
+OK     pos4: swift accepted=1 off=-56.0 raw=-56.0 k=1.042709 z=12.26 | esperado accepted=1 off=-56.0 k=1.042709 z=12.26 | 323 ms | 
+OK     pos5: swift accepted=1 off=12050.2 raw=12050.2 k=0.959040 z=10.37 | esperado accepted=1 off=12050.2 k=0.959040 z=10.37 | 276 ms | 
+OK     pos6: swift accepted=1 off=-2066.0 raw=-2066.0 k=1.041667 z=11.83 | esperado accepted=1 off=-2066.0 k=1.041667 z=11.83 | 263 ms | 
+OK     pos7: swift accepted=1 off=0.0 raw=-2.7 k=1.000000 z=14.18 | esperado accepted=1 off=0.0 k=1.000000 z=14.18 | 285 ms | 
+OK     neg8: swift accepted=0 off=-112627.1 raw=-112627.1 k=0.914273 z=5.81 | esperado accepted=0 off=-112627.1 k=0.914273 z=5.81 | 279 ms | z baixo; pico ambíguo; escala fora das razões de fps; janelas discordam; 
+OK     neg9: swift accepted=0 off=-300070.1 raw=-300070.1 k=0.934063 z=5.22 | esperado accepted=0 off=-300070.1 k=0.934063 z=5.22 | 303 ms | z baixo; pico ambíguo; escala fora das razões de fps; 
+OK     neg10: swift accepted=0 off=-75762.4 raw=-75762.4 k=0.926149 z=5.08 | esperado accepted=0 off=-75762.4 k=0.926149 z=5.08 | 275 ms | z baixo; pico ambíguo; escala fora das razões de fps; ajuste contradiz as janelas (> 1 s); 
+OK     neg11: swift accepted=0 off=-308648.8 raw=-308648.8 k=1.000000 z=5.39 | esperado accepted=0 off=-308648.8 k=1.000000 z=5.39 | 288 ms | z baixo; pico ambíguo; ajuste contradiz as janelas (> 1 s); janelas discordam; 
+OK     vetores do motor: 12, divergentes: 0
+OK     PLAN dense-5700000 => 1360000,90000 3000000,90000 3635000,90000
+OK     PLAN dense-2400000 => 195000,90000 1360000,90000 2020000,90000
+OK     PLAN uniform-5700000 => 810000,90000 2805000,90000 4800000,90000
+OK     PLAN dense-sparse-4800000 => 675000,90000 2355000,90000 4035000,90000
+OK     PLAN dense-short-600000 => 45000,90000 255000,90000 465000,90000
+OK     SRT 1000,3500,10,1
+OK     SRT 4250,6000,0,0
+OK     SRT 7500,9250,24,1
+OK     SRT 3723004,3725999,13,1
+OK     SRT 600000,602000,0,0
+OK     SRT 11000,11020,12,1
+OK     sinal sintético igual ao do Java (-5713243986401912247) [DSPPCM checksum=-5713243986401912247]
+DSP em 54 ms
+OK     DSP: 2000 quadros (esperado 2000)
+OK     DSP: média 0.415192 (esperado 0.415192)
+OK     DSP: maior diferença nas amostras 0.00000 (limite 0,002)
+OK     fuzz: 120 sessões aleatórias, reverificação, planos, SRT e DSP sem travar (0 aceitas) em 14490 ms
+OK     replay real: deriva provada (deriva provada: escala 0.999000, resíduo 138 ms (reta sem escala deixaria 2061 ms), deriva medida 2988 ms nas janelas e 5621 ms no filme, 4 janelas confiáveis)
+OK     replay real: escala 0,999 (0.999)
+OK     replay real: deslocamento ~+14,6 s (14601.114320346445)
+OK     replay real: igual ao Java (offset 14601.114, resíduo sem escala 2060.697, resíduo 137.755, 4 confiáveis)
+OK     replay real: prova forte da porta relaxada (2060.696969696968 / 137.75543508868577)
+OK     replay real: desvios por janela iguais ao Java
+OK     replay real: o desvio máximo bruto passava de 200 ms (a janela fraca fora é a de z baixo)
+OK     replay real: as janelas concordam com a reta (7 de 7)
+OK     replay: janela forte a 450 ms da reta continua a recusar
+OK     replay: minoria a caber não chega
+OK     replay: atraso constante sem deriva
+OK     replay bancada: igual ao Java (offset -8771.251, resíduos 639.508 / 165.520, janela 4 fora)
+OK     replay bancada: sem prova forte a porta relaxada não vale
+OK     razões: 1.001001001001001 desl. 8000.0 provada (deriva provada: escala 1.001001, resíduo 58 ms (reta sem escala deixaria 2480 ms), deriva medida 4500 ms nas janelas e 5400 ms no filme, 6 janelas confiáveis)
+OK     razões: 1.001001001001001 prova forte
+OK     razões: 1.001001001001001 janela fraca desviada cabe
+OK     razões: 1.001001001001001 desl. -12000.0 provada (deriva provada: escala 1.001001, resíduo 58 ms (reta sem escala deixaria 2480 ms), deriva medida 4500 ms nas janelas e 5400 ms no filme, 6 janelas confiáveis)
+OK     razões: 1.001001001001001 prova forte
+OK     razões: 1.001001001001001 janela fraca desviada cabe
+OK     razões: 0.999 desl. 8000.0 provada (deriva provada: escala 0.999000, resíduo 58 ms (reta sem escala deixaria 2426 ms), deriva medida 4505 ms nas janelas e 5405 ms no filme, 6 janelas confiáveis)
+OK     razões: 0.999 prova forte
+OK     razões: 0.999 janela fraca desviada cabe
+OK     razões: 0.999 desl. -12000.0 provada (deriva provada: escala 0.999000, resíduo 58 ms (reta sem escala deixaria 2426 ms), deriva medida 4505 ms nas janelas e 5405 ms no filme, 6 janelas confiáveis)
+OK     razões: 0.999 prova forte
+OK     razões: 0.999 janela fraca desviada cabe
+OK     razões: 1.0427093760427095 desl. 8000.0 provada (deriva provada: escala 1.042709, resíduo 58 ms (reta sem escala deixaria 100448 ms), deriva medida 184320 ms nas janelas e 221184 ms no filme, 6 janelas confiáveis)
+OK     razões: 1.0427093760427095 prova forte
+OK     razões: 1.0427093760427095 janela fraca desviada cabe
+OK     razões: 1.0427093760427095 desl. -12000.0 provada (deriva provada: escala 1.042709, resíduo 58 ms (reta sem escala deixaria 100448 ms), deriva medida 184320 ms nas janelas e 221184 ms no filme, 6 janelas confiáveis)
+OK     razões: 1.0427093760427095 prova forte
+OK     razões: 1.0427093760427095 janela fraca desviada cabe
+OK     razões: 0.95904 desl. 8000.0 provada (deriva provada: escala 0.959040, resíduo 58 ms (reta sem escala deixaria 104681 ms), deriva medida 192192 ms nas janelas e 230631 ms no filme, 6 janelas confiáveis)
+OK     razões: 0.95904 prova forte
+OK     razões: 0.95904 janela fraca desviada cabe
+OK     razões: 0.95904 desl. -12000.0 provada (deriva provada: escala 0.959040, resíduo 58 ms (reta sem escala deixaria 104681 ms), deriva medida 192192 ms nas janelas e 230631 ms no filme, 6 janelas confiáveis)
+OK     razões: 0.95904 prova forte
+OK     razões: 0.95904 janela fraca desviada cabe
+OK     razões: 1.0416666666666667 desl. 8000.0 provada (deriva provada: escala 1.041667, resíduo 58 ms (reta sem escala deixaria 98094 ms), deriva medida 180000 ms nas janelas e 216000 ms no filme, 6 janelas confiáveis)
+OK     razões: 1.0416666666666667 prova forte
+OK     razões: 1.0416666666666667 janela fraca desviada cabe
+OK     razões: 1.0416666666666667 desl. -12000.0 provada (deriva provada: escala 1.041667, resíduo 58 ms (reta sem escala deixaria 98094 ms), deriva medida 180000 ms nas janelas e 216000 ms no filme, 6 janelas confiáveis)
+OK     razões: 1.0416666666666667 prova forte
+OK     razões: 1.0416666666666667 janela fraca desviada cabe
+OK     razões: 0.96 desl. 8000.0 provada (deriva provada: escala 0.960000, resíduo 58 ms (reta sem escala deixaria 102124 ms), deriva medida 187500 ms nas janelas e 225000 ms no filme, 6 janelas confiáveis)
+OK     razões: 0.96 prova forte
+OK     razões: 0.96 janela fraca desviada cabe
+OK     razões: 0.96 desl. -12000.0 provada (deriva provada: escala 0.960000, resíduo 58 ms (reta sem escala deixaria 102124 ms), deriva medida 187500 ms nas janelas e 225000 ms no filme, 6 janelas confiáveis)
+OK     razões: 0.96 prova forte
+OK     razões: 0.96 janela fraca desviada cabe
+OK     razões: 1.001001001001001 desl. 8000.0 provada (deriva provada: escala 1.001001, resíduo 58 ms (reta sem escala deixaria 2480 ms), deriva medida 4500 ms nas janelas e 5400 ms no filme, 6 janelas confiáveis)
+OK     razões: 1.001001001001001 prova forte
+OK     razões: 1.001001001001001 janela fraca desviada cabe
+OK     razões: 1.001001001001001 desl. -12000.0 provada (deriva provada: escala 1.001001, resíduo 58 ms (reta sem escala deixaria 2480 ms), deriva medida 4500 ms nas janelas e 5400 ms no filme, 6 janelas confiáveis)
+OK     razões: 1.001001001001001 prova forte
+OK     razões: 1.001001001001001 janela fraca desviada cabe
+OK     razões: 0.999 desl. 8000.0 provada (deriva provada: escala 0.999000, resíduo 58 ms (reta sem escala deixaria 2426 ms), deriva medida 4505 ms nas janelas e 5405 ms no filme, 6 janelas confiáveis)
+OK     razões: 0.999 prova forte
+OK     razões: 0.999 janela fraca desviada cabe
+OK     razões: 0.999 desl. -12000.0 provada (deriva provada: escala 0.999000, resíduo 58 ms (reta sem escala deixaria 2426 ms), deriva medida 4505 ms nas janelas e 5405 ms no filme, 6 janelas confiáveis)
+OK     razões: 0.999 prova forte
+OK     razões: 0.999 janela fraca desviada cabe
+OK     razões: todas testadas (8)
+OK     razões: 1.0427093760427095 igual ao Java (offset 7993.536354033593, sem escala 100448.0883977903)
+OK     razões: 1.0416666666666667 igual ao Java (offset 7993.5428176795585, sem escala 98094.49723756917)
+OK     razões: 0.96 igual ao Java (offset -12005.95093922652, sem escala 102124.19521178653)
+OK     razões: atraso constante 0.0 não é deriva
+OK     razões: atraso constante 3000.0 não é deriva
+OK     razões: atraso constante -9000.0 não é deriva
+OK     razões: atraso constante 14000.0 não é deriva
+OK     razões: janelas incoerentes (200) nunca viram deriva
+OK     razões: minoria na reta não é deriva
+OK     razões: inclinação 0.012 de nenhuma razão não é deriva
+OK     razões: inclinação 0.02 de nenhuma razão não é deriva
+OK     razões: inclinação 0.03 de nenhuma razão não é deriva
+OK     razões: inclinação -0.02 de nenhuma razão não é deriva
+OK     razões: inclinação 0.07 de nenhuma razão não é deriva
+OK     razões: duas janelas confiáveis não chegam
+TUDO CERTO
