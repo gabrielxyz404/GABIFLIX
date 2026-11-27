@@ -320,8 +320,8 @@ public class TvHomeActivity extends TvBase {
             if (isFinishing() || heroPos != pos) return;
             heroImageUrl = url;
             android.util.DisplayMetrics dm = getResources().getDisplayMetrics();
-            // pequena (no máximo 960 px de largura, ~0,6 MB em RGB565) e fora da memória do Glide: só a imagem visível fica na memória
-            int w = Math.min(dm.widthPixels, 960);
+            // pequena (no máximo 800 px de largura, ~0,45 MB em RGB565) e fora da memória do Glide: só a imagem visível fica na memória
+            int w = Math.min(dm.widthPixels, 800);
             int h = Math.round(w * (dm.heightPixels * 0.62f) / dm.widthPixels);
             com.bumptech.glide.Glide.with(heroImg.getContext()).load(url)
                     .diskCacheStrategy(com.bumptech.glide.load.engine.DiskCacheStrategy.ALL).skipMemoryCache(true)

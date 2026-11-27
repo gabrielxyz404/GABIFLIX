@@ -220,3 +220,5 @@ html[data-gf-nova][data-gf-route="home"][data-gf-view="grid"] div[class^="board-
 /* Mac V2: a página tem só a altura do conteúdo (sem espaço extra que obrigue a rolar) */
 html[data-gf-nova][data-gf-app="mac"][data-gf-route="home"][data-gf-view="grid"] #gf-home { min-height: 0; }
 .gf-nova-mac.gf-v2 { min-height: 0; }
+/* celular V2: sem "Continuar a ver" o destaque ocupa mais (a tela não fica vazia em baixo) */
+.gf-nova-phone.gf-v2:not(.has-cw) .gf-nv-hero { height: clamp(440px, 66vh, 640px); }

@@ -497,3 +497,6 @@ html[data-gf-app="android"] .scale-Toufl .ticks-xenvh .label-RekzK { white-space
 html[data-gf-app="android"] { -webkit-tap-highlight-color: transparent; overscroll-behavior: none; -webkit-font-smoothing: antialiased; }
 html[data-gf-app="android"] a, html[data-gf-app="android"] button, html[data-gf-app="android"] [role="button"], html[data-gf-app="android"] .gf-card { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
 html[data-gf-app="android"] img { -webkit-user-drag: none; }
+
+/* Calendário escondido (a tela continua a existir, só sem a entrada na barra) */
+.vertical-nav-bar-container-UPAkA a[href="#/calendar"] { display: none !important; }
