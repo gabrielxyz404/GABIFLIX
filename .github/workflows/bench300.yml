@@ -109,7 +109,7 @@ jobs:
       - name: Compilar os dois motores e a bancada
         run: |
           mkdir -p /tmp/cm /tmp/cd
-          javac -nowarn -d /tmp/cm motor-main/$D/audiosync/*.java motor-main/$D/SubtitleText.java tools/bench300/Bench300.java tools/bench300/FlowOld.java tools/bench300/SubFmt.java
+          javac -nowarn -d /tmp/cm motor-main/$D/audiosync/*.java motor-main/$D/SubtitleText.java tools/bench300/Bench300.java tools/bench300/FlowNew.java tools/bench300/SubFmt.java
           javac -nowarn -d /tmp/cd motor-drift/$D/audiosync/*.java motor-main/$D/SubtitleText.java tools/bench300/Bench300.java tools/bench300/FlowNew.java
           cmp motor-main/$D/SubtitleText.java motor-drift/$D/SubtitleText.java && echo "SubtitleText igual nos dois"
       - name: Cobrir os titulos do shard
