@@ -202,7 +202,7 @@
 
     function novaOn() {
         var k = document.documentElement.getAttribute('data-gf-app');
-        if (k !== 'mac') return false; // por agora só o Mac (celular e TV ficam como estavam)
+        if (k !== 'android' && k !== 'mac') return false;
         try { if (localStorage.getItem('gf-home') === 'old') return false; } catch (e) {}
         return true;
     }
