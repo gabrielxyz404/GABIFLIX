@@ -1,0 +1,37 @@
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/8.9/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build 
+> Task :app:preBuild UP-TO-DATE
+> Task :app:preReleaseBuild UP-TO-DATE
+> Task :app:javaPreCompileRelease
+> Task :app:generateReleaseResValues
+> Task :app:checkReleaseAarMetadata
+> Task :app:mapReleaseSourceSetPaths
+> Task :app:generateReleaseResources
+> Task :app:packageReleaseResources
+> Task :app:createReleaseCompatibleScreenManifests
+> Task :app:extractDeepLinksRelease
+> Task :app:parseReleaseLocalResources
+> Task :app:mergeReleaseResources
+> Task :app:processReleaseMainManifest
+> Task :app:processReleaseManifest
+> Task :app:preReleaseUnitTestBuild UP-TO-DATE
+> Task :app:javaPreCompileReleaseUnitTest
+> Task :app:processReleaseJavaRes NO-SOURCE
+> Task :app:processReleaseUnitTestJavaRes NO-SOURCE
+> Task :app:processReleaseManifestForPackage
+> Task :app:processReleaseResources
+
+> Task :app:compileReleaseJavaWithJavac
+Note: Some input files use or override a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+Note: /home/runner/work/GABIFLIX/GABIFLIX/android/app/src/main/java/io/github/gabrielxyz404/gabiflix/SubtitleAlign.java uses unchecked or unsafe operations.
+Note: Recompile with -Xlint:unchecked for details.
+
+> Task :app:bundleReleaseClassesToCompileJar
+> Task :app:bundleReleaseClassesToRuntimeJar
+> Task :app:compileReleaseUnitTestJavaWithJavac
+> Task :app:testReleaseUnitTest
+gradle/actions: Writing build results to /home/runner/work/_temp/.gradle-actions/build-results/__run-1795798841906.json
+
+BUILD SUCCESSFUL in 15s
+20 actionable tasks: 20 executed

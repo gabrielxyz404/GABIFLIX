@@ -1,0 +1,67 @@
+arranque_TotalTime: 1285
+arranque_WaitTime: 1305
+== fluidez_home
+Total frames rendered: 139
+Janky frames: 139 (100.00%)
+50th percentile: 113ms
+90th percentile: 150ms
+95th percentile: 150ms
+99th percentile: 200ms
+Number Missed Vsync: 88
+Number High input latency: 0
+Number Slow UI thread: 43
+Number Slow bitmap uploads: 2
+Number Slow issue draw commands: 139
+== fluidez_catalogo_fileiras
+Total frames rendered: 526
+Janky frames: 522 (99.24%)
+50th percentile: 44ms
+90th percentile: 77ms
+95th percentile: 85ms
+99th percentile: 121ms
+Number Missed Vsync: 189
+Number High input latency: 132
+Number Slow UI thread: 147
+Number Slow bitmap uploads: 19
+Number Slow issue draw commands: 393
+== memoria_catalogo
+           Java Heap:    10016                          27852
+         Native Heap:    51816                          53676
+            Graphics:        0                              0
+           TOTAL PSS:    77537            TOTAL RSS:   195476      TOTAL SWAP (KB):       36
+               Views:      790         ViewRootImpl:        2
+         AppContexts:        7           Activities:        2
+            WebViews:        0
+== fluidez_grade
+Total frames rendered: 399
+Janky frames: 357 (89.47%)
+50th percentile: 42ms
+90th percentile: 85ms
+95th percentile: 97ms
+99th percentile: 109ms
+Number Missed Vsync: 136
+Number High input latency: 97
+Number Slow UI thread: 107
+Number Slow bitmap uploads: 12
+Number Slow issue draw commands: 265
+== memoria_grade
+           Java Heap:    11196                          29028
+         Native Heap:    62700                          64560
+            Graphics:        0                              0
+           TOTAL PSS:    89610            TOTAL RSS:   208072      TOTAL SWAP (KB):       36
+               Views:     1176         ViewRootImpl:        2
+         AppContexts:        7           Activities:        2
+            WebViews:        0
+== fluidez_detalhe
+Total frames rendered: 2
+Janky frames: 0 (0.00%)
+50th percentile: 10ms
+90th percentile: 10ms
+95th percentile: 10ms
+99th percentile: 10ms
+Number Missed Vsync: 0
+Number High input latency: 0
+Number Slow UI thread: 0
+Number Slow bitmap uploads: 0
+Number Slow issue draw commands: 0
+== logcat_erros
