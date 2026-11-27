@@ -531,29 +531,28 @@ final class AppDelegate: NSObject, NSApplicationDelegate, WKScriptMessageHandler
     func checkForUpdates(silent: Bool) {
         if checkingUpdate { return }
         checkingUpdate = true
-        fetchRelease(AppDelegate.releaseAPIs[...]) { [weak self] latest, zip in
+        fetchRelease(AppDelegate.releaseAPIs[...]) { [weak self] latest, marketing, zip in
             guard let self = self else { return }
             self.checkingUpdate = false
-            self.showUpdateResult(latest: latest, zip: zip, silent: silent)
+            self.showUpdateResult(latest: latest, marketing: marketing, zip: zip, silent: silent)
         }
     }
 
-    private func fetchRelease(_ urls: ArraySlice<URL>, _ done: @escaping (Int, URL?) -> Void) {
-        guard let first = urls.first else { done(-1, nil); return }
+    private func fetchRelease(_ urls: ArraySlice<URL>, _ done: @escaping (Int, String?, URL?) -> Void) {
+        guard let first = urls.first else { done(-1, nil, nil); return }
         var req = URLRequest(url: first, timeoutInterval: 15)
         req.setValue("FramePlay", forHTTPHeaderField: "User-Agent")
         req.setValue("application/vnd.github+json", forHTTPHeaderField: "Accept")
         URLSession.shared.dataTask(with: req) { [weak self] data, resp, _ in
             var latest = -1
+            var marketing: String?
             var zip: URL?
             if let h = resp as? HTTPURLResponse, h.statusCode < 400, let data = data,
                let json = (try? JSONSerialization.jsonObject(with: data)) as? [String: Any] {
-                let text = "\(json["name"] as? String ?? "") \(json["body"] as? String ?? "")"
-                if let re = try? NSRegularExpression(pattern: "1\\.0\\.(\\d+)"),
-                   let m = re.firstMatch(in: text, range: NSRange(location: 0, length: (text as NSString).length)),
-                   m.numberOfRanges > 1 {
-                    latest = Int((text as NSString).substring(with: m.range(at: 1))) ?? -1
-                }
+                // o build vem do marcador "1.0.<build>" (ou do formato antigo); a versão mostrada vem de "Versão X.Y"
+                let p = UpdateParse.parse(name: json["name"] as? String ?? "", body: json["body"] as? String ?? "")
+                latest = p.build
+                marketing = p.marketing
                 if let assets = json["assets"] as? [[String: Any]] {
                     for a in assets {
                         if let n = a["name"] as? String, n.lowercased().hasSuffix(".zip"), (zip == nil || n.lowercased().contains("frameplay")),
@@ -563,12 +562,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate, WKScriptMessageHandler
             }
             DispatchQueue.main.async {
                 if latest < 0 || zip == nil, urls.count > 1, let self = self { self.fetchRelease(urls.dropFirst(), done) }
-                else { done(latest, zip) }
+                else { done(latest, marketing, zip) }
             }
         }.resume()
     }
 
-    private func showUpdateResult(latest: Int, zip: URL?, silent: Bool) {
+    private func showUpdateResult(latest: Int, marketing: String?, zip: URL?, silent: Bool) {
         let mine = Int(Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "") ?? 0
         if latest < 0 || zip == nil {
             if !silent {
@@ -583,14 +582,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate, WKScriptMessageHandler
         if latest > mine, let zip = zip {
             let a = NSAlert()
             a.messageText = "Nova versão do FramePlay"
-            a.informativeText = "A versão 1.0.\(latest) está disponível (a sua é a 1.0.\(mine)). O FramePlay baixa, instala e abre sozinho."
+            a.informativeText = "Está disponível o FramePlay \(marketing ?? "novo"). O FramePlay baixa, instala e abre sozinho."
             a.addButton(withTitle: "Atualizar agora")
             a.addButton(withTitle: "Agora não")
             if a.runModal() == .alertFirstButtonReturn { installUpdate(zip: zip) }
         } else if !silent {
             let a = NSAlert()
             a.messageText = "Já tens a versão mais recente"
-            a.informativeText = "O FramePlay está atualizado (versão 1.0.\(mine))."
+            a.informativeText = "O FramePlay está atualizado (versão \(AnalysisReport.displayVersion()))."
             a.addButton(withTitle: "OK")
             a.runModal()
         }

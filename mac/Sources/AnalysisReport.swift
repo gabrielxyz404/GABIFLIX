@@ -16,7 +16,14 @@ enum AnalysisReport {
     /** só nos testes: o resultado do último envio ("HTTP 200"), para a prova ver que chegou */
     private(set) static var lastStatus = ""
 
+    /// para diagnóstico (relatórios, logs): "2.0 (build 46)"
     static func appVersion() -> String {
+        let v = (Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String) ?? "?"
+        let b = (Bundle.main.infoDictionary?["CFBundleVersion"] as? String) ?? ""
+        return b.isEmpty ? v : "\(v) (build \(b))"
+    }
+    /// o que o utilizador vê: "2.0"
+    static func displayVersion() -> String {
         return (Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String) ?? "?"
     }
 

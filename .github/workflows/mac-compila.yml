@@ -19,14 +19,21 @@ jobs:
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
+      - name: Testar o leitor da release (atualizador)
+        run: ./mac/tests/updateparse/run.sh
       - name: Montar o FramePlay.app
         env:
-          FRAMEPLAY_VERSION: 0.0.${{ github.run_number }}
           FRAMEPLAY_BUILD: ${{ github.run_number }}
           FRAMEPLAY_ARCH: x86_64
         run: |
           set -o pipefail
           ./mac/build.sh 2>&1 | tee build.log
+      - name: Conferir a versão no Info.plist
+        run: |
+          v=$(/usr/libexec/PlistBuddy -c "Print :CFBundleShortVersionString" mac/build/FramePlay.app/Contents/Info.plist)
+          b=$(/usr/libexec/PlistBuddy -c "Print :CFBundleVersion" mac/build/FramePlay.app/Contents/Info.plist)
+          echo "::notice::versão=$v build=$b"
+          [ "$v" = "2.0" ] && [ "$b" = "${{ github.run_number }}" ]
       - name: Mostrar o erro (se houver)
         if: failure()
         run: |
