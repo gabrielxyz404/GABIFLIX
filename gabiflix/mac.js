@@ -122,6 +122,11 @@
         lib.setAttribute('href', '#/library');
         lib.setAttribute('data-gf-lib', '1');
         lib.removeAttribute('title');
+        var icon = lib.querySelector('svg');
+        if (icon) { // relógio (o mesmo símbolo do antigo ícone da barra lateral), em vez da roda dentada copiada
+            icon.setAttribute('viewBox', '0 0 24 24');
+            icon.innerHTML = '<circle cx="12" cy="12" r="9" style="fill:none;stroke:currentcolor;stroke-width:2"></circle><path d="M12 7v5l3 2" style="fill:none;stroke:currentcolor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"></path>';
+        }
         var label = lib.querySelector('[class*="nav-menu-option-label"]') || lib;
         label.textContent = 'Mais Tarde';
         settings.parentNode.insertBefore(lib, settings);
