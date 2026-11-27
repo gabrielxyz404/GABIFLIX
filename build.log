@@ -1,0 +1,45 @@
+VLCKit 3.7.3
+baixando https://download.videolan.org/pub/cocoapods/prod/VLCKit-3.7.3-319ed2c0-79128878.tar.xz
+framework: /Users/runner/work/GABIFLIX/GABIFLIX/mac/build/vlckit/VLCKit - binary package/VLCKit.xcframework/macos-arm64_x86_64/VLCKit.framework
+Headers
+Modules
+PrivateHeaders
+Resources
+Versions
+VLCKit
+Architectures in the fat file: /Users/runner/work/GABIFLIX/GABIFLIX/mac/build/fw/VLCKit.framework/VLCKit are: x86_64 arm64 
+runtimes/osx-x64/native/libonnxruntime.dylib
+runtimes/osx-arm64/native/libonnxruntime.dylib
+build/native/include/onnxruntime_c_api.h
+onnxruntime: pacote oficial do NuGet 1.20.0 (/Users/runner/work/GABIFLIX/GABIFLIX/mac/build/ortx/runtimes/osx-x64/native/libonnxruntime.dylib)
+onnxruntime: /Users/runner/work/GABIFLIX/GABIFLIX/mac/build/ortfw/onnxruntime.framework/Versions/A/onnxruntime (x86_64)
+ORT_OK=1
+Sources/AudioSync/AudioSyncCore.swift:377:47: warning: immutable value 'w0' was never used; consider replacing with '_' or removing it
+375 |         var failedAt = 0
+376 |         var first = true
+377 |         let c0 = AudioSyncCore.threadCpuMs(), w0 = AudioSyncCore.nowMs()
+    |                                               `- warning: immutable value 'w0' was never used; consider replacing with '_' or removing it
+378 |         // etapa 1 em paralelo (só o botão): as janelas 2 e 3 começam já, cada uma no seu player; as latências de cada busca (3-4 pedidos por janela) se sobrepõem
+379 |         // em vez de somar. O VAD continua um de cada vez. A análise automática (parallel = 1) captura uma por vez para não disputar a rede com o filme.
+Sources/main.swift:196:33: warning: 'debugLogging' is deprecated: Set loggers with -[VLCLibrary setLoggers:] instead
+194 |             let id = args[i + 2]
+195 |             PlayerWindowController.testLog = true
+196 |             VLCLibrary.shared().debugLogging = true
+    |                                 `- warning: 'debugLogging' is deprecated: Set loggers with -[VLCLibrary setLoggers:] instead
+197 |             VLCLibrary.shared().debugLoggingLevel = 3
+198 |             // --gf-test-sub <link de uma legenda SRT>: legenda do "site" (sem busca no addon quando o código IMDb é "-")
+
+Sources/main.swift:197:33: warning: 'debugLoggingLevel' is deprecated: Use -[VLCLibrary setLogger:] with a VLCConsoleLogger instance instead
+195 |             PlayerWindowController.testLog = true
+196 |             VLCLibrary.shared().debugLogging = true
+197 |             VLCLibrary.shared().debugLoggingLevel = 3
+    |                                 `- warning: 'debugLoggingLevel' is deprecated: Use -[VLCLibrary setLogger:] with a VLCConsoleLogger instance instead
+198 |             // --gf-test-sub <link de uma legenda SRT>: legenda do "site" (sem busca no addon quando o código IMDb é "-")
+199 |             var subs: [URL] = []
+ 28M	/Users/runner/work/GABIFLIX/GABIFLIX/mac/build/FramePlay.app/Contents/Frameworks/onnxruntime.framework
+2.2M	/Users/runner/work/GABIFLIX/GABIFLIX/mac/build/FramePlay.app/Contents/Resources/silero_vad.onnx
+assinatura ok
+total 91312
+drwxr-xr-x   3 runner  staff        96 Nov 27 19:42 .
+drwxr-xr-x  27 runner  staff       864 Nov 27 19:42 ..
+-rw-r--r--   1 runner  staff  46440726 Nov 27 19:42 FramePlay-Mac.zip
