@@ -24,6 +24,11 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.9'
+      - name: Testes JVM (HEAD)
+        run: |
+          mkdir -p auditoria-out
+          gradle -p android testReleaseUnitTest --no-daemon 2>&1 | tail -30 | tee auditoria-out/testes-jvm.log
+          grep -ho 'testsuite name="[^"]*" tests="[0-9]*" skipped="[0-9]*" failures="[0-9]*" errors="[0-9]*"' android/app/build/test-results/testReleaseUnitTest/*.xml | tee auditoria-out/testes-jvm-resumo.txt
       - name: APK depois (HEAD)
         env:
           GABIFLIX_ABIS: x86,x86_64
