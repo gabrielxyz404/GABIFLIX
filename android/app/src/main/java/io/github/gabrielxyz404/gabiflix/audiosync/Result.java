@@ -47,6 +47,10 @@ public final class Result {
     public int driftDropWin = -1;
     /** as janelas de z alto concordam em torno da mediana (porta robusta, ver finalEvidence) */
     public boolean winConsensus = true;
+    /** com a deriva provada: as janelas concordam com a reta (fortes <= driftGateDevMs, fracas <= driftWeakTolMs, maioria clara), ver AudioAligner.driftAgree */
+    public boolean driftAgree = true;
+    /** janelas com fala que cabem na reta (com a tolerância de cada uma) */
+    public int winsFit;
     /** o resultado é o do plano B (motor de antes sobre as 3 janelas densas): o ajuste com 9 janelas não passou, ou discordou de uma escala de fps comum */
     public boolean planB;
     public boolean driftScale;
