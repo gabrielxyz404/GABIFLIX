@@ -2,7 +2,7 @@
 // Uso: BASE=http://localhost:8099/index.html OUT=out LABEL=antes|depois node web.js
 const pw = require('playwright');
 const fs = require('fs');
-const BASE = process.env.BASE, OUT = process.env.OUT || 'out', LABEL = process.env.LABEL || 'depois';
+const BASE = process.env.BASE, OUT = process.env.OUT || 'out', ENGINE = process.env.ENGINE || 'chromium', LABEL = (process.env.LABEL || 'depois') + (ENGINE === 'chromium' ? '' : '-' + ENGINE);
 const UA_MAC = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Safari/605.1.15 GabiFlixApp/mac/1.0';
 const UA_AND = 'Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Mobile Safari/537.36 GabiFlixApp/android/1.0';
 const PROFILES = { mac1440: { w: 1440, h: 900, mac: 1 }, mac1024: { w: 1024, h: 700, mac: 1 }, and390: { w: 390, h: 844 } };
@@ -100,8 +100,8 @@ async function run(name, P, browser, mode) {
   await ctx.close();
 }
 (async () => {
-  const browser = await pw.chromium.launch();
-  for (const mode of ['guest', 'user']) for (const n of Object.keys(PROFILES)) { try { await run(n, PROFILES[n], browser, mode); } catch (e) { log(LABEL, n, mode, 'FALHOU', e.message.slice(0, 200)); } }
+  const browser = await pw[ENGINE].launch();
+  for (const mode of ['guest', 'user']) for (const n of Object.keys(PROFILES).filter(k => (process.env.PROFILES || '').split(',').filter(Boolean).concat(Object.keys(PROFILES)).indexOf(k) >= 0 && (!process.env.PROFILES || process.env.PROFILES.split(',').indexOf(k) >= 0))) { try { await run(n, PROFILES[n], browser, mode); } catch (e) { log(LABEL, n, mode, 'FALHOU', e.message.slice(0, 200)); } }
   await browser.close();
   fs.writeFileSync(`${OUT}/${LABEL}-relatorio.txt`, report.join('\n'));
 })();

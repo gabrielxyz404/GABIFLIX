@@ -32,6 +32,7 @@ jobs:
         run: |
           mkdir -p /tmp/pw && cd /tmp/pw && npm init -y >/dev/null && npm i playwright@1.49.1 >/dev/null
           npx playwright install --with-deps chromium >/dev/null
+          (npx playwright install --with-deps webkit >/tmp/wk.log 2>&1 || tail -5 /tmp/wk.log)
       - name: Servir o site
         run: |
           cd appsrc && nohup python3 -m http.server 8099 >/tmp/srv.log 2>&1 &
@@ -42,7 +43,9 @@ jobs:
           BASE: http://localhost:8099/index.html
           OUT: /tmp/out
           LABEL: ${{ matrix.versao }}
-        run: node ferramentas/tools/home-nova-test/web.js
+        run: |
+          node ferramentas/tools/home-nova-test/web.js
+          ENGINE=webkit PROFILES=mac1440,mac1024 node ferramentas/tools/home-nova-test/web.js || true
       - name: Guardar
         if: always()
         run: |
@@ -52,6 +55,7 @@ jobs:
           git push -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" x:home-nova-out-${{ github.ref_name }}-web-${{ matrix.versao }}
 
   emulador:
+    if: ${{ !contains(github.ref_name, 'mac') }}
     runs-on: ubuntu-latest
     timeout-minutes: 50
     strategy:
@@ -152,3 +156,47 @@ jobs:
         run: |
           set -o pipefail
           ./mac/build.sh 2>&1 | tee build.log
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          path: antes
+      - name: App real do Mac com o site antes (main) e depois (este commit)
+        run: |
+          xattr -cr mac/build/FramePlay.app
+          mkdir -p /tmp/telas
+          (cd antes && nohup python3 -m http.server 8098 >/tmp/srv-a.log 2>&1 &)
+          nohup python3 -m http.server 8099 >/tmp/srv-d.log 2>&1 &
+          sleep 2
+          APP=mac/build/FramePlay.app/Contents/MacOS/FramePlay
+          shot() { screencapture -x "/tmp/telas/$1.png" || true; }
+          web() { rm -f /tmp/gf-web.out; echo "$1" > /tmp/gf-web; sleep "${2:-2.5}"; echo "$V $1 => $(cat /tmp/gf-web.out 2>/dev/null)" | cut -c1-600 >> /tmp/telas/mac-app.txt; }
+          for V in antes depois; do
+            P=8099; [ $V = antes ] && P=8098
+            defaults delete FramePlay 2>/dev/null || true
+            $APP --gf-test-url "http://localhost:$P/index.html" --gf-test-web > /tmp/telas/$V-app.log 2>&1 &
+            sleep 30
+            web "resize 1440 900" 4
+            web "js document.documentElement.getAttribute('data-gf-app') + ' nova=' + !!document.querySelector('.gf-nova') + ' servicos=' + document.querySelectorAll('[data-service]').length + ' ' + innerWidth + 'x' + innerHeight"
+            shot $V-mac-01-inicio-1440
+            web "resize 1024 700" 3
+            shot $V-mac-02-inicio-1024
+            web "resize 1440 900" 3
+            for id in netflix disney prime hbo appletv paramount globoplay clarovideo cinemateca; do
+              web "js (function(){var b=document.querySelector('[data-service=$id]');if(!b)return 'sem botao';b.click();return 'ok'})()" 4
+              web "js (function(){var h=document.querySelector('#gf-home .gf-svc-name');return '$id -> '+(h?h.textContent:'nada')})()" 1
+              [ $id = netflix ] && shot $V-mac-03-catalogo-netflix
+              web "js history.back(); 'ok'" 3
+            done
+            web "js (function(){var s=[];var b=document.querySelector('[data-service]');if(!b)return 'sem';b.focus();for(var i=0;i<9;i++){s.push(document.activeElement.getAttribute('data-service'));document.dispatchEvent(new KeyboardEvent('keydown',{key:'ArrowRight',bubbles:true}));}return s.join(',')})()" 2
+            shot $V-mac-04-foco-teclado
+            pkill -x FramePlay || true
+            sleep 3
+          done
+          cat /tmp/telas/mac-app.txt
+      - name: Guardar
+        if: always()
+        run: |
+          cd /tmp/telas || exit 0
+          git init -q -b x && git add -A
+          git -c user.name=ci -c user.email=ci@x commit -qm fotos
+          git push -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" x:home-nova-out-${{ github.ref_name }}-mac-app
