@@ -198,18 +198,40 @@ final class Stremio {
     }
 
     static List<JSONObject> search(String q) {
+        return search(q, Net::get);
+    }
+
+    /** busca de um tipo no Cinemeta: o texto da resposta (ou erro) */
+    interface Fetch { String get(String url) throws Exception; }
+
+    /**
+     * Filmes e séries são pedidos AO MESMO TEMPO (antes um depois do outro: a busca demorava a soma dos dois pedidos).
+     * Os resultados saem na mesma ordem de antes: primeiro os filmes, depois as séries. Separado de {@link #search(String)} para o teste da JVM
+     * trocar a rede por um pedido simulado.
+     */
+    static List<JSONObject> search(String q, Fetch fetch) {
+        final String[] types = {"movie", "series"};
+        final JSONArray[] got = new JSONArray[types.length];
+        Thread other = new Thread(() -> got[1] = searchType(q, types[1], fetch), "gf-search-series");
+        other.setPriority(Thread.NORM_PRIORITY - 1);
+        other.start();
+        got[0] = searchType(q, types[0], fetch);
+        try { other.join(25000); } catch (InterruptedException e) { Thread.currentThread().interrupt(); }
         List<JSONObject> out = new ArrayList<>();
         Set<String> seen = new HashSet<>();
-        for (String type : new String[]{"movie", "series"}) {
-            try {
-                JSONArray arr = new JSONObject(Net.get(CINEMETA + "/catalog/" + type + "/top/search=" + Uri.encode(q) + ".json")).optJSONArray("metas");
-                if (arr != null) for (int i = 0; i < arr.length() && i < 40; i++) {
-                    JSONObject m = arr.optJSONObject(i);
-                    if (m != null && seen.add(m.optString("id"))) { if (!m.has("type")) m.put("type", type); out.add(m); }
-                }
-            } catch (Exception ignored) {}
+        for (int t = 0; t < types.length; t++) {
+            JSONArray arr = got[t];   // got[1] foi escrito pela outra thread antes do join(): visível aqui
+            if (arr != null) for (int i = 0; i < arr.length() && i < 40; i++) {
+                JSONObject m = arr.optJSONObject(i);
+                try { if (m != null && seen.add(m.optString("id"))) { if (!m.has("type")) m.put("type", types[t]); out.add(m); } } catch (JSONException ignored) {}
+            }
         }
         return out;
+    }
+
+    private static JSONArray searchType(String q, String type, Fetch fetch) {
+        try { return new JSONObject(fetch.get(CINEMETA + "/catalog/" + type + "/top/search=" + Uri.encode(q) + ".json")).optJSONArray("metas"); }
+        catch (Exception e) { return null; }
     }
 
     // ---------- catálogos do FramePlay (os mesmos do celular) ----------
