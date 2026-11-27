@@ -170,8 +170,8 @@ final class AudioSyncSession {
         var w = [[Int]](repeating: [0, 0], count: n)
         for z in 0..<n {
             let anchor = first + z * gapMs
-            var lo = max(z == 0 ? posMs + 5000 : 0, anchor - 45000)
-            let hi = min(hiLimit - lenMs, anchor + 45000)
+            var lo = max(z == 0 ? posMs + 5000 : 0, anchor - 30000)
+            let hi = min(hiLimit - lenMs, anchor + 30000)
             lo = max(lo, 0)
             var best = -1.0
             var bs = max(0, min(anchor, durMs - lenMs))
