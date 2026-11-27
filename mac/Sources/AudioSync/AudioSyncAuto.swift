@@ -68,6 +68,8 @@ final class AudioSyncAuto {
         var retryPending = false, retryFromRefusal = false
         /** a recusa por falta de evidência já teve a sua nova tentativa rápida (uma só) / a próxima análise olha janelas longe do ponto atual */
         var quickUsed = false, shiftNext = false
+        /** janelas já ouvidas na análise recusada: a nova tentativa soma-as às novas (mais evidência, mesmas regras de aceitação) */
+        var seedWins: [AudioWindow] = []
         var retryAt = 0, keySince = 0
         var mScale = 1.0, mOffset = 0.0
         var lastWritten = 0
@@ -434,7 +436,7 @@ final class AudioSyncAuto {
         if ra > 0 && now >= ra && !running {
             // o item de menu acabou de terminar: adota o resultado que ele guardou (sem nova captura)
             rescanAt.value = 0
-            s.st = .new; s.keySince = Int.min / 4; s.attempts = 0; s.retryPending = false; s.retryFromRefusal = false
+            s.st = .new; s.keySince = Int.min / 4; s.attempts = 0; s.retryPending = false; s.retryFromRefusal = false; s.shiftNext = false; s.seedWins = []
             trigger("botão-adotar-resultado", kk, "sem análise (só lê a marca que o botão guardou)")
         }
         switch s.st {
@@ -529,8 +531,10 @@ final class AudioSyncAuto {
             var q = pos + 12 * 60_000
             if q > dur * 85 / 100 { q = pos - 12 * 60_000 }
             planPos = max(dur / 25, q)
-            log("nova tentativa: janelas planeadas a partir de \(planPos! / 1000) s (posição \(pos / 1000) s)")
+            log("nova tentativa: janelas planeadas a partir de \(planPos! / 1000) s (posição \(pos / 1000) s), mais \(s.seedWins.count) janela(s) já ouvidas")
         }
+        let seed = s.seedWins
+        s.seedWins = []
         log("começando: posição \(pos / 1000) s, duração \(dur / 1000) s, atraso atual \(d0) ms, sem limite de dados, prazo \(autoBudgetMs / 1000) s")
         live.value = "A ouvir o filme…"
         liveSince = AudioSyncAuto.now()
@@ -538,7 +542,7 @@ final class AudioSyncAuto {
         queue.async { [weak self] in
             guard let self = self else { return }
             self.core.parallel = 1
-            let o = self.core.run(url: url, subText: text, durMs: dur, nowMs: pos, currentDelay: d0, maxBytes: budget, budgetMs: bud, planMs: planPos)
+            let o = self.core.run(url: url, subText: text, durMs: dur, nowMs: pos, currentDelay: d0, maxBytes: budget, budgetMs: bud, planMs: planPos, seed: seed)
             DispatchQueue.main.async { self.finishRun(tok, k, d0, o) }
         }
     }
@@ -649,6 +653,7 @@ final class AudioSyncAuto {
                 // se falhar de novo, segue o caminho de sempre (aviso com o botão Sincronizar e uma última tentativa daqui a 20 min)
                 s.quickUsed = true
                 s.shiftNext = true
+                s.seedWins = o.windows
                 s.st = .new
                 s.retryPending = true
                 s.retryFromRefusal = true

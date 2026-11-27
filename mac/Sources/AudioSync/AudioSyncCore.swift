@@ -332,7 +332,7 @@ final class AudioSyncCore {
      * nowMs: posição do vídeo agora; currentDelay: atraso aplicado agora (a decisão de mexer compara com ele);
      * maxBytes: pula (.skipped) se a leitura estimada das 3 janelas passar disto; noLimit = botão do usuário (nunca pula)
      */
-    func run(url: URL, subText: String?, durMs: Int, nowMs: Int, currentDelay: Int, maxBytes: Int, budgetMs: Int = 285_000, planMs: Int? = nil) -> Outcome {
+    func run(url: URL, subText: String?, durMs: Int, nowMs: Int, currentDelay: Int, maxBytes: Int, budgetMs: Int = 285_000, planMs: Int? = nil, seed: [AudioWindow] = []) -> Outcome {
         runLock.lock()
         defer { runLock.unlock() }
         setBusy(true)
@@ -423,7 +423,7 @@ final class AudioSyncCore {
                     sl.sem.signal()
                 }
             }
-        }, used: &used, stats: &stats)
+        }, used: &used, stats: &stats, seed: seed)
         o.st.planned = stats.planned
         o.st.solves = stats.solves
         log("janelas usadas: \(used.map { "\($0.startMs / 1000)s" }.joined(separator: ",")) | etapa 1 aceita=\(stats.stage1Accepted) | sem tempo=\(o.st.outOfTime) | falhas=\(stats.failed)")

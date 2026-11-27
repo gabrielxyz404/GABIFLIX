@@ -200,11 +200,14 @@ final class AudioSyncSession {
      * Plano B igual ao de analyze (motor de antes sobre as 3 primeiras janelas).
      */
     static func analyzeNear(_ cues: [AudioCue], _ durMs: Int, _ lenMs: Int, _ posMs: Int, _ gapMs: Int, _ src: Source, _ P: AudioAligner.Params,
-                            stop: () -> Bool, prefetch: ([[Int]]) -> Void = { _ in }, used: inout [AudioWindow], stats: inout NearStats) -> AudioResult? {
-        let near = planNear(cues, durMs, 3, lenMs, posMs, gapMs)
+                            stop: () -> Bool, prefetch: ([[Int]]) -> Void = { _ in }, used: inout [AudioWindow], stats: inout NearStats,
+                            seed: [AudioWindow] = []) -> AudioResult? {
+        // seed: janelas já ouvidas numa análise anterior desta legenda (nova tentativa depois de uma recusa): entram primeiro e somam evidência às novas
+        let near = planNear(cues, durMs, 3, lenMs, posMs, gapMs).filter { p in !seed.contains(where: { abs($0.startMs - p[0]) < lenMs }) }
         prefetch(near)
         let ses = AudioSyncSession(cues: cues, mediaDurationMs: durMs, params: P)
         var all: [AudioWindow] = []
+        for w in seed.prefix(max(0, P.maxDriftWindows - 3)) { ses.addWindow(w); all.append(w) }
         stats.planned = near.count
         for p in near {
             if stop() { stats.stoppedEarly = true; break }
