@@ -321,6 +321,93 @@ func runDriftReplay() {
     check(!R3.driftScale || R3.unitResMs < P.driftRelaxRatio * max(R3.driftResMs, P.driftResFloorMs), "replay bancada: sem prova forte a porta relaxada não vale")
 }
 
+// ------------------------------------------------------------------ deriva para TODAS as razões de fps conhecidas (porte de DriftRatiosReplayTest.java)
+func runDriftRatios() {
+    func win(_ startS: Double, _ delay: Double, _ ncc: Double, _ second: Double, _ z: Double, _ conf: Bool) -> AudioResult.Win {
+        var w = AudioResult.Win()
+        w.startMs = Int(startS * 1000)
+        w.centerMs = (startS + 45) * 1000.0
+        w.delayMs = delay; w.ncc = ncc; w.second = second; w.z = z
+        w.speech = true; w.confident = conf
+        return w
+    }
+    let starts: [Double] = [300, 900, 1700, 2500, 3300, 4100, 4800]
+    let dur = 5_400_000
+    let P = AudioAligner.Params()
+    func line(_ scale: Double, _ off: Double, _ weak: Double) -> [AudioResult.Win] {
+        let al = AudioAligner.alphaOf(scale), beta = off / scale
+        var ws: [AudioResult.Win] = []
+        for i in 0..<starts.count {
+            let c = (starts[i] + 45) * 1000.0
+            let d = beta + al * c + Double(((i * 37 + 11) % 141) - 70)
+            ws.append(i == starts.count - 2 ? win(starts[i], d + weak, 0.30, 0.27, 2.4, false) : win(starts[i], d, 0.55 + 0.02 * Double(i), 0.40, 4.5, true))
+        }
+        return ws
+    }
+    func near(_ a: Double, _ b: Double, _ tol: Double) -> Bool { return abs(a - b) <= tol }
+    // todas as razões com |alpha| <= maxAlpha: provadas com o seu deslocamento; a janela fraca desviada cabe
+    var tested = 0
+    for ks in P.knownScales where abs(ks - 1.0) > 1e-9 && abs(AudioAligner.alphaOf(ks)) <= P.maxAlpha {
+        for off in [8000.0, -12000.0] {
+            let ws = line(ks, off, 700)
+            let R = AudioResult()
+            AudioAligner.driftFromWins(R, nil, nil, ws, dur, P)
+            check(R.driftScale && near(R.scale, ks, 1e-12) && near(R.offsetMs, off, 300), "razões: \(ks) desl. \(off) provada (\(R.driftNote))")
+            check(R.unitResMs >= P.driftRelaxRatio * max(R.driftResMs, P.driftResFloorMs), "razões: \(ks) prova forte")
+            let al = AudioAligner.alphaOf(R.scale), beta = R.offsetMs / R.scale
+            let d = ws.map { $0.delayMs - (beta + al * $0.centerMs) }
+            let st = ws.map { $0.ncc >= P.winMinNcc && ($0.ncc - $0.second >= P.winMinMargin - 1e-9 || $0.z >= P.winMinZ) }
+            check(AudioAligner.driftAgree(d, st, P) && abs(d[5]) > P.driftGateDevMs, "razões: \(ks) janela fraca desviada cabe")
+        }
+        tested += 1
+    }
+    check(tested >= 8, "razões: todas testadas (\(tested))")
+    // valores iguais ao Java (DriftRatiosReplayTest.deterministicReferenceValuesForParity)
+    let refs: [(Double, Double, Double, Double)] = [(25.0 / 23.976, 8000, 7993.536, 100448.088), (25.0 / 24.0, 8000, 7993.543, 98094.497), (24.0 / 25.0, -12000, -12005.951, 102124.195)]
+    for r in refs {
+        let R = AudioResult()
+        AudioAligner.driftFromWins(R, nil, nil, line(r.0, r.1, 700), dur, P)
+        check(R.driftScale && near(R.scale, r.0, 1e-12) && near(R.offsetMs, r.2, 0.01) && near(R.unitResMs, r.3, 0.01) && near(R.driftResMs, 58.199, 0.01) && R.driftConfident == 6,
+              "razões: \(r.0) igual ao Java (offset \(R.offsetMs), sem escala \(R.unitResMs))")
+    }
+    // negativos
+    for delay in [0.0, 3000, -9000, 14000] {
+        var ws: [AudioResult.Win] = []
+        for i in 0..<starts.count { ws.append(win(starts[i], delay + Double(((i * 53 + 7) % 121) - 60), 0.6, 0.4, 4.5, true)) }
+        let R = AudioResult()
+        AudioAligner.driftFromWins(R, nil, nil, ws, dur, P)
+        check(!R.driftScale, "razões: atraso constante \(delay) não é deriva")
+    }
+    var seed: UInt64 = 11
+    func rnd() -> Double { seed = seed &* 6364136223846793005 &+ 1442695040888963407; return Double((seed >> 33) % 2_000_001) / 1_000_000.0 - 1.0 }
+    var incoherentOk = true
+    for _ in 0..<200 {
+        var ws: [AudioResult.Win] = []
+        for i in 0..<starts.count { ws.append(win(starts[i], rnd() * 200_000, 0.5, 0.4, 4.5, true)) }
+        let R = AudioResult()
+        AudioAligner.driftFromWins(R, nil, nil, ws, dur, P)
+        if R.driftScale { incoherentOk = false }
+    }
+    check(incoherentOk, "razões: janelas incoerentes (200) nunca viram deriva")
+    var mino = line(25.0 / 24.0, 5000, 0)
+    let junk = [-40_000.0, 90_000, 12_000, -70_000, 31_000]
+    var k = 0
+    for i in 0..<mino.count where i != 1 && i != 5 { mino[i].delayMs = junk[k]; k += 1 }
+    let Rm = AudioResult()
+    AudioAligner.driftFromWins(Rm, nil, nil, mino, dur, P)
+    check(!Rm.driftScale, "razões: minoria na reta não é deriva")
+    for al in [0.012, 0.02, 0.03, -0.02, 0.07] {
+        let Rs = AudioResult()
+        AudioAligner.driftFromWins(Rs, nil, nil, line(1.0 / (1.0 - al), 6000, 0), dur, P)
+        check(!Rs.driftScale, "razões: inclinação \(al) de nenhuma razão não é deriva")
+    }
+    var two = line(25.0 / 24.0, 5000, 0)
+    for i in 0..<two.count { two[i].confident = i < 2 }
+    let R2 = AudioResult()
+    AudioAligner.driftFromWins(R2, nil, nil, two, dur, P)
+    check(!R2.driftScale, "razões: duas janelas confiáveis não chegam")
+}
+
 let a = CommandLine.arguments
 if a.count >= 4 && a[1] == "parity" {
     runVectors(a[2])
@@ -328,10 +415,12 @@ if a.count >= 4 && a[1] == "parity" {
     runDsp(a[3])
     runFuzz()
     runDriftReplay()
+    runDriftRatios()
     print(failures == 0 ? "TUDO CERTO" : "FALHAS: \(failures)")
     exit(failures == 0 ? 0 : 1)
 } else if a.count >= 2 && a[1] == "driftreplay" {
     runDriftReplay()
+    runDriftRatios()
     print(failures == 0 ? "TUDO CERTO" : "FALHAS: \(failures)")
     exit(failures == 0 ? 0 : 1)
 } else if a.count >= 5 && a[1] == "silero" {

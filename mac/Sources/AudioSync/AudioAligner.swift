@@ -611,6 +611,19 @@ enum AudioAligner {
     }
 
     // ------------------------------------------------------------------ deriva (escala de fps, p.ex. 1,001)
+    static func isKnownScale(_ scale: Double, _ P: Params) -> Bool {
+        for ks in P.knownScales where abs(ks - scale) < 1e-9 { return true }
+        return false
+    }
+
+    /** inclinação livre (mínimos quadrados ponderados) de y = a + b*x; nil se os x não têm dispersão */
+    static func freeSlope(_ x: [Double], _ y: [Double], _ w: [Double], _ n: Int) -> Double? {
+        var sw = 0.0, sx = 0.0, sy = 0.0, sxx = 0.0, sxy = 0.0
+        for i in 0..<n { sw += w[i]; sx += w[i] * x[i]; sy += w[i] * y[i]; sxx += w[i] * x[i] * x[i]; sxy += w[i] * x[i] * y[i] }
+        let den = sw * sxx - sx * sx
+        return den > 1e-6 * sw * sw ? (sw * sxy - sx * sy) / den : nil
+    }
+
     /** ajuste de atraso(t) = beta + alpha*t com alpha FIXO (mínimos quadrados ponderados): (beta, resíduo máximo em ms) */
     private static func fitFixedAlpha(_ x: [Double], _ y: [Double], _ w: [Double], _ n: Int, _ alpha: Double) -> (Double, Double) {
         var sw = 0.0, sy = 0.0
@@ -631,14 +644,17 @@ enum AudioAligner {
         let W = ws.count
         var info: [AudioResult.Win] = []
         let nearUnitModel = abs(R.scale - 1.0) < 0.0035
+        let modelKnown = !nearUnitModel && R.scaleKnown && isKnownScale(R.scale, P)
         for w in 0..<W {
             var wi = AudioResult.Win()
             let uc = Double(ws[w].startMs) + Double(ws[w].p.count) * 5.0
-            let d0 = nearUnitModel ? uc - (uc - R.offsetMs) / R.scale : 0.0
-            let f = fineWindow(ps[w], ws[w].startMs, fine, 1.0, d0, nearUnitModel ? 1000 : 1500)
+            let d0 = nearUnitModel || modelKnown ? uc - (uc - R.offsetMs) / R.scale : 0.0
+            // razão de fps conhecida longe de 1: a janela é medida com a escala do modelo grosso; o desvio vira atraso sem escala: d0 + delta / escala
+            let f = modelKnown ? fineWindow(ps[w], ws[w].startMs, fine, R.scale, R.offsetMs, 1000)
+                : fineWindow(ps[w], ws[w].startMs, fine, 1.0, d0, nearUnitModel ? 1000 : 1500)
             wi.startMs = ws[w].startMs
             wi.centerMs = uc
-            wi.delayMs = d0 + f.bestDelta
+            wi.delayMs = modelKnown ? d0 + f.bestDelta / R.scale : d0 + f.bestDelta
             wi.ncc = f.ncc
             wi.z = f.z
             wi.second = f.nccSecond
@@ -676,14 +692,18 @@ enum AudioAligner {
             if den > 1e-6 * sw * sw { R.driftSlope = (sw * sxy - sx * sy) / den }
         }
 
-        let ks = [24.0 / 23.976, 23.976 / 24.0]
+        // todas as razões de fps conhecidas (menos 1,0): a família 1,001 e as de deriva grande (PAL 25 x 24 / 23,976, 30 x 25...)
+        var ks: [Double] = []
+        for k in P.knownScales where abs(k - 1.0) > 1e-9 && abs(alphaOf(k)) <= P.maxAlpha { ks.append(k) }
+        let nk = ks.count
         var best = -1
         var bestRes = Double.greatestFiniteMagnitude, bestBeta = 0.0, bestSpan = 0.0
         var bestN = 0, bestDrop = -1
         var nearMiss = false
         var why = ""
-        for c in 0..<2 {
+        for c in 0..<nk {
             let al = alphaOf(ks[c])
+            let family = abs(ks[c] - 1.0) < P.nearUnitEps
             var drop = -1
             var fr = fitFixedAlpha(x, y, wt, n, al)
             if fr.1 > P.driftMaxResMs && n > P.driftMinWins {
@@ -701,7 +721,13 @@ enum AudioAligner {
             let span = xmax - xmin
             let un = fitFixedAlpha(xs, ys, w2, nn, 0.0)
             let meas = abs(al) * span, content = abs(al) * Double(durMs)
-            let fits = fr.1 <= P.driftMaxResMs && 2 * fr.1 <= un.1 && meas >= 2 * max(fr.1, P.driftResFloorMs)
+            var fits = fr.1 <= P.driftMaxResMs && 2 * fr.1 <= un.1 && meas >= 2 * max(fr.1, P.driftResFloorMs)
+            if fits && !family {
+                // razões de deriva grande: resíduo sem escala >= driftRelaxRatio x o da reta e a inclinação livre encaixa na razão (snapAlpha)
+                if let sl = freeSlope(xs, ys, w2, nn) {
+                    fits = un.1 >= P.driftRelaxRatio * max(fr.1, P.driftResFloorMs) && abs(sl - al) <= P.snapAlpha
+                } else { fits = false }
+            }
             let spanOk = span >= max(Double(P.driftMinSpanMs), P.driftMinSpanFrac * Double(durMs))
             let safe = fr.1 <= P.driftSafeResMs
             let ok = fits && safe && nn >= P.driftMinWins && spanOk && meas >= P.driftRatio * max(fr.1, P.driftResFloorMs) && content >= P.driftContentMs
