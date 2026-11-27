@@ -59,6 +59,14 @@ else
   snap 04-catalogo 10
   adb shell uiautomator dump /sdcard/u.xml >/dev/null 2>&1; adb shell cat /sdcard/u.xml 2>/dev/null | python3 $UI texts > $OUT/$L-$P-textos-catalogo.txt
   adb shell input keyevent BACK; snap 05-voltou 3
+  adb shell input swipe 540 1900 540 700 300; snap 06-sem-historico-em-baixo 2
+  adb shell input swipe 900 1460 100 1460 200; adb shell input swipe 900 1460 100 1460 200; snap 07-servicos-ate-ao-fim 1
+  # com histórico (biblioteca local de convidado com 2 títulos a meio)
+  adb shell am force-stop $PKG; sleep 1
+  adb shell am start -n $PKG/.MainActivity --es gfTestWeb "http://10.0.2.2:8099/tools/home-nova-test/historico.html" --es gfTestRelease "http://10.0.2.2:8099/sem-release/"
+  snap 08-com-historico 25
+  adb shell uiautomator dump /sdcard/u.xml >/dev/null 2>&1; adb shell cat /sdcard/u.xml 2>/dev/null | python3 $UI texts > $OUT/$L-$P-textos-com-historico.txt
+  adb shell input swipe 540 1900 540 700 300; snap 09-com-historico-em-baixo 2
 fi
 adb logcat -d | grep -E "FATAL|AndroidRuntime: |E/AndroidRuntime" | grep -v "RuntimeInit\|boot image\|lock profiling\|Calling main\|Shutting down\|VM exiting" | head -40 > $OUT/$L-$P-crash.txt
 adb logcat -d | grep -iE "chromium.*(CONSOLE|Uncaught)|TypeError|ReferenceError" | head -40 > $OUT/$L-$P-consola.txt

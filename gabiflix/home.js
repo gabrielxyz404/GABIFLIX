@@ -200,6 +200,8 @@
         globoplay: ['#E3D25A', '#26240C'], clarovideo: ['#FF6B5E', '#2C110E'], cinemateca: ['#E7C07A', '#2A2213']
     };
 
+    var NV_SHORT = { netflix: 'Netflix', disney: 'Disney+', prime: 'Prime', hbo: 'HBO Max', appletv: 'Apple TV+', paramount: 'Paramount+', globoplay: 'Globoplay', clarovideo: 'Claro', cinemateca: 'CineTime' };
+
     function novaOn() {
         var k = document.documentElement.getAttribute('data-gf-app');
         if (k !== 'android' && k !== 'mac') return false;
@@ -364,7 +366,11 @@
                 b.setAttribute('aria-label', s.name);
                 b.style.setProperty('--nv-fg', c[0]);
                 b.style.setProperty('--nv-bg', c[1]);
-                b.textContent = mac ? s.name : s.name.charAt(0);
+                if (mac) b.textContent = s.name;
+                else { // celular: círculo com a inicial e o nome curto por baixo
+                    b.appendChild(el('span', 'gf-nv-dot', s.name.charAt(0)));
+                    b.appendChild(el('span', 'gf-nv-svc-name', NV_SHORT[s.id] || s.name));
+                }
                 b.addEventListener('pointerdown', function () { prefetch(s); }, { passive: true });
                 b.addEventListener('click', function () { open(s.id, true); });
                 return b;
@@ -412,6 +418,13 @@
             rowSec.appendChild(rowTitle);
             rowSec.appendChild(rowBox);
             page.appendChild(rowSec);
+            // celular: capas em alta da Netflix por baixo (sem histórico, logo a seguir aos serviços)
+            var trendSec = el('section', 'gf-nv-sec gf-nv-trend');
+            trendSec.hidden = true;
+            var trendBox = el('div', 'gf-nv-row');
+            trendSec.appendChild(el('h3', 'gf-nv-h', 'Em alta na ' + SERVICES[0].name));
+            trendSec.appendChild(trendBox);
+            page.appendChild(trendSec);
         }
         root.appendChild(page);
 
@@ -430,6 +443,13 @@
                 rowBox.appendChild(frag);
             }).catch(function () { rowSec.hidden = true; });
         } else {
+            loadHome(SERVICES[0].id).then(function (h) {
+                if (!page.isConnected) return;
+                var frag = document.createDocumentFragment();
+                (h.top10 || []).concat(h.movie || []).slice(0, 14).forEach(function (m) { frag.appendChild(novaPoster(m)); });
+                trendBox.appendChild(frag);
+                trendSec.hidden = false;
+            }).catch(function () {});
             getContinueItems().then(function (items) {
                 if (!page.isConnected) return;
                 var list = items.filter(function (x) { return x && x._id && x.type !== 'other'; }).slice(0, 12);
