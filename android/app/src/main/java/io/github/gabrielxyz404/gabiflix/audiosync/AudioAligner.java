@@ -78,8 +78,11 @@ public final class AudioAligner {
         public double driftWeakTolMs = 800;
         public double driftMinAgreeFrac = 0.6;
         /** janelas fracas só entram no refinamento do deslocamento da reta se caem a menos disto (ms) dela (com peso menor) */
-        public double driftWeakFitMs = 400;
+        public double driftWeakFitMs = 0;   // 0 = desligado: medido na bancada, refazer o deslocamento com as janelas fracas piorou o erro de alguns casos (399 -> 406 ms)
         public double driftWeakWeight = 0.5;
+        /** a porta relaxada (janela fraca a mais de driftGateDevMs da reta) só vale com prova forte: o resíduo da reta sem escala tem de ser pelo menos isto vezes o da reta de deriva
+         *  (medido: a deriva falsa que a bancada achou num filme só com deslocamento tinha 3,9; as de verdade, 6,5 ou mais) */
+        public double driftRelaxRatio = 5.0;
         public double driftRatio = 3.0;
         public double driftContentMs = 800;
         public double winMinNcc = 0.15;
@@ -1030,7 +1033,7 @@ public final class AudioAligner {
         // prova de reta de atraso constante: 4+ janelas confiáveis numa reta (resíduo <= 100 ms) valem como concordância mesmo se as outras janelas (fracas) discordam
         boolean linePass = !P.legacy && !R.driftScale && Math.abs(R.scale - 1.0) < 1e-9 && R.driftConfident >= 4 && R.unitResMs <= 100;
         boolean gateDev = P.gateWinDevMs > 0 && R.winsValid >= 2
-                && (P.legacy ? R.winMaxDev > P.gateWinDevMs : R.driftScale ? !R.driftAgree : !R.winConsensus && !linePass);
+                && (P.legacy ? R.winMaxDev > P.gateWinDevMs : R.driftScale ? (!R.driftAgree || (R.winMaxDev > P.driftGateDevMs && R.unitResMs < P.driftRelaxRatio * Math.max(R.driftResMs, P.driftResFloorMs))) : !R.winConsensus && !linePass);
         boolean gateWin = P.gateMinWinsAgree > 0 && R.winsAgree < P.gateMinWinsAgree;
         if (gateDev || gateWin) ok = false;
         R.accepted = ok;
