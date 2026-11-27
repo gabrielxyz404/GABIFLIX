@@ -11,13 +11,13 @@ import org.json.JSONObject;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.TimeZone;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Conta do Stremio e dados do FramePlay:
@@ -37,7 +37,7 @@ final class Stremio {
     static boolean loggedIn(Context c) { return authKey(c) != null; }
 
     /** esquece addons e biblioteca guardados (vêm de novo no próximo pedido) */
-    static synchronized void forget() { addons = null; library = null; }
+    static void forget() { addons = null; library = null; }
 
     static void logout(Context c) {
         prefs(c).edit().clear().apply();
@@ -70,18 +70,26 @@ final class Stremio {
     }
 
     // ---------- addons da conta ----------
-    private static List<JSONObject> addons;
+    // Cada dado tem a sua trava: antes os dois métodos eram "static synchronized" na MESMA trava (a classe), então o pedido da biblioteca
+    // inteira (vários segundos) segurava o pedido dos addons, e o "Assistir" do destaque só mostrava as fontes depois de a biblioteca chegar.
+    // Os campos são volatile porque a tela os lê (cachedItem, inLibrary, resumeFor) sem trava.
+    private static final Object ADDONS_LOCK = new Object(), LIBRARY_LOCK = new Object();
+    private static volatile List<JSONObject> addons;
 
-    static synchronized List<JSONObject> addons(Context c) throws Exception {
-        if (addons != null) return addons;
-        List<JSONObject> out = new ArrayList<>();
-        if (loggedIn(c)) {
-            JSONArray arr = api(c, "addonCollectionGet", new JSONObject().put("type", "AddonCollectionGet").put("update", true))
-                    .getJSONObject("result").optJSONArray("addons");
-            if (arr != null) for (int i = 0; i < arr.length(); i++) out.add(arr.getJSONObject(i));
+    static List<JSONObject> addons(Context c) throws Exception {
+        List<JSONObject> have = addons;
+        if (have != null) return have;
+        synchronized (ADDONS_LOCK) {
+            if (addons != null) return addons;
+            List<JSONObject> out = new ArrayList<>();
+            if (loggedIn(c)) {
+                JSONArray arr = api(c, "addonCollectionGet", new JSONObject().put("type", "AddonCollectionGet").put("update", true))
+                        .getJSONObject("result").optJSONArray("addons");
+                if (arr != null) for (int i = 0; i < arr.length(); i++) out.add(arr.getJSONObject(i));
+            }
+            addons = out;
+            return out;
         }
-        addons = out;
-        return out;
     }
 
     /** o addon dá fontes para este tipo/código? */
@@ -142,7 +150,7 @@ final class Stremio {
             for (JSONObject a : serving) {
                 String name = a.optJSONObject("manifest") != null ? a.optJSONObject("manifest").optString("name", "Addon") : "Addon";
                 String url = base(a) + "/stream/" + Uri.encode(type) + "/" + Uri.encode(videoId) + ".json";
-                Net.async(() -> parseStreams(Net.get(url), name), (got, e) -> {
+                Net.asyncAddon(() -> parseStreams(Net.get(url), name), (got, e) -> {
                     if (got != null) all.addAll(got);
                     left[0]--;
                     List<Source> sorted = new ArrayList<>(all);
@@ -227,31 +235,37 @@ final class Stremio {
     }
 
     // ---------- biblioteca (Mais Tarde e Continuar assistindo) ----------
-    private static Map<String, JSONObject> library;
+    // ConcurrentHashMap: a thread de rede acrescenta itens (itemFor) enquanto a tela os lê (cachedItem, resumeFor)
+    private static volatile Map<String, JSONObject> library;
 
-    private static boolean fakeLib; // só nos testes automáticos
+    private static volatile boolean fakeLib; // só nos testes automáticos
 
     /** biblioteca de mentira para os testes (não usa internet) */
-    static synchronized void fakeLibrary(Context c, Map<String, JSONObject> items) {
+    static void fakeLibrary(Context c, Map<String, JSONObject> items) {
         prefs(c).edit().putString("authKey", "teste").putString("email", "teste@gabiflix").apply();
         library = items;
         fakeLib = true;
     }
 
-    static synchronized Map<String, JSONObject> library(Context c, boolean refresh) throws Exception {
+    static Map<String, JSONObject> library(Context c, boolean refresh) throws Exception {
         if (fakeLib) return library;
-        if (library != null && !refresh) return library;
-        Map<String, JSONObject> map = new HashMap<>();
-        if (loggedIn(c)) {
-            Object r = api(c, "datastoreGet", new JSONObject().put("collection", "libraryItem").put("ids", new JSONArray()).put("all", true)).opt("result");
-            JSONArray arr = r instanceof JSONArray ? (JSONArray) r : null;
-            if (arr != null) for (int i = 0; i < arr.length(); i++) {
-                JSONObject it = arr.optJSONObject(i);
-                if (it != null) map.put(it.optString("_id"), it);
+        Map<String, JSONObject> have = library;
+        if (have != null && !refresh) return have;
+        synchronized (LIBRARY_LOCK) {
+            if (fakeLib) return library;
+            if (library != null && !refresh) return library;
+            Map<String, JSONObject> map = new ConcurrentHashMap<>();
+            if (loggedIn(c)) {
+                Object r = api(c, "datastoreGet", new JSONObject().put("collection", "libraryItem").put("ids", new JSONArray()).put("all", true)).opt("result");
+                JSONArray arr = r instanceof JSONArray ? (JSONArray) r : null;
+                if (arr != null) for (int i = 0; i < arr.length(); i++) {
+                    JSONObject it = arr.optJSONObject(i);
+                    if (it != null) map.put(it.optString("_id"), it);
+                }
             }
+            library = map;
+            return map;
         }
-        library = map;
-        return map;
     }
 
     /** Continuar assistindo: itens com tempo parado, do mais recente para o mais antigo */
