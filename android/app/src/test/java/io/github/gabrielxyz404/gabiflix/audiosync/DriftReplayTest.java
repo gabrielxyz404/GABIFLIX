@@ -58,6 +58,7 @@ public class DriftReplayTest {
         assertTrue(R.driftNote, R.driftScale);
         assertEquals(1000.0 / 1001.0, R.scale, 2e-6);
         assertEquals(14_600, R.offsetMs, 300);
+        assertTrue("prova forte (reta sem escala deixa >= 5x o resíduo): " + R.unitResMs + " / " + R.driftResMs, R.unitResMs >= P.driftRelaxRatio * Math.max(R.driftResMs, P.driftResFloorMs));
         Result.Win[] ws = report();
         double[] d = devs(ws, R);
         double max = 0;
@@ -93,5 +94,15 @@ public class DriftReplayTest {
         Result R = new Result();
         AudioAligner.driftFromWins(R, null, null, ws, 5_615_000L, P);
         assertFalse(R.driftScale);
+    }
+    /** caso da bancada: legenda só com deslocamento (+7,5 s), janelas com ruído de ~500 ms: uma "deriva" de 1285 ms nas janelas NÃO pode passar a porta relaxada */
+    @Test public void noisyOffsetOnlyDoesNotPassRelaxedGate() {
+        AudioAligner.Params P = new AudioAligner.Params();
+        Result.Win[] ws = {
+            win(660, -7942, 0.25, 0.17, 3.3, true), win(1450, -7207, 0.59, 0.50, 3.3, true), win(1945, -6938, 0.39, 0.28, 4.6, true),
+            win(2750, -7521, 0.35, 0.30, 3.8, false), win(3165, -7374, 0.54, 0.39, 5.3, true), win(4330, -7633, 0.72, 0.69, 2.7, false)};
+        Result R = new Result();
+        AudioAligner.driftFromWins(R, null, null, ws, 5_000_000L, P);
+        assertTrue("sem prova forte, a porta relaxada não vale", !R.driftScale || R.unitResMs < P.driftRelaxRatio * Math.max(R.driftResMs, P.driftResFloorMs));
     }
 }

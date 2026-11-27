@@ -19,8 +19,12 @@ ap.add_argument("--inclinacao", type=float, default=0.0, help="com escala ativa 
 a = ap.parse_args()
 steps = [int(x) for x in a.passos.split(",") if x]
 PRE = r"^\s*(\d+\.\d+)\s+\d+\s+\d+\s+[A-Z]\s+\S+\s*:\s*"
-shown, taps = [], []
+shown, taps, seeks = [], [], []
 for ln in open(a.log, encoding="utf-8", errors="replace"):
+    m = re.match(PRE + r"teste: ação do usuário seek", ln)
+    if m:
+        seeks.append(float(m.group(1)))
+        continue
     m = re.match(PRE + r"legenda do app: tempo (-?\d+) ms, atraso (-?\d+) ms ->", ln)
     if m:
         shown.append((float(m.group(1)), int(m.group(2)), int(m.group(3))))
@@ -38,7 +42,7 @@ for s in steps:
 got = [d for ep, d in mine]
 ok_seq = len(got) >= len(exp) and got[-len(exp):] == exp if exp else True
 final = exp[-1] if exp else d0
-after = [(ep, t, d) for ep, t, d in shown if ep > a.ate and ep <= a.depois_ate]
+after = [(ep, t, d) for ep, t, d in shown if ep > a.ate and ep <= a.depois_ate and not any(0 <= ep - sk <= 4.0 for sk in seeks)]   # os 4 s depois de um salto: o acompanhamento da escala ainda anda
 # com escala ativa o atraso certo anda com o filme (-0,1% por segundo): a referência é o tempo da primeira fala mostrada depois dos toques
 tref = after[0][1] if after else 0
 bad = [(ep, t, d) for ep, t, d in after if abs(d - (final + a.inclinacao * (t - tref))) > a.tol]
