@@ -660,6 +660,8 @@ final class AudioSyncAuto {
                 s.retryAt = AudioSyncAuto.now() + quickMs
                 log("sem evidência suficiente nestas janelas: nova tentativa já em \(quickMs / 1000) s, com janelas noutro ponto do filme")
                 sendReport(o, s, d0, "recusou: nova_tentativa_rapida")
+                // o aviso chega na mesma altura que antes (não 5 min mais tarde); o botão Sincronizar continua a funcionar durante a espera
+                h.notice("Ainda não consegui confirmar a legenda pelo áudio: vou ouvir mais trechos do filme. Se estiver fora, toca em Legendas > Sincronizar.")
                 return
             }
             mark(k, "no", 1.0, 0, 0)
