@@ -1,0 +1,129 @@
+antes resize 1440 900 => 
+antes js (function(){var sc=document.getElementById('gf-home');sc=sc&&sc.parentNode;return 'altura '+(sc?sc.scrollHeight+'/'+sc.clientHeight:'?')})() => altura ? 
+antes resize 1024 768 => 
+antes js (function(){var sc=document.getElementById('gf-home');sc=sc&&sc.parentNode;return 'altura 1024x768 '+(sc?sc.scrollHeight+'/'+sc.clientHeight:'?')})() => altura 1024x768 ? 
+antes resize 1440 900 => 
+antes js (function(){var h=document.querySelector('.gf-nv-hero');var b=document.querySelector('.gf-nv-copy .gf-nv-btn.is-main');if(!h||!b)return 'sem destaque';window.__id=h.getAttribute('data-hero-id');b.click();return 'clicou '+b.textContent+' '+window.__id})() => sem destaque 
+antes js 'destaque abriu '+location.hash+' '+(window.__id&&location.hash.indexOf(window.__id)>=0?'OK':'ERRO') => destaque abriu  ERRO 
+antes js history.back(); 'ok' => ok 
+antes js (function(){var h=document.querySelector('.gf-nv-hero');var b=document.querySelector('.gf-nv-copy .gf-nv-btn:not(.is-main)');if(!h||!b)return 'sem destaque';window.__id=h.getAttribute('data-hero-id');b.click();return 'clicou '+b.textContent+' '+window.__id})() => sem destaque 
+antes js 'destaque abriu '+location.hash+' '+(window.__id&&location.hash.indexOf(window.__id)>=0?'OK':'ERRO') => destaque abriu  ERRO 
+antes js history.back(); 'ok' => ok 
+antes js document.documentElement.getAttribute('data-gf-app') + ' nova=' + !!document.querySelector('.gf-nova') + ' servicos=' + document.querySelectorAll('[data-service]').length + ' ' + innerWidth + 'x' + innerHeight => null nova=false servicos=0 1440x900 
+antes resize 1024 700 => 
+antes resize 1440 900 => 
+antes js (function(){var b=document.querySelector('[data-service=netflix]');if(!b)return 'sem botao';b.click();return 'ok'})() => sem botao 
+antes js (function(){var h=document.querySelector('#gf-home .gf-svc-name');return 'netflix -> '+(h?h.textContent:'nada')})() => netflix -> nada 
+antes js history.back(); 'ok' => ok 
+antes js (function(){var b=document.querySelector('[data-service=disney]');if(!b)return 'sem botao';b.click();return 'ok'})() => sem botao 
+antes js (function(){var h=document.querySelector('#gf-home .gf-svc-name');return 'disney -> '+(h?h.textContent:'nada')})() => disney -> nada 
+antes js history.back(); 'ok' => ok 
+antes js (function(){var b=document.querySelector('[data-service=prime]');if(!b)return 'sem botao';b.click();return 'ok'})() => sem botao 
+antes js (function(){var h=document.querySelector('#gf-home .gf-svc-name');return 'prime -> '+(h?h.textContent:'nada')})() => prime -> nada 
+antes js history.back(); 'ok' => ok 
+antes js (function(){var b=document.querySelector('[data-service=hbo]');if(!b)return 'sem botao';b.click();return 'ok'})() => sem botao 
+antes js (function(){var h=document.querySelector('#gf-home .gf-svc-name');return 'hbo -> '+(h?h.textContent:'nada')})() => hbo -> nada 
+antes js history.back(); 'ok' => ok 
+antes js (function(){var b=document.querySelector('[data-service=appletv]');if(!b)return 'sem botao';b.click();return 'ok'})() => sem botao 
+antes js (function(){var h=document.querySelector('#gf-home .gf-svc-name');return 'appletv -> '+(h?h.textContent:'nada')})() => appletv -> nada 
+antes js history.back(); 'ok' => ok 
+antes js (function(){var b=document.querySelector('[data-service=paramount]');if(!b)return 'sem botao';b.click();return 'ok'})() => sem botao 
+antes js (function(){var h=document.querySelector('#gf-home .gf-svc-name');return 'paramount -> '+(h?h.textContent:'nada')})() => paramount -> nada 
+antes js history.back(); 'ok' => ok 
+antes js (function(){var b=document.querySelector('[data-service=globoplay]');if(!b)return 'sem botao';b.click();return 'ok'})() => sem botao 
+antes js (function(){var h=document.querySelector('#gf-home .gf-svc-name');return 'globoplay -> '+(h?h.textContent:'nada')})() => globoplay -> nada 
+antes js history.back(); 'ok' => ok 
+antes js (function(){var b=document.querySelector('[data-service=clarovideo]');if(!b)return 'sem botao';b.click();return 'ok'})() => sem botao 
+antes js (function(){var h=document.querySelector('#gf-home .gf-svc-name');return 'clarovideo -> '+(h?h.textContent:'nada')})() => clarovideo -> nada 
+antes js history.back(); 'ok' => ok 
+antes js (function(){var b=document.querySelector('[data-service=cinemateca]');if(!b)return 'sem botao';b.click();return 'ok'})() => sem botao 
+antes js (function(){var h=document.querySelector('#gf-home .gf-svc-name');return 'cinemateca -> '+(h?h.textContent:'nada')})() => cinemateca -> nada 
+antes js history.back(); 'ok' => ok 
+antes js (function(){var s=[];var b=document.querySelector('[data-service]');if(!b)return 'sem';b.focus();for(var i=0;i<9;i++){s.push(document.activeElement.getAttribute('data-service'));document.dispatchEvent(new KeyboardEvent('keydown',{key:'ArrowRight',bubbles:true}));}return s.join(',')})() => sem 
+depois resize 1440 900 => 
+depois js (function(){var sc=document.getElementById('gf-home');sc=sc&&sc.parentNode;return 'altura '+(sc?sc.scrollHeight+'/'+sc.clientHeight:'?')})() => altura 900/900 
+depois resize 1024 768 => 
+depois js (function(){var sc=document.getElementById('gf-home');sc=sc&&sc.parentNode;return 'altura 1024x768 '+(sc?sc.scrollHeight+'/'+sc.clientHeight:'?')})() => altura 1024x768 768/768 
+depois resize 1440 900 => 
+depois js (function(){var h=document.querySelector('.gf-nv-hero');var b=document.querySelector('.gf-nv-copy .gf-nv-btn.is-main');if(!h||!b)return 'sem destaque';window.__id=h.getAttribute('data-hero-id');b.click();return 'clicou '+b.textContent+' '+window.__id})() => clicou Ver tt35222590 
+depois js 'destaque abriu '+location.hash+' '+(window.__id&&location.hash.indexOf(window.__id)>=0?'OK':'ERRO') => destaque abriu #/detail/movie/tt35222590 OK 
+depois js history.back(); 'ok' => ok 
+depois js (function(){var h=document.querySelector('.gf-nv-hero');var b=document.querySelector('.gf-nv-copy .gf-nv-btn:not(.is-main)');if(!h||!b)return 'sem destaque';window.__id=h.getAttribute('data-hero-id');b.click();return 'clicou '+b.textContent+' '+window.__id})() => clicou Detalhes tt36413910 
+depois js 'destaque abriu '+location.hash+' '+(window.__id&&location.hash.indexOf(window.__id)>=0?'OK':'ERRO') => destaque abriu #/detail/movie/tt36413910 OK 
+depois js history.back(); 'ok' => ok 
+depois js document.documentElement.getAttribute('data-gf-app') + ' nova=' + !!document.querySelector('.gf-nova') + ' servicos=' + document.querySelectorAll('[data-service]').length + ' ' + innerWidth + 'x' + innerHeight => mac nova=true servicos=9 1440x900 
+depois resize 1024 700 => 
+depois resize 1440 900 => 
+depois js (function(){var b=document.querySelector('[data-service=netflix]');if(!b)return 'sem botao';b.click();return 'ok'})() => ok 
+depois js (function(){var h=document.querySelector('#gf-home .gf-svc-name');return 'netflix -> '+(h?h.textContent:'nada')})() => netflix -> Netflix 
+depois js history.back(); 'ok' => ok 
+depois js (function(){var b=document.querySelector('[data-service=disney]');if(!b)return 'sem botao';b.click();return 'ok'})() => ok 
+depois js (function(){var h=document.querySelector('#gf-home .gf-svc-name');return 'disney -> '+(h?h.textContent:'nada')})() => disney -> Disney+ 
+depois js history.back(); 'ok' => ok 
+depois js (function(){var b=document.querySelector('[data-service=prime]');if(!b)return 'sem botao';b.click();return 'ok'})() => ok 
+depois js (function(){var h=document.querySelector('#gf-home .gf-svc-name');return 'prime -> '+(h?h.textContent:'nada')})() => prime -> Prime Video 
+depois js history.back(); 'ok' => ok 
+depois js (function(){var b=document.querySelector('[data-service=hbo]');if(!b)return 'sem botao';b.click();return 'ok'})() => ok 
+depois js (function(){var h=document.querySelector('#gf-home .gf-svc-name');return 'hbo -> '+(h?h.textContent:'nada')})() => hbo -> HBO Max 
+depois js history.back(); 'ok' => ok 
+depois js (function(){var b=document.querySelector('[data-service=appletv]');if(!b)return 'sem botao';b.click();return 'ok'})() => ok 
+depois js (function(){var h=document.querySelector('#gf-home .gf-svc-name');return 'appletv -> '+(h?h.textContent:'nada')})() => appletv -> Apple TV+ 
+depois js history.back(); 'ok' => ok 
+depois js (function(){var b=document.querySelector('[data-service=paramount]');if(!b)return 'sem botao';b.click();return 'ok'})() => ok 
+depois js (function(){var h=document.querySelector('#gf-home .gf-svc-name');return 'paramount -> '+(h?h.textContent:'nada')})() => paramount -> Paramount+ 
+depois js history.back(); 'ok' => ok 
+depois js (function(){var b=document.querySelector('[data-service=globoplay]');if(!b)return 'sem botao';b.click();return 'ok'})() => ok 
+depois js (function(){var h=document.querySelector('#gf-home .gf-svc-name');return 'globoplay -> '+(h?h.textContent:'nada')})() => globoplay -> Globoplay 
+depois js history.back(); 'ok' => ok 
+depois js (function(){var b=document.querySelector('[data-service=clarovideo]');if(!b)return 'sem botao';b.click();return 'ok'})() => ok 
+depois js (function(){var h=document.querySelector('#gf-home .gf-svc-name');return 'clarovideo -> '+(h?h.textContent:'nada')})() => clarovideo -> Claro Video 
+depois js history.back(); 'ok' => ok 
+depois js (function(){var b=document.querySelector('[data-service=cinemateca]');if(!b)return 'sem botao';b.click();return 'ok'})() => ok 
+depois js (function(){var h=document.querySelector('#gf-home .gf-svc-name');return 'cinemateca -> '+(h?h.textContent:'nada')})() => cinemateca -> CineTime 
+depois js history.back(); 'ok' => ok 
+depois js (function(){var s=[];var b=document.querySelector('[data-service]');if(!b)return 'sem';b.focus();for(var i=0;i<9;i++){s.push(document.activeElement.getAttribute('data-service'));document.dispatchEvent(new KeyboardEvent('keydown',{key:'ArrowRight',bubbles:true}));}return s.join(',')})() => netflix,disney,prime,hbo,appletv,paramount,globoplay,clarovideo,cinemateca 
+depois-hist resize 1440 900 => 
+depois-hist js (function(){var sc=document.getElementById('gf-home');sc=sc&&sc.parentNode;return 'altura '+(sc?sc.scrollHeight+'/'+sc.clientHeight:'?')})() => altura 900/900 
+depois-hist resize 1024 768 => 
+depois-hist js (function(){var sc=document.getElementById('gf-home');sc=sc&&sc.parentNode;return 'altura 1024x768 '+(sc?sc.scrollHeight+'/'+sc.clientHeight:'?')})() => altura 1024x768 768/768 
+depois-hist resize 1440 900 => 
+depois-hist js (function(){var h=document.querySelector('.gf-nv-hero');var b=document.querySelector('.gf-nv-copy .gf-nv-btn.is-main');if(!h||!b)return 'sem destaque';window.__id=h.getAttribute('data-hero-id');b.click();return 'clicou '+b.textContent+' '+window.__id})() => clicou Ver tt35222590 
+depois-hist js 'destaque abriu '+location.hash+' '+(window.__id&&location.hash.indexOf(window.__id)>=0?'OK':'ERRO') => destaque abriu #/detail/movie/tt35222590 OK 
+depois-hist js history.back(); 'ok' => ok 
+depois-hist js (function(){var h=document.querySelector('.gf-nv-hero');var b=document.querySelector('.gf-nv-copy .gf-nv-btn:not(.is-main)');if(!h||!b)return 'sem destaque';window.__id=h.getAttribute('data-hero-id');b.click();return 'clicou '+b.textContent+' '+window.__id})() => clicou Detalhes tt36413910 
+depois-hist js 'destaque abriu '+location.hash+' '+(window.__id&&location.hash.indexOf(window.__id)>=0?'OK':'ERRO') => destaque abriu #/detail/movie/tt36413910 OK 
+depois-hist js history.back(); 'ok' => ok 
+depois-hist js (function(){var c=document.querySelector('.gf-nv-cw .gf-nv-wide');if(!c)return 'sem continuar';c.click();return 'clicou '+c.getAttribute('aria-label')})() => clicou Interstellar 
+depois-hist js 'continuar abriu '+location.hash+' '+(/tt0816692/.test(location.hash)?'OK':'ERRO') => continuar abriu #/detail/movie/tt0816692/tt0816692 OK 
+depois-hist js history.back(); 'ok' => ok 
+depois-hist js document.documentElement.getAttribute('data-gf-app') + ' nova=' + !!document.querySelector('.gf-nova') + ' servicos=' + document.querySelectorAll('[data-service]').length + ' ' + innerWidth + 'x' + innerHeight => mac nova=true servicos=9 1440x900 
+depois-hist resize 1024 700 => 
+depois-hist resize 1440 900 => 
+depois-hist js (function(){var b=document.querySelector('[data-service=netflix]');if(!b)return 'sem botao';b.click();return 'ok'})() => ok 
+depois-hist js (function(){var h=document.querySelector('#gf-home .gf-svc-name');return 'netflix -> '+(h?h.textContent:'nada')})() => netflix -> Netflix 
+depois-hist js history.back(); 'ok' => ok 
+depois-hist js (function(){var b=document.querySelector('[data-service=disney]');if(!b)return 'sem botao';b.click();return 'ok'})() => ok 
+depois-hist js (function(){var h=document.querySelector('#gf-home .gf-svc-name');return 'disney -> '+(h?h.textContent:'nada')})() => disney -> Disney+ 
+depois-hist js history.back(); 'ok' => ok 
+depois-hist js (function(){var b=document.querySelector('[data-service=prime]');if(!b)return 'sem botao';b.click();return 'ok'})() => ok 
+depois-hist js (function(){var h=document.querySelector('#gf-home .gf-svc-name');return 'prime -> '+(h?h.textContent:'nada')})() => prime -> Prime Video 
+depois-hist js history.back(); 'ok' => ok 
+depois-hist js (function(){var b=document.querySelector('[data-service=hbo]');if(!b)return 'sem botao';b.click();return 'ok'})() => ok 
+depois-hist js (function(){var h=document.querySelector('#gf-home .gf-svc-name');return 'hbo -> '+(h?h.textContent:'nada')})() => hbo -> HBO Max 
+depois-hist js history.back(); 'ok' => ok 
+depois-hist js (function(){var b=document.querySelector('[data-service=appletv]');if(!b)return 'sem botao';b.click();return 'ok'})() => ok 
+depois-hist js (function(){var h=document.querySelector('#gf-home .gf-svc-name');return 'appletv -> '+(h?h.textContent:'nada')})() => appletv -> Apple TV+ 
+depois-hist js history.back(); 'ok' => ok 
+depois-hist js (function(){var b=document.querySelector('[data-service=paramount]');if(!b)return 'sem botao';b.click();return 'ok'})() => ok 
+depois-hist js (function(){var h=document.querySelector('#gf-home .gf-svc-name');return 'paramount -> '+(h?h.textContent:'nada')})() => paramount -> Paramount+ 
+depois-hist js history.back(); 'ok' => ok 
+depois-hist js (function(){var b=document.querySelector('[data-service=globoplay]');if(!b)return 'sem botao';b.click();return 'ok'})() => ok 
+depois-hist js (function(){var h=document.querySelector('#gf-home .gf-svc-name');return 'globoplay -> '+(h?h.textContent:'nada')})() => globoplay -> Globoplay 
+depois-hist js history.back(); 'ok' => ok 
+depois-hist js (function(){var b=document.querySelector('[data-service=clarovideo]');if(!b)return 'sem botao';b.click();return 'ok'})() => ok 
+depois-hist js (function(){var h=document.querySelector('#gf-home .gf-svc-name');return 'clarovideo -> '+(h?h.textContent:'nada')})() => clarovideo -> Claro Video 
+depois-hist js history.back(); 'ok' => ok 
+depois-hist js (function(){var b=document.querySelector('[data-service=cinemateca]');if(!b)return 'sem botao';b.click();return 'ok'})() => ok 
+depois-hist js (function(){var h=document.querySelector('#gf-home .gf-svc-name');return 'cinemateca -> '+(h?h.textContent:'nada')})() => cinemateca -> CineTime 
+depois-hist js history.back(); 'ok' => ok 
+depois-hist js (function(){var s=[];var b=document.querySelector('[data-service]');if(!b)return 'sem';b.focus();for(var i=0;i<9;i++){s.push(document.activeElement.getAttribute('data-service'));document.dispatchEvent(new KeyboardEvent('keydown',{key:'ArrowRight',bubbles:true}));}return s.join(',')})() => netflix,disney,prime,hbo,appletv,paramount,globoplay,clarovideo,cinemateca 
