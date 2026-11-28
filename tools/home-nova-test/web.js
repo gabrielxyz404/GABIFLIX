@@ -5,7 +5,7 @@ const fs = require('fs');
 const BASE = process.env.BASE, OUT = process.env.OUT || 'out', ENGINE = process.env.ENGINE || 'chromium', LABEL = (process.env.LABEL || 'depois') + (ENGINE === 'chromium' ? '' : '-' + ENGINE);
 const UA_MAC = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Safari/605.1.15 GabiFlixApp/mac/1.0';
 const UA_AND = 'Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Mobile Safari/537.36 GabiFlixApp/android/1.0';
-const PROFILES = { mac1440: { w: 1440, h: 900, mac: 1 }, mac1024: { w: 1024, h: 768, mac: 1 }, and390: { w: 390, h: 844 } };
+const PROFILES = { mac1440: { w: 1440, h: 900, mac: 1 }, mac1024: { w: 1024, h: 768, mac: 1 }, and390: { w: 390, h: 844 }, and412: { w: 412, h: 915 }, tall1080: { w: 411, h: 914, dsf: 2.628 }, and360: { w: 360, h: 700 } };
 const SERVICES = ['Netflix', 'Disney+', 'Prime Video', 'HBO Max', 'Apple TV+', 'Paramount+', 'Globoplay', 'Claro Video', 'CineTime'];
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 fs.mkdirSync(OUT, { recursive: true });
@@ -48,7 +48,7 @@ async function fakeUser(ctx, page) {
 
 async function run(name, P, browser, mode) {
   const tag = `${LABEL}-${name}-${mode}`;
-  const ctx = await browser.newContext({ viewport: { width: P.w, height: P.h }, userAgent: P.mac ? UA_MAC : UA_AND, deviceScaleFactor: P.mac ? 1 : 2, isMobile: !P.mac, hasTouch: !P.mac, locale: 'pt-BR' });
+  const ctx = await browser.newContext({ viewport: { width: P.w, height: P.h }, userAgent: P.mac ? UA_MAC : UA_AND, deviceScaleFactor: P.mac ? 1 : (P.dsf || 2), isMobile: !P.mac, hasTouch: !P.mac, locale: 'pt-BR' });
   await ctx.addInitScript(() => { window.GabiFlixNative = { playSession() {}, version() { return 4; } }; });
   const page = await ctx.newPage();
   const errs = [];

@@ -220,5 +220,20 @@ html[data-gf-nova][data-gf-route="home"][data-gf-view="grid"] div[class^="board-
 /* Mac V2: a página tem só a altura do conteúdo (sem espaço extra que obrigue a rolar) */
 html[data-gf-nova][data-gf-app="mac"][data-gf-route="home"][data-gf-view="grid"] #gf-home { min-height: 0; }
 .gf-nova-mac.gf-v2 { min-height: 0; }
-/* celular V2: sem "Continuar a ver" o destaque ocupa mais (a tela não fica vazia em baixo) */
-.gf-nova-phone.gf-v2:not(.has-cw) .gf-nv-hero { height: clamp(440px, 66vh, 640px); }
+/* celular V3: serviços em cima (logo abaixo da cápsula), destaque em cartão por baixo e "Continuar a ver" no fim.
+   A página enche a altura da janela: o destaque fica com o que sobra (sem histórico enche o ecrã; com histórico cede espaço a "Continuar a ver"), entre um mínimo e um máximo. */
+html[data-gf-nova][data-gf-app="android"][data-gf-route="home"][data-gf-view="grid"] #gf-home { display: flex; flex-direction: column; }
+.gf-nova-phone.gf-v2 {
+    flex: 1 1 auto; min-height: 100%;
+    padding-top: calc(var(--horizontal-nav-bar-size, 5.5rem) + var(--safe-area-inset-top, 0px) + 4px);
+    padding-bottom: calc(var(--vertical-nav-bar-size, 6rem) + 14px);
+}
+.gf-nova-phone.gf-v2 .gf-nv-svcs { padding-top: 16px; padding-bottom: 2px; }
+.gf-nova-phone.gf-v2 .gf-nv-hero {
+    flex: 1 1 0; height: auto; min-height: 330px; max-height: 720px;
+    margin: 14px 16px 0; border-radius: 22px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    isolation: isolate; /* recorta a imagem e o degradê nos cantos arredondados */
+}
+.gf-nova-phone.gf-v2 .gf-nv-cw { flex: none; padding-top: 18px; }
+.gf-nova-phone.gf-v2:not(.has-cw) { justify-content: flex-start; }

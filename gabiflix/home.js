@@ -538,8 +538,8 @@
             if (!v2) head.appendChild(lab); // V2: a pesquisa fica no topo da janela ("Pesquisar")
             page.appendChild(head);
         }
-        page.appendChild(hero);
-        page.appendChild(svcSec);
+        if (mac) { page.appendChild(hero); page.appendChild(svcSec); }
+        else { page.appendChild(svcSec); page.appendChild(hero); } // celular: serviços no topo, destaque por baixo
         if (v2 || !mac) page.appendChild(cwSec);
         if (!v2) page.appendChild(trendSec);
         root.appendChild(page);
